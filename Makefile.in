@@ -1,14 +1,22 @@
+CREDIS_HOME=third-party/credis-0.2.3
+CREDIS=$(CREDIS_HOME)/credis.o
+CREDIS_INC=-I$(CREDIS_HOME)
+######
+LIBNDPI=./nDPI/src/lib/.libs/libndpi.a 
+######
+
 TARGET = ntopng
-LIBS = -lm
+LIBS = -lm $(LIBNDPI)
 CPP = g++
-CPPFLAGS = -g -Wall
+CPPFLAGS = -g -Wall $(CREDIS_INC)
 
 .PHONY: default all clean
 
-default: $(TARGET)
+default: $(LIBNDPI) $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS)
@@ -19,6 +27,10 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS)
 	$(CPP) $(OBJECTS) -Wall $(LIBS) -o $@
 
+$(LIBNDPI):
+	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
+	cd nDPI; ./configure; make
 clean:
 	-rm -f *.o
 	-rm -f $(TARGET)
+	-rm -rf nDPI

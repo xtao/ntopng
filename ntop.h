@@ -58,5 +58,7 @@
 #include <fcntl.h>
 #include <syslog.h>
 
-
+extern "C" {
+#include "ndpi_main.h"
+}
 #endif /* _NTOP_H_ */
