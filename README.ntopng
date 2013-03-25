@@ -1,0 +1,8 @@
+In case you want to add new protocols
+
+# autoreconf -ivf
+# ./configure
+# make
+
+--------------------------
+Luca Deri <deri@ntop.org>

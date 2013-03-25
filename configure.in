@@ -1,0 +1,26 @@
+AC_INIT([Makefile.in], 1.0)
+
+SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
+MACHINE=`uname -m`
+
+if test $MACHINE = "x86_64"; then
+   EXTN="amd64"
+else
+   EXTN="i386"
+fi
+
+DATE=`date +"%Y-%m-%d"`
+KERNEL=`uname -r`
+
+umask 002
+AC_CONFIG_HEADERS(config.h)
+
+AC_SUBST(MACHINE)
+AC_SUBST(EXTN)
+AC_SUBST(DATE)
+AC_SUBST(KERNEL)
+AC_SUBST(SVN_RELEASE)
+
+AC_CONFIG_FILES(Makefile)
+
+AC_OUTPUT
