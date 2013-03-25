@@ -2,13 +2,15 @@ CREDIS_HOME=third-party/credis-0.2.3
 CREDIS=$(CREDIS_HOME)/credis.o
 CREDIS_INC=-I$(CREDIS_HOME)
 ######
+LIBNDPI_INC=-I./nDPI/src/include
 LIBNDPI=./nDPI/src/lib/.libs/libndpi.a 
+######
+LIBPCAP=-lpcap
 ######
 
 TARGET = ntopng
-LIBS = -lm $(LIBNDPI)
-CPP = g++
-CPPFLAGS = -g -Wall $(CREDIS_INC)
+LIBS = -lm $(LIBNDPI) $(LIBPCAP)
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC)
 
 .PHONY: default all clean
 
@@ -20,17 +22,20 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS)
-	$(CPP) $(CPPFLAGS) -c $< -o $@
+	g++ $(CPPFLAGS) -c $< -o $@
+
+%.o: %.cpp $(HEADERS)
+	g++ $(CPPFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CPP) $(OBJECTS) -Wall $(LIBS) -o $@
+	g++ $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; make
 clean:
-	-rm -f *.o
+	-rm -f *.o *~ svn-commit.*
 	-rm -f $(TARGET)
 	-rm -rf nDPI

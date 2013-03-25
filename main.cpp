@@ -21,6 +21,69 @@
 
 #include "ntop.h"
 
+NtopGlobals *globals;
+NetworkInterface *iface;
+
+/* ******************************************* */
+
+static void help() {
+  printf("ntopng - (C) 1998-13 ntop.org\n\n"
+	 "-i <interface>       | Input interface name\n"
+	 );
+  exit(0);
+}
+
+
+/* ******************************** */
+
+void sigproc(int sig) {
+  static int called = 0;
+
+  globals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Leaving...");
+  if(called) return; else called = 1;
+  globals->doShutdown();  
+
+  if(iface) {
+    InterfaceStats *stats = iface->getStats();
+    
+    stats->printStats();
+    iface->shutdown();
+  }
+}
+
+/* ******************************************* */
+
 int main(int argc, char *argv[]) {
+  u_char c;
+  char *ifName = NULL;
+
+  globals = new NtopGlobals();
+
+  while((c = getopt(argc, argv, "hi:")) != '?') {
+    if(c == 255) break;
+
+    switch(c) {
+    case 'h':
+      help();
+    case 'i':
+      ifName = strdup(optarg);
+      break;
+    }
+  }
+
+  if(ifName == NULL)
+    help();
+  
+  iface = new NetworkInterface(globals, ifName);
+
+  signal(SIGINT, sigproc);
+  signal(SIGTERM, sigproc);
+  signal(SIGINT, sigproc);
+
+  iface->startPacketPolling();
+
+  delete iface;
+  delete globals;
+
   return(0);
 }

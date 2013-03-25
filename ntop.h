@@ -57,8 +57,18 @@
 #include <net/if.h>
 #include <fcntl.h>
 #include <syslog.h>
+#include <getopt.h>
+#include <string.h>
 
 extern "C" {
+#include "pcap.h"
 #include "ndpi_main.h"
 }
+
+#include "Trace.h"
+#include "NtopGlobals.h"
+#include "Mutex.h"
+#include "InterfaceStats.h"
+#include "NetworkInterface.h"
+
 #endif /* _NTOP_H_ */

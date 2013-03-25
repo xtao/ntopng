@@ -1,0 +1,69 @@
+/*
+ *
+ * (C) 2013 - ntop.org
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
+
+#ifndef _TRACE_H_
+#define _TRACE_H_
+
+#include "ntop.h"
+
+typedef enum {
+  trace_cmd = 0,
+  trace_generic,
+  trace_trigger,
+  trace_exec_command
+} trace_type;
+
+#define TRACE_LEVEL_ERROR     0
+#define TRACE_LEVEL_WARNING   1
+#define TRACE_LEVEL_NORMAL    2
+#define TRACE_LEVEL_INFO      3
+#define TRACE_LEVEL_DEBUG     6
+
+#define TRACE_ERROR     TRACE_LEVEL_ERROR, __FILE__, __LINE__
+#define TRACE_WARNING   TRACE_LEVEL_WARNING, __FILE__, __LINE__
+#define TRACE_NORMAL    TRACE_LEVEL_NORMAL, __FILE__, __LINE__
+#define TRACE_INFO      TRACE_LEVEL_INFO, __FILE__, __LINE__
+#define TRACE_DEBUG     TRACE_LEVEL_DEBUG, __FILE__, __LINE__
+
+#define MAX_TRACE_LEVEL 6
+#define TRACE_DEBUGGING MAX_TRACE_LEVEL
+
+class Mutex; /* Forward */
+
+/* ******************************* */
+
+class Trace {
+ private:
+  char *log_file_path;
+  u_int8_t traceLevel;
+
+ public:
+  Trace(char *log_path = NULL);
+  ~Trace();
+
+  void init();
+  void set_trace_level(u_int8_t id);
+  inline u_int8_t get_trace_level() { return(traceLevel); };
+  void traceEvent(trace_type tt, int eventTraceLevel, const char* file, const int line, const char * format, ...);
+};
+
+
+#endif /* _TRACE_H_ */
