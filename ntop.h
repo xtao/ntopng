@@ -68,6 +68,7 @@ extern "C" {
 #include "Trace.h"
 #include "NtopGlobals.h"
 #include "Mutex.h"
+#include "Flow.h"
 #include "InterfaceStats.h"
 #include "NetworkInterface.h"
 

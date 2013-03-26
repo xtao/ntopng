@@ -24,6 +24,13 @@
 
 #include "ntop.h"
 
+#define NUM_ROOTS 512
+
+typedef struct ether80211q {
+  u_int16_t vlanId;
+  u_int16_t protoType;
+} Ether80211q;
+
 class NetworkInterface {
  private:
   char *ifname;
@@ -31,6 +38,10 @@ class NetworkInterface {
   InterfaceStats *ifStats;
   pcap_t *pcap_handle;
   int pcap_datalink_type;
+  struct ndpi_flow *ndpi_flows_root[NUM_ROOTS];
+  u_int32_t ndpi_flow_count;
+
+  Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize);
 
  public:
   NetworkInterface(NtopGlobals *globals, char *name);
@@ -40,6 +51,12 @@ class NetworkInterface {
   inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
   inline Trace* getTrace()            { return(ntopGlobals->getTrace()); };
   inline InterfaceStats* getStats()   { return(ifStats);                 };
+  inline NtopGlobals* getGlobals()    { return(ntopGlobals);             };
+  inline int get_datalink()           { return(pcap_datalink_type);      };
+  void packet_processing(const u_int64_t time, u_int16_t vlan_id,
+			 const struct ndpi_iphdr *iph,
+			 u_int16_t ipsize, u_int16_t rawsize);
+
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

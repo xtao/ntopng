@@ -36,6 +36,6 @@ $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; make
 clean:
-	-rm -f *.o *~ svn-commit.*
+	-rm -f *.o *~ svn-commit.* config.h
 	-rm -f $(TARGET)
 	-rm -rf nDPI
