@@ -63,6 +63,7 @@
 extern "C" {
 #include "pcap.h"
 #include "ndpi_main.h"
+#include "microhttpd.h"
 };
 
 #include "Trace.h"
@@ -71,5 +72,6 @@ extern "C" {
 #include "Flow.h"
 #include "InterfaceStats.h"
 #include "NetworkInterface.h"
+#include "HTTPserver.h"
 
 #endif /* _NTOP_H_ */

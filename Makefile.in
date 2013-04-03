@@ -8,9 +8,15 @@ LIBNDPI=./nDPI/src/lib/.libs/libndpi.a
 LIBPCAP=-lpcap
 ######
 
+LIBMICRO_HOME=./third-party/libmicrohttpd-0.9.26
+LIBMICRO_INC=-I$(LIBMICRO_HOME)/src/include/
+LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
+
+
+######
 TARGET = ntopng
-LIBS = -lm $(LIBNDPI) $(LIBPCAP)
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC)
+LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD)
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC)
 
 .PHONY: default all clean
 
@@ -29,12 +35,16 @@ HEADERS = $(wildcard *.h)
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) $(LIBMICROHTTPD)
 	g++ $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; make
+
+$(LIBMICROHTTPD): 
+	cd $(LIBMICRO_HOME); ./configure; make
+
 clean:
 	-rm -f *.o *~ svn-commit.* config.h
 	-rm -f $(TARGET)

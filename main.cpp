@@ -21,13 +21,15 @@
 
 #include "ntop.h"
 
-NetworkInterface *iface;
+NetworkInterface *iface = NULL;
+HTTPserver *httpd = NULL;
 
 /* ******************************************* */
 
 static void help() {
   printf("ntopng - (C) 1998-13 ntop.org\n\n"
 	 "-i <interface>       | Input interface name\n"
+	 "-w <http port>       | HTTP port\n"
 	 );
   exit(0);
 }
@@ -48,6 +50,12 @@ void sigproc(int sig) {
     stats->printStats();
     iface->shutdown();
   }
+
+  if(httpd)
+    delete httpd;
+
+  delete ntopGlobals;
+  exit(0);
 }
 
 /* ******************************************* */
@@ -55,10 +63,11 @@ void sigproc(int sig) {
 int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL;
+  u_int http_port = 3000;
 
   ntopGlobals = new NtopGlobals();
 
-  while((c = getopt(argc, argv, "hi:")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -67,6 +76,9 @@ int main(int argc, char *argv[]) {
     case 'i':
       ifName = strdup(optarg);
       break;
+    case 'w':
+      http_port = atoi(optarg);
+      break;
     }
   }
 
@@ -74,6 +86,7 @@ int main(int argc, char *argv[]) {
     help();
   
   iface = new NetworkInterface(ifName);
+  httpd = new HTTPserver(http_port, "./httpdocs", "./scripts");
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);
@@ -82,8 +95,7 @@ int main(int argc, char *argv[]) {
   iface->startPacketPolling();
   iface->dumpFlows();
 
-  delete iface;
-  delete ntopGlobals;
-
+  while(1) sleep(1);
+  sigproc(0);
   return(0);
 }
