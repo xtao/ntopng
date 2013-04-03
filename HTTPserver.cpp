@@ -72,10 +72,11 @@ static int ahc_echo(void *cls,
 
   *ptr = NULL;                  /* reset when done */
 
-  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "[HTTP] %s", url);
-
   /* 1 - check if this is a static file */
-  snprintf(path, sizeof(path), "%s%s", httpserver->get_docs_dir(), url);
+  snprintf(path, sizeof(path), "%s%s", httpserver->get_docs_dir(), 
+	   (strlen(url) == 1) ? "/index.html" : url);
+
+  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
   
   if((0 == stat(path, &buf)) && (S_ISREG (buf.st_mode)))
     file = fopen(path, "rb");
