@@ -21,8 +21,9 @@
 
 #include "ntop.h"
 
-InterfaceStats::InterfaceStats(NtopGlobals *globals) {
-  ntopGlobals = globals;
+/* *************************************** */
+
+InterfaceStats::InterfaceStats() {
   numPkts = 0, numBytes = 0;
 }
 

@@ -21,7 +21,6 @@
 
 #include "ntop.h"
 
-NtopGlobals *globals;
 NetworkInterface *iface;
 
 /* ******************************************* */
@@ -39,9 +38,9 @@ static void help() {
 void sigproc(int sig) {
   static int called = 0;
 
-  globals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Leaving...");
+  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Leaving...");
   if(called) return; else called = 1;
-  globals->doShutdown();  
+  ntopGlobals->doShutdown();  
 
   if(iface) {
     InterfaceStats *stats = iface->getStats();
@@ -57,7 +56,7 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL;
 
-  globals = new NtopGlobals();
+  ntopGlobals = new NtopGlobals();
 
   while((c = getopt(argc, argv, "hi:")) != '?') {
     if(c == 255) break;
@@ -74,16 +73,17 @@ int main(int argc, char *argv[]) {
   if(ifName == NULL)
     help();
   
-  iface = new NetworkInterface(globals, ifName);
+  iface = new NetworkInterface(ifName);
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);
   signal(SIGINT, sigproc);
 
   iface->startPacketPolling();
+  iface->dumpFlows();
 
   delete iface;
-  delete globals;
+  delete ntopGlobals;
 
   return(0);
 }

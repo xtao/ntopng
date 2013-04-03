@@ -23,9 +23,9 @@
 
 /* ******************************* */
 
-Mutex::Mutex(NtopGlobals *globals) {
+Mutex::Mutex() {
   pthread_mutex_init(&the_mutex, NULL);
-  ntopGlobals = globals, locked = false;  
+  locked = false;  
 }
 
 /* ******************************* */

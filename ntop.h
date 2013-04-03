@@ -63,7 +63,7 @@
 extern "C" {
 #include "pcap.h"
 #include "ndpi_main.h"
-}
+};
 
 #include "Trace.h"
 #include "NtopGlobals.h"

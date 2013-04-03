@@ -27,10 +27,9 @@
 class InterfaceStats {
  private:
   u_int64_t numPkts, numBytes;
-  NtopGlobals *ntopGlobals;
 
  public:
-  InterfaceStats(NtopGlobals *globals);
+  InterfaceStats();
   ~InterfaceStats();
   
   inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  

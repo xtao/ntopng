@@ -23,16 +23,6 @@
 
 /* *************************************** */
 
-Flow::Flow(NtopGlobals *globals,
-	   u_int16_t _vlanId, u_int8_t _protocol, 
-	   u_int32_t _lower_ip, u_int16_t _lower_port,
-	   u_int32_t _upper_ip, u_int16_t _upper_port) {
-  Flow(_vlanId, _protocol, _lower_ip, _lower_port, _upper_ip, _upper_port); 
-  allocFlowMemory(globals);
-}
-
-/* *************************************** */
-
 Flow::Flow(u_int16_t _vlanId, u_int8_t _protocol, 
 	   u_int32_t _lower_ip, u_int16_t _lower_port,
 	   u_int32_t _upper_ip, u_int16_t _upper_port) {
@@ -45,14 +35,14 @@ Flow::Flow(u_int16_t _vlanId, u_int8_t _protocol,
 
 /* *************************************** */
 
-void Flow::allocFlowMemory(NtopGlobals *globals) {
-  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, globals->get_flow_size())) == NULL)
+void Flow::allocFlowMemory() {
+  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, ntopGlobals->get_flow_size())) == NULL)
     throw "Not enough memory";  
   
-  if((src_id = calloc(1, globals->get_size_id())) == NULL)
+  if((src_id = calloc(1, ntopGlobals->get_size_id())) == NULL)
     throw "Not enough memory";  
   
-  if((dst_id = calloc(1, globals->get_size_id())) == NULL)
+  if((dst_id = calloc(1, ntopGlobals->get_size_id())) == NULL)
     throw "Not enough memory";  
 }
 
@@ -96,4 +86,78 @@ int Flow::compare(Flow *fb) {
   if(protocol < fb->protocol) return(-1); else { if(protocol > fb->protocol) return(1); }
 
   return(0);
+}
+
+/* *************************************** */
+
+char* Flow::ipProto2Name(u_short proto_id) {
+  static char proto[8];
+
+  switch(proto_id) {
+  case IPPROTO_TCP:
+    return((char*)"TCP");
+    break;
+  case IPPROTO_UDP:
+    return((char*)"UDP");
+    break;
+  case IPPROTO_ICMP:
+    return((char*)"ICMP");
+    break;
+  case 112:
+    return((char*)"VRRP");
+    break;
+  }
+
+  snprintf(proto, sizeof(proto), "%u", proto_id);
+  return(proto);
+}
+
+/* *************************************** */
+
+/*
+ * A faster replacement for inet_ntoa().
+ */
+char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
+  char *cp, *retStr;
+  uint byte;
+  int n;
+
+  cp = &buf[bufLen];
+  *--cp = '\0';
+
+  n = 4;
+  do {
+    byte = addr & 0xff;
+    *--cp = byte % 10 + '0';
+    byte /= 10;
+    if (byte > 0) {
+      *--cp = byte % 10 + '0';
+      byte /= 10;
+      if (byte > 0)
+	*--cp = byte + '0';
+    }
+    *--cp = '.';
+    addr >>= 8;
+  } while (--n > 0);
+
+  /* Convert the string to lowercase */
+  retStr = (char*)(cp+1);
+
+  return(retStr);
+}
+
+/* *************************************** */
+
+void Flow::print() {
+  char buf1[32], buf2[32];
+
+  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u pkts/%u bytes]\n",
+	 ipProto2Name(protocol),
+	 intoaV4(ntohl(lower_ip), buf1, sizeof(buf1)),
+	 ntohs(lower_port),
+	 intoaV4(ntohl(upper_ip), buf2, sizeof(buf2)),
+	 ntohs(upper_port),
+	 detected_protocol,
+	 ndpi_get_proto_name(ntopGlobals->get_ndpi_struct(), detected_protocol),
+	 packets, bytes);
 }

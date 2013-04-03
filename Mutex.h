@@ -30,7 +30,6 @@ class Mutex {
  private:
   pthread_mutex_t the_mutex;
   bool initialized, locked;  
-  NtopGlobals *ntopGlobals;
 #ifdef MUTEX_DEBUG
   char last_lock_file[64], last_unlock_file[64];
   int  last_lock_line, last_unlock_line;
@@ -38,7 +37,7 @@ class Mutex {
   void initialize();
 
  public:
-  Mutex(NtopGlobals *globals);
+  Mutex();
   void lock(const char *filename, const int line);
   void unlock(const char *filename, const int line);  
   inline bool is_locked() { return(locked); };

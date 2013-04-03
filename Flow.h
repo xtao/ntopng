@@ -40,18 +40,16 @@ class Flow {
   u_int32_t packets, bytes;
 
   void deleteFlowMemory();
-  
+  char* ipProto2Name(u_short proto_id);
+  char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
+
  public:
-  Flow(NtopGlobals *globals,
-       u_int16_t _vlanId, u_int8_t _protocol, 
-       u_int32_t _lower_ip, u_int16_t _lower_port,
-       u_int32_t _upper_ip, u_int16_t _upper_port);
   Flow(u_int16_t _vlanId, u_int8_t _protocol, 
        u_int32_t _lower_ip, u_int16_t _lower_port,
        u_int32_t _upper_ip, u_int16_t _upper_port);
   ~Flow();
 
-  void allocFlowMemory(NtopGlobals *globals);
+  void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   inline void incStats(u_int pkt_len) { packets++, bytes += pkt_len; };  
   inline bool isDetectionCompleted()  { return(detection_completed); };
@@ -61,6 +59,7 @@ class Flow {
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   int compare(Flow *fb);
+  void print();
 };
 
 #endif /* _FLOW_H_ */

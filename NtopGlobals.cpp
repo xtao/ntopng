@@ -21,6 +21,8 @@
 
 #include "ntop.h"
 
+NtopGlobals *ntopGlobals;
+
 /* **************************************** */
 
 static void debug_printf(u_int32_t protocol, void *id_struct,

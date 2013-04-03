@@ -49,4 +49,6 @@ class NtopGlobals {
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 };
 
+extern NtopGlobals *ntopGlobals;
+
 #endif /* _NTOP_GLOBALS_H_ */

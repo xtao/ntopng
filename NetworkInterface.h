@@ -34,7 +34,6 @@ typedef struct ether80211q {
 class NetworkInterface {
  private:
   char *ifname;
-  NtopGlobals *ntopGlobals;
   InterfaceStats *ifStats;
   pcap_t *pcap_handle;
   int pcap_datalink_type;
@@ -44,19 +43,18 @@ class NetworkInterface {
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize);
 
  public:
-  NetworkInterface(NtopGlobals *globals, char *name);
+  NetworkInterface(char *name);
   ~NetworkInterface();
   void startPacketPolling();
   void shutdown();
   inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
   inline Trace* getTrace()            { return(ntopGlobals->getTrace()); };
   inline InterfaceStats* getStats()   { return(ifStats);                 };
-  inline NtopGlobals* getGlobals()    { return(ntopGlobals);             };
   inline int get_datalink()           { return(pcap_datalink_type);      };
   void packet_processing(const u_int64_t time, u_int16_t vlan_id,
 			 const struct ndpi_iphdr *iph,
 			 u_int16_t ipsize, u_int16_t rawsize);
-
+  void dumpFlows();
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

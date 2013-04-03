@@ -29,11 +29,11 @@
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(NtopGlobals *globals, char *name) {
+NetworkInterface::NetworkInterface(char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
-  ifname = strdup(name), ntopGlobals = globals;
-  ifStats = new InterfaceStats(globals);
+  ifname = strdup(name);
+  ifStats = new InterfaceStats();
 
   if((pcap_handle = pcap_open_live(ifname, ntopGlobals->getSnaplen(),
 				   ntopGlobals->getPromiscuousMode(),
@@ -44,9 +44,9 @@ NetworkInterface::NetworkInterface(NtopGlobals *globals, char *name) {
       printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
       throw "Unable to open network interface ";
     } else
-      globals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
+      ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
   } else
-    globals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+    ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
@@ -71,6 +71,26 @@ static int node_cmp(const void *a, const void *b) {
   Flow *fb = (Flow*)b;
 
   return(fa->compare(fb));
+}
+
+/* **************************************************** */
+
+static void node_proto_guess_walker(const void *node, ndpi_VISIT which, int depth) {
+  /* Avoid walking the same node multiple times */
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    struct Flow *flow = *(Flow**)node;
+
+    flow->print();  
+  }
+}
+
+/* **************************************************** */
+
+void NetworkInterface::dumpFlows() {
+  for (int i=0; i<NUM_ROOTS; i++) {
+    ndpi_twalk(ndpi_flows_root[i], node_proto_guess_walker);
+  }
+
 }
 
 /* **************************************************** */
@@ -142,7 +162,7 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
     } else
 #endif
       {
-      flowKey->allocFlowMemory(ntopGlobals);
+      flowKey->allocFlowMemory();
       ndpi_tsearch(flowKey, (void**)&ndpi_flows_root[idx], node_cmp); /* Add */
       return(flowKey);
     }
@@ -185,8 +205,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
   u_int64_t time;
   static u_int64_t lasttime = 0;
   u_int16_t type, ip_offset, vlan_id = 0;
-  NtopGlobals *globals = iface->getGlobals();
-  u_int32_t res = globals->get_detection_tick_resolution();
+  u_int32_t res = ntopGlobals->get_detection_tick_resolution();
   int pcap_datalink_type = iface->get_datalink();
 
   iface->incStats(header->caplen);
@@ -225,7 +244,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
       return;
     }
 
-    if(globals->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
+    if(ntopGlobals->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
       u_short ip_len = ((u_short)iph->ihl * 4);
       struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
       u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
