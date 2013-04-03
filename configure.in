@@ -15,11 +15,68 @@ KERNEL=`uname -r`
 umask 002
 AC_CONFIG_HEADERS(config.h)
 
+
+dnl>
+dnl> PYTHON
+dnl>
+AC_CHECK_TOOL(PYTHON_CONFIG, python-config)
+
+if test -z "$PYTHON_CONFIG"; then   
+       if test -f "/etc/debian_version"; then
+       	   AC_MSG_RESULT(Please install python-dev and rerun configure)
+	   exit 1
+	else
+	AC_MSG_RESULT(>>>> Unable to locate python-config: using workaround <<<<)
+        dnl> Silly workaround for RedHat-like distro
+        AC_CHECK_TOOL(PYTHON, python)
+        if test "x$ac_cv_prog_ac_ct_PYTHON" = "xpython"; then
+          PYTHON_CONFIG="./configureextra/python-config"
+        else
+          PYTHON_CONFIG="python-config"
+        fi
+     fi
+fi
+
+if test "x$PYTHON_CONFIG" != "x"; then
+    PYTHON_LIBS="`$PYTHON_CONFIG --libs`"
+    if test "x$PYTHON_LIBS" = "x"; then
+      AC_MSG_RESULT(Python[-devel] support is present but misconfigured)     
+    else   
+    dnl echo "Python libs: ${PYTHON_LIBS}"
+    LIBS="${LIBS} ${PYTHON_LIBS}"
+
+    dnl remove unecessary path
+    dnl line below workaround for OSX 10.6 (Snow Leopard)/10.7 (Lion)
+    PYTHON_INCS=`$PYTHON_CONFIG --cflags | sed -e "s/-arch i386//" | sed -e "s/-arch ppc//" | sed -e "s/-arch x86_64//"| sed -e "s/-Wstrict-prototypes//"`
+
+INCS="${INCS} ${PYTHON_INCS}"
+
+OLD_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS $INCS"
+AC_MSG_CHECKING([Checking python version])
+AC_TRY_COMPILE([ #include <Python.h> ],
+	[ #if (PY_MAJOR_VERSION < 2) || (PY_MINOR_VERSION < 6)
+	  #error "Your python is too old"
+	  #endif
+	  ],
+        [ AC_MSG_RESULT(Python 2.6 or newer is available) ; AC_DEFINE_UNQUOTED(HAVE_PYTHON, 1, [Python is supported])] ,
+	[ AC_MSG_RESULT(Old python installed); echo ""; echo "Please install python 2.6 or newer."; CFLAGS=$SAVED_CFLAGS; INCS=$SAVED_INCS; LIBS=$SAVED_LIBS; exit 1])
+fi
+
+else
+    AC_MSG_RESULT(Python[-devel] support is not present)
+    CFLAGS=$SAVED_CFLAGS
+    INCS=$SAVED_INCS
+fi
+
 AC_SUBST(MACHINE)
 AC_SUBST(EXTN)
 AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
+
+AC_SUBST(PYTHON_INCS)
+AC_SUBST(PYTHON_LIBS)
 
 AC_CONFIG_FILES(Makefile)
 

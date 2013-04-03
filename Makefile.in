@@ -15,8 +15,8 @@ LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
 
 ######
 TARGET = ntopng
-LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD)
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC)
+LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) @PYTHON_LIBS@
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) @PYTHON_INCS@
 
 .PHONY: default all clean
 
@@ -48,4 +48,6 @@ $(LIBMICROHTTPD):
 clean:
 	-rm -f *.o *~ svn-commit.* config.h
 	-rm -f $(TARGET)
+
+veryclean:
 	-rm -rf nDPI
