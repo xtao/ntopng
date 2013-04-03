@@ -220,7 +220,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
     ip_offset = sizeof(struct ndpi_ethhdr);
     type = ntohs(ethernet->h_proto);
   } else if(pcap_datalink_type == 113 /* Linux Cooked Capture */) {
-    type = packet[14] << 8 + packet[15];
+    type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
   } else
     return;
@@ -229,7 +229,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
     Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
     vlan_id = ntohs(qType->vlanId) & 0xFFF;
 
-    type = packet[ip_offset+2] << 8 + packet[ip_offset+3];
+    type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
     ip_offset += 4;
   }
 

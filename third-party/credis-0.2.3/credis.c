@@ -1198,14 +1198,14 @@ int credis_bgrewriteaof(REDIS rhnd)
   return cr_sendfandreceive(rhnd, CR_INLINE, "BGREWRITEAOF\r\n");
 }
 
-/* Parse Redis `info' string for a particular `field', storing its value to 
+/* Parse Redis `info' string for a particular `fld', storing its value to 
  * `storage' according to `format'.
  */
-void cr_parseinfo(const char *info, const char *field, const char *format, void *storage)
+void cr_parseinfo(const char *info, const char *fld, const char *format, void *storage)
 {
-  char *str = strstr(info, field);
+  char *str = strstr(info, fld);
   if (str) {
-    str += strlen(field) + 1; /* also skip the ':' */
+    str += strlen(fld) + 1; /* also skip the ':' */
     sscanf(str, format, storage); 
   }
 }

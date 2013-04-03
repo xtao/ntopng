@@ -10,7 +10,7 @@ LIBPCAP=-lpcap
 
 LIBMICRO_HOME=./third-party/libmicrohttpd-0.9.26
 LIBMICRO_INC=-I$(LIBMICRO_HOME)/src/include/
-LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
+LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a -lrt
 
 
 ######
@@ -46,7 +46,7 @@ $(LIBMICROHTTPD):
 	cd $(LIBMICRO_HOME); ./configure; make
 
 clean:
-	-rm -f *.o *~ svn-commit.* config.h
+	-rm -f *.o *~ svn-commit.* #config.h
 	-rm -f $(TARGET)
 
 veryclean:
