@@ -1,3 +1,5 @@
+OS := $(shell uname -s)
+######
 CREDIS_HOME=third-party/credis-0.2.3
 CREDIS=$(CREDIS_HOME)/credis.o
 CREDIS_INC=-I$(CREDIS_HOME)
@@ -7,22 +9,22 @@ LIBNDPI=./nDPI/src/lib/.libs/libndpi.a
 ######
 LIBPCAP=-lpcap
 ######
-
 LIBMICRO_HOME=./third-party/libmicrohttpd-0.9.26
 LIBMICRO_INC=-I$(LIBMICRO_HOME)/src/include/
-LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a -lrt
-
-
+LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
 ######
 TARGET = ntopng
 LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) @PYTHON_LIBS@
 CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) @PYTHON_INCS@
 
+ifeq ($(OS),Linux)
+LIBS += -lrt
+endif
+
 .PHONY: default all clean
 
 default: $(LIBNDPI) $(TARGET)
 all: default
-
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
 HEADERS = $(wildcard *.h)
