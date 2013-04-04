@@ -251,7 +251,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
 
       if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
 	/* Check if it's GTPv1 */
-	u_int offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr);
+	u_int offset = (u_int)(ip_offset+ip_len+sizeof(struct ndpi_udphdr));
 	u_int8_t flags = packet[offset];
 	u_int8_t message_type = packet[offset+1];
 
@@ -279,10 +279,21 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
 
 /* **************************************************** */
 
+static void* packetPollLoop(void* ptr) {
+  NetworkInterface *iface = (NetworkInterface*)ptr;
+
+  pcap_loop(iface->get_pcap_handle(), -1, &pcap_packet_callback, (u_char*)iface);
+  return(NULL);
+}
+
+
+/* **************************************************** */
+
 void NetworkInterface::startPacketPolling() {
   ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Started packet polling...");
 
-  pcap_loop(pcap_handle, -1, &pcap_packet_callback, (u_char*)this);
+  pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
+
 }
 
 /* **************************************************** */
