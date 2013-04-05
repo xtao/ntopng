@@ -19,7 +19,7 @@
  *
  */
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 #include <sys/stat.h>
 
@@ -37,7 +37,7 @@ extern "C" {
 static HTTPserver *httpserver;
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body>Page &quot;%s&quot; was not found</body></html>"
-#define PAGE_ERROR     "<html><head><title>ntop</title></head><body>Script &quot;%s&quot; returned an error: %s</body></html>"
+#define PAGE_ERROR     "<html><head><title>ntop</title></head><body>Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 
 /* ****************************************** */
 
@@ -50,7 +50,7 @@ static int page_not_found(struct MHD_Connection *connection, const char *url) {
   int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
   MHD_destroy_response(response);
 
-  ntopGlobals->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Page not found %s", url);
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Page not found %s", url);
   return(ret);
 }
 
@@ -65,7 +65,7 @@ static int page_error(struct MHD_Connection *connection, const char *url, const 
   int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
   MHD_destroy_response(response);
 
-  ntopGlobals->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Script error %s", url);
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Script error %s", url);
   return(ret);
 }
 
@@ -88,7 +88,7 @@ static void free_callback(void *cls) {
 static int ntop_lua_check(lua_State* vm, const char* func,
 			  int pos, int expected_type) {
   if(lua_type(vm, pos) != expected_type) {
-    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR,
+    ntop->getTrace()->traceEvent(TRACE_ERROR,
 					"%s : expected %s, got %s", func,
 					lua_typename(vm, expected_type),
 					lua_typename(vm, lua_type(vm,pos)));
@@ -101,21 +101,29 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 /* ****************************************** */
 
 static int ntop_lua_print(lua_State* vm) {
-  char *str;
   FILE *tmp_file;
-  
+
   lua_getglobal(vm, "tmp_file");
   if((tmp_file = (FILE*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null file");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null file");
     return(0);
   }
 
-  if(ntop_lua_check(vm, "ntop_lua_print", 1, LUA_TSTRING)) return(0);
-  str = (char*)lua_tostring(vm, 1);
+  switch(lua_type(vm, 1)) {
+  case LUA_TSTRING:
+    {
+      char *str = (char*)lua_tostring(vm, 1);
+      if(str && (strlen(str) > 0))
+	fprintf(tmp_file, "%s", str);
+    }
+    break;
 
-  if(str && (strlen(str) > 0)) {
-    fprintf(tmp_file, "%s", str);
-    //ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "[%s] %s", __FUNCTION__, str);
+  case LUA_TNUMBER:
+    fprintf(tmp_file, "%f", (float)lua_tonumber(vm, 1));
+    break;
+
+  default:
+    return(0);
   }
   return(1);
 }
@@ -139,8 +147,7 @@ static void lua_register_classes(lua_State *L) {
   static const luaL_Reg _meta[] = { { NULL, NULL } };                           
   int i;
   ntop_class_reg ntop[] = {
-    { "ntop", ntop_reg },
-    
+    { "ntop", ntop_reg },    
     {NULL,    NULL}
   };
 
@@ -172,6 +179,19 @@ static void lua_register_classes(lua_State *L) {
 
 /* ****************************************** */
 
+int MHD_KeyValueIteratorGet(void *cls, enum MHD_ValueKind kind,
+			    const char *key, const char *value) {
+  lua_State *L = (lua_State*)cls;
+
+  lua_pushstring(L, key);
+  lua_pushstring(L, value);
+  lua_settable(L, -3);
+
+  return(MHD_YES);
+}
+
+/* ****************************************** */
+
 static int handle_script_request(char *script_path,
 				 void *cls,
 				 struct MHD_Connection *connection,
@@ -186,7 +206,7 @@ static int handle_script_request(char *script_path,
   MHD_Response *tmp_response;
   
   if(L == NULL) {
-    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
     return(page_not_found(connection, url));
   } else {
     /* Load base libraries */
@@ -197,9 +217,17 @@ static int handle_script_request(char *script_path,
 
     /* Register the connection in the state */
     tmp_file = tmpfile();
-
     lua_pushlightuserdata(L, (char*)tmp_file);
     lua_setglobal(L, "tmp_file");
+
+    /* Put the GET params into the environment */
+    lua_newtable(L);
+    MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
+    lua_setglobal(L, "_GET"); /* Like in php */
+
+    /* Overload the standard Lua print() with ntop_lua_print that dumps data on HTTP server */
+    lua_register(L, "print", ntop_lua_print);
+
     tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, fileno(tmp_file));
   }
 
@@ -257,13 +285,13 @@ static int handle_http_request(void *cls,
     /* 2 - check if this a script file */
     snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(), url);
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
-      ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
       ret = handle_script_request(path, cls, connection, url, method, version, upload_data, upload_data_size, ptr);
     } else {
       ret = page_not_found(connection, url);
     }
   } else {
-    ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
 
     response = MHD_create_response_from_callback (buf.st_size, 32 * 1024,     /* 32k page size */
 						  &file_reader,
@@ -293,7 +321,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 			   MHD_OPTION_END);
 
   if(httpd_v4 == NULL) {
-    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv4) on port %d", port);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv4) on port %d", port);
     exit(-1);
   }
 
@@ -305,13 +333,13 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 			      MHD_OPTION_END);
 
   if(httpd_v6 == NULL) {
-    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv6) on port %d", port);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv6) on port %d", port);
   }
 
   /* ***************************** */
 
   httpserver = this;
-  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
 				      port, docs_dir, scripts_dir);
 };
 
@@ -321,7 +349,7 @@ HTTPserver::~HTTPserver() {
   if(httpd_v4) MHD_stop_daemon(httpd_v4);
   if(httpd_v6) MHD_stop_daemon(httpd_v6);
 
-  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
 };
 
 /* ****************************************** */

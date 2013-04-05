@@ -19,7 +19,7 @@
  *
  */
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 #ifndef ETH_P_IP
 #define ETH_P_IP 0x0800
@@ -35,8 +35,8 @@ NetworkInterface::NetworkInterface(char *name) {
   ifname = strdup(name);
   ifStats = new InterfaceStats();
 
-  if((pcap_handle = pcap_open_live(ifname, ntopGlobals->getSnaplen(),
-				   ntopGlobals->getPromiscuousMode(),
+  if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
+				   ntop->getGlobals()->getPromiscuousMode(),
 				   500, pcap_error_buffer)) == NULL) {
     pcap_handle = pcap_open_offline(ifname, pcap_error_buffer);
 
@@ -44,9 +44,9 @@ NetworkInterface::NetworkInterface(char *name) {
       printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
       throw "Unable to open network interface ";
     } else
-      ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
   } else
-    ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
@@ -190,7 +190,7 @@ void NetworkInterface::packet_processing(const u_int64_t time, u_int16_t vlan_id
     struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
 
-    flow->setDetectedProtocol(ndpi_detection_process_packet(ntopGlobals->get_ndpi_struct(),
+    flow->setDetectedProtocol(ndpi_detection_process_packet(ntop->getGlobals()->get_ndpi_struct(),
 							    ndpi_flow, (uint8_t *)iph, ipsize, time, src, dst),
 			      iph->protocol);
   }
@@ -205,7 +205,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
   u_int64_t time;
   static u_int64_t lasttime = 0;
   u_int16_t type, ip_offset, vlan_id = 0;
-  u_int32_t res = ntopGlobals->get_detection_tick_resolution();
+  u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
   int pcap_datalink_type = iface->get_datalink();
 
   iface->incStats(header->caplen);
@@ -244,7 +244,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
       return;
     }
 
-    if(ntopGlobals->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
+    if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
       u_short ip_len = ((u_short)iph->ihl * 4);
       struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
       u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
@@ -290,7 +290,7 @@ static void* packetPollLoop(void* ptr) {
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {
-  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
 
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
 

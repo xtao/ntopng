@@ -22,7 +22,7 @@
 #ifndef _NETWORK_INTERFACE_H_
 #define _NETWORK_INTERFACE_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 #define NUM_ROOTS 512
 
@@ -49,7 +49,6 @@ class NetworkInterface {
   void startPacketPolling();
   void shutdown();
   inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
-  inline Trace* getTrace()            { return(ntopGlobals->getTrace()); };
   inline InterfaceStats* getStats()   { return(ifStats);                 };
   inline int get_datalink()           { return(pcap_datalink_type);      };
   inline pcap_t* get_pcap_handle()    { return(pcap_handle);             };

@@ -22,7 +22,7 @@
 #ifndef _FLOW_H_
 #define _FLOW_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 
 class Flow {

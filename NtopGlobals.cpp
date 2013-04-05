@@ -19,9 +19,7 @@
  *
  */
 
-#include "ntop.h"
-
-NtopGlobals *ntopGlobals;
+#include "ntop_includes.h"
 
 /* **************************************** */
 

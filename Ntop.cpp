@@ -19,21 +19,21 @@
  *
  */
 
-#ifndef _INTERFACE_STATS_H_
-#define _INTERFACE_STATS_H_
-
 #include "ntop_includes.h"
 
-class InterfaceStats {
- private:
-  u_int64_t numPkts, numBytes;
+Ntop *ntop;
 
- public:
-  InterfaceStats();
-  ~InterfaceStats();
-  
-  inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  
-  void printStats();
-};
+/* ******************************************* */
 
-#endif /* _INTERFACE_STATS_H_ */
+Ntop::Ntop() {
+  globals = new NtopGlobals();
+}
+
+/* ******************************************* */
+
+Ntop::~Ntop() {
+  if(iface) delete(iface);
+  if(httpd) delete(httpd);
+
+  delete globals;
+}

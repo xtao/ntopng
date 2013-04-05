@@ -22,7 +22,7 @@
 #ifndef _TRACE_H_
 #define _TRACE_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 #define TRACE_LEVEL_ERROR     0
 #define TRACE_LEVEL_WARNING   1

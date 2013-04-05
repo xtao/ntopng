@@ -22,7 +22,7 @@
 #ifndef _HTTP_SERVER_H_
 #define _HTTP_SERVER_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 class HTTPserver {
  private:

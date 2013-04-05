@@ -19,10 +19,7 @@
  *
  */
 
-#include "ntop.h"
-
-NetworkInterface *iface = NULL;
-HTTPserver *httpd = NULL;
+#include "ntop_includes.h"
 
 /* ******************************************* */
 
@@ -40,10 +37,12 @@ static void help() {
 void sigproc(int sig) {
   static int called = 0;
 
-  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Leaving...");
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Leaving...");
   if(called) return; else called = 1;
-  ntopGlobals->doShutdown();  
+  ntop->getGlobals()->shutdown();  
 
+  NetworkInterface *iface = ntop->get_NetworkInterface();
+  
   if(iface) {
     InterfaceStats *stats = iface->getStats();
     
@@ -51,10 +50,7 @@ void sigproc(int sig) {
     iface->shutdown();
   }
 
-  if(httpd)
-    delete httpd;
-
-  delete ntopGlobals;
+  delete ntop;
   exit(0);
 }
 
@@ -64,8 +60,10 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL;
   u_int http_port = 3000;
+  NetworkInterface *iface = NULL;
+  HTTPserver *httpd = NULL;
 
-  ntopGlobals = new NtopGlobals();
+  ntop = new Ntop();
 
   while((c = getopt(argc, argv, "hi:w:")) != '?') {
     if(c == 255) break;
@@ -85,8 +83,8 @@ int main(int argc, char *argv[]) {
   if(ifName == NULL)
     help();
   
-  iface = new NetworkInterface(ifName);
-  httpd = new HTTPserver(http_port, "./httpdocs", "./scripts");
+  ntop->registerInterface(iface = new NetworkInterface(ifName));
+  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts"));
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);
@@ -96,6 +94,7 @@ int main(int argc, char *argv[]) {
   iface->dumpFlows();
 
   while(1) sleep(1);
+
   sigproc(0);
   return(0);
 }

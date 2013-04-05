@@ -22,10 +22,10 @@
 #ifndef _NTOP_GLOBALS_H_
 #define _NTOP_GLOBALS_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 class NtopGlobals {
-  bool shutdown, do_decode_tunnels;
+  bool is_shutdown, do_decode_tunnels;
   u_int ifMTU, snaplen;
   u_int8_t promiscuousMode;
   Trace *trace;
@@ -40,15 +40,13 @@ class NtopGlobals {
   inline u_int8_t getPromiscuousMode() { return(promiscuousMode); };
   inline u_int getSnaplen()            { return(snaplen);         };
   inline Trace *getTrace()             { return(trace);           };
-  inline bool  isShutdown()            { return(shutdown);        };
+  inline bool  isShutdown()            { return(is_shutdown);       };
   inline bool  decode_tunnels()        { return(do_decode_tunnels); };
-  inline void  doShutdown()            { shutdown = true;         };
+  inline void  shutdown()              { is_shutdown = true;        };
   inline u_int32_t get_detection_tick_resolution() { return(detection_tick_resolution); };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 };
-
-extern NtopGlobals *ntopGlobals;
 
 #endif /* _NTOP_GLOBALS_H_ */

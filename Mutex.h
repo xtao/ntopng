@@ -22,7 +22,7 @@
 #ifndef _MUTEX_H_
 #define _MUTEX_H_
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 /* ******************************* */
 

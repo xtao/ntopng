@@ -19,7 +19,7 @@
  *
  */
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 /* *************************************** */
 
@@ -36,6 +36,6 @@ InterfaceStats::~InterfaceStats() {
 /* *************************************** */
 
 void InterfaceStats::printStats() {
-  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
 				      numBytes, numPkts);
 }

@@ -19,7 +19,7 @@
  *
  */
 
-#include "ntop.h"
+#include "ntop_includes.h"
 
 /* *************************************** */
 
@@ -36,13 +36,13 @@ Flow::Flow(u_int16_t _vlanId, u_int8_t _protocol,
 /* *************************************** */
 
 void Flow::allocFlowMemory() {
-  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, ntopGlobals->get_flow_size())) == NULL)
+  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, ntop->getGlobals()->get_flow_size())) == NULL)
     throw "Not enough memory";  
   
-  if((src_id = calloc(1, ntopGlobals->get_size_id())) == NULL)
+  if((src_id = calloc(1, ntop->getGlobals()->get_size_id())) == NULL)
     throw "Not enough memory";  
   
-  if((dst_id = calloc(1, ntopGlobals->get_size_id())) == NULL)
+  if((dst_id = calloc(1, ntop->getGlobals()->get_size_id())) == NULL)
     throw "Not enough memory";  
 }
 
@@ -158,6 +158,6 @@ void Flow::print() {
 	 intoaV4(ntohl(upper_ip), buf2, sizeof(buf2)),
 	 ntohs(upper_port),
 	 detected_protocol,
-	 ndpi_get_proto_name(ntopGlobals->get_ndpi_struct(), detected_protocol),
+	 ndpi_get_proto_name(ntop->getGlobals()->get_ndpi_struct(), detected_protocol),
 	 packets, bytes);
 }

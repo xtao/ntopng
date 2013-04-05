@@ -17,6 +17,7 @@ LUA_HOME=./third-party/lua-5.2.2
 LUA_INC=-I$(LUA_HOME)/src
 LUA_LIB=$(LUA_HOME)/src/liblua.a
 ######
+######
 TARGET = ntopng
 LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUA_LIB)
 CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUA_INC)
@@ -60,3 +61,4 @@ clean:
 
 veryclean:
 	-rm -rf nDPI
+
