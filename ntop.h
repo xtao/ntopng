@@ -37,7 +37,7 @@ class Ntop {
   inline void registerInterface(NetworkInterface *i) { iface = i; };
   inline void registerHTTPserver(HTTPserver *h)      { httpd= h;  };
 
-  inline NetworkInterface* get_NetworkInterface() { return(iface); };
+  inline NetworkInterface* get_NetworkInterface(char *name) { return(iface); }; /* FIX: check name */
   inline HTTPserver*       get_HTTPserver()       { return(httpd); };
 
   inline NtopGlobals*      getGlobals()           { return(globals); };

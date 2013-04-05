@@ -41,7 +41,7 @@ void sigproc(int sig) {
   if(called) return; else called = 1;
   ntop->getGlobals()->shutdown();  
 
-  NetworkInterface *iface = ntop->get_NetworkInterface();
+  NetworkInterface *iface = ntop->get_NetworkInterface("any");
   
   if(iface) {
     InterfaceStats *stats = iface->getStats();
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     help();
   
   ntop->registerInterface(iface = new NetworkInterface(ifName));
-  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts"));
+  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);

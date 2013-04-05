@@ -8,6 +8,11 @@ for key, value in pairs(_GET) do
 end
 
 
+iface = interface.find("any") -- put real interface name here
+stats = interface.getStats()
+
+print(stats["packets"])
+print(stats["bytes"])
 print('</body></html>\n')
 
 

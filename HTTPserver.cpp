@@ -100,6 +100,85 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 
 /* ****************************************** */
 
+static int ntop_dump_file(lua_State* vm) {
+  char *fname, tmp[1024];
+  FILE *f;
+  FILE *tmp_file;
+
+  lua_getglobal(vm, "tmp_file");
+  if((tmp_file = (FILE*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null file");
+    return(0);
+  }
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  if((fname = (char*)lua_tostring(vm, 1)) == NULL)     return(-1);
+
+  if((f = fopen(fname, "r")) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: Unable to open file %s", fname);
+    return(-2);
+  }
+  
+  while((fgets(tmp, sizeof(tmp), f)) != NULL)
+    fprintf(tmp_file, "%s", tmp);
+ 
+  fclose(f);
+ 
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_find_interface(lua_State* vm) {
+  char *ifname;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  ifname = (char*)lua_tostring(vm, 1);
+
+  lua_pushlightuserdata(vm, (char*)ntop->get_NetworkInterface(ifname));
+  lua_setglobal(vm, "ntop_interface");
+ 
+  return(1);
+}
+
+/* ****************************************** */
+
+static void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
+  lua_pushstring(L, key);
+  lua_pushstring(L, value);
+  lua_settable(L, -3);
+}
+
+/* ****************************************** */
+
+static void lua_push_int_table_entry(lua_State *L, const char *key, int value) {
+  lua_pushstring(L, key);
+  lua_pushinteger(L, value);
+  lua_settable(L, -3);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_stats(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  InterfaceStats *stats;
+  
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  } else
+    stats = ntop_interface->getStats();
+
+  lua_newtable(vm);
+  lua_push_int_table_entry(vm, "packets", stats->getNumPkts());
+  lua_push_int_table_entry(vm, "bytes", stats->getNumBytes());
+ 
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_lua_print(lua_State* vm) {
   FILE *tmp_file;
 
@@ -125,6 +204,7 @@ static int ntop_lua_print(lua_State* vm) {
   default:
     return(0);
   }
+
   return(1);
 }
 
@@ -135,8 +215,14 @@ typedef struct {
   const luaL_Reg *class_methods;
 } ntop_class_reg;
 
+static const luaL_Reg ntop_interface_reg[] = {
+  { "find",           ntop_find_interface },
+  { "getStats",       ntop_get_interface_stats },
+  {NULL,           NULL}
+};
+
 static const luaL_Reg ntop_reg[] = {
-  { "print",       ntop_lua_print },
+  { "dumpFile",           ntop_dump_file },
   {NULL,           NULL}
 };
 
@@ -147,10 +233,11 @@ static void lua_register_classes(lua_State *L) {
   static const luaL_Reg _meta[] = { { NULL, NULL } };                           
   int i;
   ntop_class_reg ntop[] = {
-    { "ntop", ntop_reg },    
+    { "interface", ntop_interface_reg },    
+    { "ntop",     ntop_reg },    
     {NULL,    NULL}
   };
-
+  
   for(i=0; ntop[i].class_name != NULL; i++) {
     /* newclass = {} */
     lua_createtable(L, 0, 0);
@@ -183,10 +270,7 @@ int MHD_KeyValueIteratorGet(void *cls, enum MHD_ValueKind kind,
 			    const char *key, const char *value) {
   lua_State *L = (lua_State*)cls;
 
-  lua_pushstring(L, key);
-  lua_pushstring(L, value);
-  lua_settable(L, -3);
-
+  lua_push_str_table_entry(L, key, (char*)value);
   return(MHD_YES);
 }
 
@@ -259,7 +343,7 @@ static int handle_http_request(void *cls,
   int ret;
   FILE *file;
   struct stat buf;
-  char path[255];
+  char path[255] = { 0 };
 
   if(0 != strcmp(method, MHD_HTTP_METHOD_GET))
     return MHD_NO;              /* unexpected method */
@@ -283,7 +367,9 @@ static int handle_http_request(void *cls,
 
   if(file == NULL) {
     /* 2 - check if this a script file */
-    snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(), url);
+    snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(),
+	     (strlen(url) == 1) ? "/index.lua" : url);
+
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
       ret = handle_script_request(path, cls, connection, url, method, version, upload_data, upload_data_size, ptr);
