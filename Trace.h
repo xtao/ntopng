@@ -24,13 +24,6 @@
 
 #include "ntop.h"
 
-typedef enum {
-  trace_cmd = 0,
-  trace_generic,
-  trace_trigger,
-  trace_exec_command
-} trace_type;
-
 #define TRACE_LEVEL_ERROR     0
 #define TRACE_LEVEL_WARNING   1
 #define TRACE_LEVEL_NORMAL    2
@@ -62,7 +55,7 @@ class Trace {
   void init();
   void set_trace_level(u_int8_t id);
   inline u_int8_t get_trace_level() { return(traceLevel); };
-  void traceEvent(trace_type tt, int eventTraceLevel, const char* file, const int line, const char * format, ...);
+  void traceEvent(int eventTraceLevel, const char* file, const int line, const char * format, ...);
 };
 
 

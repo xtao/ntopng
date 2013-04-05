@@ -29,10 +29,7 @@ class HTTPserver {
   u_int16_t port;
   char *docs_dir, *scripts_dir;
   struct MHD_Daemon *httpd;
-  Mutex *mutex;
 
-  void init_python();
-  void term_python();
 
  public:
   HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir);
@@ -40,7 +37,6 @@ class HTTPserver {
 
   inline char* get_docs_dir()    { return(docs_dir);    };
   inline char* get_scripts_dir() { return(scripts_dir); };
-  inline Mutex* get_mutex()      { return(mutex);       };
 };
 
 

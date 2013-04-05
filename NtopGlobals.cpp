@@ -59,7 +59,7 @@ NtopGlobals::NtopGlobals() {
   // init global detection structure
   ndpi_struct = ndpi_init_detection_module(detection_tick_resolution, malloc_wrapper, free_wrapper, debug_printf);
   if (ndpi_struct == NULL) {
-    trace->traceEvent(trace_generic, TRACE_ERROR, "Global structure initialization failed");
+    trace->traceEvent(TRACE_ERROR, "Global structure initialization failed");
     exit(-1);
   }
 

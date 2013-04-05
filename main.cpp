@@ -40,7 +40,7 @@ static void help() {
 void sigproc(int sig) {
   static int called = 0;
 
-  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Leaving...");
+  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Leaving...");
   if(called) return; else called = 1;
   ntopGlobals->doShutdown();  
 

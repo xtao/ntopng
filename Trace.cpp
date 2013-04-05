@@ -35,7 +35,7 @@ Trace::~Trace() {
 
 /* ******************************* */
 
-void Trace::traceEvent(trace_type tt, int eventTraceLevel,
+void Trace::traceEvent(int eventTraceLevel,
 		       const char* file, const int line, const char * format, ...) {
   va_list va_ap;
   struct tm result;

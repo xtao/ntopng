@@ -36,6 +36,6 @@ InterfaceStats::~InterfaceStats() {
 /* *************************************** */
 
 void InterfaceStats::printStats() {
-  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "%llu Bytes/%llu Packets",
+  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
 				      numBytes, numPkts);
 }

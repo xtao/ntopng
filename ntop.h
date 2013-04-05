@@ -64,6 +64,9 @@ extern "C" {
 #include "pcap.h"
 #include "ndpi_main.h"
 #include "microhttpd.h"
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 };
 
 #include "Trace.h"

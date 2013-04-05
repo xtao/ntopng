@@ -37,7 +37,7 @@ void Mutex::lock(const char *filename, const int line) {
   rc = pthread_mutex_lock(&the_mutex);
 
   if(rc != 0)
-    ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_WARNING, 
+    ntopGlobals->getTrace()->traceEvent(TRACE_WARNING, 
 					"pthread_mutex_lock() returned %d [%s][errno=%d]", 
 					rc, strerror(rc), errno);
 
@@ -59,7 +59,7 @@ void Mutex::unlock(const char *filename, const int line) {
   rc = pthread_mutex_unlock(&the_mutex);
   
   if(rc != 0)
-    ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_WARNING, 
+    ntopGlobals->getTrace()->traceEvent(TRACE_WARNING, 
 					"pthread_mutex_unlock() returned %d [%s][errno=%d]",
 					rc, strerror(rc), errno);
 

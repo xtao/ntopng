@@ -13,9 +13,13 @@ LIBMICRO_HOME=./third-party/libmicrohttpd-0.9.26
 LIBMICRO_INC=-I$(LIBMICRO_HOME)/src/include/
 LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
 ######
+LUA_HOME=./third-party/lua-5.2.2
+LUA_INC=-I$(LUA_HOME)/src
+LUA_LIB=$(LUA_HOME)/src/liblua.a
+######
 TARGET = ntopng
-LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) @PYTHON_LIBS@
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) @PYTHON_INCS@
+LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUA_LIB)
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUA_INC)
 
 ifeq ($(OS),Linux)
 LIBS += -lrt
@@ -23,7 +27,7 @@ endif
 
 .PHONY: default all clean
 
-default: $(LIBNDPI) $(TARGET)
+default: $(LIBNDPI) $(LUA_LIB) $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
@@ -43,6 +47,9 @@ $(TARGET): $(OBJECTS) $(LIBMICROHTTPD)
 $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; make
+
+$(LUA_LIB):
+	cd $(LUA_HOME); make generic
 
 $(LIBMICROHTTPD): 
 	cd $(LIBMICRO_HOME); ./configure; make

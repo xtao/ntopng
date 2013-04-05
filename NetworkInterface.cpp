@@ -44,9 +44,9 @@ NetworkInterface::NetworkInterface(char *name) {
       printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
       throw "Unable to open network interface ";
     } else
-      ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
+      ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
   } else
-    ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+    ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
@@ -290,7 +290,7 @@ static void* packetPollLoop(void* ptr) {
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {
-  ntopGlobals->getTrace()->traceEvent(trace_generic, TRACE_NORMAL, "Started packet polling...");
+  ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
 
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
 
