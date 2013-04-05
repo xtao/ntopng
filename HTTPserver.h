@@ -28,7 +28,7 @@ class HTTPserver {
  private:
   u_int16_t port;
   char *docs_dir, *scripts_dir;
-  struct MHD_Daemon *httpd;
+  struct MHD_Daemon *httpd_v4, *httpd_v6;
 
 
  public:

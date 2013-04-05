@@ -287,12 +287,30 @@ static int handle_http_request(void *cls,
 HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir) {
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
 
-  httpd = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG,
-			    port, NULL, NULL, &handle_http_request, (void*)PAGE_NOT_FOUND,
-			    MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)120,
-			    MHD_OPTION_END);
-  httpserver = this;
+  httpd_v4 = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG,
+			   port, NULL, NULL, &handle_http_request, (void*)PAGE_NOT_FOUND,
+			   MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)120,
+			   MHD_OPTION_END);
 
+  if(httpd_v4 == NULL) {
+    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv4) on port %d", port);
+    exit(-1);
+  }
+
+  /* ***************************** */
+  
+  httpd_v6 = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_IPv6,
+			      port, NULL, NULL, &handle_http_request, (void*)PAGE_NOT_FOUND,
+			      MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)120,
+			      MHD_OPTION_END);
+
+  if(httpd_v6 == NULL) {
+    ntopGlobals->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv6) on port %d", port);
+  }
+
+  /* ***************************** */
+
+  httpserver = this;
   ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
 				      port, docs_dir, scripts_dir);
 };
@@ -300,7 +318,8 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 /* ****************************************** */
 
 HTTPserver::~HTTPserver() {
-  MHD_stop_daemon(httpd);
+  if(httpd_v4) MHD_stop_daemon(httpd_v4);
+  if(httpd_v6) MHD_stop_daemon(httpd_v6);
 
   ntopGlobals->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
 };
