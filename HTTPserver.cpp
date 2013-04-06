@@ -286,44 +286,54 @@ static int handle_script_request(char *script_path,
 				 size_t *upload_data_size, void **ptr) {
   int ret = 0;
   lua_State *L = luaL_newstate();
-  FILE *tmp_file = NULL;
   MHD_Response *tmp_response;
-  
+  char *tmp_filename = tmpnam(NULL);
+  FILE *tmp_file;
+
   if(L == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
     return(page_not_found(connection, url));
-  } else {
-    /* Load base libraries */
-    luaL_openlibs(L);
-
-    /* Load custom classes */
-    lua_register_classes(L);
-
-    /* Register the connection in the state */
-    tmp_file = tmpfile();
-    lua_pushlightuserdata(L, (char*)tmp_file);
-    lua_setglobal(L, "tmp_file");
-
-    /* Put the GET params into the environment */
-    lua_newtable(L);
-    MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
-    lua_setglobal(L, "_GET"); /* Like in php */
-
-    /* Overload the standard Lua print() with ntop_lua_print that dumps data on HTTP server */
-    lua_register(L, "print", ntop_lua_print);
-
-    tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, fileno(tmp_file));
   }
+
+  /* Register the connection in the state */
+  if((tmp_filename == NULL) 
+     || ((tmp_file = fopen(tmp_filename, "w+")) == NULL)) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] tmpnam(%s) error %d [%d/%s]",
+				 tmp_filename ? tmp_filename : "", tmp_file, 
+				 errno, strerror(errno));
+    unlink(tmp_filename);
+    return(page_not_found(connection, url));
+  }
+
+  /* Load base libraries */
+  luaL_openlibs(L);
+
+  /* Load custom classes */
+  lua_register_classes(L);
+
+  lua_pushlightuserdata(L, (char*)tmp_file);
+  lua_setglobal(L, "tmp_file");
+
+  /* Put the GET params into the environment */
+  lua_newtable(L);
+  MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
+  lua_setglobal(L, "_GET"); /* Like in php */
+
+  /* Overload the standard Lua print() with ntop_lua_print that dumps data on HTTP server */
+  lua_register(L, "print", ntop_lua_print);
+
+  tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, fileno(tmp_file));
 
   if(luaL_dofile(L, script_path) == 0) {
     fflush(tmp_file);
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
     ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);    
-    MHD_destroy_response(tmp_response);
-  } else {
+  } else
     ret = page_error(connection, url, lua_tostring(L, -1));    
-  }
-
+  
+  MHD_destroy_response(tmp_response);
+  //fclose(tmp_file);
+  unlink(tmp_filename);
   lua_close(L);
 
   return(ret);
