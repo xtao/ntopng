@@ -115,8 +115,8 @@ static int ntop_dump_file(lua_State* vm) {
   if((fname = (char*)lua_tostring(vm, 1)) == NULL)     return(-1);
 
   if((f = fopen(fname, "r")) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: Unable to open file %s", fname);
-    return(-2);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open file %s", fname);
+    return(1);
   }
   
   while((fgets(tmp, sizeof(tmp), f)) != NULL)

@@ -1,6 +1,6 @@
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
-          <li><a href="#">Home</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="/interface_stats.lua">Interfaces</a></li>
           <li class="active"><a href="/hosts_stats.lua">Hosts</a></li>
         </ul>
@@ -18,6 +18,7 @@
 
       <div class="row-fluid marketing">
         <div class="span6">
+	<div id="table-servers"></div>
           <h4>Subheading</h4>
           <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
 

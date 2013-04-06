@@ -1,0 +1,26 @@
+
+.bar-chart {
+  background-color: #ffffff;
+  border: 3px dotted #dddddd;
+  font: 10px sans-serif;
+  height: 300px;
+  text-shadow: none;
+  width: 300px;
+}
+
+rect.system {
+  fill: rgb(70, 136, 71);
+}
+
+rect.irq {
+  fill: rgb(248, 148, 6);
+}
+
+rect.user {
+  fill: rgb(185, 74, 72);
+}
+
+rect.iowait {
+  fill: rgb(58, 135, 173);
+}
+

@@ -1,0 +1,27 @@
+
+.pie-chart {
+  background-color: #ffffff;
+  border: 3px dotted #dddddd;
+  font: 10px sans-serif;
+  height: 300px;
+  text-shadow: none;
+  width: 300px;
+}
+.pie-chart .total{
+  font-size: 18px;
+  font-weight: bold;
+}
+.pie-chart .units{
+  fill: gray;
+  font-size: 12px;
+}
+.pie-chart .label{
+  fill: #CCC;
+  font-size: 12px;
+  font-weight: bold;
+}
+.pie-chart .value{
+  font-size: 12px;
+  font-weight: bold;
+}
+

@@ -8,6 +8,12 @@
     <script src="/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
 
+
+    <script src="/d3.v3.min.js"></script>
+    <link href="/css/pie-chart.css" rel="stylesheet">
+    <link href="/css/bar-chart.css" rel="stylesheet"> 
+
+
  <style type="text/css">
       body {
         padding-top: 20px;
