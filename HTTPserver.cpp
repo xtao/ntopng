@@ -246,10 +246,10 @@ static void lua_register_classes(lua_State *L) {
     /* metatable = {} */
     luaL_newmetatable(L, ntop[i].class_name);
     meta_id = lua_gettop(L);
-    luaL_setfuncs(L, _meta, 0);
-    
+    luaL_register(L, NULL, _meta);
+
     /* metatable.__index = class_methods */
-    luaL_newlib(L, ntop[i].class_methods);
+    lua_newtable(L), luaL_register(L, NULL, ntop[i].class_methods);
     lua_setfield(L, meta_id, "__index");    
     
     /* metatable.__metatable = _meta */

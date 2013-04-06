@@ -13,14 +13,14 @@ LIBMICRO_HOME=./third-party/libmicrohttpd-0.9.26
 LIBMICRO_INC=-I$(LIBMICRO_HOME)/src/include/
 LIBMICROHTTPD=$(LIBMICRO_HOME)/src/daemon/.libs/libmicrohttpd.a
 ######
-LUA_HOME=./third-party/lua-5.2.2
-LUA_INC=-I$(LUA_HOME)/src
-LUA_LIB=$(LUA_HOME)/src/liblua.a
+LUAJIT_HOME=./third-party/LuaJIT-2.0.1
+LUAJIT_INC=-I$(LUAJIT_HOME)/src
+LUAJIT_LIB=$(LUAJIT_HOME)/src/libluajit.a
 ######
 ######
 TARGET = ntopng
-LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUA_LIB)
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUA_INC)
+LIBS = -lm $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUAJIT_LIB) @LINK_OPTS@
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUAJIT_INC)
 
 ifeq ($(OS),Linux)
 LIBS += -lrt
@@ -28,7 +28,7 @@ endif
 
 .PHONY: default all clean
 
-default: $(LIBNDPI) $(LUA_LIB) $(TARGET)
+default: $(LIBNDPI) $(LUAJIT_LIB) $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
@@ -49,8 +49,8 @@ $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; make
 
-$(LUA_LIB):
-	cd $(LUA_HOME); make generic
+$(LUAJIT_LIB):
+	cd $(LUAJIT_HOME); make
 
 $(LIBMICROHTTPD): 
 	cd $(LIBMICRO_HOME); ./configure; make

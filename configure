@@ -583,12 +583,12 @@ PACKAGE_URL=''
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-PYTHON_LIBS
-PYTHON_INCS
+LINK_OPTS
 SVN_RELEASE
 KERNEL
 DATE
 EXTN
+SYSTEM
 MACHINE
 target_alias
 host_alias
@@ -1671,6 +1671,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
+SYSTEM=`uname -s`
 
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
@@ -1679,7 +1680,13 @@ else
 fi
 
 DATE=`date +"%Y-%m-%d"`
-KERNEL=`uname -r`
+
+
+if test $SYSTEM = "Darwin"; then
+   if test $MACHINE = "x86_64"; then
+      LINK_OPTS="-pagezero_size 10000 -image_base 100000000"
+   fi
+fi
 
 umask 002
 ac_config_headers="$ac_config_headers config.h"

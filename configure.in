@@ -2,6 +2,7 @@ AC_INIT([Makefile.in], 1.0)
 
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
+SYSTEM=`uname -s`
 
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
@@ -10,19 +11,26 @@ else
 fi
 
 DATE=`date +"%Y-%m-%d"`
-KERNEL=`uname -r`
+
+
+dnl> http://luajit.org/install.html
+if test $SYSTEM = "Darwin"; then
+   if test $MACHINE = "x86_64"; then 
+      LINK_OPTS="-pagezero_size 10000 -image_base 100000000"
+   fi
+fi
 
 umask 002
 AC_CONFIG_HEADERS(config.h)
 
 AC_SUBST(MACHINE)
+AC_SUBST(SYSTEM)
 AC_SUBST(EXTN)
 AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 
-AC_SUBST(PYTHON_INCS)
-AC_SUBST(PYTHON_LIBS)
+AC_SUBST(LINK_OPTS)
 
 AC_CONFIG_FILES(Makefile)
 
