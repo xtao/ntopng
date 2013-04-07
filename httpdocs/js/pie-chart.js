@@ -49,7 +49,7 @@ function do_pie(name, update_url, url_params, units, refresh) {
 	filteredPieData = pieData.filter(filterData);
 	function filterData(element, index, array) {
 	    element.name = streakerDataAdded[index].label;
-	    element.value = streakerDataAdded[index].octetTotalCount;
+	    element.value = streakerDataAdded[index].value;
 	    totalOctets += element.value;
 	    return (element.value > 0);
 	}
@@ -265,7 +265,7 @@ function create_pie_chart(name, units) {
 
     //D3 helper function to populate pie slice parameters from array data
     var donut = d3.layout.pie().value(function(d){
-	    return d.octetTotalCount;
+	    return d.value;
 	});
 
     //D3 helper function to create colors from an ordinal scale

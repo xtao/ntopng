@@ -93,6 +93,24 @@ static int ntop_find_interface(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_ndpi_interface_stats(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  NdpiStats stats;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  ntop_interface->getnDPIStats(&stats);
+  stats.dumpToLua(ntop_interface, vm);
+ 
+  return(1);
+}
+
+/* ****************************************** */
+
 static void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -168,11 +186,12 @@ typedef struct {
 static const luaL_Reg ntop_interface_reg[] = {
   { "find",           ntop_find_interface },
   { "getStats",       ntop_get_interface_stats },
-  {NULL,           NULL}
+  { "getNdpiStats",   ntop_get_ndpi_interface_stats },
+  {NULL,              NULL}
 };
 
 static const luaL_Reg ntop_reg[] = {
-  { "dumpFile",           ntop_dump_file },
+  { "dumpFile",    ntop_dump_file },
   {NULL,           NULL}
 };
 

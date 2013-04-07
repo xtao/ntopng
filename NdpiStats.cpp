@@ -35,3 +35,30 @@ void NdpiStats::sumStats(NdpiStats *stats) {
     stats->bytes[i].sent += bytes[i].sent, stats->bytes[i].rcvd += bytes[i].rcvd;
   }
 }
+
+/* *************************************** */
+
+void NdpiStats::print(NetworkInterface *iface) {
+  for(int i=0; i<MAX_NDPI_PROTOS; i++) {
+    if(packets[i].sent || packets[i].rcvd)
+      printf("[%s] [pkts: %u/%u][bytes: %u/%u]\n", 
+	     iface->get_ndpi_proto_name(i),
+	     packets[i].sent, packets[i].rcvd,
+	     bytes[i].sent, bytes[i].rcvd);
+  }
+}
+
+/* *************************************** */
+
+void NdpiStats::dumpToLua(NetworkInterface *iface, lua_State* vm) {
+  lua_newtable(vm);
+
+  for(int i=0; i<MAX_NDPI_PROTOS; i++)
+    if(packets[i].sent || packets[i].rcvd) {
+      lua_pushstring(vm, iface->get_ndpi_proto_name(i));
+      lua_pushinteger(vm, packets[i].sent+packets[i].rcvd);
+      lua_settable(vm, -3);
+  }
+
+  lua_setglobal(vm, "ifstats");
+}

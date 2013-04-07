@@ -32,6 +32,8 @@ typedef struct {
   u_int32_t sent, rcvd;
 } TrafficCounter;
 
+class NetworkInterface;
+
 /* *************************************** */
 
 class NdpiStats {
@@ -42,18 +44,21 @@ class NdpiStats {
   NdpiStats();
 
   void sumStats(NdpiStats *stats);
+  void dumpToLua(lua_State* vm);
 
-  inline void incStats(bool is_data_sent, u_int pkt_len, u_int16_t proto_id) {
+  inline void incStats(u_int proto_id,
+		       u_int32_t sent_packets, u_int32_t sent_bytes,
+		       u_int32_t rcvd_packets, u_int32_t rcvd_bytes) {
     if(proto_id < (MAX_NDPI_PROTOS)) {
-      if(is_data_sent)
-	packets[proto_id].sent++, bytes[proto_id].sent += pkt_len;
-      else
-	packets[proto_id].sent++, bytes[proto_id].sent += pkt_len;
+      packets[proto_id].sent += sent_packets, bytes[proto_id].sent += sent_bytes;
+      packets[proto_id].rcvd += rcvd_packets, bytes[proto_id].rcvd += rcvd_bytes;
     }
   };
 
   inline TrafficCounter* getPackets(u_int16_t proto_id) { if(proto_id < (MAX_NDPI_PROTOS)) return(&packets[proto_id]); else return(NULL); };
   inline TrafficCounter* getBytes(u_int16_t proto_id)   { if(proto_id < (MAX_NDPI_PROTOS)) return(&bytes[proto_id]);   else return(NULL); };
+  void print(NetworkInterface *iface);
+  void dumpToLua(NetworkInterface *iface, lua_State* vm);
 };
 
 #endif /* _NDPI_STATS_H_ */

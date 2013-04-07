@@ -30,7 +30,7 @@ Flow::Flow(NetworkInterface *_iface,
   iface = _iface, vlanId = _vlanId, protocol = _protocol,
     lower_ip = _lower_ip, lower_port = _lower_port,
     upper_ip = _upper_ip, upper_port = _upper_port;
-  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = 0;
+  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;

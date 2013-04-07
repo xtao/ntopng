@@ -24,23 +24,12 @@
 
 #include "ntop_includes.h"
 
-typedef struct ipAddress {
-  u_int8_t ipVersion:3 /* Either 4 or 6 */, 
-    localHost:1,
-    notUsed:4 /* Future use */;
-
-  union {
-    struct in6_addr ipv6;
-    u_int32_t ipv4; /* Host byte code */
-  } ipType;
-} IpAddress;
-
-
 class Host {
  private:
   u_int16_t num_uses;
-  IpAddress ip;
+  IpAddress *ip;
   NdpiStats ndpiStats;
+  Host *hash_next;
 
   void initialize();
 
@@ -50,15 +39,23 @@ class Host {
   Host(struct in6_addr _ipv6);
   ~Host();
 
-  inline void set_ipv4(u_int32_t _ipv4)       { ip.ipVersion = 4, ip.ipType.ipv4 = _ipv4; }
-  inline void set_ipv6(struct in6_addr _ipv6) { ip.ipVersion = 6, memcpy(&ip.ipType.ipv6,  &_ipv6, sizeof(_ipv6)); }
+  inline void set_ipv4(u_int32_t _ipv4)       { ip->set_ipv4(_ipv4); }
+  inline void set_ipv6(struct in6_addr _ipv6) { ip->set_ipv6(_ipv6); }
+  inline u_int32_t key()                      { return(ip->key());   }
+  inline IpAddress* get_ip()                  { return(ip);          }
 
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
 
-  void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
-  int compare(Host *node);
-  inline NdpiStats* get_ndpi_stats() { return(&ndpiStats); };
+  inline void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
+    ndpiStats.incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
+  }
+
+  inline int compare(Host *node)     { return(ip->compare(node->ip)); };
+  inline NdpiStats* get_ndpi_stats() { return(&ndpiStats);            };
+
+  inline Host* next()           { return(hash_next); };
+  inline void set_next(Host *n) { hash_next = n;     };
 };
 
 #endif /* _HOST_H_ */

@@ -42,7 +42,7 @@ class NetworkInterface {
   pthread_t pollLoop;
   /* Hosts */
   u_int32_t num_hosts;
-  Host *hosts_root;
+  HostHash *hosts_hash;
   Mutex *host_add_walk_lock, *flow_add_walk_lock[NUM_ROOTS];
   struct ndpi_detection_module_struct *ndpi_struct;
 
@@ -54,7 +54,7 @@ class NetworkInterface {
   void startPacketPolling();
   void shutdown();
 
-
+  inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };

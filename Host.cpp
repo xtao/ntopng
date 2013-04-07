@@ -24,55 +24,34 @@
 /* *************************************** */
 
 Host::Host() {
-  ;
+  ip = new IpAddress(0);
 }
 
 /* *************************************** */
 
 Host::Host(u_int32_t _ipv4) {
-  set_ipv4(_ipv4);
+  ip = new IpAddress(_ipv4);
   initialize();
 }
 
 /* *************************************** */
 
 Host::Host(struct in6_addr _ipv6) {
-  set_ipv6(_ipv6);
+  ip = new IpAddress(_ipv6);
   initialize();
 }
 
 /* *************************************** */
 
 Host::~Host() {
-
+  delete ip;
 }
 
 /* *************************************** */
 
 void Host::initialize() {
-  num_uses = 0;
-
+  num_uses = 0, hash_next = NULL;
   /* FIX - set ip.localHost */
-}
-
-/* *************************************** */
-
-int Host::compare(Host *node) {
-  if(ip.ipVersion < node->ip.ipVersion) return(-1); else if(ip.ipVersion > node->ip.ipVersion) return(1);
-  
-  if(ip.ipVersion == 4)
-    return(memcmp(&ip.ipType.ipv4, &node->ip.ipType.ipv4, sizeof(u_int32_t)));
-  else
-    return(memcmp(&ip.ipType.ipv6, &node->ip.ipType.ipv6, sizeof(struct in6_addr)));
-}
-
-/* *************************************** */
-
-void Host::incStats(u_int ndpi_proto, 
-		    u_int32_t sent_packets, u_int32_t sent_bytes, 
-		    u_int32_t rcvd_packets, u_int32_t rcvd_bytes) {
-
-
 }
 
 /* *************************************** */

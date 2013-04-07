@@ -91,11 +91,22 @@ int main(int argc, char *argv[]) {
   signal(SIGINT, sigproc);
 
   iface->startPacketPolling();
-  iface->dumpFlows();
 
-  //while(1) sleep(1);
 
+#if 1
+  while(1) {
+    NdpiStats stats;
+
+    sleep(3);
+    iface->updateHostStats();
+    iface->getnDPIStats(&stats);
+    stats.print(iface);
+
+    //iface->dumpFlows();
+  }
+#else
   sleep(3);
+#endif
 
   sigproc(0);
   return(0);

@@ -75,7 +75,7 @@ NetworkInterface::NetworkInterface(char *name) {
 
   memset(ndpi_flows_root, 0, sizeof(ndpi_flows_root));
   ndpi_flow_count = 0;
-  hosts_root = NULL, num_hosts = 0;
+  hosts_hash = new HostHash(4096), num_hosts = 0;
 
   host_add_walk_lock = new Mutex();
 
@@ -96,25 +96,14 @@ NetworkInterface::NetworkInterface(char *name) {
 
 /* **************************************************** */
 
-static void hosts_node_free(const void *a, ndpi_VISIT which, int depth, void *user_data) {
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    /* Avoid walking the same node multiple times */
-    delete (Host*)a;
-    ((NetworkInterface*)user_data)->dec_num_hosts();
-  }
-}
-
-/* **************************************************** */
-
 NetworkInterface::~NetworkInterface() {
   if(pcap_handle)
     pcap_close(pcap_handle);
 
-  ndpi_twalk(hosts_root, hosts_node_free, this);
-
   free(ifname);
   delete ifStats;
 
+  delete hosts_hash;
   delete host_add_walk_lock;
 
   for(int i=0; i<NUM_ROOTS; i++) delete flow_add_walk_lock[i];
@@ -371,39 +360,30 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
-static int hosts_node_cmpv4(const void *a, const void *b) {
-  Host *fa = (Host*)a;
-  Host *fb = (Host*)b;
-
-  return(fa->compare(fb));
-}
-
-/* **************************************************** */
-
 void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
-  Host h;
-  
-  // FIX - Add IPv6
-  h.set_ipv4(flow->get_src_ipv4());
-  (*src) = (Host*)ndpi_tfind((void*)&h, (void*)&hosts_root, hosts_node_cmpv4);
+  IpAddress ip;
+
+  // FIX - Add IPv6 support
+  ip.set_ipv4(flow->get_src_ipv4());
+  (*src) = hosts_hash->get(&ip);
 
   if((*src) == NULL) {
     if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
       (*src) = new Host(flow->get_src_ipv4());
-      ndpi_tsearch((void*)(*src), (void**)&hosts_root, hosts_node_cmpv4); /* Add */
+      hosts_hash->add(*src);
     } else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
   }
 
   /* ***************************** */
 
-  h.set_ipv4(flow->get_dst_ipv4());
-  (*dst) = (Host*)ndpi_tfind((void*)&h, (void*)&hosts_root, hosts_node_cmpv4);
+  ip.set_ipv4(flow->get_dst_ipv4());
+  (*dst) = hosts_hash->get(&ip);
 
   if((*dst) == NULL) {
     if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
       (*dst) = new Host(flow->get_dst_ipv4());
-      ndpi_tsearch((void*)(*dst), (void*)&hosts_root, hosts_node_cmpv4); /* Add */
+      hosts_hash->add(*dst);
     } else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
   }
@@ -411,14 +391,10 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
 
 /* **************************************************** */
 
-static void hosts_node_sum_protos(const void *a, ndpi_VISIT which, int depth, void *user_data) {  
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    /* Avoid walking the same node multiple times */
-    Host *h = (Host*)a;
-    NdpiStats *stats = (NdpiStats*)user_data;
-
-    h->get_ndpi_stats()->sumStats(stats);
-  }
+static void hosts_node_sum_protos(Host *h, void *user_data) {
+  NdpiStats *stats = (NdpiStats*)user_data;
+  
+  h->get_ndpi_stats()->sumStats(stats);
 }
 
 /* **************************************************** */
@@ -427,15 +403,17 @@ void NetworkInterface::getnDPIStats(NdpiStats *stats) {
   memset(stats, 0, sizeof(NdpiStats));
 
   host_add_walk_lock->lock(__FUNCTION__, __LINE__);
-  ndpi_twalk(hosts_root, hosts_node_sum_protos, stats);
+  hosts_hash->walk(hosts_node_sum_protos, (void*)stats);
   host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
 }
 
 /* **************************************************** */
 
-static void flow_update_hosts_stats(const void *a, ndpi_VISIT which, int depth, void *user_data) {
+static void flow_update_hosts_stats(const void *node, ndpi_VISIT which, int depth, void *user_data) {
   if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    ((Flow*)a)->update_hosts_stats();
+    struct Flow *flow = *(Flow**)node;
+
+    flow->update_hosts_stats();
   }
 }
 

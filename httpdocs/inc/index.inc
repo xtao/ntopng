@@ -35,8 +35,8 @@
    window.onload=function() {
    var refresh = 3000 /* ms */;
 
-   do_pie("#topHosts", 'ajax.txt', { if: "" }, "kb", refresh);
-   do_pie("#topApplicationProtocols", 'ajax2.txt', { if: "" }, "MB", refresh);
+   do_pie("#topHosts", '/ajax.txt', { if: "" }, "kb", refresh);
+   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "Packets", refresh);
    }
 
 </script>
