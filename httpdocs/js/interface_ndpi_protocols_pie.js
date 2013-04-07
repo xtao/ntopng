@@ -1,4 +1,11 @@
-var mem_array_size = 3; /* used, free, cached */
+var pie_w = 300;
+var pie_h = 300;
+var pie_r = 100;
+var pie_ir = 45;
+var pie_text_offset = 14;
+var pie_tween_duration = 250;
+   
+var mem_array_size = 4; /* used, free, cached */
 var mem_lines, mem_value_labels, mem_name_labels;
 var mem_pie_data = [];       
 var mem_old_pie_data = [];
@@ -20,11 +27,15 @@ var mem_arc = d3.svg.arc()
 
 var mem_streaker_data_added;
 
+var myCars= [ { item_name: "free", item_value: mem_free }, { item_name: "cached", item_value: mem_cached },  { item_name: "3cached", item_value: mem_cached } ];
+
 function fill_mem_array(value, index, array) {
+
   switch(index) {
     case 0: return { item_name: "used", item_value: mem_used };
 	case 1: return { item_name: "free", item_value: mem_free };
 	case 2: return { item_name: "cached", item_value: mem_cached };
+	case 3: return { item_name: "3cached", item_value: mem_cached };
 	default: return { item_name: "unknown", item_value: 0 };
   }
 }
@@ -72,7 +83,7 @@ var mem_total_units = mem_center_group.append("svg:text")
     .text("MB");
 
 function mem_update() {
-    mem_streaker_data_added = d3.range(mem_array_size).map(fill_mem_array);
+    mem_streaker_data_added = d3.range(myCars.length).map(fill_mem_array);
 
     mem_old_pie_data = mem_filtered_pie_data;
     mem_pie_data = mem_donut(mem_streaker_data_added);

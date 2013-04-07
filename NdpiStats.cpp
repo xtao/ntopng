@@ -23,13 +23,7 @@
 
 /* *************************************** */
 
-InterfaceStats::InterfaceStats() {
-  numPkts = 0, numBytes = 0;
+NdpiStats::NdpiStats() {
+  memset(numPkts, 0, sizeof(numPkts)), memset(numBytes, 0, sizeof(numBytes));
 }
 
-/* *************************************** */
-
-void InterfaceStats::printStats() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
-				      numBytes, numPkts);
-}

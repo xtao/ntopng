@@ -25,7 +25,8 @@
 #define ETH_P_IP 0x0800
 #endif
 
-#define GTP_U_V1_PORT      2152
+#define GTP_U_V1_PORT              2152
+#define MAX_NUM_INTERFACE_HOSTS   65536
 
 /* **************************************************** */
 
@@ -52,6 +53,17 @@ NetworkInterface::NetworkInterface(char *name) {
 
   memset(ndpi_flows_root, 0, sizeof(ndpi_flows_root));
   ndpi_flow_count = 0;
+  hosts_root = NULL, num_hosts = 0;
+}
+
+/* **************************************************** */
+
+static void hosts_node_free(const void *a, ndpi_VISIT which, int depth, void *user_data) {
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    /* Avoid walking the same node multiple times */
+    delete (Host*)a;
+    ((NetworkInterface*)user_data)->dec_num_hosts();
+  }
 }
 
 /* **************************************************** */
@@ -59,6 +71,8 @@ NetworkInterface::NetworkInterface(char *name) {
 NetworkInterface::~NetworkInterface() {
   if(pcap_handle)
     pcap_close(pcap_handle);
+
+  ndpi_twalk(hosts_root, hosts_node_free, this);
 
   free(ifname);
   delete ifStats;
@@ -75,7 +89,7 @@ static int node_cmp(const void *a, const void *b) {
 
 /* **************************************************** */
 
-static void node_proto_guess_walker(const void *node, ndpi_VISIT which, int depth) {
+static void node_proto_guess_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
   /* Avoid walking the same node multiple times */
   if((which == ndpi_preorder) || (which == ndpi_leaf)) {
     struct Flow *flow = *(Flow**)node;
@@ -88,9 +102,8 @@ static void node_proto_guess_walker(const void *node, ndpi_VISIT which, int dept
 
 void NetworkInterface::dumpFlows() {
   for (int i=0; i<NUM_ROOTS; i++) {
-    ndpi_twalk(ndpi_flows_root[i], node_proto_guess_walker);
+    ndpi_twalk(ndpi_flows_root[i], node_proto_guess_walker, NULL);
   }
-
 }
 
 /* **************************************************** */
@@ -150,7 +163,7 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
     upper_port = 0;
   }
 
-  flowKey = new Flow(vlan_id, iph->protocol, lower_ip, lower_port, upper_ip, upper_port);
+  flowKey = new Flow(this, vlan_id, iph->protocol, lower_ip, lower_port, upper_ip, upper_port);
   idx = (vlan_id + lower_ip + upper_ip + iph->protocol + lower_port + upper_port) % NUM_ROOTS;
   ret = (void*)ndpi_tfind(flowKey, (void*)&ndpi_flows_root[idx], node_cmp);
 
@@ -293,7 +306,6 @@ void NetworkInterface::startPacketPolling() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
 
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
-
 }
 
 /* **************************************************** */
@@ -304,3 +316,63 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
+static int hosts_node_cmpv4(const void *a, const void *b) {
+  u_int32_t fa = *(u_int32_t*)a;
+  u_int32_t fb = *(u_int32_t*)b;
+
+  if(fa == fb)
+    return(0);
+  else if(fa < fb)
+    return(-1);
+  else
+    return(1);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
+  u_int32_t key;
+  
+  // FIX - Add IPv6
+  key = flow->get_src_ipv4();
+  (*src) = (Host*)ndpi_tfind((void*)&key, (void*)&hosts_root, hosts_node_cmpv4);
+
+  if((*src) == NULL) {
+    if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
+      (*src) = new Host(flow->get_src_ipv4());
+      ndpi_tsearch((void*)(*src), (void**)&hosts_root, hosts_node_cmpv4); /* Add */
+    } else
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+  }
+
+  /* ***************************** */
+
+  key = flow->get_dst_ipv4();
+  (*dst) = (Host*)ndpi_tfind((void*)&key, (void*)&hosts_root, hosts_node_cmpv4);
+
+  if((*dst) == NULL) {
+    if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
+      (*dst) = new Host(flow->get_dst_ipv4());
+      ndpi_tsearch((void*)(*dst), (void**)&hosts_root, hosts_node_cmpv4); /* Add */
+    } else
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+  }
+}
+
+/* **************************************************** */
+
+static void hosts_node_sum_protos(const void *a, ndpi_VISIT which, int depth, void *user_data) {  
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    /* Avoid walking the same node multiple times */
+    Host *h = (Host*)a;
+    NdpiStats *stats = (NdpiStats*)user_data;
+
+    // TODO
+  }
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getnDPIStats(NdpiStats *stats) {
+  ndpi_twalk(hosts_root, hosts_node_sum_protos, stats);
+}

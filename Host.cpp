@@ -23,13 +23,43 @@
 
 /* *************************************** */
 
-InterfaceStats::InterfaceStats() {
-  numPkts = 0, numBytes = 0;
+Host::Host(u_int32_t _ipv4) {
+  ip.ipVersion = 4, ip.ipType.ipv4 = _ipv4;
+  initialize();
 }
 
 /* *************************************** */
 
-void InterfaceStats::printStats() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
-				      numBytes, numPkts);
+Host::Host(struct in6_addr _ipv6) {
+  ip.ipVersion = 6, memcpy(&ip.ipType.ipv6,  &_ipv6, sizeof(_ipv6));
+  initialize();
 }
+
+/* *************************************** */
+
+Host::~Host() {
+
+}
+
+/* *************************************** */
+
+void Host::initialize() {
+  num_uses = 0;
+
+  /* FIX - set ip.localHost */
+}
+
+/* *************************************** */
+
+int Host::compare(Host *node) {
+  if(ip.ipVersion < node->ip.ipVersion) return(-1); else if(ip.ipVersion > node->ip.ipVersion) return(1);
+  
+  if(ip.ipVersion == 4)
+    return(memcmp(&ip.ipType.ipv4, &node->ip.ipType.ipv4, sizeof(u_int32_t)));
+  else
+    return(memcmp(&ip.ipType.ipv6, &node->ip.ipType.ipv6, sizeof(struct in6_addr)));
+}
+
+/* *************************************** */
+
+

@@ -19,17 +19,30 @@
  *
  */
 
+#ifndef _LUA_H_
+#define _LUA_H_
+
 #include "ntop_includes.h"
 
-/* *************************************** */
+/* ******************************* */
 
-InterfaceStats::InterfaceStats() {
-  numPkts = 0, numBytes = 0;
-}
+class Lua {
+ private:
+  lua_State *L;
 
-/* *************************************** */
+ public:
+  Lua();
+  ~Lua();
 
-void InterfaceStats::printStats() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
-				      numBytes, numPkts);
-}
+  int handle_script_request(char *script_path,
+			    void *cls,
+			    struct MHD_Connection *connection,
+			    const char *url,
+			    const char *method,
+			    const char *version,
+			    const char *upload_data,
+			    size_t *upload_data_size, void **ptr);
+  };
+
+
+#endif /* _LUA_H_ */

@@ -19,17 +19,39 @@
  *
  */
 
+#ifndef _HOST_H_
+#define _HOST_H_
+
 #include "ntop_includes.h"
 
-/* *************************************** */
+typedef struct ipAddress {
+  u_int8_t ipVersion:3 /* Either 4 or 6 */, 
+    localHost:1,
+    notUsed:4 /* Future use */;
 
-InterfaceStats::InterfaceStats() {
-  numPkts = 0, numBytes = 0;
-}
+  union {
+    struct in6_addr ipv6;
+    u_int32_t ipv4; /* Host byte code */
+  } ipType;
+} IpAddress;
 
-/* *************************************** */
 
-void InterfaceStats::printStats() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
-				      numBytes, numPkts);
-}
+class Host {
+ private:
+  u_int16_t num_uses;
+  IpAddress ip;
+
+  void initialize();
+
+ public:
+  Host(u_int32_t _ipv4);
+  Host(struct in6_addr _ipv6);
+  ~Host();
+
+  void incUses() { num_uses++; }
+  void decUses() { num_uses--; }
+
+  int compare(Host *node);
+};
+
+#endif /* _HOST_H_ */

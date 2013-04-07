@@ -72,9 +72,12 @@ extern "C" {
 #include "Trace.h"
 #include "NtopGlobals.h"
 #include "Mutex.h"
+#include "Host.h"
 #include "Flow.h"
 #include "InterfaceStats.h"
+#include "NdpiStats.h"
 #include "NetworkInterface.h"
+#include "Lua.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
 

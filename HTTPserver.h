@@ -39,5 +39,7 @@ class HTTPserver {
   inline char* get_scripts_dir() { return(scripts_dir); };
 };
 
+extern int page_not_found(struct MHD_Connection *connection, const char *url);
+extern int page_error(struct MHD_Connection *connection, const char *url, const char *err);
 
 #endif /* _HTTP_SERVER_H_ */

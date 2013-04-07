@@ -24,6 +24,7 @@
 
 #include "ntop_includes.h"
 
+class NetworkInterface;
 
 class Flow {
  private:
@@ -38,13 +39,16 @@ class Flow {
   void *src_id, *dst_id;
   /* Stats */
   u_int32_t packets, bytes;
+  Host *src_host, *dst_host;
+  NetworkInterface *iface;
 
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
 
  public:
-  Flow(u_int16_t _vlanId, u_int8_t _protocol, 
+  Flow(NetworkInterface *_iface,
+       u_int16_t _vlanId, u_int8_t _protocol, 
        u_int32_t _lower_ip, u_int16_t _lower_port,
        u_int32_t _upper_ip, u_int16_t _upper_port);
   ~Flow();
@@ -56,6 +60,8 @@ class Flow {
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };
   inline void* get_dst_id()                       { return(dst_id);    };
+  inline u_int32_t get_src_ipv4()                 { return(lower_ip);  };
+  inline u_int32_t get_dst_ipv4()                 { return(upper_ip);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   int compare(Flow *fb);

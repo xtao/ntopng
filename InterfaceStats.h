@@ -30,7 +30,6 @@ class InterfaceStats {
 
  public:
   InterfaceStats();
-  ~InterfaceStats();
   
   inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  
   inline u_int64_t getNumPkts()       { return(numPkts);                };

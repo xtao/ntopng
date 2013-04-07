@@ -1,3 +1,4 @@
+
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
           <li class="active"><a href="#">Home</a></li>
@@ -18,18 +19,24 @@
 
       <div class="row-fluid marketing">
         <div class="span6">
-	<div class="pie-chart" id="mem-pie-chart"></div>
+          <h4>Top Hosts</h4>
+	  <div class="pie-chart" id="topHosts"></div>
         </div>
-
         <div class="span6">
-          <h4>Subheading</h4>
-          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
-
-          <h4>Subheading</h4>
-          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
-
-          <h4>Subheading</h4>
-          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+          <h4>Top Application Protocols</h4>
+	  <div class="pie-chart" id="topApplicationProtocols"></div>
         </div>
+
       </div>
 
+
+<script type='text/javascript'>
+
+   window.onload=function() {
+   var refresh = 3000 /* ms */;
+
+   do_pie("#topHosts", 'ajax.txt', { if: "" }, "kb", refresh);
+   do_pie("#topApplicationProtocols", 'ajax2.txt', { if: "" }, "MB", refresh);
+   }
+
+</script>

@@ -23,14 +23,19 @@
 
 /* *************************************** */
 
-Flow::Flow(u_int16_t _vlanId, u_int8_t _protocol, 
+Flow::Flow(NetworkInterface *_iface,
+	   u_int16_t _vlanId, u_int8_t _protocol, 
 	   u_int32_t _lower_ip, u_int16_t _lower_port,
 	   u_int32_t _upper_ip, u_int16_t _upper_port) {
-  vlanId = _vlanId, protocol = _protocol,
+  iface = _iface, vlanId = _vlanId, protocol = _protocol,
     lower_ip = _lower_ip, lower_port = _lower_port,
     upper_ip = _upper_ip, upper_port = _upper_port;
   packets = bytes = 0, detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
+
+  iface->findFlowHosts(this, &src_host, &dst_host);
+  if(src_host) src_host->incUses();
+  if(dst_host) dst_host->incUses();
 }
 
 /* *************************************** */
@@ -52,6 +57,9 @@ void Flow::deleteFlowMemory() {
   if(ndpi_flow) free(ndpi_flow);
   if(src_id)    free(src_id);
   if(dst_id)    free(dst_id);
+
+  if(src_host) src_host->decUses();
+  if(dst_host) dst_host->decUses();
 }
 
 /* *************************************** */

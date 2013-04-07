@@ -40,6 +40,9 @@ class NetworkInterface {
   struct ndpi_flow *ndpi_flows_root[NUM_ROOTS];
   u_int32_t ndpi_flow_count;
   pthread_t pollLoop;
+  /* Hosts */
+  u_int32_t num_hosts;
+  Host *hosts_root;
 
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize);
 
@@ -53,11 +56,14 @@ class NetworkInterface {
   inline int get_datalink()           { return(pcap_datalink_type);      };
   inline pcap_t* get_pcap_handle()    { return(pcap_handle);             };
 
+  void findFlowHosts(Flow *flow, Host **src, Host **dst);
   void packet_processing(const u_int64_t time, u_int16_t vlan_id,
 			 const struct ndpi_iphdr *iph,
 			 u_int16_t ipsize, u_int16_t rawsize);
   void dumpFlows();
-
+  inline u_int32_t get_num_hosts()   { return(num_hosts);                };
+  inline void      dec_num_hosts()   { num_hosts--;                      };
+  void getnDPIStats(NdpiStats *stats);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */
