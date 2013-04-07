@@ -23,15 +23,21 @@
 
 /* *************************************** */
 
+Host::Host() {
+  ;
+}
+
+/* *************************************** */
+
 Host::Host(u_int32_t _ipv4) {
-  ip.ipVersion = 4, ip.ipType.ipv4 = _ipv4;
+  set_ipv4(_ipv4);
   initialize();
 }
 
 /* *************************************** */
 
 Host::Host(struct in6_addr _ipv6) {
-  ip.ipVersion = 6, memcpy(&ip.ipType.ipv6,  &_ipv6, sizeof(_ipv6));
+  set_ipv6(_ipv6);
   initialize();
 }
 

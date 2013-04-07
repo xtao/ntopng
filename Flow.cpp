@@ -178,17 +178,21 @@ void Flow::print() {
 void Flow::update_hosts_stats() {
   if(detection_completed) {
     u_int32_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
-    u_int32_t diff_packets, diff_bytes;
+    u_int32_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
     
     sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
-    diff_packets = sent_packets - cli2srv_last_packets, diff_bytes = sent_bytes - cli2srv_last_bytes;
+    diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
     cli2srv_last_packets = sent_packets, cli2srv_last_bytes = sent_bytes;
     
     rcvd_packets = srv2cli_packets, rcvd_bytes = srv2cli_bytes;
-    diff_packets = rcvd_packets - srv2cli_last_packets, diff_bytes = rcvd_bytes - srv2cli_last_bytes;
+    diff_rcvd_packets = rcvd_packets - srv2cli_last_packets, diff_rcvd_bytes = rcvd_bytes - srv2cli_last_bytes;
     srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
     
-    if(src_host) src_host->incStats(detected_protocol, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
-    if(dst_host) dst_host->incStats(detected_protocol, rcvd_packets, rcvd_bytes, sent_packets, sent_bytes);
+    if(src_host)
+      src_host->incStats(detected_protocol, diff_sent_packets, diff_sent_bytes, 
+			 diff_rcvd_packets, diff_rcvd_bytes);
+    if(dst_host) 
+      dst_host->incStats(detected_protocol, diff_rcvd_packets, diff_rcvd_bytes, 
+			 diff_sent_packets, diff_sent_bytes);
   }
 }

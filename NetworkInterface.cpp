@@ -372,25 +372,20 @@ void NetworkInterface::shutdown() {
 /* **************************************************** */
 
 static int hosts_node_cmpv4(const void *a, const void *b) {
-  u_int32_t fa = *(u_int32_t*)a;
-  u_int32_t fb = *(u_int32_t*)b;
+  Host *fa = (Host*)a;
+  Host *fb = (Host*)b;
 
-  if(fa == fb)
-    return(0);
-  else if(fa < fb)
-    return(-1);
-  else
-    return(1);
+  return(fa->compare(fb));
 }
 
 /* **************************************************** */
 
 void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
-  u_int32_t key;
+  Host h;
   
   // FIX - Add IPv6
-  key = flow->get_src_ipv4();
-  (*src) = (Host*)ndpi_tfind((void*)&key, (void*)&hosts_root, hosts_node_cmpv4);
+  h.set_ipv4(flow->get_src_ipv4());
+  (*src) = (Host*)ndpi_tfind((void*)&h, (void*)&hosts_root, hosts_node_cmpv4);
 
   if((*src) == NULL) {
     if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
@@ -402,13 +397,13 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
 
   /* ***************************** */
 
-  key = flow->get_dst_ipv4();
-  (*dst) = (Host*)ndpi_tfind((void*)&key, (void*)&hosts_root, hosts_node_cmpv4);
+  h.set_ipv4(flow->get_dst_ipv4());
+  (*dst) = (Host*)ndpi_tfind((void*)&h, (void*)&hosts_root, hosts_node_cmpv4);
 
   if((*dst) == NULL) {
     if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
       (*dst) = new Host(flow->get_dst_ipv4());
-      ndpi_tsearch((void*)(*dst), (void**)&hosts_root, hosts_node_cmpv4); /* Add */
+      ndpi_tsearch((void*)(*dst), (void*)&hosts_root, hosts_node_cmpv4); /* Add */
     } else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
   }
