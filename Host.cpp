@@ -62,4 +62,11 @@ int Host::compare(Host *node) {
 
 /* *************************************** */
 
+void Host::incStats(u_int ndpi_proto, 
+		    u_int32_t sent_packets, u_int32_t sent_bytes, 
+		    u_int32_t rcvd_packets, u_int32_t rcvd_bytes) {
 
+
+}
+
+/* *************************************** */

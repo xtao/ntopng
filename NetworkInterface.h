@@ -43,14 +43,22 @@ class NetworkInterface {
   /* Hosts */
   u_int32_t num_hosts;
   Host *hosts_root;
+  Mutex *host_add_walk_lock, *flow_add_walk_lock[NUM_ROOTS];
+  struct ndpi_detection_module_struct *ndpi_struct;
 
-  Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize);
+  Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 
  public:
   NetworkInterface(char *name);
   ~NetworkInterface();
   void startPacketPolling();
   void shutdown();
+
+
+  inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
+  inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
+  inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
+
   inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
   inline InterfaceStats* getStats()   { return(ifStats);                 };
   inline int get_datalink()           { return(pcap_datalink_type);      };
@@ -64,6 +72,7 @@ class NetworkInterface {
   inline u_int32_t get_num_hosts()   { return(num_hosts);                };
   inline void      dec_num_hosts()   { num_hosts--;                      };
   void getnDPIStats(NdpiStats *stats);
+  void updateHostStats();
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

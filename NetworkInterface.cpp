@@ -28,10 +28,32 @@
 #define GTP_U_V1_PORT              2152
 #define MAX_NUM_INTERFACE_HOSTS   65536
 
+/* **************************************** */
+
+static void debug_printf(u_int32_t protocol, void *id_struct,
+			 ndpi_log_level_t log_level,
+			 const char *format, ...) {
+}
+
+/* **************************************** */
+
+static void *malloc_wrapper(unsigned long size)
+{
+  return malloc(size);
+}
+
+/* **************************************** */
+
+static void free_wrapper(void *freeable)
+{
+  free(freeable);
+}
+
 /* **************************************************** */
 
 NetworkInterface::NetworkInterface(char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+  NDPI_PROTOCOL_BITMASK all;
 
   ifname = strdup(name);
   ifStats = new InterfaceStats();
@@ -54,6 +76,22 @@ NetworkInterface::NetworkInterface(char *name) {
   memset(ndpi_flows_root, 0, sizeof(ndpi_flows_root));
   ndpi_flow_count = 0;
   hosts_root = NULL, num_hosts = 0;
+
+  host_add_walk_lock = new Mutex();
+
+  // init global detection structure
+  ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(), 
+					   malloc_wrapper, free_wrapper, debug_printf);
+  if (ndpi_struct == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
+    exit(-1);
+  }
+
+  // enable all protocols
+  NDPI_BITMASK_SET_ALL(all);
+  ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
+
+  for (int i=0; i<NUM_ROOTS; i++) flow_add_walk_lock[i] = new Mutex();
 }
 
 /* **************************************************** */
@@ -76,6 +114,12 @@ NetworkInterface::~NetworkInterface() {
 
   free(ifname);
   delete ifStats;
+
+  delete host_add_walk_lock;
+
+  for(int i=0; i<NUM_ROOTS; i++) delete flow_add_walk_lock[i];
+
+  ndpi_exit_detection_module(ndpi_struct, free_wrapper);
 }
 
 /* **************************************************** */
@@ -108,7 +152,7 @@ void NetworkInterface::dumpFlows() {
 
 /* **************************************************** */
 
-Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize) {
+Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction) {
   u_int32_t idx;
   u_int16_t l4_packet_len;
   struct ndpi_tcphdr *tcph = NULL;
@@ -163,6 +207,7 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
     upper_port = 0;
   }
 
+  // TODO - Remove this allocation per packet
   flowKey = new Flow(this, vlan_id, iph->protocol, lower_ip, lower_port, upper_ip, upper_port);
   idx = (vlan_id + lower_ip + upper_ip + iph->protocol + lower_port + upper_port) % NUM_ROOTS;
   ret = (void*)ndpi_tfind(flowKey, (void*)&ndpi_flows_root[idx], node_cmp);
@@ -180,8 +225,17 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
       return(flowKey);
     }
   } else {
+    Flow *f = *(Flow**)ret;
+
     delete flowKey;
-    return(*(Flow**)ret);
+
+    if((f->get_src_ipv4() == lower_ip) && (f->get_dst_ipv4() == upper_ip)
+       && (f->get_src_port() == lower_port) && (f->get_dst_port() == upper_port))
+      *src2dst_direction = true;
+    else
+      *src2dst_direction = false;
+
+    return(f);
   }
 }
 
@@ -191,10 +245,11 @@ void NetworkInterface::packet_processing(const u_int64_t time, u_int16_t vlan_id
 					 const struct ndpi_iphdr *iph,
 					 u_int16_t ipsize, u_int16_t rawsize)
 {
-  Flow *flow = getFlow(vlan_id, iph, ipsize);
+  bool src2dst_direction;
+  Flow *flow = getFlow(vlan_id, iph, ipsize, &src2dst_direction);
   u_int16_t frag_off = ntohs(iph->frag_off);
 
-  if(flow == NULL) return; else flow->incStats(rawsize);
+  if(flow == NULL) return; else flow->incStats(src2dst_direction, rawsize);
   if(flow->isDetectionCompleted()) return;
 
   // only handle unfragmented packets
@@ -203,7 +258,7 @@ void NetworkInterface::packet_processing(const u_int64_t time, u_int16_t vlan_id
     struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
 
-    flow->setDetectedProtocol(ndpi_detection_process_packet(ntop->getGlobals()->get_ndpi_struct(),
+    flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct,
 							    ndpi_flow, (uint8_t *)iph, ipsize, time, src, dst),
 			      iph->protocol);
   }
@@ -367,12 +422,34 @@ static void hosts_node_sum_protos(const void *a, ndpi_VISIT which, int depth, vo
     Host *h = (Host*)a;
     NdpiStats *stats = (NdpiStats*)user_data;
 
-    // TODO
+    h->get_ndpi_stats()->sumStats(stats);
   }
 }
 
 /* **************************************************** */
 
 void NetworkInterface::getnDPIStats(NdpiStats *stats) {
+  memset(stats, 0, sizeof(NdpiStats));
+
+  host_add_walk_lock->lock(__FUNCTION__, __LINE__);
   ndpi_twalk(hosts_root, hosts_node_sum_protos, stats);
+  host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
+}
+
+/* **************************************************** */
+
+static void flow_update_hosts_stats(const void *a, ndpi_VISIT which, int depth, void *user_data) {
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    ((Flow*)a)->update_hosts_stats();
+  }
+}
+
+/* **************************************************** */
+
+void NetworkInterface::updateHostStats() {
+  for(int i=0; i<NUM_ROOTS; i++) {
+    flow_add_walk_lock[i]->lock(__FUNCTION__, __LINE__);
+    ndpi_twalk(ndpi_flows_root[i], flow_update_hosts_stats, this);
+    flow_add_walk_lock[i]->unlock(__FUNCTION__, __LINE__);
+  }
 }

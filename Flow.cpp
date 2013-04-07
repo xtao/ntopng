@@ -30,7 +30,9 @@ Flow::Flow(NetworkInterface *_iface,
   iface = _iface, vlanId = _vlanId, protocol = _protocol,
     lower_ip = _lower_ip, lower_port = _lower_port,
     upper_ip = _upper_ip, upper_port = _upper_port;
-  packets = bytes = 0, detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
+  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = 0;
+  
+ detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
 
   iface->findFlowHosts(this, &src_host, &dst_host);
@@ -41,13 +43,13 @@ Flow::Flow(NetworkInterface *_iface,
 /* *************************************** */
 
 void Flow::allocFlowMemory() {
-  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, ntop->getGlobals()->get_flow_size())) == NULL)
+  if((ndpi_flow = (ndpi_flow_struct*)calloc(1, iface->get_flow_size())) == NULL)
     throw "Not enough memory";  
   
-  if((src_id = calloc(1, ntop->getGlobals()->get_size_id())) == NULL)
+  if((src_id = calloc(1, iface->get_size_id())) == NULL)
     throw "Not enough memory";  
   
-  if((dst_id = calloc(1, ntop->getGlobals()->get_size_id())) == NULL)
+  if((dst_id = calloc(1, iface->get_size_id())) == NULL)
     throw "Not enough memory";  
 }
 
@@ -76,7 +78,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
     
     if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
        || (l4_proto == IPPROTO_UDP)
-       || ((l4_proto == IPPROTO_TCP) && (packets > 10))) {
+       || ((l4_proto == IPPROTO_TCP) && ((cli2srv_packets+srv2cli_packets) > 10))) {
       detection_completed = true;
       deleteFlowMemory();
     }
@@ -159,13 +161,34 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 void Flow::print() {
   char buf1[32], buf2[32];
 
-  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u pkts/%u bytes]\n",
+  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%u/%u bytes]\n",
 	 ipProto2Name(protocol),
 	 intoaV4(ntohl(lower_ip), buf1, sizeof(buf1)),
 	 ntohs(lower_port),
 	 intoaV4(ntohl(upper_ip), buf2, sizeof(buf2)),
 	 ntohs(upper_port),
 	 detected_protocol,
-	 ndpi_get_proto_name(ntop->getGlobals()->get_ndpi_struct(), detected_protocol),
-	 packets, bytes);
+	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
+	 cli2srv_packets, srv2cli_packets,
+	 cli2srv_bytes, srv2cli_bytes);
+}
+
+/* *************************************** */
+
+void Flow::update_hosts_stats() {
+  if(detection_completed) {
+    u_int32_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
+    u_int32_t diff_packets, diff_bytes;
+    
+    sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
+    diff_packets = sent_packets - cli2srv_last_packets, diff_bytes = sent_bytes - cli2srv_last_bytes;
+    cli2srv_last_packets = sent_packets, cli2srv_last_bytes = sent_bytes;
+    
+    rcvd_packets = srv2cli_packets, rcvd_bytes = srv2cli_bytes;
+    diff_packets = rcvd_packets - srv2cli_last_packets, diff_bytes = rcvd_bytes - srv2cli_last_bytes;
+    srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
+    
+    if(src_host) src_host->incStats(detected_protocol, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
+    if(dst_host) dst_host->incStats(detected_protocol, rcvd_packets, rcvd_bytes, sent_packets, sent_bytes);
+  }
 }

@@ -24,32 +24,36 @@
 
 #include "ntop_includes.h"
 
+#define MAX_NDPI_PROTOS       (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1)
+
+/* *************************************** */
+
+typedef struct {
+  u_int32_t sent, rcvd;
+} TrafficCounter;
+
+/* *************************************** */
+
 class NdpiStats {
  private:
-  u_int64_t numPkts[NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1];
-  u_int64_t numBytes[NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1];
+  TrafficCounter packets[MAX_NDPI_PROTOS], bytes[MAX_NDPI_PROTOS];
 
  public:
   NdpiStats();
 
-  inline void incStats(u_int pkt_len, u_int16_t proto_id) {
-    if(proto_id < (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1))
-      numPkts[proto_id]++, numBytes[proto_id] += pkt_len;
+  void sumStats(NdpiStats *stats);
+
+  inline void incStats(bool is_data_sent, u_int pkt_len, u_int16_t proto_id) {
+    if(proto_id < (MAX_NDPI_PROTOS)) {
+      if(is_data_sent)
+	packets[proto_id].sent++, bytes[proto_id].sent += pkt_len;
+      else
+	packets[proto_id].sent++, bytes[proto_id].sent += pkt_len;
+    }
   };
 
-  inline u_int32_t getNumPkts(u_int16_t proto_id) {
-    if(proto_id < (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1))
-      return(numPkts[proto_id]);
-    else
-      return(0);
-  };
-
-  inline u_int64_t getNumBytes(u_int16_t proto_id) {
-    if(proto_id < (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS + 1))
-      return(numBytes[proto_id]);
-    else
-      return(0);
-  };  
+  inline TrafficCounter* getPackets(u_int16_t proto_id) { if(proto_id < (MAX_NDPI_PROTOS)) return(&packets[proto_id]); else return(NULL); };
+  inline TrafficCounter* getBytes(u_int16_t proto_id)   { if(proto_id < (MAX_NDPI_PROTOS)) return(&bytes[proto_id]);   else return(NULL); };
 };
 
 #endif /* _NDPI_STATS_H_ */

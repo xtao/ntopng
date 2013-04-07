@@ -37,10 +37,12 @@ class Flow {
   bool detection_completed;
   u_int16_t detected_protocol;
   void *src_id, *dst_id;
-  /* Stats */
-  u_int32_t packets, bytes;
   Host *src_host, *dst_host;
   NetworkInterface *iface;
+
+  /* Stats */
+  u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
+  u_int32_t cli2srv_last_packets, cli2srv_last_bytes, srv2cli_last_packets, srv2cli_last_bytes; /* Counter values at last host update */
 
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
@@ -55,17 +57,20 @@ class Flow {
 
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
-  inline void incStats(u_int pkt_len) { packets++, bytes += pkt_len; };  
+  inline void incStats(bool cli2srv_direction, u_int pkt_len) { if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };  
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };
   inline void* get_dst_id()                       { return(dst_id);    };
   inline u_int32_t get_src_ipv4()                 { return(lower_ip);  };
   inline u_int32_t get_dst_ipv4()                 { return(upper_ip);  };
+  inline u_int16_t get_src_port()                 { return(lower_port);  };
+  inline u_int16_t get_dst_port()                 { return(upper_port);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   int compare(Flow *fb);
   void print();
+  void update_hosts_stats();
 };
 
 #endif /* _FLOW_H_ */

@@ -23,30 +23,7 @@
 
 /* **************************************** */
 
-static void debug_printf(u_int32_t protocol, void *id_struct,
-			 ndpi_log_level_t log_level,
-			 const char *format, ...) {
-}
-
-/* **************************************** */
-
-static void *malloc_wrapper(unsigned long size)
-{
-  return malloc(size);
-}
-
-/* **************************************** */
-
-static void free_wrapper(void *freeable)
-{
-  free(freeable);
-}
-
-/* **************************************** */
-
 NtopGlobals::NtopGlobals() {
-  NDPI_PROTOCOL_BITMASK all;
-
   ifMTU = 1500;
   promiscuousMode = 1;
   snaplen = 1500;
@@ -54,21 +31,10 @@ NtopGlobals::NtopGlobals() {
   detection_tick_resolution = 1000;
   trace = new Trace();
 
-  // init global detection structure
-  ndpi_struct = ndpi_init_detection_module(detection_tick_resolution, malloc_wrapper, free_wrapper, debug_printf);
-  if (ndpi_struct == NULL) {
-    trace->traceEvent(TRACE_ERROR, "Global structure initialization failed");
-    exit(-1);
-  }
-
-  // enable all protocols
-  NDPI_BITMASK_SET_ALL(all);
-  ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
 };
 
 /* **************************************** */
 
 NtopGlobals::~NtopGlobals() {
-  ndpi_exit_detection_module(ndpi_struct, free_wrapper);
   delete trace;
 };

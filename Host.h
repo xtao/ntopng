@@ -40,6 +40,7 @@ class Host {
  private:
   u_int16_t num_uses;
   IpAddress ip;
+  NdpiStats ndpiStats;
 
   void initialize();
 
@@ -51,7 +52,9 @@ class Host {
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
 
+  void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
   int compare(Host *node);
+  inline NdpiStats* get_ndpi_stats() { return(&ndpiStats); };
 };
 
 #endif /* _HOST_H_ */

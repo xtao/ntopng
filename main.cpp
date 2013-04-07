@@ -93,7 +93,9 @@ int main(int argc, char *argv[]) {
   iface->startPacketPolling();
   iface->dumpFlows();
 
-  while(1) sleep(1);
+  //while(1) sleep(1);
+
+  sleep(3);
 
   sigproc(0);
   return(0);

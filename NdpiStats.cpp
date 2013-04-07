@@ -24,6 +24,14 @@
 /* *************************************** */
 
 NdpiStats::NdpiStats() {
-  memset(numPkts, 0, sizeof(numPkts)), memset(numBytes, 0, sizeof(numBytes));
+  memset(packets, 0, sizeof(packets)), memset(bytes, 0, sizeof(bytes));
 }
 
+/* *************************************** */
+
+void NdpiStats::sumStats(NdpiStats *stats) {
+  for(int i=0; i<MAX_NDPI_PROTOS; i++) {
+    stats->packets[i].sent += packets[i].sent, stats->packets[i].rcvd += packets[i].rcvd;
+    stats->bytes[i].sent += bytes[i].sent, stats->bytes[i].rcvd += bytes[i].rcvd;
+  }
+}

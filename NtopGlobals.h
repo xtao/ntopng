@@ -29,7 +29,6 @@ class NtopGlobals {
   u_int ifMTU, snaplen;
   u_int8_t promiscuousMode;
   Trace *trace;
-  struct ndpi_detection_module_struct *ndpi_struct;
   u_int32_t detection_tick_resolution;
   
  public:
@@ -44,9 +43,6 @@ class NtopGlobals {
   inline bool  decode_tunnels()        { return(do_decode_tunnels); };
   inline void  shutdown()              { is_shutdown = true;        };
   inline u_int32_t get_detection_tick_resolution() { return(detection_tick_resolution); };
-  inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
-  inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
-  inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 };
 
 #endif /* _NTOP_GLOBALS_H_ */
