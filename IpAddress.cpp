@@ -102,21 +102,14 @@ char* IpAddress::_intoa(char* buf, u_short bufLen) {
   if((addr.ipVersion == 4) || (addr.ipVersion == 0 /* Misconfigured */))
     return(_intoaV4(addr.ipType.ipv4, buf, bufLen));
   else {
-    char *ret;
-    int len;
-
-    ret = (char*)inet_ntop(AF_INET6, &addr.ipType.ipv6, buf, bufLen);
+    char *ret = (char*)inet_ntop(AF_INET6, &addr.ipType.ipv6, buf, bufLen);
 
     if(ret == NULL) {
       /* Internal error (buffer too short) */
       buf[0] = '\0';
-    } else {
-      len = strlen(ret);
     }
 
-    ret = buf;
-
-    return(ret);
+    return(buf);
   }
 }
 
