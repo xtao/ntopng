@@ -30,7 +30,7 @@ Host::Host() {
 /* *************************************** */
 
 Host::Host(u_int32_t _ipv4) {
-  ip = new IpAddress(_ipv4);
+  ip = new IpAddress(ntohl(_ipv4));
   initialize();
 }
 
@@ -55,3 +55,11 @@ void Host::initialize() {
 }
 
 /* *************************************** */
+
+void Host::dumpKeyToLua(lua_State* vm) {
+  char str[64];
+
+  lua_pushstring(vm, get_ip()->print(str, sizeof(str)));
+  lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
+  lua_settable(vm, -3);
+}

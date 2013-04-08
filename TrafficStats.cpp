@@ -19,23 +19,17 @@
  *
  */
 
-#ifndef _INTERFACE_STATS_H_
-#define _INTERFACE_STATS_H_
-
 #include "ntop_includes.h"
 
-class InterfaceStats {
- private:
-  u_int64_t numPkts, numBytes;
+/* *************************************** */
 
- public:
-  InterfaceStats();
-  
-  inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  
-  inline u_int64_t getNumPkts()       { return(numPkts);                };
-  inline u_int64_t getNumBytes()      { return(numBytes);               };
+TrafficStats::TrafficStats() {
+  numPkts = 0, numBytes = 0;
+}
 
-  void printStats();
-};
+/* *************************************** */
 
-#endif /* _INTERFACE_STATS_H_ */
+void TrafficStats::printStats() {
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
+				      numBytes, numPkts);
+}

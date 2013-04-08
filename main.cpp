@@ -44,7 +44,7 @@ void sigproc(int sig) {
   NetworkInterface *iface = ntop->get_NetworkInterface("any");
   
   if(iface) {
-    InterfaceStats *stats = iface->getStats();
+    TrafficStats *stats = iface->getStats();
     
     stats->printStats();
     iface->shutdown();
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     sleep(3);
     iface->updateHostStats();
     iface->getnDPIStats(&stats);
-    stats.print(iface);
+    //stats.print(iface);
 
     //iface->dumpFlows();
   }

@@ -35,7 +35,7 @@
    window.onload=function() {
    var refresh = 3000 /* ms */;
 
-   do_pie("#topHosts", '/ajax.txt', { if: "" }, "kb", refresh);
+   do_pie("#topHosts", '/iface_hosts_list.lua', { if: "any" }, "", refresh);
    do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
    }
 

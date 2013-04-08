@@ -257,8 +257,8 @@ function do_pie(name, update_url, url_params, units, refresh) {
 }
 
 function create_pie_chart(name, units) {
-    var w = 320;
-    var h = 320;
+    var w = 380;
+    var h = 380;
     var ir = 45;
     var textOffset = 14;
     var tweenDuration = 250;

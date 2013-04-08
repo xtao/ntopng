@@ -34,7 +34,7 @@ typedef struct ether80211q {
 class NetworkInterface {
  private:
   char *ifname;
-  InterfaceStats *ifStats;
+  TrafficStats *ifStats;
   pcap_t *pcap_handle;
   int pcap_datalink_type;
   struct ndpi_flow *ndpi_flows_root[NUM_ROOTS];
@@ -60,7 +60,7 @@ class NetworkInterface {
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
   inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
-  inline InterfaceStats* getStats()   { return(ifStats);                 };
+  inline TrafficStats* getStats()   { return(ifStats);                 };
   inline int get_datalink()           { return(pcap_datalink_type);      };
   inline pcap_t* get_pcap_handle()    { return(pcap_handle);             };
 
@@ -73,6 +73,7 @@ class NetworkInterface {
   inline void      dec_num_hosts()   { num_hosts--;                      };
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
+  void getActiveHostsList(lua_State* vm);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

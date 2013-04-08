@@ -41,6 +41,9 @@ class IpAddress {
  private:
   struct ipAddress addr;
 
+  char* _intoaV4(unsigned int addr, char* buf, u_short bufLen);
+  char* _intoa(char* buf, u_short bufLen);
+
  public:
   IpAddress();
   IpAddress(u_int32_t _ipv4);
@@ -50,6 +53,8 @@ class IpAddress {
   inline void set_ipv6(struct in6_addr _ipv6) { addr.ipVersion = 6, memcpy(&addr.ipType.ipv6, &_ipv6, sizeof(_ipv6)); }
   int compare(IpAddress *ip);
   u_int key();
+
+  char* print(char *str, u_int str_len);
 };
 
 #endif /* _IP_ADDRESS_H_ */

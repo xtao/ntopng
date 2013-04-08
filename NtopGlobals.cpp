@@ -27,14 +27,25 @@ NtopGlobals::NtopGlobals() {
   ifMTU = 1500;
   promiscuousMode = 1;
   snaplen = 1500;
-  
+  file_id = 0;
   detection_tick_resolution = 1000;
   trace = new Trace();
-
+  tmpnam(tmp_file_path);
+  mutex = new Mutex();
 };
 
 /* **************************************** */
 
 NtopGlobals::~NtopGlobals() {
   delete trace;
+  delete mutex;
+};
+
+/* **************************************** */
+
+char* NtopGlobals::get_temp_filename(char *buf, u_int buf_len) {
+  mutex->lock(__FUNCTION__, __LINE__);
+  snprintf(buf, buf_len, "%s_%d", tmp_file_path, file_id++);
+  mutex->unlock(__FUNCTION__, __LINE__);
+  return(buf);
 };

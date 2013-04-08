@@ -64,3 +64,64 @@ u_int32_t IpAddress::key() {
     return(key);
   }
 }
+
+/* ******************************************* */
+
+char* IpAddress::_intoaV4(unsigned int addr, char* buf, u_short bufLen) {
+  char *cp, *retStr;
+  uint byte;
+  int n;
+
+  cp = &buf[bufLen];
+  *--cp = '\0';
+
+  n = 4;
+  do {
+    byte = addr & 0xff;
+    *--cp = byte % 10 + '0';
+    byte /= 10;
+    if(byte > 0) {
+      *--cp = byte % 10 + '0';
+      byte /= 10;
+      if(byte > 0)
+	*--cp = byte + '0';
+    }
+    *--cp = '.';
+    addr >>= 8;
+  } while (--n > 0);
+
+  /* Convert the string to lowercase */
+  retStr = (char*)(cp+1);
+
+  return(retStr);
+}
+
+/* ****************************** */
+
+char* IpAddress::_intoa(char* buf, u_short bufLen) {
+  if((addr.ipVersion == 4) || (addr.ipVersion == 0 /* Misconfigured */))
+    return(_intoaV4(addr.ipType.ipv4, buf, bufLen));
+  else {
+    char *ret;
+    int len;
+
+    ret = (char*)inet_ntop(AF_INET6, &addr.ipType.ipv6, buf, bufLen);
+
+    if(ret == NULL) {
+      /* Internal error (buffer too short) */
+      buf[0] = '\0';
+    } else {
+      len = strlen(ret);
+    }
+
+    ret = buf;
+
+    return(ret);
+  }
+}
+
+/* ******************************************* */
+
+char* IpAddress::print(char *str, u_int str_len) {
+  return(_intoa(str, str_len));
+}

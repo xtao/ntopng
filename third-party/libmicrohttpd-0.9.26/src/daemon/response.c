@@ -284,7 +284,7 @@ static void
 free_callback (void *cls)
 {
   struct MHD_Response *response = cls;
-
+  //printf("**** %s called\n", __FUNCTION__);
   (void) close (response->fd);
   response->fd = -1;
 }

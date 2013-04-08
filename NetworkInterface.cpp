@@ -56,7 +56,7 @@ NetworkInterface::NetworkInterface(char *name) {
   NDPI_PROTOCOL_BITMASK all;
 
   ifname = strdup(name);
-  ifStats = new InterfaceStats();
+  ifStats = new TrafficStats();
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
 				   ntop->getGlobals()->getPromiscuousMode(),
@@ -426,3 +426,21 @@ void NetworkInterface::updateHostStats() {
     flow_add_walk_lock[i]->unlock(__FUNCTION__, __LINE__);
   }
 }
+
+/* **************************************************** */
+
+static void hosts_get_list(Host *h, void *user_data) {
+  lua_State* vm = (lua_State*)user_data;
+  
+  h->dumpKeyToLua(vm);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getActiveHostsList(lua_State* vm) {
+  lua_newtable(vm);
+  host_add_walk_lock->lock(__FUNCTION__, __LINE__);
+  hosts_hash->walk(hosts_get_list, (void*)vm);
+  host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
+}
+

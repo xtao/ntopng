@@ -79,7 +79,7 @@ static ssize_t file_reader(void *cls, uint64_t pos, char *buf, size_t max) {
 
 /* ****************************************** */
 
-static void free_callback(void *cls) {
+static void http_server_free_callback(void *cls) {
   fclose((FILE*)cls);
 }
 
@@ -142,10 +142,10 @@ static int handle_http_request(void *cls,
   } else {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
 
-    response = MHD_create_response_from_callback (buf.st_size, 32 * 1024,     /* 32k page size */
-						  &file_reader,
-						  file,
-						  &free_callback);
+    response = MHD_create_response_from_callback(buf.st_size, 32 * 1024,     /* 32k page size */
+						 &file_reader,
+						 file,
+						 &http_server_free_callback);
     if(response == NULL) {
       fclose(file);
       return MHD_NO;

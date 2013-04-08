@@ -30,7 +30,10 @@ class NtopGlobals {
   u_int8_t promiscuousMode;
   Trace *trace;
   u_int32_t detection_tick_resolution;
-  
+  char tmp_file_path[256];
+  Mutex *mutex;
+  u_int16_t file_id;
+
  public:
   NtopGlobals();
   ~NtopGlobals();
@@ -43,6 +46,7 @@ class NtopGlobals {
   inline bool  decode_tunnels()        { return(do_decode_tunnels); };
   inline void  shutdown()              { is_shutdown = true;        };
   inline u_int32_t get_detection_tick_resolution() { return(detection_tick_resolution); };
+  char* get_temp_filename(char *buf, u_int buf_len);
 };
 
 #endif /* _NTOP_GLOBALS_H_ */

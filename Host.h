@@ -30,7 +30,7 @@ class Host {
   IpAddress *ip;
   NdpiStats ndpiStats;
   Host *hash_next;
-
+  TrafficStats sent, rcvd;
   void initialize();
 
  public:
@@ -48,6 +48,7 @@ class Host {
   void decUses() { num_uses--; }
 
   inline void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
+    sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
     ndpiStats.incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
   }
 
@@ -56,6 +57,8 @@ class Host {
 
   inline Host* next()           { return(hash_next); };
   inline void set_next(Host *n) { hash_next = n;     };
+
+  void dumpKeyToLua(lua_State* vm);
 };
 
 #endif /* _HOST_H_ */

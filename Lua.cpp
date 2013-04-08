@@ -53,13 +53,10 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 static int ntop_dump_file(lua_State* vm) {
   char *fname, tmp[1024];
   FILE *f;
-  FILE *tmp_file;
+  int tmp_file;
 
   lua_getglobal(vm, "tmp_file");
-  if((tmp_file = (FILE*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null file");
-    return(0);
-  }
+  tmp_file = (int)lua_tointeger(vm, lua_gettop(vm));
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((fname = (char*)lua_tostring(vm, 1)) == NULL)     return(-1);
@@ -70,7 +67,7 @@ static int ntop_dump_file(lua_State* vm) {
   }
   
   while((fgets(tmp, sizeof(tmp), f)) != NULL)
-    fprintf(tmp_file, "%s", tmp);
+    write(tmp_file, tmp, strlen(tmp));
  
   fclose(f);
  
@@ -111,6 +108,49 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_load_stats(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  TrafficStats *stats;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+    }
+  
+  stats = ntop_interface->getStats();
+
+  lua_newtable(vm);
+
+  lua_pushstring(vm, "bytes");
+  lua_pushinteger(vm, stats->getNumBytes());
+  lua_settable(vm, -3);
+  
+  lua_pushstring(vm, "packets");
+  lua_pushinteger(vm, stats->getNumPkts());
+  lua_settable(vm, -3);
+  
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_hosts(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+  
+  ntop_interface->getActiveHostsList(vm);
+  
+  return(1);
+}
+
+/* ****************************************** */
+
 static void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -129,7 +169,7 @@ static void lua_push_int_table_entry(lua_State *L, const char *key, int value) {
 
 static int ntop_get_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface;
-  InterfaceStats *stats;
+  TrafficStats *stats;
   
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -148,25 +188,27 @@ static int ntop_get_interface_stats(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_lua_print(lua_State* vm) {
-  FILE *tmp_file;
+  int tmp_file;
 
   lua_getglobal(vm, "tmp_file");
-  if((tmp_file = (FILE*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null file");
-    return(0);
-  }
+  tmp_file = (int)lua_tointeger(vm, lua_gettop(vm));
 
   switch(lua_type(vm, 1)) {
   case LUA_TSTRING:
     {
       char *str = (char*)lua_tostring(vm, 1);
       if(str && (strlen(str) > 0))
-	fprintf(tmp_file, "%s", str);
+	write(tmp_file, str, strlen(str));
     }
     break;
 
   case LUA_TNUMBER:
-    fprintf(tmp_file, "%f", (float)lua_tonumber(vm, 1));
+    {
+      char str[64];
+
+      snprintf(str, sizeof(str), "%f", (float)lua_tonumber(vm, 1));
+      write(tmp_file, str, strlen(str));
+    }
     break;
 
   default:
@@ -187,6 +229,8 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "find",           ntop_find_interface },
   { "getStats",       ntop_get_interface_stats },
   { "getNdpiStats",   ntop_get_ndpi_interface_stats },
+  { "getLoadStats",   ntop_get_interface_load_stats },
+  { "getHosts",       ntop_get_interface_hosts },
   {NULL,              NULL}
 };
 
@@ -255,12 +299,13 @@ int Lua::handle_script_request(char *script_path,
 				 size_t *upload_data_size, void **ptr) {
   int ret = 0;
   MHD_Response *tmp_response;
-  char *tmp_filename = tmpnam(NULL);
-  FILE *tmp_file;
+  char tmp_path[256];
+  char *tmp_filename = ntop->getGlobals()->get_temp_filename(tmp_path, sizeof(tmp_path));
+  int tmp_file;
 
   /* Register the connection in the state */
   if((tmp_filename == NULL) 
-     || ((tmp_file = fopen(tmp_filename, "w+")) == NULL)) {
+     || ((tmp_file = open(tmp_filename, O_RDWR|O_CREAT)) < 0)) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] tmpnam(%s) error %d [%d/%s]",
 				 tmp_filename ? tmp_filename : "", tmp_file, 
 				 errno, strerror(errno));
@@ -274,7 +319,7 @@ int Lua::handle_script_request(char *script_path,
   /* Load custom classes */
   lua_register_classes(L);
 
-  lua_pushlightuserdata(L, (char*)tmp_file);
+  lua_pushinteger(L, tmp_file);
   lua_setglobal(L, "tmp_file");
 
   /* Put the GET params into the environment */
@@ -285,10 +330,10 @@ int Lua::handle_script_request(char *script_path,
   /* Overload the standard Lua print() with ntop_lua_print that dumps data on HTTP server */
   lua_register(L, "print", ntop_lua_print);
 
-  tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, fileno(tmp_file));
+  tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, tmp_file);
 
   if(luaL_dofile(L, script_path) == 0) {
-    fflush(tmp_file);
+    fsync(tmp_file);
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
     ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);    
   } else
