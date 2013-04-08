@@ -59,6 +59,4 @@ void NdpiStats::dumpToLua(NetworkInterface *iface, lua_State* vm) {
       lua_pushinteger(vm, packets[i].sent+packets[i].rcvd);
       lua_settable(vm, -3);
   }
-
-  lua_setglobal(vm, "ifstats");
 }

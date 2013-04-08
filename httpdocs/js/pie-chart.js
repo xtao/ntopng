@@ -54,15 +54,17 @@ function do_pie(name, update_url, url_params, units, refresh) {
 	    return (element.value > 0);
 	}
 
-	if(filteredPieData.length > 0 && oldPieData.length > 0) {
+	if((filteredPieData.length > 0) && (oldPieData.length > 0)) {
 	    //REMOVE PLACEHOLDER CIRCLE
 	    arc_group.selectAll("circle").remove();
 
-	    totalValue.text(function() {
+	    if(totalValue) {
+		totalValue.text(function() {
 		    var kb = totalOctets/1024;
 		    return kb.toFixed(1);
 		    //return bchart.label.abbreviated(totalOctets*8);
 		});
+	    }
 
 	    //DRAW ARC PATHS
 	    paths = arc_group.selectAll("path").data(filteredPieData);
@@ -255,8 +257,8 @@ function do_pie(name, update_url, url_params, units, refresh) {
 }
 
 function create_pie_chart(name, units) {
-    var w = 300;
-    var h = 300;
+    var w = 320;
+    var h = 320;
     var ir = 45;
     var textOffset = 14;
     var tweenDuration = 250;
@@ -315,26 +317,32 @@ function create_pie_chart(name, units) {
 	.attr("fill", "white")
 	.attr("r", ir);
 
-    // "TOTAL" LABEL
-    var totalLabel = center_group.append("svg:text")
-	.attr("class", "label")
-	.attr("dy", -15)
-	.attr("text-anchor", "middle") // text-align: right
-	.text("TOTAL");
+    var totalUnits = null;
+    var totalLabel = null;
+    var totalValue = null;
 
-    //TOTAL TRAFFIC VALUE
-    var totalValue = center_group.append("svg:text")
-	.attr("class", "total")
-	.attr("dy", 7)
-	.attr("text-anchor", "middle") // text-align: right
-	.text("Waiting...");
+    if(units) {
+	// "TOTAL" LABEL
+	totalLabel = center_group.append("svg:text")
+	    .attr("class", "label")
+	    .attr("dy", -15)
+	    .attr("text-anchor", "middle") // text-align: right
+	    .text("TOTAL");
 
-    //UNITS LABEL
-    var totalUnits = center_group.append("svg:text")
-	.attr("class", "units")
-	.attr("dy", 21)
-	.attr("text-anchor", "middle") // text-align: right
-	.text(units);
+	//TOTAL TRAFFIC VALUE
+	totalValue = center_group.append("svg:text")
+	    .attr("class", "total")
+	    .attr("dy", 7)
+	    .attr("text-anchor", "middle") // text-align: right
+	    .text("Waiting...");
+
+	//UNITS LABEL
+	totalUnits = center_group.append("svg:text")
+	    .attr("class", "units")
+	    .attr("dy", 21)
+	    .attr("text-anchor", "middle") // text-align: right
+	    .text(units);
+    }
 
     return([arc_group, donut, totalValue, totalUnits, color, tweenDuration, arc, label_group, center_group, r, textOffset]);
 }

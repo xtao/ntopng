@@ -36,7 +36,7 @@
    var refresh = 3000 /* ms */;
 
    do_pie("#topHosts", '/ajax.txt', { if: "" }, "kb", refresh);
-   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "Packets", refresh);
+   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
    }
 
 </script>
