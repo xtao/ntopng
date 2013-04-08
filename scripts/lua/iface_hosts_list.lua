@@ -28,15 +28,18 @@ end
 tot = 0
 _hosts_stats = {}
 for key, value in pairs(hosts_stats) do
+    if(key == "255.255.255.255") then
+        key = "Broadcast"
+    end
      _hosts_stats[value] = key
        tot = tot +value
 end
 
 -- Print up to this number of entries
-max_num_entries = 7
+max_num_entries = 10
 
 -- Print entries whose value >= 5% of the total
-threshold = (tot * 3) / 100
+threshold = (tot * 5) / 100
 
 
 print "[\n"

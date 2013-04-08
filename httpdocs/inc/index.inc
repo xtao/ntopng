@@ -10,9 +10,9 @@
 
       <hr>
       <div class="jumbotron">
-        <h1>Super awesome marketing speak!</h1>
-        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-        <a class="btn btn-large btn-success" href="#">Sign up today</a>
+        <h1>Welcome to ntop!</h1>
+        <p class="lead">Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura, che la diritta via era smarrita.</p>
+        <a class="btn btn-large btn-success" href="#">Start Using ntop</a>
       </div>
 
       <hr>
