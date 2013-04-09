@@ -126,8 +126,6 @@ d3.json("/iface_flows_sankey.lua", function(energy) {
 </script>
       </div>
 
-      <hr>
-
       <div class="row-fluid marketing">
         <div class="span6">
           <h4>Top Hosts</h4>

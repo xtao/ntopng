@@ -18,14 +18,14 @@
 
  <style type="text/css">
       body {
-        padding-top: 20px;
-        padding-bottom: 40px;
+        padding-top: 0px;
+        padding-bottom: 20px;
       }
 
       /* Custom container */
       .container-narrow {
         margin: 0 auto;
-        max-width: 700px;
+        max-width: 800px;
       }
       .container-narrow > hr {
         margin: 30px 0;
@@ -33,11 +33,11 @@
 
       /* Main marketing message and sign up button */
       .jumbotron {
-        margin: 60px 0;
+        margin: 20px 0;
         text-align: center;
       }
       .jumbotron h1 {
-        font-size: 72px;
+        font-size: 22px;
         line-height: 1;
       }
       .jumbotron .btn {
@@ -47,7 +47,7 @@
 
       /* Supporting marketing content */
       .marketing {
-        margin: 60px 0;
+        margin: 20px 0;
       }
       .marketing p + h4 {
         margin-top: 28px;
