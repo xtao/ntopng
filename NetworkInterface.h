@@ -74,6 +74,7 @@ class NetworkInterface {
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
   void getActiveHostsList(lua_State* vm);
+  void getFlowPeersList(lua_State* vm);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

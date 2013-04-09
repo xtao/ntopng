@@ -151,7 +151,23 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 
 /* ****************************************** */
 
-static void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
+static int ntop_get_interface_flows_peers(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+  
+  ntop_interface->getFlowPeersList(vm);
+  
+  return(1);
+}
+
+/* ****************************************** */
+
+void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
   lua_settable(L, -3);
@@ -159,7 +175,7 @@ static void lua_push_str_table_entry(lua_State *L, const char *key, char *value)
 
 /* ****************************************** */
 
-static void lua_push_int_table_entry(lua_State *L, const char *key, int value) {
+void lua_push_int_table_entry(lua_State *L, const char *key, int value) {
   lua_pushstring(L, key);
   lua_pushinteger(L, value);
   lua_settable(L, -3);
@@ -231,6 +247,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getNdpiStats",   ntop_get_ndpi_interface_stats },
   { "getLoadStats",   ntop_get_interface_load_stats },
   { "getHosts",       ntop_get_interface_hosts },
+  { "getFlowPeers",   ntop_get_interface_flows_peers },
   {NULL,              NULL}
 };
 

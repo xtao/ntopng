@@ -148,10 +148,12 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
   struct ndpi_udphdr *udph = NULL;
   u_int32_t lower_ip;
   u_int32_t upper_ip;
-  u_int16_t lower_port;
-  u_int16_t upper_port;
+  u_int16_t lower_port, sport;
+  u_int16_t upper_port, dport;
   void *ret;
   Flow *flowKey;
+
+  *src2dst_direction = true;
 
   if(ipsize < 20)
     return NULL;
@@ -173,6 +175,8 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
   if(iph->protocol == 6 && l4_packet_len >= 20) {
     // tcp
     tcph = (struct ndpi_tcphdr *) ((u_int8_t *) iph + iph->ihl * 4);
+    sport = tcph->source, dport = tcph->dest;
+
     if(iph->saddr < iph->daddr) {
       lower_port = tcph->source;
       upper_port = tcph->dest;
@@ -183,6 +187,8 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
   } else if(iph->protocol == 17 && l4_packet_len >= 8) {
     // udp
     udph = (struct ndpi_udphdr *) ((u_int8_t *) iph + iph->ihl * 4);
+    sport = udph->source, dport = udph->dest;
+
     if(iph->saddr < iph->daddr) {
       lower_port = udph->source;
       upper_port = udph->dest;
@@ -218,8 +224,8 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
 
     delete flowKey;
 
-    if((f->get_src_ipv4() == lower_ip) && (f->get_dst_ipv4() == upper_ip)
-       && (f->get_src_port() == lower_port) && (f->get_dst_port() == upper_port))
+    if((f->get_src_ipv4() == iph->saddr) && (f->get_dst_ipv4() == iph->daddr)
+       && (f->get_src_port() == sport) && (f->get_dst_port() == dport))
       *src2dst_direction = true;
     else
       *src2dst_direction = false;
@@ -442,5 +448,24 @@ void NetworkInterface::getActiveHostsList(lua_State* vm) {
   host_add_walk_lock->lock(__FUNCTION__, __LINE__);
   hosts_hash->walk(hosts_get_list, (void*)vm);
   host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
+}
+
+/* **************************************************** */
+
+static void flow_peers_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    struct Flow *flow = *(Flow**)node;
+
+    flow->print_peers((lua_State*)user_data);  
+  }
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getFlowPeersList(lua_State* vm) {
+  lua_newtable(vm);
+
+  for(int i=0; i<NUM_ROOTS; i++)
+    ndpi_twalk(ndpi_flows_root[i], flow_peers_walker, vm);  
 }
 

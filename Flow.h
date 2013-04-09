@@ -71,6 +71,7 @@ class Flow {
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();
+  void print_peers(lua_State* vm);
 };
 
 #endif /* _FLOW_H_ */

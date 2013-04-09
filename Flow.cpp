@@ -158,6 +158,34 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
 /* *************************************** */
 
+void Flow::print_peers(lua_State* vm) {
+  char buf1[32], buf2[32], buf[256];
+
+  snprintf(buf, sizeof(buf), "%s %s", 
+	   intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)), 
+	   intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
+
+  lua_newtable(vm);
+  
+  // Sent
+  lua_pushstring(vm, "sent");
+  lua_pushnumber(vm, cli2srv_bytes);
+  lua_settable(vm, -3);
+  
+  // Rcvd
+  lua_pushstring(vm, "rcvd");
+  lua_pushnumber(vm, srv2cli_bytes);
+  lua_settable(vm, -3);
+  
+  
+  // Key
+  lua_pushstring(vm, buf);
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);  
+}
+
+/* *************************************** */
+
 void Flow::print() {
   char buf1[32], buf2[32];
 
