@@ -19,16 +19,26 @@
  *
  */
 
-#ifndef _HOST_HASH_H_
-#define _HOST_HASH_H_
+#ifndef _GENERIC_HASH_H_
+#define _GENERIC_HASH_H_
 
 #include "ntop_includes.h"
  
-class HostHash : public GenericHash {
- public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
+class GenericHash {
+ protected:
+  HashEntry **table;
+  u_int num_hashes, current_size, max_hash_size;
+  Mutex **locks;
+  NetworkInterface *iface;
 
-  Host* get(IpAddress *key);
+ public:
+  GenericHash(u_int _num_hashes, u_int _max_hash_size);
+  ~GenericHash();
+ 
+  inline u_int getNumEntries() { return(current_size); };
+  bool add(HashEntry *h);
+  bool remove(HashEntry *h, bool lock_hash); /* Note: HashEntry* memory is NOT freed */
+  void walk(void (*walker)(HashEntry *h, void *user_data), void *user_data);
 };
 
-#endif /* _HOST_HASH_H_ */
+#endif /* _GENERIC_HASH_H_ */

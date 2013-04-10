@@ -19,16 +19,28 @@
  *
  */
 
-#ifndef _HOST_HASH_H_
-#define _HOST_HASH_H_
+#ifndef _HASH_ENTRY_H_
+#define _HASH_ENTRY_H_
 
 #include "ntop_includes.h"
- 
-class HostHash : public GenericHash {
- public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
 
-  Host* get(IpAddress *key);
+class HashEntry {
+ private:
+  HashEntry *hash_next;
+
+ protected:
+  time_t first_seen, last_seen;
+  NetworkInterface *iface;
+
+ public:
+  HashEntry(NetworkInterface *_iface);
+
+  inline HashEntry* next()           { return(hash_next); };
+  inline void set_next(HashEntry *n) { hash_next = n;     };
+  void updateSeen();
+  bool equal(HashEntry *b)           { return((this == b) ? true : false); };
+  bool isIdle(u_int max_idleness);
+  virtual u_int32_t key()            { return(0);         };  
 };
 
-#endif /* _HOST_HASH_H_ */
+#endif /* _HASH_ENTRY_H_ */

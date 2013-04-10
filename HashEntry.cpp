@@ -19,16 +19,22 @@
  *
  */
 
-#ifndef _HOST_HASH_H_
-#define _HOST_HASH_H_
-
 #include "ntop_includes.h"
- 
-class HostHash : public GenericHash {
- public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
 
-  Host* get(IpAddress *key);
-};
+/* ***************************************** */
 
-#endif /* _HOST_HASH_H_ */
+HashEntry::HashEntry(NetworkInterface *_iface) {
+  hash_next = NULL, iface = _iface;
+}
+
+/* ***************************************** */
+
+void HashEntry::updateSeen() {
+  last_seen = iface->getTimeLastPktRcvd();
+}
+
+/* ***************************************** */
+
+bool HashEntry::isIdle(u_int max_idleness) {
+  return((iface->getTimeLastPktRcvd() > (last_seen+max_idleness)) ? true : false);
+}

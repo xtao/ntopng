@@ -75,12 +75,22 @@ extern "C" {
 #include "IpAddress.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"
-#include "Host.h"
-#include "HostHash.h"
+#include "HashEntry.h"
+#include "GenericHash.h"
 #include "NetworkInterface.h"
+#include "Host.h"
 #include "Flow.h"
+#include "FlowHash.h"
+#include "HostHash.h"
+
 #include "Lua.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
+
+#define FLOW_PURGE_FREQUENCY     5 /* sec */
+#define FLOW_MAX_IDLE           120 /* sec */
+
+#define HOST_PURGE_FREQUENCY     5 /* sec */
+#define HOST_MAX_IDLE           120 /* sec */
 
 #endif /* _NTOP_H_ */

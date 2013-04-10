@@ -24,14 +24,11 @@
 
 #include "ntop_includes.h"
 
-#define FLOW_PURGE_FREQUENCY     5 /* sec */
-#define FLOW_MAX_IDLE           30 /* sec */
-
-class Flow {
+class Flow : public HashEntry {
  private:
   // FIX - Add IPv6 support
-  u_int32_t lower_ip, upper_ip;
-  u_int16_t lower_port, upper_port;
+  u_int32_t src_ip, dst_ip;
+  u_int16_t src_port, dst_port;
   u_int16_t vlanId;
   u_int8_t protocol;
   struct ndpi_flow_struct *ndpi_flow;
@@ -39,8 +36,6 @@ class Flow {
   u_int16_t detected_protocol;
   void *src_id, *dst_id;
   Host *src_host, *dst_host;
-  NetworkInterface *iface;
-  time_t first_seen, last_seen;
 
   /* Stats */
   u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
@@ -49,16 +44,14 @@ class Flow {
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
-  inline void updateSeen() { last_seen = iface->getTimeLastPktRcvd(); }
 
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol, 
-       u_int32_t _lower_ip, u_int16_t _lower_port,
-       u_int32_t _upper_ip, u_int16_t _upper_port);
+       u_int32_t _src_ip, u_int16_t _src_port,
+       u_int32_t _dst_ip, u_int16_t _dst_port);
   ~Flow();
 
-  inline bool isIdle() { return(((iface->getTimeLastPktRcvd()-last_seen) > FLOW_MAX_IDLE) ? true : false); };
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };  
@@ -66,16 +59,19 @@ class Flow {
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };
   inline void* get_dst_id()                       { return(dst_id);    };
-  inline u_int32_t get_src_ipv4()                 { return(lower_ip);  };
-  inline u_int32_t get_dst_ipv4()                 { return(upper_ip);  };
-  inline u_int16_t get_src_port()                 { return(lower_port);  };
-  inline u_int16_t get_dst_port()                 { return(upper_port);  };
+  inline u_int32_t get_src_ipv4()                 { return(src_ip);  };
+  inline u_int32_t get_dst_ipv4()                 { return(dst_ip);  };
+  inline u_int16_t get_src_port()                 { return(src_port);  };
+  inline u_int16_t get_dst_port()                 { return(dst_port);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();
-  void print_peers(lua_State* vm);
+  void print_peers(lua_State* vm); 
+  inline u_int32_t key()                          { return(src_ip+dst_ip+src_port+dst_port+vlanId+protocol); }
+
+  bool equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol);
 };
 
 #endif /* _FLOW_H_ */

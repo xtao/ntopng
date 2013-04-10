@@ -19,16 +19,16 @@
  *
  */
 
-#ifndef _HOST_HASH_H_
-#define _HOST_HASH_H_
+#ifndef _FLOW_HASH_H_
+#define _FLOW_HASH_H_
 
 #include "ntop_includes.h"
  
-class HostHash : public GenericHash {
+class FlowHash : public GenericHash {
  public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
-
-  Host* get(IpAddress *key);
+  FlowHash(u_int _num_hashes, u_int _max_hash_size);
+  
+  Flow* find(u_int32_t src_ip, u_int32_t dst_ip, u_int16_t src_port, u_int16_t dst_port, u_int16_t vlanId, u_int8_t protocol);
 };
 
-#endif /* _HOST_HASH_H_ */
+#endif /* _FLOW_HASH_H_ */

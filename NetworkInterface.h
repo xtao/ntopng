@@ -27,6 +27,9 @@
 #define NUM_ROOTS 512
 
 class Flow;
+class FlowHash;
+class Host;
+class HostHash;
 
 typedef struct ether80211q {
   u_int16_t vlanId;
@@ -39,15 +42,13 @@ class NetworkInterface {
   TrafficStats *ifStats;
   pcap_t *pcap_handle;
   int pcap_datalink_type;
-  struct ndpi_flow *ndpi_flows_root[NUM_ROOTS];
-  u_int32_t ndpi_flow_count;
   pthread_t pollLoop;
+
+  FlowHash *flows_hash;
   /* Hosts */
-  u_int32_t num_hosts;
   HostHash *hosts_hash;
-  Mutex *host_add_walk_lock, *flow_add_walk_lock[NUM_ROOTS];
   struct ndpi_detection_module_struct *ndpi_struct;
-  time_t last_pkt_rcvd, next_idle_flow_purge;
+  time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
 
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 
@@ -73,14 +74,19 @@ class NetworkInterface {
 			 const struct ndpi_iphdr *iph,
 			 u_int16_t ipsize, u_int16_t rawsize);
   void dumpFlows();
-  inline u_int32_t get_num_hosts()   { return(num_hosts);                };
-  inline void      dec_num_hosts()   { num_hosts--;                      };
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
   void getActiveHostsList(lua_State* vm);
   void getFlowPeersList(lua_State* vm);
 
+  bool removeFlow(Flow *flow, bool lock_hash);
   void purgeIdleFlows();
+
+  bool removeHost(Host *host, bool lock_hash);
+  void purgeIdleHosts();
+
+  u_int getNumFlows();
+  u_int getNumHosts();
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

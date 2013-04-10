@@ -73,14 +73,10 @@ NetworkInterface::NetworkInterface(char *name) {
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
-  memset(ndpi_flows_root, 0, sizeof(ndpi_flows_root));
-  ndpi_flow_count = 0;
-  hosts_hash = new HostHash(4096), num_hosts = 0;
-
-  host_add_walk_lock = new Mutex();
+  flows_hash = new FlowHash(4096, 32768), hosts_hash = new HostHash(4096, 32768);
 
   // init global detection structure
-  ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(), 
+  ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
 					   malloc_wrapper, free_wrapper, debug_printf);
   if (ndpi_struct == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
@@ -90,8 +86,6 @@ NetworkInterface::NetworkInterface(char *name) {
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
-
-  for (int i=0; i<NUM_ROOTS; i++) flow_add_walk_lock[i] = new Mutex();
 }
 
 /* **************************************************** */
@@ -103,57 +97,37 @@ NetworkInterface::~NetworkInterface() {
   free(ifname);
   delete ifStats;
 
+  delete flows_hash;
   delete hosts_hash;
-  delete host_add_walk_lock;
-
-  for(int i=0; i<NUM_ROOTS; i++) delete flow_add_walk_lock[i];
 
   ndpi_exit_detection_module(ndpi_struct, free_wrapper);
 }
 
 /* **************************************************** */
 
-static int node_cmp(const void *a, const void *b) {
-  Flow *fa = (Flow*)a;
-  Flow *fb = (Flow*)b;
+static void node_proto_guess_walker(HashEntry *node, void *user_data) {
+  Flow *flow = (Flow*)node;
 
-  return(fa->compare(fb));
-}
-
-/* **************************************************** */
-
-static void node_proto_guess_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
-  /* Avoid walking the same node multiple times */
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    struct Flow *flow = *(Flow**)node;
-
-    flow->print();  
-  }
+  flow->print();
 }
 
 /* **************************************************** */
 
 void NetworkInterface::dumpFlows() {
-  for (int i=0; i<NUM_ROOTS; i++) {
-    ndpi_twalk(ndpi_flows_root[i], node_proto_guess_walker, NULL);
-  }
+  flows_hash->walk(node_proto_guess_walker, NULL);
 }
 
 /* **************************************************** */
 
 Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction) {
-  u_int32_t idx;
   u_int16_t l4_packet_len;
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
-  u_int32_t lower_ip;
-  u_int32_t upper_ip;
-  u_int16_t lower_port, sport;
-  u_int16_t upper_port, dport;
-  void *ret;
-  Flow *flowKey;
-
-  *src2dst_direction = true;
+  u_int32_t src_ip;
+  u_int32_t dst_ip;
+  u_int16_t src_port, sport;
+  u_int16_t dst_port, dport;
+  Flow *ret;
 
   if(ipsize < 20)
     return NULL;
@@ -165,11 +139,11 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
   l4_packet_len = ntohs(iph->tot_len) - (iph->ihl * 4);
 
   if(iph->saddr < iph->daddr) {
-    lower_ip = iph->saddr;
-    upper_ip = iph->daddr;
+    src_ip = iph->saddr;
+    dst_ip = iph->daddr;
   } else {
-    lower_ip = iph->daddr;
-    upper_ip = iph->saddr;
+    src_ip = iph->daddr;
+    dst_ip = iph->saddr;
   }
 
   if(iph->protocol == 6 && l4_packet_len >= 20) {
@@ -178,11 +152,11 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
     sport = tcph->source, dport = tcph->dest;
 
     if(iph->saddr < iph->daddr) {
-      lower_port = tcph->source;
-      upper_port = tcph->dest;
+      src_port = tcph->source;
+      dst_port = tcph->dest;
     } else {
-      lower_port = tcph->dest;
-      upper_port = tcph->source;
+      src_port = tcph->dest;
+      dst_port = tcph->source;
     }
   } else if(iph->protocol == 17 && l4_packet_len >= 8) {
     // udp
@@ -190,47 +164,38 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
     sport = udph->source, dport = udph->dest;
 
     if(iph->saddr < iph->daddr) {
-      lower_port = udph->source;
-      upper_port = udph->dest;
+      src_port = udph->source;
+      dst_port = udph->dest;
     } else {
-      lower_port = udph->dest;
-      upper_port = udph->source;
+      src_port = udph->dest;
+      dst_port = udph->source;
     }
   } else {
     // non tcp/udp protocols
-    lower_port = 0;
-    upper_port = 0;
+    src_port = 0;
+    dst_port = 0;
   }
 
-  // TODO - Remove this allocation per packet
-  flowKey = new Flow(this, vlan_id, iph->protocol, lower_ip, lower_port, upper_ip, upper_port);
-  idx = (vlan_id + lower_ip + upper_ip + iph->protocol + lower_port + upper_port) % NUM_ROOTS;
-  ret = (void*)ndpi_tfind(flowKey, (void*)&ndpi_flows_root[idx], node_cmp);
+  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, iph->protocol, vlan_id);
 
   if(ret == NULL) {
-#if TODO
-    if(ndpi_flow_count == MAX_NDPI_FLOWS) {
-      printf("ERROR: maximum flow count (%u) has been exceeded\n", MAX_NDPI_FLOWS);
-      return(NULL);
-    } else
-#endif
-      {
-      flowKey->allocFlowMemory();
-      ndpi_tsearch(flowKey, (void**)&ndpi_flows_root[idx], node_cmp); /* Add */
-      return(flowKey);
+    ret = new Flow(this, vlan_id, iph->protocol, src_ip, src_port, dst_ip, dst_port);
+    if(flows_hash->add(ret)) {
+      *src2dst_direction = true;
+      return(ret);
+    } else {
+      delete ret;
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
+      return(NULL); 
     }
   } else {
-    Flow *f = *(Flow**)ret;
-
-    delete flowKey;
-
-    if((f->get_src_ipv4() == iph->saddr) && (f->get_dst_ipv4() == iph->daddr)
-       && (f->get_src_port() == sport) && (f->get_dst_port() == dport))
+    if((ret->get_src_ipv4() == iph->saddr) && (ret->get_dst_ipv4() == iph->daddr)
+       && (ret->get_src_port() == sport) && (ret->get_dst_port() == dport))
       *src2dst_direction = true;
     else
       *src2dst_direction = false;
 
-    return(f);
+    return(ret);
   }
 }
 
@@ -272,7 +237,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   int pcap_datalink_type = iface->get_datalink();
 
   iface->incStats(h->ts.tv_sec, h->caplen);
-    
+
   time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
   if(lasttime > time) time = lasttime;
 
@@ -340,6 +305,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   }
 
   iface->purgeIdleFlows();
+  iface->purgeIdleHosts();
 }
 
 /* **************************************************** */
@@ -376,8 +342,8 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*src) = hosts_hash->get(&ip);
 
   if((*src) == NULL) {
-    if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
-      (*src) = new Host(flow->get_src_ipv4());
+    if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
+      (*src) = new Host(this, flow->get_src_ipv4());
       hosts_hash->add(*src);
     } else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
@@ -389,8 +355,8 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*dst) = hosts_hash->get(&ip);
 
   if((*dst) == NULL) {
-    if(num_hosts < MAX_NUM_INTERFACE_HOSTS) {
-      (*dst) = new Host(flow->get_dst_ipv4());
+    if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
+      (*dst) = new Host(this, flow->get_dst_ipv4());
       hosts_hash->add(*dst);
     } else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
@@ -399,10 +365,10 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
 
 /* **************************************************** */
 
-static void hosts_node_sum_protos(Host *h, void *user_data) {
+static void hosts_node_sum_protos(HashEntry *h, void *user_data) {
   NdpiStats *stats = (NdpiStats*)user_data;
-  
-  h->get_ndpi_stats()->sumStats(stats);
+
+  ((Host*)h)->get_ndpi_stats()->sumStats(stats);
 }
 
 /* **************************************************** */
@@ -410,56 +376,45 @@ static void hosts_node_sum_protos(Host *h, void *user_data) {
 void NetworkInterface::getnDPIStats(NdpiStats *stats) {
   memset(stats, 0, sizeof(NdpiStats));
 
-  host_add_walk_lock->lock(__FUNCTION__, __LINE__);
   hosts_hash->walk(hosts_node_sum_protos, (void*)stats);
-  host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
 }
 
 /* **************************************************** */
 
-static void flow_update_hosts_stats(const void *node, ndpi_VISIT which, int depth, void *user_data) {
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    struct Flow *flow = *(Flow**)node;
+static void flow_update_hosts_stats(HashEntry *node, void *user_data) {
+  Flow *flow = (Flow*)node;
 
-    flow->update_hosts_stats();
-  }
+  flow->update_hosts_stats();
 }
 
 /* **************************************************** */
 
 void NetworkInterface::updateHostStats() {
-  for(int i=0; i<NUM_ROOTS; i++) {
-    flow_add_walk_lock[i]->lock(__FUNCTION__, __LINE__);
-    ndpi_twalk(ndpi_flows_root[i], flow_update_hosts_stats, this);
-    flow_add_walk_lock[i]->unlock(__FUNCTION__, __LINE__);
-  }
+  flows_hash->walk(flow_update_hosts_stats, this);
 }
 
 /* **************************************************** */
 
-static void hosts_get_list(Host *h, void *user_data) {
+static void hosts_get_list(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
-  
-  h->dumpKeyToLua(vm);
+
+  ((Host*)h)->dumpKeyToLua(vm);
 }
 
 /* **************************************************** */
 
 void NetworkInterface::getActiveHostsList(lua_State* vm) {
   lua_newtable(vm);
-  host_add_walk_lock->lock(__FUNCTION__, __LINE__);
+
   hosts_hash->walk(hosts_get_list, (void*)vm);
-  host_add_walk_lock->unlock(__FUNCTION__, __LINE__);
 }
 
 /* **************************************************** */
 
-static void flow_peers_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    struct Flow *flow = *(Flow**)node;
+static void flow_peers_walker(HashEntry *h, void *user_data) {
+  Flow *flow = (Flow*)h;
 
-    flow->print_peers((lua_State*)user_data);  
-  }
+  flow->print_peers((lua_State*)user_data);
 }
 
 /* **************************************************** */
@@ -467,34 +422,29 @@ static void flow_peers_walker(const void *node, ndpi_VISIT which, int depth, voi
 void NetworkInterface::getFlowPeersList(lua_State* vm) {
   lua_newtable(vm);
 
-  for(int i=0; i<NUM_ROOTS; i++)
-    ndpi_twalk(ndpi_flows_root[i], flow_peers_walker, vm);  
+  flows_hash->walk(flow_peers_walker, (void*)vm);
 }
 
 /* **************************************************** */
 
 int ptr_compare(const void *a, const void *b) {
-  if(a == b) 
+  if(a == b)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flow found");
   return((a == b) ? 0 : 1);
 }
 
 /* **************************************************** */
 
-#if 0
-static void idle_flow_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
-  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
-    struct Flow *flow = *(Flow**)node;
-    struct ndpi_flow *root = (struct ndpi_flow*)user_data;
+static void idle_flow_walker(HashEntry *h, void *user_data) {
+  Flow *flow = (Flow*)h;
+  NetworkInterface *iface = (NetworkInterface*)user_data;
 
-    if(flow->isIdle()) {
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle flow");
-      ndpi_tdelete((void*)flow, (void**)&root, ptr_compare);
-      delete flow;
-    }
+  if(flow->isIdle(FLOW_MAX_IDLE)) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle flow");
+    iface->removeFlow(flow, false /* Don't double lock */);
+    delete flow;
   }
 }
-#endif
 
 /* **************************************************** */
 
@@ -506,14 +456,54 @@ void NetworkInterface::purgeIdleFlows() {
     return; /* Too early */
   else {
     /* Time to purge flows */
-
-#if 0
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purging idle flows");
-
-    for(int i=0; i<NUM_ROOTS; i++)
-      ndpi_twalk(ndpi_flows_root[i], idle_flow_walker, (void*)ndpi_flows_root[i]);
-
+    flows_hash->walk(idle_flow_walker, (void*)this);
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
-#endif
   }
 }
+
+/* **************************************************** */
+
+bool NetworkInterface::removeFlow(Flow *flow, bool lock_hash) {  return(flows_hash->remove(flow, lock_hash)); };
+
+/* **************************************************** */
+
+bool NetworkInterface::removeHost(Host *host, bool lock_hash) {  return(hosts_hash->remove(host, lock_hash)); };
+
+/* **************************************************** */
+
+u_int NetworkInterface::getNumFlows() { return(flows_hash->getNumEntries()); };
+
+/* **************************************************** */
+
+u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
+
+/* **************************************************** */
+
+static void idle_host_walker(HashEntry *h, void *user_data) {
+  Host *host = (Host*)h;
+  NetworkInterface *iface = (NetworkInterface*)user_data;
+
+  if(host->isIdle(HOST_MAX_IDLE)) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle host");
+    iface->removeHost(host, false /* Don't double lock */);
+    delete host;
+  }
+}
+
+/* **************************************************** */
+
+void NetworkInterface::purgeIdleHosts() {
+  if(next_idle_host_purge == 0) {
+    next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
+    return;
+  } else if(last_pkt_rcvd < next_idle_host_purge)
+    return; /* Too early */
+  else {
+    /* Time to purge hosts */
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purging idle hosts");
+    hosts_hash->walk(idle_host_walker, (void*)this);
+    next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
+  }
+}
+

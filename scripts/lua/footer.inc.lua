@@ -11,7 +11,7 @@ print [[ <hr>
 print(os.date("%Y"))
 print [[ </div>
   <div class="span1 offset3"> <span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>  </div>
-  <div class="span2 offset2"><div id="network-load"></div> </div>
+  <div class="span4"><div id="network-load"></div></div></div>
 
 </div> <!-- /row --> 
 </div><!-- /footer --> 
@@ -46,8 +46,8 @@ setInterval(function() {
 					   values.push(diff)
 
 					   updatingChart.text(values.join(",")).change()
-					   $('#network-load').text(bytesToSize(diff*8));
-					}
+					   $('#network-load').text(bytesToSize(diff*8)+" ["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
+   					}
 					   prev_bytes = rsp.bytes;
 					}
 				     });

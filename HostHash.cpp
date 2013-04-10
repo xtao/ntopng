@@ -23,102 +23,24 @@
 
 /* ************************************ */
 
-HostHash::HostHash(u_int hsize) {
-  max_hash_size = hsize, current_size = 0;
-
-  table = new Host*[max_hash_size];
-  for(u_int i = 0; i < max_hash_size; i++)
-    table[i] = NULL;
-}
- 
-/* ************************************ */
-
-HostHash::~HostHash() {
-  for(u_int i = 0; i < max_hash_size; i++)
-    if(table[i] != NULL) {
-      Host *head = table[i];
-
-      while(head) {
-	Host *next = head->next();
-
-	delete(head);
-	head = next;
-      }
-    }
-
-  delete[] table;
+HostHash::HostHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_hashes, _max_hash_size) {
+  ;
 }
 
 /* ************************************ */
 
 Host* HostHash::get(IpAddress *key) {
-  u_int32_t hash = (key->key() % max_hash_size);
+  u_int32_t hash = (key->key() % num_hashes);
 
   if(table[hash] == NULL)
     return(NULL);
   else {
-    Host *head = table[hash];
+    Host *head = (Host*)table[hash];
     
     while(head && (head->get_ip()->compare(key) != 0))
-      head = head->next();
+      head = (Host*)head->next();
     
     return(head);
   }
 }
 
-/* ************************************ */
- 
-bool HostHash::add(Host *h) {
-  if(current_size < max_hash_size) {
-    u_int32_t hash = (h->key() % max_hash_size);
-    
-    h->set_next(table[hash]);
-    table[hash] = h, current_size++;
-
-    return(true);
-  } else
-    return(false);
-}     
-
-/* ************************************ */
- 
-bool HostHash::remove(Host *h) {
-  u_int32_t hash = (h->key() % max_hash_size);
-  
-  if(table[hash] == NULL)
-    return(false);
-  else {
-    Host *head = table[hash], *prev = NULL;
-
-    while(head && (head->get_ip()->compare(h->get_ip()) != 0)) {
-      prev = head;
-      head = head->next();
-    }
-
-    if(head) {
-      if(prev != NULL)
-	prev->set_next(head->next());
-      else
-	table[hash] = head->next();
-
-      return(true);
-    } else
-      return(false);
-  }
-}     
-
-/* ************************************ */
-
-void HostHash::walk(void (*walker)(Host *h, void *user_data), void *user_data) {
-  for(u_int i = 0; i < max_hash_size; i++)
-    if(table[i] != NULL) {
-      Host *head = table[i];
-
-      while(head) {
-	Host *next = head->next();
-
-	walker(head, user_data);
-	head = next;
-      }
-    }
-}

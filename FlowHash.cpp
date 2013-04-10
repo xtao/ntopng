@@ -19,16 +19,27 @@
  *
  */
 
-#ifndef _HOST_HASH_H_
-#define _HOST_HASH_H_
-
 #include "ntop_includes.h"
- 
-class HostHash : public GenericHash {
- public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
 
-  Host* get(IpAddress *key);
+/* ************************************ */
+
+FlowHash::FlowHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_hashes, _max_hash_size) {
+  ;
 };
 
-#endif /* _HOST_HASH_H_ */
+/* ************************************ */
+
+Flow* FlowHash::find(u_int32_t src_ip, u_int32_t dst_ip, 
+		     u_int16_t src_port, u_int16_t dst_port, u_int16_t vlanId, u_int8_t protocol) {
+  u_int32_t hash = ((src_ip+dst_ip+src_port+dst_port+vlanId+protocol) % num_hashes);
+  Flow *head = (Flow*)table[hash];
+  
+  while(head) {
+    if(head->equal(src_ip, dst_ip, src_port, dst_port, vlanId, protocol))
+      return(head);
+    else
+      head = (Flow*)head->next();
+  }
+
+  return(NULL);
+}

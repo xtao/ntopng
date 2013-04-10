@@ -25,11 +25,11 @@
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
-	   u_int32_t _lower_ip, u_int16_t _lower_port,
-	   u_int32_t _upper_ip, u_int16_t _upper_port) {
-  iface = _iface, vlanId = _vlanId, protocol = _protocol,
-    lower_ip = _lower_ip, lower_port = _lower_port,
-    upper_ip = _upper_ip, upper_port = _upper_port;
+	   u_int32_t _src_ip, u_int16_t _src_port,
+	   u_int32_t _dst_ip, u_int16_t _dst_port) : HashEntry(_iface) {
+  vlanId = _vlanId, protocol = _protocol,
+    src_ip = _src_ip, src_port = _src_port,
+    dst_ip = _dst_ip, dst_port = _dst_port;
   cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
@@ -39,6 +39,7 @@ Flow::Flow(NetworkInterface *_iface,
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
   first_seen = last_seen = iface->getTimeLastPktRcvd();
+  allocFlowMemory();
 }
 
 /* *************************************** */
@@ -90,10 +91,10 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
 int Flow::compare(Flow *fb) {
   if(vlanId < fb->vlanId) return(-1); else { if(vlanId > fb->vlanId) return(1); }
-  if(lower_ip < fb->lower_ip) return(-1); else { if(lower_ip > fb->lower_ip) return(1); }
-  if(lower_port < fb->lower_port) return(-1); else { if(lower_port > fb->lower_port) return(1); }
-  if(upper_ip < fb->upper_ip) return(-1); else { if(upper_ip > fb->upper_ip) return(1); }
-  if(upper_port < fb->upper_port) return(-1); else { if(upper_port > fb->upper_port) return(1); }
+  if(src_ip < fb->src_ip) return(-1); else { if(src_ip > fb->src_ip) return(1); }
+  if(src_port < fb->src_port) return(-1); else { if(src_port > fb->src_port) return(1); }
+  if(dst_ip < fb->dst_ip) return(-1); else { if(dst_ip > fb->dst_ip) return(1); }
+  if(dst_port < fb->dst_port) return(-1); else { if(dst_port > fb->dst_port) return(1); }
   if(protocol < fb->protocol) return(-1); else { if(protocol > fb->protocol) return(1); }
 
   return(0);
@@ -151,7 +152,7 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
     addr >>= 8;
   } while (--n > 0);
 
-  /* Convert the string to lowercase */
+  /* Convert the string to srccase */
   retStr = (char*)(cp+1);
 
   return(retStr);
@@ -192,10 +193,10 @@ void Flow::print() {
 
   printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%u/%u bytes]\n",
 	 ipProto2Name(protocol),
-	 intoaV4(ntohl(lower_ip), buf1, sizeof(buf1)),
-	 ntohs(lower_port),
-	 intoaV4(ntohl(upper_ip), buf2, sizeof(buf2)),
-	 ntohs(upper_port),
+	 intoaV4(ntohl(src_ip), buf1, sizeof(buf1)),
+	 ntohs(src_port),
+	 intoaV4(ntohl(dst_ip), buf2, sizeof(buf2)),
+	 ntohs(dst_port),
 	 detected_protocol,
 	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
 	 cli2srv_packets, srv2cli_packets,
@@ -225,3 +226,18 @@ void Flow::update_hosts_stats() {
 			 diff_sent_packets, diff_sent_bytes);
   }
 }
+
+/* *************************************** */
+
+bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol) {
+  if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
+
+  if(((_src_ip == src_ip) || (_dst_ip == dst_ip) || (_src_port == src_port) || (_dst_port == dst_port))
+     || ((_dst_ip == src_ip) || (_src_ip == dst_ip) || (_dst_port == src_port) || (_src_port == dst_port)))
+    return(true);
+  else
+    return(false);
+}
+
+
+/* *************************************** */

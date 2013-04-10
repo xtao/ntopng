@@ -24,19 +24,19 @@
 
 #include "ntop_includes.h"
 
-class Host {
+class Host : public HashEntry {
  private:
   u_int16_t num_uses;
   IpAddress *ip;
   NdpiStats ndpiStats;
-  Host *hash_next;
   TrafficStats sent, rcvd;
-  void initialize();
+
+  void initialize(NetworkInterface *_iface);
 
  public:
-  Host();
-  Host(u_int32_t _ipv4);
-  Host(struct in6_addr _ipv6);
+  Host(NetworkInterface *_iface);
+  Host(NetworkInterface *_iface, u_int32_t _ipv4);
+  Host(NetworkInterface *_iface, struct in6_addr _ipv6);
   ~Host();
 
   inline void set_ipv4(u_int32_t _ipv4)       { ip->set_ipv4(_ipv4); }
@@ -48,15 +48,16 @@ class Host {
   void decUses() { num_uses--; }
 
   inline void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
-    sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
-    ndpiStats.incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
+    if(sent_packets || rcvd_packets) {
+      sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
+      ndpiStats.incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
+      updateSeen();
+    }
   }
 
   inline int compare(Host *node)     { return(ip->compare(node->ip)); };
   inline NdpiStats* get_ndpi_stats() { return(&ndpiStats);            };
 
-  inline Host* next()           { return(hash_next); };
-  inline void set_next(Host *n) { hash_next = n;     };
 
   void dumpKeyToLua(lua_State* vm);
 };

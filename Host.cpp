@@ -23,22 +23,22 @@
 
 /* *************************************** */
 
-Host::Host() {
+Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
   ip = new IpAddress(0);
 }
 
 /* *************************************** */
 
-Host::Host(u_int32_t _ipv4) {
-  ip = new IpAddress(ntohl(_ipv4));
-  initialize();
+Host::Host(NetworkInterface *_iface, u_int32_t _ipv4) : HashEntry(_iface) {
+  ip = new IpAddress(_ipv4);
+  initialize(_iface);
 }
 
 /* *************************************** */
 
-Host::Host(struct in6_addr _ipv6) {
+Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) {
   ip = new IpAddress(_ipv6);
-  initialize();
+  initialize(_iface);
 }
 
 /* *************************************** */
@@ -49,8 +49,9 @@ Host::~Host() {
 
 /* *************************************** */
 
-void Host::initialize() {
-  num_uses = 0, hash_next = NULL;
+void Host::initialize(NetworkInterface *_iface) {
+  num_uses = 0, iface = _iface;
+  first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
 }
 
