@@ -54,7 +54,7 @@ var margin = {top: 1, right: 1, bottom: 6, left: 1},
 
 function sankey() {
   var formatNumber = d3.format(",.0f"),
-    format = function(d) { return formatNumber(d) + " TWh"; },
+    format = function(sent, rcvd) { return "[sent: "+formatNumber(sent)+", rcvd: "+formatNumber(rcvd)+"]"; },
     color = d3.scale.category20();
     
     d3.json("/iface_flows_sankey.lua", function(hosts) {
@@ -79,16 +79,23 @@ function sankey() {
 	  .links(hosts.links)
 	  .layout(32);
 
+	/* Color the link according to traffic prevalence */
+	var colorlink = function(d){
+	  if (d.sent > d.rcvd) return color(d.source.name);
+	  else return color(d.target.name);
+	}
+
 	var link = svg.append("g").selectAll(".link")
 	  .data(hosts.links)
 	  .enter().append("path")
 	  .attr("class", "link")
 	  .attr("d", path)
 	  .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+	  .style("stroke", function(d){ return d.color = colorlink(d); })
 	  .sort(function(a, b) { return b.dy - a.dy; });
 
 	link.append("title")
-	  .text(function(d) { return d.source.name + " â†’ " + d.target.name + "\n" + format(d.value); });
+	  .text(function(d) { return d.source.name + " - " + d.target.name + "\n" + format(d.sent, d.rcvd); });
 
 	var node = svg.append("g").selectAll(".node")
 	  .data(hosts.nodes)
@@ -99,6 +106,7 @@ function sankey() {
 		.origin(function(d) { return d; })
 		.on("dragstart", function() { this.parentNode.appendChild(this); })
 		.on("drag", dragmove));
+
 
 	node.append("rect")
 	  .attr("height", function(d) { return d.dy; })

@@ -54,7 +54,7 @@ for key, values in pairs(peers) do
 	 print ",\n"
       end
       
-      print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. "}")
+      print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent"] .. ", \"rcvd\": ".. values["rcvd"] .. "}")
       num = num + 1
    end
 end
