@@ -26,6 +26,8 @@
 
 #define NUM_ROOTS 512
 
+class Flow;
+
 typedef struct ether80211q {
   u_int16_t vlanId;
   u_int16_t protoType;
@@ -45,6 +47,7 @@ class NetworkInterface {
   HostHash *hosts_hash;
   Mutex *host_add_walk_lock, *flow_add_walk_lock[NUM_ROOTS];
   struct ndpi_detection_module_struct *ndpi_struct;
+  time_t last_pkt_rcvd, next_idle_flow_purge;
 
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 
@@ -54,12 +57,13 @@ class NetworkInterface {
   void startPacketPolling();
   void shutdown();
 
+  inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
-  inline void incStats(u_int pkt_len) { ifStats->incStats(pkt_len);      };  
+  inline void incStats(time_t last, u_int pkt_len) { last_pkt_rcvd = last, ifStats->incStats(pkt_len); };
   inline TrafficStats* getStats()   { return(ifStats);                 };
   inline int get_datalink()           { return(pcap_datalink_type);      };
   inline pcap_t* get_pcap_handle()    { return(pcap_handle);             };
@@ -75,6 +79,8 @@ class NetworkInterface {
   void updateHostStats();
   void getActiveHostsList(lua_State* vm);
   void getFlowPeersList(lua_State* vm);
+
+  void purgeIdleFlows();
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

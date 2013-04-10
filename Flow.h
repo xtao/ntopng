@@ -24,7 +24,8 @@
 
 #include "ntop_includes.h"
 
-class NetworkInterface;
+#define FLOW_PURGE_FREQUENCY     5 /* sec */
+#define FLOW_MAX_IDLE           30 /* sec */
 
 class Flow {
  private:
@@ -39,6 +40,7 @@ class Flow {
   void *src_id, *dst_id;
   Host *src_host, *dst_host;
   NetworkInterface *iface;
+  time_t first_seen, last_seen;
 
   /* Stats */
   u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
@@ -47,6 +49,7 @@ class Flow {
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
+  inline void updateSeen() { last_seen = iface->getTimeLastPktRcvd(); }
 
  public:
   Flow(NetworkInterface *_iface,
@@ -55,9 +58,10 @@ class Flow {
        u_int32_t _upper_ip, u_int16_t _upper_port);
   ~Flow();
 
+  inline bool isIdle() { return(((iface->getTimeLastPktRcvd()-last_seen) > FLOW_MAX_IDLE) ? true : false); };
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
-  inline void incStats(bool cli2srv_direction, u_int pkt_len) { if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };  
+  inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };  
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };

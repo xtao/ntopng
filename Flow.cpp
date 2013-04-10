@@ -38,6 +38,7 @@ Flow::Flow(NetworkInterface *_iface,
   iface->findFlowHosts(this, &src_host, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
+  first_seen = last_seen = iface->getTimeLastPktRcvd();
 }
 
 /* *************************************** */
@@ -56,9 +57,9 @@ void Flow::allocFlowMemory() {
 /* *************************************** */
 
 void Flow::deleteFlowMemory() {
-  if(ndpi_flow) free(ndpi_flow);
-  if(src_id)    free(src_id);
-  if(dst_id)    free(dst_id);
+  if(ndpi_flow) { free(ndpi_flow); ndpi_flow = NULL; }
+  if(src_id)    { free(src_id);    src_id = NULL;    }
+  if(dst_id)    { free(dst_id);    dst_id = NULL;    }
 
   if(src_host) src_host->decUses();
   if(dst_host) dst_host->decUses();

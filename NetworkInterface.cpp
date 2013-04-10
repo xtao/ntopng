@@ -261,7 +261,7 @@ void NetworkInterface::packet_processing(const u_int64_t time, u_int16_t vlan_id
 
 /* **************************************************** */
 
-static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header, const u_char * packet) {
+static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, const u_char * packet) {
   NetworkInterface *iface = (NetworkInterface*)args;
   const struct ndpi_ethhdr *ethernet;
   struct ndpi_iphdr *iph;
@@ -271,9 +271,9 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
   int pcap_datalink_type = iface->get_datalink();
 
-  iface->incStats(header->caplen);
-
-  time = ((uint64_t) header->ts.tv_sec) * res + header->ts.tv_usec / (1000000 / res);
+  iface->incStats(h->ts.tv_sec, h->caplen);
+    
+  time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
   if(lasttime > time) time = lasttime;
 
   lasttime = time;
@@ -299,7 +299,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
   iph = (struct ndpi_iphdr *) &packet[ip_offset];
 
   // just work on Ethernet packets that contain IP
-  if(type == ETH_P_IP && header->caplen >= ip_offset) {
+  if(type == ETH_P_IP && h->caplen >= ip_offset) {
     u_int16_t frag_off = ntohs(iph->frag_off);
 
     if(iph->version != 4) {
@@ -336,8 +336,10 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *header
 
     }
 
-    iface->packet_processing(time, vlan_id, iph, header->len - ip_offset, header->len);
+    iface->packet_processing(time, vlan_id, iph, h->len - ip_offset, h->len);
   }
+
+  iface->purgeIdleFlows();
 }
 
 /* **************************************************** */
@@ -469,3 +471,49 @@ void NetworkInterface::getFlowPeersList(lua_State* vm) {
     ndpi_twalk(ndpi_flows_root[i], flow_peers_walker, vm);  
 }
 
+/* **************************************************** */
+
+int ptr_compare(const void *a, const void *b) {
+  if(a == b) 
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flow found");
+  return((a == b) ? 0 : 1);
+}
+
+/* **************************************************** */
+
+#if 0
+static void idle_flow_walker(const void *node, ndpi_VISIT which, int depth, void *user_data) {
+  if((which == ndpi_preorder) || (which == ndpi_leaf)) {
+    struct Flow *flow = *(Flow**)node;
+    struct ndpi_flow *root = (struct ndpi_flow*)user_data;
+
+    if(flow->isIdle()) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle flow");
+      ndpi_tdelete((void*)flow, (void**)&root, ptr_compare);
+      delete flow;
+    }
+  }
+}
+#endif
+
+/* **************************************************** */
+
+void NetworkInterface::purgeIdleFlows() {
+  if(next_idle_flow_purge == 0) {
+    next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
+    return;
+  } else if(last_pkt_rcvd < next_idle_flow_purge)
+    return; /* Too early */
+  else {
+    /* Time to purge flows */
+
+#if 0
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purging idle flows");
+
+    for(int i=0; i<NUM_ROOTS; i++)
+      ndpi_twalk(ndpi_flows_root[i], idle_flow_walker, (void*)ndpi_flows_root[i]);
+
+    next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
+#endif
+  }
+}
