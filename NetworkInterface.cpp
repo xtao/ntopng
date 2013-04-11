@@ -86,12 +86,20 @@ NetworkInterface::NetworkInterface(char *name) {
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
+  
   next_idle_flow_purge = next_idle_host_purge = 0;
+  polling_started = false;
 }
 
 /* **************************************************** */
 
 NetworkInterface::~NetworkInterface() {
+  if(polling_started) {
+    void *res;
+
+    pthread_join(pollLoop, &res);
+  }
+
   if(pcap_handle)
     pcap_close(pcap_handle);
 
@@ -325,6 +333,7 @@ void NetworkInterface::startPacketPolling() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
 
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
+  polling_started = true;
 }
 
 /* **************************************************** */

@@ -49,6 +49,7 @@ class NetworkInterface {
   HostHash *hosts_hash;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
+  bool polling_started;
 
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 

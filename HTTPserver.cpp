@@ -99,6 +99,8 @@ static int handle_http_request(void *cls,
   struct stat buf;
   char path[255] = { 0 };
 
+  if(ntop->getGlobals()->isShutdown()) return(MHD_YES);
+
   if(0 != strcmp(method, MHD_HTTP_METHOD_GET))
     return MHD_NO;              /* unexpected method */
 
@@ -198,6 +200,7 @@ HTTPserver::~HTTPserver() {
   if(httpd_v4) MHD_stop_daemon(httpd_v4);
   if(httpd_v6) MHD_stop_daemon(httpd_v6);
 
+  free(docs_dir), free(scripts_dir);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
 };
 

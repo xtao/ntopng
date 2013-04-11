@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     case 'h':
       help();
     case 'i':
-      ifName = strdup(optarg);
+      ifName = optarg;
       break;
     case 'w':
       http_port = atoi(optarg);
