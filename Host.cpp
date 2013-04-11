@@ -84,12 +84,12 @@ bool Host::isIdle(u_int max_idleness) {
 /* ***************************************** */
 
 void Host::resolveHostName() {
-  char hostname[NI_MAXHOST] = "";
+  char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
   struct sockaddr sa;
 
   ip->dump(&sa);
 
-  if((struct hostent*)getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, NULL, NULL, 0) == 0) {
+  if(getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD) == 0) {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", hostname);
     symbolic_name = strdup(hostname);
   }
