@@ -55,7 +55,9 @@ if(num == 0) then
 
    if(top_host ~= nil) then
       -- We now have have to find this host and some peers
-      hosts[top_host] = 1 
+      hosts[top_host] = 0 
+      print ("{\"name\": \"" .. top_host .. "\"}")
+      num = num + 1
 
       for key, values in pairs(peers) do
 	 if(string.find(key, top_host) >= 0) then
@@ -63,11 +65,8 @@ if(num == 0) then
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
 
-		  if(num > 0) then
-		     print ",\n"
-		  end
 		  -- 3. print nodes
-		  print ("{\"name\": \"" .. word .. "\"}")
+		  print (",\n{\"name\": \"" .. word .. "\"}")
 		  num = num + 1
 
 		  if(num >= max_num_hosts) then
@@ -90,40 +89,40 @@ if(num == 0) then
 end -- if
 
 
-   print "\n],\n"
-   print '"links" : [\n'
+print "\n],\n"
+print '"links" : [\n'
 
-   -- 4. print links
-   --  print (top_host)
-   num = 0
-   for key, values in pairs(peers) do
-      val = values["sent"] + values["rcvd"]
-      --print(key.."\n")
+-- 4. print links
+--  print (top_host)
+num = 0
+for key, values in pairs(peers) do
+   val = values["sent"] + values["rcvd"]
+   --print(key.."\n")
 
-      if((val > threshold) or ((top_host ~= nil) and (string.find(key, top_host) >= 0)) and (num < max_num_links)) then
-	 e = {}
-	 id = 0
-	 for word in string.gmatch(key, "[%d+.]+") do
-	    -- print(word .. "=" .. hosts[word].."\n")
-	    e[id] = hosts[word]
-	    id = id + 1
+   if((val > threshold) or ((top_host ~= nil) and (string.find(key, top_host) >= 0)) and (num < max_num_links)) then
+      e = {}
+      id = 0
+      for word in string.gmatch(key, "[%d+.]+") do
+	 -- print(word .. "=" .. hosts[word].."\n")
+	 e[id] = hosts[word]
+	 id = id + 1
+      end
+      
+      if((e[0] ~= nil) and (e[1] ~= nil) and (e[0] ~= e[1])) then
+	 if(num > 0) then
+	    print ",\n"
 	 end
 	 
-	 if((e[0] ~= nil) and (e[1] ~= nil)) then
-	    if(num > 0) then
-	       print ",\n"
-	    end
-	    
-	    print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent"] .. ", \"rcvd\": ".. values["rcvd"] .. "}")
-	    num = num + 1
-	 end
+	 print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent"] .. ", \"rcvd\": ".. values["rcvd"] .. "}")
+	 num = num + 1
       end
-
    end
 
+end
 
 
-   print ("\n]}\n")
+
+print ("\n]}\n")
 
 
 
