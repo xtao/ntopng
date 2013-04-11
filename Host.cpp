@@ -25,20 +25,21 @@
 
 Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
   ip = new IpAddress(0);
+  initialize();
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, u_int32_t _ipv4) : HashEntry(_iface) {
   ip = new IpAddress(_ipv4);
-  initialize(_iface);
+  initialize();
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) {
   ip = new IpAddress(_ipv6);
-  initialize(_iface);
+  initialize();
 }
 
 /* *************************************** */
@@ -49,8 +50,8 @@ Host::~Host() {
 
 /* *************************************** */
 
-void Host::initialize(NetworkInterface *_iface) {
-  num_uses = 0, iface = _iface;
+void Host::initialize() {
+  num_uses = 0;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
 }
@@ -63,4 +64,16 @@ void Host::dumpKeyToLua(lua_State* vm) {
   lua_pushstring(vm, get_ip()->print(str, sizeof(str)));
   lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
   lua_settable(vm, -3);
+}
+
+/* ***************************************** */
+
+bool Host::isIdle(u_int max_idleness) {
+  if(num_uses > 0) 
+    return(false);
+  else {
+    HashEntry *h = (HashEntry*)this;
+
+    return(h->isIdle(max_idleness));
+  }
 }

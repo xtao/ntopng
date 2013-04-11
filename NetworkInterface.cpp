@@ -86,6 +86,7 @@ NetworkInterface::NetworkInterface(char *name) {
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
+  next_idle_flow_purge = next_idle_host_purge = 0;
 }
 
 /* **************************************************** */
@@ -185,7 +186,7 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
       return(ret);
     } else {
       delete ret;
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
+      // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
       return(NULL); 
     }
   } else {
@@ -345,8 +346,9 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
     if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
       (*src) = new Host(this, flow->get_src_ipv4());
       hosts_hash->add(*src);
-    } else
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+    } else {
+      //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+    }
   }
 
   /* ***************************** */
@@ -358,8 +360,9 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
     if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
       (*dst) = new Host(this, flow->get_dst_ipv4());
       hosts_hash->add(*dst);
-    } else
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+    } else {
+      // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+    }
   }
 }
 
@@ -440,7 +443,7 @@ static void idle_flow_walker(HashEntry *h, void *user_data) {
   NetworkInterface *iface = (NetworkInterface*)user_data;
 
   if(flow->isIdle(FLOW_MAX_IDLE)) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle flow");
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Delete idle flow");
     iface->removeFlow(flow, false /* Don't double lock */);
     delete flow;
   }
@@ -456,7 +459,7 @@ void NetworkInterface::purgeIdleFlows() {
     return; /* Too early */
   else {
     /* Time to purge flows */
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purging idle flows");
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle flows");
     flows_hash->walk(idle_flow_walker, (void*)this);
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
   }
@@ -485,7 +488,7 @@ static void idle_host_walker(HashEntry *h, void *user_data) {
   NetworkInterface *iface = (NetworkInterface*)user_data;
 
   if(host->isIdle(HOST_MAX_IDLE)) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Delete idle host");
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Delete idle host");
     iface->removeHost(host, false /* Don't double lock */);
     delete host;
   }
@@ -501,7 +504,7 @@ void NetworkInterface::purgeIdleHosts() {
     return; /* Too early */
   else {
     /* Time to purge hosts */
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purging idle hosts");
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
     hosts_hash->walk(idle_host_walker, (void*)this);
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
   }

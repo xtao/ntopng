@@ -127,7 +127,7 @@ static int handle_http_request(void *cls,
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       Lua *l = new Lua();
       
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
       
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
@@ -140,7 +140,7 @@ static int handle_http_request(void *cls,
       ret = page_not_found(connection, url);
     }
   } else {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", url, path);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
 
     response = MHD_create_response_from_callback(buf.st_size, 32 * 1024,     /* 32k page size */
 						 &file_reader,

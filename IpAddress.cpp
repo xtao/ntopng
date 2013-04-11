@@ -100,7 +100,7 @@ char* IpAddress::_intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
 char* IpAddress::_intoa(char* buf, u_short bufLen) {
   if((addr.ipVersion == 4) || (addr.ipVersion == 0 /* Misconfigured */))
-    return(_intoaV4(addr.ipType.ipv4, buf, bufLen));
+    return(_intoaV4(ntohl(addr.ipType.ipv4), buf, bufLen));
   else {
     char *ret = (char*)inet_ntop(AF_INET6, &addr.ipType.ipv6, buf, bufLen);
 

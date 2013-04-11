@@ -31,7 +31,7 @@ class Host : public HashEntry {
   NdpiStats ndpiStats;
   TrafficStats sent, rcvd;
 
-  void initialize(NetworkInterface *_iface);
+  void initialize();
 
  public:
   Host(NetworkInterface *_iface);
@@ -57,8 +57,7 @@ class Host : public HashEntry {
 
   inline int compare(Host *node)     { return(ip->compare(node->ip)); };
   inline NdpiStats* get_ndpi_stats() { return(&ndpiStats);            };
-
-
+  bool isIdle(u_int max_idleness);
   void dumpKeyToLua(lua_State* vm);
 };
 

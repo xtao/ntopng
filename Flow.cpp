@@ -69,6 +69,8 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
+  if(src_host) src_host->decUses();
+  if(dst_host) dst_host->decUses();
   deleteFlowMemory();
 }
 
@@ -163,10 +165,6 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 void Flow::print_peers(lua_State* vm) {
   char buf1[32], buf2[32], buf[256];
 
-  snprintf(buf, sizeof(buf), "%s %s", 
-	   intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)), 
-	   intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
-
   lua_newtable(vm);
   
   // Sent
@@ -181,6 +179,10 @@ void Flow::print_peers(lua_State* vm) {
   
   
   // Key
+  snprintf(buf, sizeof(buf), "%s %s", 
+	   intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)), 
+	   intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
+
   lua_pushstring(vm, buf);
   lua_insert(vm, -2);
   lua_settable(vm, -3);  
