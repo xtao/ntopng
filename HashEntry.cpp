@@ -29,6 +29,12 @@ HashEntry::HashEntry(NetworkInterface *_iface) {
 
 /* ***************************************** */
 
+HashEntry::~HashEntry() {
+  ;
+}
+
+/* ***************************************** */
+
 void HashEntry::updateSeen() {
   last_seen = iface->getTimeLastPktRcvd();
 }

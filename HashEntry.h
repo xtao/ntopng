@@ -34,6 +34,7 @@ class HashEntry {
 
  public:
   HashEntry(NetworkInterface *_iface);
+  virtual ~HashEntry();
 
   inline HashEntry* next()           { return(hash_next); };
   inline void set_next(HashEntry *n) { hash_next = n;     };
