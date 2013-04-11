@@ -40,10 +40,10 @@ void sigproc(int sig) {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Leaving...");
   if(called) return; else called = 1;
   ntop->getGlobals()->shutdown();  
-
-  NetworkInterface *iface = ntop->get_NetworkInterface("any");
+  sleep(2); /* Wait until all threads know that we're shutting down... */
   
-  if(iface) {
+  
+  if(NetworkInterface *iface = ntop->get_NetworkInterface("any")) {
     TrafficStats *stats = iface->getStats();
     
     stats->printStats();
@@ -109,5 +109,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   sigproc(0);
+  delete ntop;
+
   return(0);
 }

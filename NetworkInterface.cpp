@@ -352,11 +352,12 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*src) = hosts_hash->get(&ip);
 
   if((*src) == NULL) {
-    if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
-      (*src) = new Host(this, flow->get_src_ipv4());
-      hosts_hash->add(*src);
-    } else {
+    (*src) = new Host(this, flow->get_src_ipv4());
+    if(!hosts_hash->add(*src)) {
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+      delete *src;
+      *src = *dst = NULL;
+      return;
     }
   }
 
@@ -366,11 +367,12 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*dst) = hosts_hash->get(&ip);
 
   if((*dst) == NULL) {
-    if(hosts_hash->getNumEntries() < MAX_NUM_INTERFACE_HOSTS) {
-      (*dst) = new Host(this, flow->get_dst_ipv4());
-      hosts_hash->add(*dst);
-    } else {
+    (*dst) = new Host(this, flow->get_dst_ipv4());
+    if(!hosts_hash->add(*dst)) {
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+      delete *dst;
+      *dst = NULL;
+      return;
     }
   }
 }
