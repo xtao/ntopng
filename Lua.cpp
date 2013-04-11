@@ -148,7 +148,7 @@ void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
 
 /* ****************************************** */
 
-void lua_push_int_table_entry(lua_State *L, const char *key, int value) {
+void lua_push_int_table_entry(lua_State *L, const char *key, u_int32_t value) {
   lua_pushstring(L, key);
   lua_pushinteger(L, value);
   lua_settable(L, -3);
