@@ -41,7 +41,6 @@ max_num_entries = 10
 -- Print entries whose value >= 5% of the total
 threshold = (tot * 5) / 100
 
-
 print "[\n"
 num = 0
 accumulate = 0

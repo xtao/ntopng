@@ -20,6 +20,7 @@
  */
 
 #include "ntop_includes.h"
+#include <netdb.h>
 
 /* *************************************** */
 
@@ -45,13 +46,14 @@ Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) 
 /* *************************************** */
 
 Host::~Host() {
+  if(symbolic_name) free(symbolic_name);
   delete ip;
 }
 
 /* *************************************** */
 
 void Host::initialize() {
-  num_uses = 0;
+  num_uses = 0, name_resolved = false, symbolic_name = NULL;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
 }
@@ -62,6 +64,7 @@ void Host::dumpKeyToLua(lua_State* vm) {
   char str[64];
 
   lua_pushstring(vm, get_ip()->print(str, sizeof(str)));
+  //lua_pushstring(vm, get_name());
   lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
   lua_settable(vm, -3);
 }
@@ -76,4 +79,20 @@ bool Host::isIdle(u_int max_idleness) {
 
     return(h->isIdle(max_idleness));
   }
+}
+
+/* ***************************************** */
+
+void Host::resolveHostName() {
+  char hostname[NI_MAXHOST] = "";
+  struct sockaddr sa;
+
+  ip->dump(&sa);
+
+  if((struct hostent*)getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, NULL, NULL, 0) == 0) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", hostname);
+    symbolic_name = strdup(hostname);
+  }
+
+  name_resolved = true;
 }

@@ -53,6 +53,7 @@ class IpAddress {
   inline void set_ipv6(struct in6_addr _ipv6) { addr.ipVersion = 6, memcpy(&addr.ipType.ipv6, &_ipv6, sizeof(_ipv6)); }
   int compare(IpAddress *ip);
   u_int key();
+  void dump(struct sockaddr *sa);
 
   char* print(char *str, u_int str_len);
 };

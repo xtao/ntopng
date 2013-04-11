@@ -26,10 +26,12 @@
 
 class Host : public HashEntry {
  private:
+  char *symbolic_name;
   u_int16_t num_uses;
   IpAddress *ip;
   NdpiStats ndpiStats;
   TrafficStats sent, rcvd;
+  bool name_resolved;
 
   void initialize();
 
@@ -43,6 +45,7 @@ class Host : public HashEntry {
   inline void set_ipv6(struct in6_addr _ipv6) { ip->set_ipv6(_ipv6); }
   inline u_int32_t key()                      { return(ip->key());   }
   inline IpAddress* get_ip()                  { return(ip);          }
+  inline char*      get_name()                { resolveHostName(); return(symbolic_name);  }
 
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
@@ -59,6 +62,7 @@ class Host : public HashEntry {
   inline NdpiStats* get_ndpi_stats() { return(&ndpiStats);            };
   bool isIdle(u_int max_idleness);
   void dumpKeyToLua(lua_State* vm);
+  void resolveHostName();
 };
 
 #endif /* _HOST_H_ */

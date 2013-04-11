@@ -118,3 +118,20 @@ char* IpAddress::_intoa(char* buf, u_short bufLen) {
 char* IpAddress::print(char *str, u_int str_len) {
   return(_intoa(str, str_len));
 }
+
+/* ******************************************* */
+
+void IpAddress::dump(struct sockaddr *sa) {
+  memset(sa, 0, sizeof(struct sockaddr));
+
+  if(addr.ipVersion == 4) {
+    struct sockaddr_in *in4 = (struct sockaddr_in*)sa;
+
+    in4->sin_family = AF_INET, in4->sin_addr.s_addr = addr.ipType.ipv4;
+  } else {
+    struct sockaddr_in6 *in6 = (struct sockaddr_in6*)sa;
+
+    memcpy(&in6->sin6_addr, &addr.ipType.ipv6, sizeof(struct in6_addr));
+    in6->sin6_family = AF_INET6;
+  }
+}
