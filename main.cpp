@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     switch(c) {
     case 'h':
       help();
+      break;
     case 'i':
       ifName = optarg;
       break;
@@ -105,7 +106,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if(ifName == NULL) help();
   if(prefs == NULL) prefs = new Prefs();
 
   ntop = new Ntop(prefs);

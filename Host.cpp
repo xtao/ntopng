@@ -60,7 +60,7 @@ void Host::initialize(bool init_all) {
   if(init_all) {
     char buf[64], rsp[256], str[64];
     snprintf(str, sizeof(str), "dns.cache.%s", ip->print(buf, sizeof(buf)));
-    
+
     if(ntop->getPrefs()->get(str, rsp, sizeof(rsp)) == 0)
       symbolic_name = strdup(rsp);
     else {
@@ -82,7 +82,7 @@ void Host::dumpKeyToLua(lua_State* vm) {
 /* ***************************************** */
 
 bool Host::isIdle(u_int max_idleness) {
-  if(num_uses > 0) 
+  if(num_uses > 0)
     return(false);
   else {
     HashEntry *h = (HashEntry*)this;
@@ -117,8 +117,15 @@ void Host::setName(char *name) {
 /* ***************************************** */
 
 char* Host::get_name(char *buf, u_int buf_len) {
+  char addrbuf[64];
+
   if(symbolic_name != NULL)
     return(symbolic_name);
-  else
+
+  snprintf(addrbuf, sizeof(addrbuf), "dns.cache.%s", get_ip()->print(buf, buf_len));
+  if(ntop->getPrefs()->get(addrbuf, buf, buf_len) == 0) {
+    setName(buf);
+    return(symbolic_name);
+  } else
     return(get_ip()->print(buf, buf_len));
 }

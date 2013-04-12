@@ -11,13 +11,11 @@
       <hr>
       <div class="jumbotron">
         <h4>Top Talkers Relationships</h4>
-
 <style>
 
 
-
 #chart {
-  height: 400px;
+  height: 380px;
 }
 
 .node rect {

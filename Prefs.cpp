@@ -29,6 +29,8 @@ Prefs::Prefs(char *redis_host, int redis_port) {
     printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
     exit(-1);
   }
+
+  setDefaults();
 }
 
 /* **************************************** */
@@ -54,8 +56,40 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
-int Prefs::set(char *key, char *value) {
+int Prefs::set(char *key, char *value, u_int expire_secs) {
+  int rc = credis_set(redis, key, value);
+
+  if((rc == 0) && (expire_secs != 0))
+    credis_expire(redis, key, expire_secs);
+
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s <-> %s", key, value);
-  return(credis_set(redis, key, value));
+  return(rc);
 }
 
+/* **************************************** */
+
+int Prefs::queueHostToResolve(char *hostname) {  
+  return(credis_rpush(redis, "dns.toresolve", hostname));
+}
+
+/* **************************************** */
+
+int Prefs::popHostToResolve(char *hostname, u_int hostname_len) {  
+  char *val;
+  int rc = credis_lpop(redis, (char*)"dns.toresolve", &val);
+
+  if(rc == 0)
+    snprintf(hostname, hostname_len, "%s", val);
+  else
+    val[0] = '\0';
+  
+  return(rc);
+}
+
+/* **************************************** */
+
+void Prefs::setDefaults() {
+  set((char*)"dns.cache.127.0.0.1", (char*)"localhost");
+  set((char*)"dns.cache.255.255.255.255", (char*)"Broadcast");
+  set((char*)"dns.cache.0.0.0.0", (char*)"No IP");
+}

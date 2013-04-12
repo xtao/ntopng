@@ -27,13 +27,17 @@
 
 class Prefs {
   REDIS redis;
+  
+  void setDefaults();
 
  public:
   Prefs(char *redis_host = (char*)"127.0.0.1", int redis_port = 6379);
   ~Prefs();
 
   int get(char *key, char *rsp, u_int rsp_len);
-  int set(char *key, char *value);
+  int set(char *key, char *value, u_int expire_secs=0);
+  int queueHostToResolve(char *hostname);
+  int popHostToResolve(char *hostname, u_int hostname_len);
 };
 
 #endif /* _PREFS_H_ */

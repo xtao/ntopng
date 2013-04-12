@@ -20,6 +20,9 @@
  */
 
 #include "ntop_includes.h"
+#include <pwd.h>
+#include <uuid/uuid.h>
+#include <sys/stat.h>
 
 #ifndef ETH_P_IP
 #define ETH_P_IP 0x0800
@@ -55,8 +58,25 @@ NetworkInterface::NetworkInterface(char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
 
+  if(name == NULL) {
+    name = pcap_lookupdev(pcap_error_buffer);
+
+    if(name == NULL) {
+      printf("ERROR: Unable to locate default interface (%s)\n", pcap_error_buffer);
+      exit(0);
+    }
+  }
+
   ifname = strdup(name);
   ifStats = new TrafficStats();
+
+#ifndef WIN32
+  if(strstr(ifname, ".pcap") != NULL) {
+
+    printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
+
+  }
+#endif
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
 				   ntop->getGlobals()->getPromiscuousMode(),
@@ -65,12 +85,13 @@ NetworkInterface::NetworkInterface(char *name) {
 
     if(pcap_handle == NULL) {
       printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
-      throw "Unable to open network interface ";
+      exit(0);
     } else
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
   } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
 
+  dropPrivileges();
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
   flows_hash = new FlowHash(4096, 32768), hosts_hash = new HostHash(4096, 32768);
@@ -523,3 +544,37 @@ void NetworkInterface::purgeIdleHosts() {
   }
 }
 
+/* **************************************************** */
+
+void NetworkInterface::dropPrivileges() {
+#ifndef WIN32
+  struct passwd *pw = NULL;
+  const char *username;
+
+  if(getgid() && getuid()) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Privileges are not dropped as we're not superuser");
+    return;
+  }
+  
+  username = "nobody";
+  pw = getpwnam(username);
+  
+  if(pw == NULL) {
+    username = "anonymous";
+    pw = getpwnam(username);
+  }
+
+  if(pw != NULL) {
+    /* Drop privileges */
+    if((setgid(pw->pw_gid) != 0) || (setuid(pw->pw_uid) != 0)) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to drop privileges [%s]",
+		 strerror(errno));
+    } else
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changed to %s", username);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate user %s", username);
+  }
+
+  umask(0);
+#endif
+}

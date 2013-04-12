@@ -36,8 +36,8 @@ extern "C" {
 
 static HTTPserver *httpserver;
 
-#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body>Page &quot;%s&quot; was not found</body></html>"
-#define PAGE_ERROR     "<html><head><title>ntop</title></head><body>Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
+#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/error.png> Page &quot;%s&quot; was not found</body></html>"
+#define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/error.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 
 /* ****************************************** */
 
@@ -99,7 +99,8 @@ static int handle_http_request(void *cls,
   struct stat buf;
   char path[255] = { 0 };
 
-  if(ntop->getGlobals()->isShutdown()) return(MHD_YES);
+  if(ntop->getGlobals()->isShutdown()) 
+    return(MHD_YES);
 
   if(0 != strcmp(method, MHD_HTTP_METHOD_GET))
     return MHD_NO;              /* unexpected method */
@@ -108,6 +109,14 @@ static int handle_http_request(void *cls,
     /* do never respond on first call */
     *ptr = &aptr;
     return MHD_YES;
+  }
+
+  if(strstr(url, "//")
+     || strstr(url, "&&")
+     || strstr(url, "??")
+     || strstr(url, "..")) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", url);
+    return(page_error(connection, url, "The URL specified contains invalid/dangerous characters"));
   }
 
   *ptr = NULL;                  /* reset when done */

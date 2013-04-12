@@ -51,6 +51,7 @@ class NetworkInterface {
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
   bool polling_started;
 
+  void dropPrivileges();
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 
  public:

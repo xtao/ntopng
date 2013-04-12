@@ -97,7 +97,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  svr->setName((char*)ndpi_flow->host_server_name);
 	  snprintf(addrbuf, sizeof(addrbuf), "dns.cache.%s",
 		   svr->get_ip()->print(buf, sizeof(buf)));
-	  ntop->getPrefs()->set(addrbuf, (char*)ndpi_flow->host_server_name);
+	  ntop->getPrefs()->set(addrbuf, (char*)ndpi_flow->host_server_name, 300 /* 5 mins cache */);
 	}
 	break;
       }
