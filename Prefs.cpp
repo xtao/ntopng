@@ -45,7 +45,7 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
 
   if((rc = credis_get(redis, key, &val)) == 0) {
     snprintf(rsp, rsp_len, "%s", val);
-    free(val);
+    // free(val);
   } else
     rsp[0] = 0;
 
@@ -55,6 +55,7 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
 /* **************************************** */
 
 int Prefs::set(char *key, char *value) {
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s <-> %s", key, value);
   return(credis_set(redis, key, value));
 }
 

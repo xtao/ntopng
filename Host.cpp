@@ -26,21 +26,21 @@
 
 Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
   ip = new IpAddress(0);
-  initialize();
+  initialize(false);
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, u_int32_t _ipv4) : HashEntry(_iface) {
   ip = new IpAddress(_ipv4);
-  initialize();
+  initialize(true);
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) {
   ip = new IpAddress(_ipv6);
-  initialize();
+  initialize(true);
 }
 
 /* *************************************** */
@@ -52,19 +52,29 @@ Host::~Host() {
 
 /* *************************************** */
 
-void Host::initialize() {
+void Host::initialize(bool init_all) {
   num_uses = 0, name_resolved = false, symbolic_name = NULL;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
+
+  if(init_all) {
+    char buf[64], rsp[256], str[64];
+    snprintf(str, sizeof(str), "dns.cache.%s", ip->print(buf, sizeof(buf)));
+    
+    if(ntop->getPrefs()->get(str, rsp, sizeof(rsp)) == 0)
+      symbolic_name = strdup(rsp);
+    else {
+      /* RPUSH dns.cache.toresolve <address> */
+    }
+  }
 }
 
 /* *************************************** */
 
 void Host::dumpKeyToLua(lua_State* vm) {
-  char str[64];
+  char buf[64];
 
-  lua_pushstring(vm, get_ip()->print(str, sizeof(str)));
-  //lua_pushstring(vm, get_name());
+  lua_pushstring(vm, get_name(buf, sizeof(buf)));
   lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
   lua_settable(vm, -3);
 }
@@ -95,4 +105,20 @@ void Host::resolveHostName() {
   }
 
   name_resolved = true;
+}
+
+/* ***************************************** */
+
+void Host::setName(char *name) {
+  if(symbolic_name) free(symbolic_name);
+  symbolic_name = strdup(name);
+}
+
+/* ***************************************** */
+
+char* Host::get_name(char *buf, u_int buf_len) {
+  if(symbolic_name != NULL)
+    return(symbolic_name);
+  else
+    return(get_ip()->print(buf, buf_len));
 }

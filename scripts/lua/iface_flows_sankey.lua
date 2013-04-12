@@ -1,3 +1,9 @@
+--
+-- (C) 2013 - ntop.org
+--
+package.path = "./scripts/lua/modules/?.lua;" .. package.path
+require "lua_utils"
+
 ifname = _GET["if"]
 interface.find("any")
 peers = interface.getFlowPeers()
@@ -8,6 +14,7 @@ max_num_hosts = 8
 -- 1. compute total traffic
 total_traffic = 0
 for key, values in pairs(peers) do
+--   print(key.."\n")
    total_traffic = total_traffic + values["sent"] + values["rcvd"]
 end
 
@@ -19,7 +26,8 @@ num = 0
 print '{"nodes":[\n'
 for key, values in pairs(peers) do
    if((values["sent"] + values["rcvd"]) > threshold) then
-      for word in string.gmatch(key, "[%d+.]+") do
+      for key,word in pairs(split(key, " ")) do
+	 
 	 if(hosts[word] == nil) then
 	    hosts[word] = num
 
@@ -61,7 +69,7 @@ if(num == 0) then
 
       for key, values in pairs(peers) do
 	 if(string.find(key, top_host) >= 0) then
-	    for word in string.gmatch(key, "[%d+.]+") do
+	    for key,word in pairs(split(key, " ")) do
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
 
@@ -102,7 +110,7 @@ for key, values in pairs(peers) do
    if((val > threshold) or ((top_host ~= nil) and (string.find(key, top_host) >= 0)) and (num < max_num_links)) then
       e = {}
       id = 0
-      for word in string.gmatch(key, "[%d+.]+") do
+      for key,word in pairs(split(key, " ")) do
 	 -- print(word .. "=" .. hosts[word].."\n")
 	 e[id] = hosts[word]
 	 id = id + 1

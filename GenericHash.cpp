@@ -33,7 +33,7 @@ GenericHash::GenericHash(u_int _num_hashes, u_int _max_hash_size) {
   locks = new Mutex*[num_hashes];
   for(u_int i = 0; i < num_hashes; i++) locks[i] = new Mutex();
 }
- 
+
 /* ************************************ */
 
 GenericHash::~GenericHash() {
@@ -56,11 +56,11 @@ GenericHash::~GenericHash() {
 }
 
 /* ************************************ */
- 
+
 bool GenericHash::add(HashEntry *h) {
   if(current_size < max_hash_size) {
     u_int32_t hash = (h->key() % num_hashes);
-    
+
     locks[hash]->lock(__FUNCTION__, __LINE__);
     h->set_next(table[hash]);
     table[hash] = h, current_size++;
@@ -69,13 +69,13 @@ bool GenericHash::add(HashEntry *h) {
     return(true);
   } else
     return(false);
-}     
+}
 
 /* ************************************ */
- 
+
 bool GenericHash::remove(HashEntry *h, bool lock_hash) {
   u_int32_t hash = (h->key() % num_hashes);
-  
+
   if(table[hash] == NULL)
     return(false);
   else {
@@ -103,11 +103,13 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
       return(false);
     }
   }
-}     
+}
 
 /* ************************************ */
 
 void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user_data) {
+  if(ntop->getGlobals()->isShutdown()) return;
+
   for(u_int i = 0; i < num_hashes; i++)
     if(table[i] != NULL) {
       HashEntry *head;

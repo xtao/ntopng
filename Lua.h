@@ -30,8 +30,10 @@ class Lua {
  private:
   lua_State *L;
 
+  void lua_register_classes(lua_State *L);
+
  public:
-  Lua();
+  Lua(char *script_path);
   ~Lua();
 
   int handle_script_request(char *script_path,

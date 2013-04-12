@@ -29,7 +29,7 @@ class Prefs {
   REDIS redis;
 
  public:
-  Prefs(char *redis_host = "127.0.0.1", int redis_port = 6379);
+  Prefs(char *redis_host = (char*)"127.0.0.1", int redis_port = 6379);
   ~Prefs();
 
   int get(char *key, char *rsp, u_int rsp_len);

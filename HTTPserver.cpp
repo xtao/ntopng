@@ -127,7 +127,7 @@ static int handle_http_request(void *cls,
 	     (strlen(url) == 1) ? "/index.lua" : url);
 
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
-      Lua *l = new Lua();
+      Lua *l = new Lua(httpserver->get_scripts_dir());
       
       ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
       

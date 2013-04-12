@@ -78,7 +78,7 @@ NetworkInterface::NetworkInterface(char *name) {
   // init global detection structure
   ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
 					   malloc_wrapper, free_wrapper, debug_printf);
-  if (ndpi_struct == NULL) {
+  if(ndpi_struct == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
     exit(-1);
   }
@@ -97,19 +97,21 @@ NetworkInterface::~NetworkInterface() {
   if(polling_started) {
     void *res;
 
+    if(pcap_handle) pcap_breakloop(pcap_handle);
     pthread_join(pollLoop, &res);
   }
 
   if(pcap_handle)
     pcap_close(pcap_handle);
 
-  free(ifname);
   delete ifStats;
 
   delete flows_hash;
   delete hosts_hash;
 
   ndpi_exit_detection_module(ndpi_struct, free_wrapper);
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
+  free(ifname);
 }
 
 /* **************************************************** */

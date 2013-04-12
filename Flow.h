@@ -65,6 +65,8 @@ class Flow : public HashEntry {
   inline u_int16_t get_dst_port()                 { return(dst_port);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
+  inline Host* get_src_host()                     { return(src_host); };
+  inline Host* get_dst_host()                     { return(dst_host); };
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();

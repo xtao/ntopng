@@ -32,6 +32,7 @@ NtopGlobals::NtopGlobals() {
   trace = new Trace();
   tmpnam(tmp_file_path);
   mutex = new Mutex();
+  is_shutdown = false, do_decode_tunnels = true;
 };
 
 /* **************************************** */

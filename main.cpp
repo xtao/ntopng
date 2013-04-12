@@ -32,21 +32,25 @@ static void help() {
   exit(0);
 }
 
-
 /* ******************************** */
 
 void sigproc(int sig) {
   static int called = 0;
 
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Leaving...");
-  if(called) return; else called = 1;
-  ntop->getGlobals()->shutdown();  
-  sleep(2); /* Wait until all threads know that we're shutting down... */
-  
-  
+  if(called) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Ok I am leaving now");
+    exit(0);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Shutting down...");
+    called = 1;
+  }
+
+  ntop->getGlobals()->shutdown();
+  sleep(2); /* Wait until all threads know that we're shutting down... */  
+
   if(NetworkInterface *iface = ntop->get_NetworkInterface("any")) {
     TrafficStats *stats = iface->getStats();
-    
+
     stats->printStats();
     iface->shutdown();
   }
@@ -88,22 +92,22 @@ int main(int argc, char *argv[]) {
 
 	if(host) {
 	  char *c = strtok(NULL, ":");
-	  
+
 	  if(c)
 	    port = atoi(c);
 	  else
 	    port = 6379;
 	}
-	
+
 	prefs = new Prefs(host, port);
       }
       break;
     }
   }
 
-  if((ifName == NULL) || (prefs == NULL))
-    help();
-  
+  if(ifName == NULL) help();
+  if(prefs == NULL) prefs = new Prefs();
+
   ntop = new Ntop(prefs);
   ntop->registerInterface(iface = new NetworkInterface(ifName));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));

@@ -33,7 +33,7 @@ class Host : public HashEntry {
   TrafficStats sent, rcvd;
   bool name_resolved;
 
-  void initialize();
+  void initialize(bool init_all);
 
  public:
   Host(NetworkInterface *_iface);
@@ -45,7 +45,7 @@ class Host : public HashEntry {
   inline void set_ipv6(struct in6_addr _ipv6) { ip->set_ipv6(_ipv6); }
   inline u_int32_t key()                      { return(ip->key());   }
   inline IpAddress* get_ip()                  { return(ip);          }
-  inline char*      get_name()                { resolveHostName(); return(symbolic_name);  }
+  char*  get_name(char *buf, u_int buf_len);
 
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
@@ -63,6 +63,7 @@ class Host : public HashEntry {
   bool isIdle(u_int max_idleness);
   void dumpKeyToLua(lua_State* vm);
   void resolveHostName();
+  void setName(char *name);
 };
 
 #endif /* _HOST_H_ */

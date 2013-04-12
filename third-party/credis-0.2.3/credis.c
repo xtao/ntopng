@@ -785,8 +785,14 @@ void credis_settimeout(REDIS rhnd, int timeout)
 
 int credis_set(REDIS rhnd, const char *key, const char *val)
 {
-  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %zu\r\n%s\r\n", 
+#ifdef ORIGINAL
+  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %zu\r\n%zs\r\n", 
                             key, strlen(val), val);
+#else
+  /* L.Deri */
+  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %s\r\n%zu\r\n", 
+                            key, val, strlen(val));
+#endif
 }
 
 int credis_get(REDIS rhnd, const char *key, char **val)

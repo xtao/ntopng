@@ -61,9 +61,6 @@ void Flow::deleteFlowMemory() {
   if(ndpi_flow) { free(ndpi_flow); ndpi_flow = NULL; }
   if(src_id)    { free(src_id);    src_id = NULL;    }
   if(dst_id)    { free(dst_id);    dst_id = NULL;    }
-
-  if(src_host) src_host->decUses();
-  if(dst_host) dst_host->decUses();
 }
 
 /* *************************************** */
@@ -83,7 +80,28 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
     if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
        || (l4_proto == IPPROTO_UDP)
        || ((l4_proto == IPPROTO_TCP) && ((cli2srv_packets+srv2cli_packets) > 10))) {
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", ndpi_flow->host_server_name);
+
+
+      switch(detected_protocol) {
+      case NDPI_PROTOCOL_HTTP:
+      case NDPI_PROTOCOL_SSL:	
+	if(ndpi_flow->host_server_name[0] != '\0') {
+	  char addrbuf[128], buf[64], *doublecol, delimiter = ':';
+	  
+	  Host *svr = (htons(src_port) < htons(dst_port)) ? src_host : dst_host;
+
+	  /* if <host>:<port> We need to remove ':' */
+	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
+	     doublecol[0] = '\0';	  
+
+	  svr->setName((char*)ndpi_flow->host_server_name);
+	  snprintf(addrbuf, sizeof(addrbuf), "dns.cache.%s",
+		   svr->get_ip()->print(buf, sizeof(buf)));
+	  ntop->getPrefs()->set(addrbuf, (char*)ndpi_flow->host_server_name);
+	}
+	break;
+      }
+
       detection_completed = true;
       deleteFlowMemory();
     }
@@ -165,9 +183,12 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
 void Flow::print_peers(lua_State* vm) {
   char buf1[32], buf2[32], buf[256];
+  Host *src = get_src_host(), *dst = get_dst_host();
 
-  lua_newtable(vm);
+  if((src == NULL) || (dst == NULL)) return;
   
+  lua_newtable(vm);
+
   // Sent
   lua_pushstring(vm, "sent");
   lua_pushnumber(vm, cli2srv_bytes);
@@ -177,13 +198,17 @@ void Flow::print_peers(lua_State* vm) {
   lua_pushstring(vm, "rcvd");
   lua_pushnumber(vm, srv2cli_bytes);
   lua_settable(vm, -3);
-  
-  
+    
   // Key
   snprintf(buf, sizeof(buf), "%s %s", 
-	   intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)), 
-	   intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
+	   src->Host::get_name(buf1, sizeof(buf1)),
+	   dst->Host::get_name(buf2, sizeof(buf2)));
 
+  /*
+  snprintf(buf, sizeof(buf), "%s %s",
+           intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)),
+           intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
+  */
   lua_pushstring(vm, buf);
   lua_insert(vm, -2);
   lua_settable(vm, -3);  

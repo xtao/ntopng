@@ -43,6 +43,7 @@ class Ntop {
 
   inline NtopGlobals*      getGlobals()           { return(globals); };
   inline Trace*            getTrace()             { return(globals->getTrace()); };
+  inline Prefs*            getPrefs()             { return(prefs);               };
 };
 
 extern Ntop *ntop;
