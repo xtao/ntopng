@@ -19,32 +19,42 @@
  *
  */
 
-#ifndef _NTOP_CLASS_H_
-#define _NTOP_CLASS_H_
-
 #include "ntop_includes.h"
 
-class Ntop {
- private:
-  NetworkInterface *iface;
-  HTTPserver *httpd;
-  NtopGlobals *globals;
-  Prefs *prefs;
+/* **************************************** */
 
- public:
-  Ntop(Prefs *_prefs);
-  ~Ntop();
+Prefs::Prefs(char *redis_host, int redis_port) {
+  if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
+     || (credis_ping(redis) != 0)) {
+    printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
+    exit(-1);
+  }
+}
 
-  inline void registerInterface(NetworkInterface *i) { iface = i; };
-  inline void registerHTTPserver(HTTPserver *h)      { httpd= h;  };
+/* **************************************** */
 
-  inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
-  inline HTTPserver*       get_HTTPserver()       { return(httpd); };
+Prefs::~Prefs() {
+  credis_close(redis);
+}
 
-  inline NtopGlobals*      getGlobals()           { return(globals); };
-  inline Trace*            getTrace()             { return(globals->getTrace()); };
-};
+/* **************************************** */
 
-extern Ntop *ntop;
+int Prefs::get(char *key, char *rsp, u_int rsp_len) {
+  char *val;
+  int rc;
 
-#endif /* _NTOP_CLASS_H_ */
+  if((rc = credis_get(redis, key, &val)) == 0) {
+    snprintf(rsp, rsp_len, "%s", val);
+    free(val);
+  } else
+    rsp[0] = 0;
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Prefs::set(char *key, char *value) {
+  return(credis_set(redis, key, value));
+}
+

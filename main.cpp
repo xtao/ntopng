@@ -25,8 +25,9 @@
 
 static void help() {
   printf("ntopng - (C) 1998-13 ntop.org\n\n"
-	 "-i <interface>       | Input interface name\n"
-	 "-w <http port>       | HTTP port\n"
+	 "-i <interface>         | Input interface name\n"
+	 "-w <http port>         | HTTP port\n"
+	 "-r <redis host[:port]> | Redis host[:port]\n"
 	 );
   exit(0);
 }
@@ -62,10 +63,9 @@ int main(int argc, char *argv[]) {
   u_int http_port = 3000;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
+  Prefs *prefs = NULL;
 
-  ntop = new Ntop();
-
-  while((c = getopt(argc, argv, "hi:w:")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:r:")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -77,12 +77,34 @@ int main(int argc, char *argv[]) {
     case 'w':
       http_port = atoi(optarg);
       break;
+    case 'r':
+      {
+	char *host;
+	int port;
+	char buf[64];
+
+	snprintf(buf, sizeof(buf), "%s", optarg);
+	host = strtok(buf, ":");
+
+	if(host) {
+	  char *c = strtok(NULL, ":");
+	  
+	  if(c)
+	    port = atoi(c);
+	  else
+	    port = 6379;
+	}
+	
+	prefs = new Prefs(host, port);
+      }
+      break;
     }
   }
 
-  if(ifName == NULL)
+  if((ifName == NULL) || (prefs == NULL))
     help();
   
+  ntop = new Ntop(prefs);
   ntop->registerInterface(iface = new NetworkInterface(ifName));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 

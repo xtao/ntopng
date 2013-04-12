@@ -19,32 +19,21 @@
  *
  */
 
-#ifndef _NTOP_CLASS_H_
-#define _NTOP_CLASS_H_
+#ifndef _PREFS_H_
+#define _PREFS_H_
 
 #include "ntop_includes.h"
+#include "credis.h"
 
-class Ntop {
- private:
-  NetworkInterface *iface;
-  HTTPserver *httpd;
-  NtopGlobals *globals;
-  Prefs *prefs;
+class Prefs {
+  REDIS redis;
 
  public:
-  Ntop(Prefs *_prefs);
-  ~Ntop();
+  Prefs(char *redis_host = "127.0.0.1", int redis_port = 6379);
+  ~Prefs();
 
-  inline void registerInterface(NetworkInterface *i) { iface = i; };
-  inline void registerHTTPserver(HTTPserver *h)      { httpd= h;  };
-
-  inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
-  inline HTTPserver*       get_HTTPserver()       { return(httpd); };
-
-  inline NtopGlobals*      getGlobals()           { return(globals); };
-  inline Trace*            getTrace()             { return(globals->getTrace()); };
+  int get(char *key, char *rsp, u_int rsp_len);
+  int set(char *key, char *value);
 };
 
-extern Ntop *ntop;
-
-#endif /* _NTOP_CLASS_H_ */
+#endif /* _PREFS_H_ */

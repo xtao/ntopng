@@ -70,6 +70,7 @@ extern "C" {
 };
 
 #include "Trace.h"
+#include "Prefs.h"
 #include "NtopGlobals.h"
 #include "Mutex.h"
 #include "IpAddress.h"

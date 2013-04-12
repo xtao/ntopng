@@ -83,6 +83,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
     if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
        || (l4_proto == IPPROTO_UDP)
        || ((l4_proto == IPPROTO_TCP) && ((cli2srv_packets+srv2cli_packets) > 10))) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", ndpi_flow->host_server_name);
       detection_completed = true;
       deleteFlowMemory();
     }

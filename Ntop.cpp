@@ -25,15 +25,17 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop() {
+Ntop::Ntop(Prefs *_prefs) {
+  prefs = _prefs;
   globals = new NtopGlobals();
 }
 
 /* ******************************************* */
 
 Ntop::~Ntop() {
-  if(iface) delete(iface);
-  if(httpd) delete(httpd);
+  if(iface) delete iface;
+  if(httpd) delete httpd;
 
+  delete prefs;
   delete globals;
 }

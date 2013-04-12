@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
   rc = credis_get(redis, "kalle", &val);
   printf("get kalle returned: %s\n", val);
-
+  
   rc = credis_type(redis, "someunknownkey");
   printf("get type unknown key returned: %d\n", rc);
 
