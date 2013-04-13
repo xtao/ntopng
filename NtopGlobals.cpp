@@ -24,6 +24,7 @@
 /* **************************************** */
 
 NtopGlobals::NtopGlobals() {
+  start_time = time(NULL);
   ifMTU = 1500;
   promiscuousMode = 1;
   snaplen = 1500;

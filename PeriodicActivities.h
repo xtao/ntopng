@@ -19,35 +19,27 @@
  *
  */
 
-#ifndef _LUA_H_
-#define _LUA_H_
+#ifndef _PERIODIC_ACTIVITIES_H_
+#define _PERIODIC_ACTIVITIES_H_
 
 #include "ntop_includes.h"
 
-/* ******************************* */
+#define MINUTE_SCRIPT_PATH   "minute.lua"
+#define HOURLY_SCRIPT_PATH   "hourly.lua"
+#define DAILY_SCRIPT_PATH    "daily.lua"
 
-class Lua {
+class PeriodicActivities {
  private:
-  lua_State *L;
+  pthread_t periodicLoop;
 
-  void lua_register_classes(lua_State *L, bool http_mode);
+  void runScript(char *path);
 
  public:
-  Lua();
-  ~Lua();
+  PeriodicActivities();
+  ~PeriodicActivities();
 
-  int run_script(char *script_path);
-  int handle_script_request(char *script_path,
-			    void *cls,
-			    struct MHD_Connection *connection,
-			    const char *url,
-			    const char *method,
-			    const char *version,
-			    const char *upload_data,
-			    size_t *upload_data_size, void **ptr);
+  void loop();
+  void startPeriodicLoop();
 };
 
-extern void lua_push_str_table_entry(lua_State *L, const char *key, char *value);
-extern void lua_push_int_table_entry(lua_State *L, const char *key, u_int32_t value);
-
-#endif /* _LUA_H_ */
+#endif /* _PERIODIC_ACTIVITIES_H_ */

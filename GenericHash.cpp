@@ -80,7 +80,8 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
     return(false);
   else {
     HashEntry *head, *prev = NULL;
-
+    bool ret;
+    
     if(lock_hash) locks[hash]->lock(__FUNCTION__, __LINE__);
 
     head = table[hash];
@@ -96,12 +97,13 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
 	table[hash] = head->next();
 
       current_size--;
-      if(lock_hash) locks[hash]->unlock(__FUNCTION__, __LINE__);
-      return(true);
-    } else {
-      if(lock_hash) locks[hash]->unlock(__FUNCTION__, __LINE__);
-      return(false);
-    }
+
+      ret = true;
+    } else
+      ret = false;
+    
+    if(lock_hash) locks[hash]->unlock(__FUNCTION__, __LINE__);
+    return(ret);
   }
 }
 

@@ -21,8 +21,6 @@
 
 #include "ntop_includes.h"
 
-#include <sys/stat.h>
-
 extern "C" {
 #include <microhttpd.h>
 #undef _GNU_SOURCE
@@ -136,7 +134,7 @@ static int handle_http_request(void *cls,
 	     (strlen(url) == 1) ? "/index.lua" : url);
 
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
-      Lua *l = new Lua(httpserver->get_scripts_dir());
+      Lua *l = new Lua();
       
       ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
       

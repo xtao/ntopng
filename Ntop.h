@@ -26,17 +26,22 @@
 
 class Ntop {
  private:
+  char *data_dir, *callbacks_dir;
   NetworkInterface *iface;
   HTTPserver *httpd;
   NtopGlobals *globals;
   Prefs *prefs;
+  PeriodicActivities *pa;
 
  public:
-  Ntop(Prefs *_prefs);
+  Ntop(Prefs *_prefs, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
-  inline void registerInterface(NetworkInterface *i) { iface = i; };
-  inline void registerHTTPserver(HTTPserver *h)      { httpd= h;  };
+  void start();
+  inline char* get_data_dir()                        { return(data_dir); }
+  inline char* get_callbacks_dir()                   { return(callbacks_dir); }
+  inline void registerInterface(NetworkInterface *i) { iface = i;        };
+  inline void registerHTTPserver(HTTPserver *h)      { httpd = h;        };
 
   inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
   inline HTTPserver*       get_HTTPserver()       { return(httpd); };

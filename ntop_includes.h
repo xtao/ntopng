@@ -59,6 +59,7 @@
 #include <syslog.h>
 #include <getopt.h>
 #include <string.h>
+#include <sys/stat.h>
 
 extern "C" {
 #include "pcap.h"
@@ -83,7 +84,7 @@ extern "C" {
 #include "Flow.h"
 #include "FlowHash.h"
 #include "HostHash.h"
-
+#include "PeriodicActivities.h"
 #include "Lua.h"
 #include "HTTPserver.h"
 #include "Ntop.h"

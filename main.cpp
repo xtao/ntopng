@@ -24,11 +24,11 @@
 /* ******************************************* */
 
 static void help() {
-  printf("ntopng - (C) 1998-13 ntop.org\n\n"
+  printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
 	 "-i <interface>         | Input interface name\n"
 	 "-w <http port>         | HTTP port\n"
-	 "-r <redis host[:port]> | Redis host[:port]\n"
-	 );
+	 "-r <redis host[:port]> | Redis host[:port]\n",
+	 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
   exit(0);
 }
 
@@ -108,7 +108,9 @@ int main(int argc, char *argv[]) {
 
   if(prefs == NULL) prefs = new Prefs();
 
-  ntop = new Ntop(prefs);
+  ntop = new Ntop(prefs, 
+		  (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
+		  (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
   ntop->registerInterface(iface = new NetworkInterface(ifName));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
@@ -116,6 +118,7 @@ int main(int argc, char *argv[]) {
   signal(SIGTERM, sigproc);
   signal(SIGINT, sigproc);
 
+  ntop->start();
   iface->startPacketPolling();
 
 

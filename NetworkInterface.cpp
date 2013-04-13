@@ -22,7 +22,6 @@
 #include "ntop_includes.h"
 #include <pwd.h>
 #include <uuid/uuid.h>
-#include <sys/stat.h>
 
 #ifndef ETH_P_IP
 #define ETH_P_IP 0x0800

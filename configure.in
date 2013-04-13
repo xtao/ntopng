@@ -1,4 +1,4 @@
-AC_INIT([Makefile.in], 1.0)
+AC_INIT([Makefile.in], 0.1)
 
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
@@ -21,17 +21,18 @@ if test $SYSTEM = "Darwin"; then
 fi
 
 umask 002
-AC_CONFIG_HEADERS(config.h)
 
+AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
+AC_DEFINE_UNQUOTED(PACKAGE_MACHINE, "$MACHINE", [Architecture of this host])
 AC_SUBST(MACHINE)
 AC_SUBST(SYSTEM)
 AC_SUBST(EXTN)
 AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
-
 AC_SUBST(LINK_OPTS)
 
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT

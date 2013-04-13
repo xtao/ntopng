@@ -26,6 +26,7 @@
 
 class NtopGlobals {
   bool is_shutdown, do_decode_tunnels;
+  time_t start_time;
   u_int ifMTU, snaplen;
   u_int8_t promiscuousMode;
   Trace *trace;
@@ -38,6 +39,7 @@ class NtopGlobals {
   NtopGlobals();
   ~NtopGlobals();
 
+  inline u_int getUptime()             { return(time(NULL)-start_time+1); };
   inline u_int getIfMTU()              { return(ifMTU);           };
   inline u_int8_t getPromiscuousMode() { return(promiscuousMode); };
   inline u_int getSnaplen()            { return(snaplen);         };

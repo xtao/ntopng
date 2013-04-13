@@ -25,9 +25,31 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop(Prefs *_prefs) {
+Ntop::Ntop(Prefs *_prefs, char *_data_dir, char *_callbacks_dir) {
+  struct stat statbuf;
+
   prefs = _prefs;
   globals = new NtopGlobals();
+
+  if(stat(_data_dir, &statbuf)
+     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
+     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", _data_dir);
+    exit(-1);
+  }
+
+  if(stat(_callbacks_dir, &statbuf)
+     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
+     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", _callbacks_dir);
+    exit(-1);
+  }
+
+  data_dir = strdup(_data_dir), callbacks_dir = strdup(_callbacks_dir);
+  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
+			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
+  
+  pa = new PeriodicActivities();
 }
 
 /* ******************************************* */
@@ -36,6 +58,13 @@ Ntop::~Ntop() {
   if(iface) delete iface;
   if(httpd) delete httpd;
 
+  delete pa;
   delete prefs;
   delete globals;
+}
+
+/* ******************************************* */
+
+void Ntop::start() {
+  pa->loop();
 }

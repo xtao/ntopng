@@ -3,8 +3,14 @@
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
+/* Architecture of this host */
+#undef PACKAGE_MACHINE
+
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
+
+/* SVN release of this package */
+#undef PACKAGE_RELEASE
 
 /* Define to the full name and version of this package. */
 #undef PACKAGE_STRING

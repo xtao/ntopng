@@ -23,7 +23,7 @@
 
 /* ******************************* */
 
-Lua::Lua(char *path) {
+Lua::Lua() {
   L = luaL_newstate();
 }
 
@@ -39,9 +39,9 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 			  int pos, int expected_type) {
   if(lua_type(vm, pos) != expected_type) {
     ntop->getTrace()->traceEvent(TRACE_ERROR,
-					"%s : expected %s, got %s", func,
-					lua_typename(vm, expected_type),
-					lua_typename(vm, lua_type(vm,pos)));
+				 "%s : expected %s, got %s", func,
+				 lua_typename(vm, expected_type),
+				 lua_typename(vm, lua_type(vm,pos)));
     return(-1);
   }
 
@@ -178,6 +178,19 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_info(lua_State* vm) {
+  char rsp[256];
+
+  lua_newtable(vm);
+  snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_VERSION, PACKAGE_RELEASE);
+  lua_push_str_table_entry(vm, "version", rsp);
+  lua_push_int_table_entry(vm, "uptime", ntop->getGlobals()->getUptime());
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_redis(lua_State* vm) {
   char *key, *value, rsp[256];
   Prefs *prefs = ntop->getPrefs();
@@ -211,13 +224,13 @@ static int ntop_set_redis(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_lua_print(lua_State* vm) {
-  int tmp_file;
+static int ntop_lua_http_print(lua_State* vm) {
+  int tmp_file, t;
 
   lua_getglobal(vm, "tmp_file");
   tmp_file = (int)lua_tointeger(vm, lua_gettop(vm));
 
-  switch(lua_type(vm, 1)) {
+  switch(t = lua_type(vm, 1)) {
   case LUA_TSTRING:
     {
       char *str = (char*)lua_tostring(vm, 1);
@@ -236,6 +249,36 @@ static int ntop_lua_print(lua_State* vm) {
     break;
 
   default:
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): Lua type %d is not handled",
+				 __FUNCTION__, t);
+    return(0);
+  }
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_lua_cli_print(lua_State* vm) {
+  int t;
+  
+  switch(t = lua_type(vm, 1)) {
+  case LUA_TSTRING:
+    {
+      char *str = (char*)lua_tostring(vm, 1);
+      
+      if(str && (strlen(str) > 0))
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", str);
+    }
+    break;
+    
+  case LUA_TNUMBER:
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%f", (float)lua_tonumber(vm, 1));
+    break;
+    
+  default:
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): Lua type %d is not handled",
+				 __FUNCTION__, t);
     return(0);
   }
 
@@ -260,6 +303,7 @@ static const luaL_Reg ntop_interface_reg[] = {
 };
 
 static const luaL_Reg ntop_reg[] = {
+  { "getInfo",     ntop_get_info },
   { "dumpFile",    ntop_dump_file },
   { "getCache",    ntop_get_redis },
   { "setCache",    ntop_set_redis },
@@ -268,10 +312,11 @@ static const luaL_Reg ntop_reg[] = {
 
 /* ****************************************** */
 
-void Lua::lua_register_classes(lua_State *L) {
+void Lua::lua_register_classes(lua_State *L, bool http_mode) {
   int lib_id, meta_id;
   static const luaL_Reg _meta[] = { { NULL, NULL } };
   int i;
+
   ntop_class_reg ntop[] = {
     { "interface", ntop_interface_reg },
     { "ntop",     ntop_reg },
@@ -302,6 +347,13 @@ void Lua::lua_register_classes(lua_State *L) {
     /* _G["Foo"] = newclass */
     lua_setglobal(L, ntop[i].class_name);
   }
+
+
+  if(http_mode) {
+    /* Overload the standard Lua print() with ntop_lua_http_print that dumps data on HTTP server */
+    lua_register(L, "print", ntop_lua_http_print);
+  } else
+    lua_register(L, "print", ntop_lua_cli_print);
 }
 
 /* ****************************************** */
@@ -316,14 +368,22 @@ int MHD_KeyValueIteratorGet(void *cls, enum MHD_ValueKind kind,
 
 /* ****************************************** */
 
+int Lua::run_script(char *script_path) {
+  luaL_openlibs(L); /* Load base libraries */   
+  lua_register_classes(L, false); /* Load custom classes */
+  return(luaL_dofile(L, script_path));
+}
+
+/* ****************************************** */
+
 int Lua::handle_script_request(char *script_path,
-				 void *cls,
-				 struct MHD_Connection *connection,
-				 const char *url,
-				 const char *method,
-				 const char *version,
-				 const char *upload_data,
-				 size_t *upload_data_size, void **ptr) {
+			       void *cls,
+			       struct MHD_Connection *connection,
+			       const char *url,
+			       const char *method,
+			       const char *version,
+			       const char *upload_data,
+			       size_t *upload_data_size, void **ptr) {
   int ret = 0;
   MHD_Response *tmp_response;
   char tmp_path[256];
@@ -340,11 +400,8 @@ int Lua::handle_script_request(char *script_path,
     return(page_not_found(connection, url));
   }
 
-  /* Load base libraries */
-  luaL_openlibs(L);
-
-  /* Load custom classes */
-  lua_register_classes(L);
+  luaL_openlibs(L); /* Load base libraries */   
+  lua_register_classes(L, true); /* Load custom classes */
 
   lua_pushinteger(L, tmp_file);
   lua_setglobal(L, "tmp_file");
@@ -353,9 +410,6 @@ int Lua::handle_script_request(char *script_path,
   lua_newtable(L);
   MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
   lua_setglobal(L, "_GET"); /* Like in php */
-
-  /* Overload the standard Lua print() with ntop_lua_print that dumps data on HTTP server */
-  lua_register(L, "print", ntop_lua_print);
 
   tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, tmp_file);
 
