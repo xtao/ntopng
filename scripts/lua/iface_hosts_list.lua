@@ -14,7 +14,7 @@ for key, value in pairs(hosts_stats) do
    if(key == "255.255.255.255") then
       key = "Broadcast"
    end
-   _hosts_stats[value] = key
+   _hosts_stats[value] = key -- ntop.getResolvedAddress(key)
    tot = tot +value
 end
 

@@ -19,26 +19,31 @@
  *
  */
 
-#ifndef _PREFS_H_
-#define _PREFS_H_
+#ifndef _REDIS_H_
+#define _REDIS_H_
 
 #include "ntop_includes.h"
 #include "credis.h"
 
-class Prefs {
+class Redis {
   REDIS redis;
   Mutex *l;
 
   void setDefaults();
 
  public:
-  Prefs(char *redis_host = (char*)"127.0.0.1", int redis_port = 6379);
-  ~Prefs();
+  Redis(char *redis_host = (char*)"127.0.0.1", int redis_port = 6379);
+  ~Redis();
 
+  int expire(char *key, u_int expire_sec);
   int get(char *key, char *rsp, u_int rsp_len);
   int set(char *key, char *value, u_int expire_secs=0);
+
   int queueHostToResolve(char *hostname);
   int popHostToResolve(char *hostname, u_int hostname_len);
+
+  int getAddress(char *numeric_ip, char *rsp, u_int rsp_len);
+  int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 };
 
-#endif /* _PREFS_H_ */
+#endif /* _REDIS_H_ */

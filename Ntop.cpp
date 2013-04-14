@@ -25,10 +25,10 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop(Prefs *_prefs, char *_data_dir, char *_callbacks_dir) {
+Ntop::Ntop(Redis *_redis, char *_data_dir, char *_callbacks_dir) {
   struct stat statbuf;
 
-  prefs = _prefs;
+  redis = _redis;
   globals = new NtopGlobals();
 
   if(stat(_data_dir, &statbuf)
@@ -50,6 +50,7 @@ Ntop::Ntop(Prefs *_prefs, char *_data_dir, char *_callbacks_dir) {
 			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
   
   pa = new PeriodicActivities();
+  address = new Address();
 }
 
 /* ******************************************* */
@@ -58,8 +59,9 @@ Ntop::~Ntop() {
   if(iface) delete iface;
   if(httpd) delete httpd;
 
+  delete address;
   delete pa;
-  delete prefs;
+  delete redis;
   delete globals;
 }
 
@@ -67,4 +69,5 @@ Ntop::~Ntop() {
 
 void Ntop::start() {
   pa->startPeriodicLoop();
+  address->startResolveAddressLoop();
 }

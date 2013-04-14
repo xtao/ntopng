@@ -23,7 +23,7 @@
 
 /* **************************************** */
 
-Prefs::Prefs(char *redis_host, int redis_port) {  
+Redis::Redis(char *redis_host, int redis_port) {  
   if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
      || (credis_ping(redis) != 0)) {
     printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
@@ -36,14 +36,26 @@ Prefs::Prefs(char *redis_host, int redis_port) {
 
 /* **************************************** */
 
-Prefs::~Prefs() {
+Redis::~Redis() {
   credis_close(redis);
   delete l;
 }
 
 /* **************************************** */
 
-int Prefs::get(char *key, char *rsp, u_int rsp_len) {
+int Redis::expire(char *key, u_int expire_sec) {
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_expire(redis, key, expire_sec);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::get(char *key, char *rsp, u_int rsp_len) {
   char *val;
   int rc;
 
@@ -60,7 +72,7 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
-int Prefs::set(char *key, char *value, u_int expire_secs) {
+int Redis::set(char *key, char *value, u_int expire_secs) {
   int rc;
 
   l->lock(__FILE__, __LINE__);
@@ -76,11 +88,19 @@ int Prefs::set(char *key, char *value, u_int expire_secs) {
 
 /* **************************************** */
 
-int Prefs::queueHostToResolve(char *hostname) {  
+int Redis::queueHostToResolve(char *hostname) {  
   int rc;
+  char key[128], *val;
 
   l->lock(__FILE__, __LINE__);
-  rc = credis_rpush(redis, "dns.toresolve", hostname);
+
+  snprintf(key, sizeof(key), "dns.cache.%s", hostname);
+  /*
+    Add only if the address has not been resolved yet
+  */
+  if(credis_get(redis, key, &val) < 0)
+    rc = credis_rpush(redis, "dns.toresolve", hostname);
+
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
@@ -88,7 +108,7 @@ int Prefs::queueHostToResolve(char *hostname) {
 
 /* **************************************** */
 
-int Prefs::popHostToResolve(char *hostname, u_int hostname_len) {  
+int Redis::popHostToResolve(char *hostname, u_int hostname_len) {  
   char *val;
   int rc;
 
@@ -99,15 +119,44 @@ int Prefs::popHostToResolve(char *hostname, u_int hostname_len) {
   if(rc == 0)
     snprintf(hostname, hostname_len, "%s", val);
   else
-    val[0] = '\0';
+    hostname[0] = '\0';
   
   return(rc);
 }
 
 /* **************************************** */
 
-void Prefs::setDefaults() {
-  set((char*)"dns.cache.127.0.0.1", (char*)"localhost");
-  set((char*)"dns.cache.255.255.255.255", (char*)"Broadcast");
-  set((char*)"dns.cache.0.0.0.0", (char*)"No IP");
+void Redis::setDefaults() {
+  setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
+  setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
+  setResolvedAddress((char*)"0.0.0.0", (char*)"No IP");
+}
+
+/* **************************************** */
+
+int Redis::getAddress(char *numeric_ip, char *rsp, u_int rsp_len) {
+  char key[64];
+  int rc;
+  
+  snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
+  rc = get(key, rsp, rsp_len);
+
+  if(rc != 0)
+    queueHostToResolve(numeric_ip);
+  else {
+    /* We need to extend expire */
+
+    expire(numeric_ip, 300 /* expire */);
+  }
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
+  char key[64];
+
+  snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
+  return(set(key, symbolic_ip, 300));
 }

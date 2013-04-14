@@ -352,7 +352,6 @@ static void* packetPollLoop(void* ptr) {
   return(NULL);
 }
 
-
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {

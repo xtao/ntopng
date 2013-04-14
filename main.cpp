@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
   bool change_user = true;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
-  Prefs *prefs = NULL;
+  Redis *redis = NULL;
 
   while((c = getopt(argc, argv, "hi:w:r:s")) != '?') {
     if(c == 255) break;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	    port = 6379;
 	}
 
-	prefs = new Prefs(host, port);
+	redis = new Redis(host, port);
       }
       break;
 
@@ -115,9 +115,9 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if(prefs == NULL) prefs = new Prefs();
+  if(redis == NULL) redis = new Redis();
 
-  ntop = new Ntop(prefs, 
+  ntop = new Ntop(redis, 
 		  (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
 		  (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
   ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));

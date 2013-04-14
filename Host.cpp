@@ -61,13 +61,12 @@ void Host::initialize(bool init_all) {
   m = new Mutex();
 
   if(init_all) {
-    char buf[64], rsp[256], str[64];
-    snprintf(str, sizeof(str), "dns.cache.%s", ip->print(buf, sizeof(buf)));
+    char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
-    if(ntop->getPrefs()->get(str, rsp, sizeof(rsp)) == 0)
+    if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp)) == 0)
       symbolic_name = strdup(rsp);
     else {
-      /* RPUSH dns.cache.toresolve <address> */
+      ntop->getRedis()->queueHostToResolve(host);
     }
   }
 }
@@ -96,22 +95,6 @@ bool Host::isIdle(u_int max_idleness) {
 
 /* ***************************************** */
 
-void Host::resolveHostName() {
-  char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
-  struct sockaddr sa;
-
-  ip->dump(&sa);
-
-  if(getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD) == 0) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", hostname);
-    symbolic_name = strdup(hostname);
-  }
-
-  name_resolved = true;
-}
-
-/* ***************************************** */
-
 /*
   As this method can be called from Lua, in order to avoid concurency issues
   we need to lock/unlock
@@ -126,15 +109,15 @@ void Host::setName(char *name) {
 /* ***************************************** */
 
 char* Host::get_name(char *buf, u_int buf_len) {
-  char addrbuf[64];
+  char *addr;
 
   if(symbolic_name != NULL)
     return(symbolic_name);
 
-  snprintf(addrbuf, sizeof(addrbuf), "dns.cache.%s", get_ip()->print(buf, buf_len));
-  if(ntop->getPrefs()->get(addrbuf, buf, buf_len) == 0) {
+  addr = get_ip()->print(buf, buf_len);
+  if(ntop->getRedis()->getAddress(addr, buf, buf_len) == 0) {
     setName(buf);
     return(symbolic_name);
   } else
-    return(get_ip()->print(buf, buf_len));
+    return(addr);
 }

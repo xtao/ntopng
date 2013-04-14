@@ -71,7 +71,7 @@ extern "C" {
 };
 
 #include "Trace.h"
-#include "Prefs.h"
+#include "Redis.h"
 #include "NtopGlobals.h"
 #include "Mutex.h"
 #include "IpAddress.h"
@@ -86,6 +86,7 @@ extern "C" {
 #include "HostHash.h"
 #include "PeriodicActivities.h"
 #include "Lua.h"
+#include "Address.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
 

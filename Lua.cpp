@@ -191,14 +191,34 @@ static int ntop_get_info(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_get_redis(lua_State* vm) {
+static int ntop_get_resolved_address(lua_State* vm) {
   char *key, *value, rsp[256];
-  Prefs *prefs = ntop->getPrefs();
+  Redis *redis = ntop->getRedis();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
 
-  value = (prefs->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"";
+  if(redis->getAddress(key, rsp, sizeof(rsp)) == 0) {
+    value = rsp;
+  } else {
+    value = key;
+  }
+
+  lua_pushfstring(vm, "%s", value);
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_redis(lua_State* vm) {
+  char *key, *value, rsp[256];
+  Redis *redis = ntop->getRedis();
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
+
+  value = (redis->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"";
   lua_pushfstring(vm, "%s", value);
 
   return(1);
@@ -208,7 +228,7 @@ static int ntop_get_redis(lua_State* vm) {
 
 static int ntop_set_redis(lua_State* vm) {
   char *key, *value;
-  Prefs *prefs = ntop->getPrefs();
+  Redis *redis = ntop->getRedis();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
@@ -216,7 +236,7 @@ static int ntop_set_redis(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(0);
   if((value = (char*)lua_tostring(vm, 2)) == NULL)     return(-1);
 
-  if(prefs->set(key, value) == 0)
+  if(redis->set(key, value) == 0)
     return(1);
   else
     return(0);
@@ -299,7 +319,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getHosts",       ntop_get_interface_hosts },
   { "getFlowPeers",   ntop_get_interface_flows_peers },
 
-  {NULL,              NULL}
+  { NULL,             NULL}
 };
 
 static const luaL_Reg ntop_reg[] = {
@@ -307,7 +327,8 @@ static const luaL_Reg ntop_reg[] = {
   { "dumpFile",    ntop_dump_file },
   { "getCache",    ntop_get_redis },
   { "setCache",    ntop_set_redis },
-  {NULL,           NULL}
+  { "getResolvedAddress",    ntop_get_resolved_address },
+  { NULL,          NULL}
 };
 
 /* ****************************************** */

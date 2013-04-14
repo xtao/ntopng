@@ -30,11 +30,12 @@ class Ntop {
   NetworkInterface *iface;
   HTTPserver *httpd;
   NtopGlobals *globals;
-  Prefs *prefs;
+  Redis *redis;
   PeriodicActivities *pa;
+  Address *address;
 
  public:
-  Ntop(Prefs *_prefs, char *_data_dir, char *_callbacks_dir);
+  Ntop(Redis *_redis, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
   void start();
@@ -48,7 +49,7 @@ class Ntop {
 
   inline NtopGlobals*      getGlobals()           { return(globals); };
   inline Trace*            getTrace()             { return(globals->getTrace()); };
-  inline Prefs*            getPrefs()             { return(prefs);               };
+  inline Redis*            getRedis()             { return(redis);               };
 };
 
 extern Ntop *ntop;

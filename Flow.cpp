@@ -83,11 +83,22 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
 
       switch(detected_protocol) {
+      case NDPI_PROTOCOL_DNS:
+	if(ndpi_flow->host_server_name[0] != '\0') {
+	  char delimiter = '@';
+	  char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
+	  
+	  if(at) {
+	    at[0] = '\0';
+	    ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
+	  }
+	}
+	break;
+
       case NDPI_PROTOCOL_HTTP:
       case NDPI_PROTOCOL_SSL:	
 	if(ndpi_flow->host_server_name[0] != '\0') {
-	  char addrbuf[128], buf[64], *doublecol, delimiter = ':';
-	  
+	  char buf[64], *doublecol, delimiter = ':';	  
 	  Host *svr = (htons(src_port) < htons(dst_port)) ? src_host : dst_host;
 
 	  /* if <host>:<port> We need to remove ':' */
@@ -95,9 +106,9 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	     doublecol[0] = '\0';	  
 
 	  svr->setName((char*)ndpi_flow->host_server_name);
-	  snprintf(addrbuf, sizeof(addrbuf), "dns.cache.%s",
-		   svr->get_ip()->print(buf, sizeof(buf)));
-	  ntop->getPrefs()->set(addrbuf, (char*)ndpi_flow->host_server_name, 300 /* 5 mins cache */);
+
+	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
+					       (char*)ndpi_flow->host_server_name);
 	}
 	break;
       }
