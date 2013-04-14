@@ -32,6 +32,7 @@ class Host : public HashEntry {
   NdpiStats ndpiStats;
   TrafficStats sent, rcvd;
   bool name_resolved;
+  Mutex *m;
 
   void initialize(bool init_all);
 

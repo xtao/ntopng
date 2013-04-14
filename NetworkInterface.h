@@ -55,7 +55,7 @@ class NetworkInterface {
   Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
 
  public:
-  NetworkInterface(char *name);
+  NetworkInterface(char *name, bool change_user);
   ~NetworkInterface();
   void startPacketPolling();
   void shutdown();

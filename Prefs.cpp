@@ -23,13 +23,14 @@
 
 /* **************************************** */
 
-Prefs::Prefs(char *redis_host, int redis_port) {
+Prefs::Prefs(char *redis_host, int redis_port) {  
   if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
      || (credis_ping(redis) != 0)) {
     printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
     exit(-1);
   }
 
+  l = new Mutex();
   setDefaults();
 }
 
@@ -37,6 +38,7 @@ Prefs::Prefs(char *redis_host, int redis_port) {
 
 Prefs::~Prefs() {
   credis_close(redis);
+  delete l;
 }
 
 /* **************************************** */
@@ -45,11 +47,13 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
   char *val;
   int rc;
 
+  l->lock(__FILE__, __LINE__);
   if((rc = credis_get(redis, key, &val)) == 0) {
     snprintf(rsp, rsp_len, "%s", val);
     // free(val);
   } else
     rsp[0] = 0;
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -57,10 +61,14 @@ int Prefs::get(char *key, char *rsp, u_int rsp_len) {
 /* **************************************** */
 
 int Prefs::set(char *key, char *value, u_int expire_secs) {
-  int rc = credis_set(redis, key, value);
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_set(redis, key, value);
 
   if((rc == 0) && (expire_secs != 0))
     credis_expire(redis, key, expire_secs);
+  l->unlock(__FILE__, __LINE__);
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s <-> %s", key, value);
   return(rc);
@@ -69,14 +77,24 @@ int Prefs::set(char *key, char *value, u_int expire_secs) {
 /* **************************************** */
 
 int Prefs::queueHostToResolve(char *hostname) {  
-  return(credis_rpush(redis, "dns.toresolve", hostname));
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_rpush(redis, "dns.toresolve", hostname);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
 }
 
 /* **************************************** */
 
 int Prefs::popHostToResolve(char *hostname, u_int hostname_len) {  
   char *val;
-  int rc = credis_lpop(redis, (char*)"dns.toresolve", &val);
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_lpop(redis, (char*)"dns.toresolve", &val);
+  l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
     snprintf(hostname, hostname_len, "%s", val);

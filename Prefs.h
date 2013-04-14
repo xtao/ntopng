@@ -27,7 +27,8 @@
 
 class Prefs {
   REDIS redis;
-  
+  Mutex *l;
+
   void setDefaults();
 
  public:

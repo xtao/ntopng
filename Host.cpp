@@ -48,6 +48,7 @@ Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) 
 Host::~Host() {
   if(symbolic_name) free(symbolic_name);
   delete ip;
+  delete m;
 }
 
 /* *************************************** */
@@ -56,6 +57,8 @@ void Host::initialize(bool init_all) {
   num_uses = 0, name_resolved = false, symbolic_name = NULL;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
+
+  m = new Mutex();
 
   if(init_all) {
     char buf[64], rsp[256], str[64];
@@ -109,9 +112,15 @@ void Host::resolveHostName() {
 
 /* ***************************************** */
 
+/*
+  As this method can be called from Lua, in order to avoid concurency issues
+  we need to lock/unlock
+*/
 void Host::setName(char *name) {
+  m->lock(__FILE__, __LINE__);
   if(symbolic_name) free(symbolic_name);
   symbolic_name = strdup(name);
+  m->unlock(__FILE__, __LINE__);
 }
 
 /* ***************************************** */

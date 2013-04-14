@@ -27,8 +27,9 @@ static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
 	 "-i <interface>         | Input interface name\n"
 	 "-w <http port>         | HTTP port\n"
-	 "-r <redis host[:port]> | Redis host[:port]\n",
-	 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
+	 "-r <redis host[:port]> | Redis host[:port]\n"
+	 "-s                     | Do not change user (debug only)\n"
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
   exit(0);
 }
 
@@ -65,23 +66,27 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL;
   u_int http_port = 3000;
+  bool change_user = true;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Prefs *prefs = NULL;
 
-  while((c = getopt(argc, argv, "hi:w:r:")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:r:s")) != '?') {
     if(c == 255) break;
 
     switch(c) {
     case 'h':
       help();
       break;
+
     case 'i':
       ifName = optarg;
       break;
+
     case 'w':
       http_port = atoi(optarg);
       break;
+
     case 'r':
       {
 	char *host;
@@ -103,6 +108,10 @@ int main(int argc, char *argv[]) {
 	prefs = new Prefs(host, port);
       }
       break;
+
+    case 's':
+      change_user = false;
+      break;
     }
   }
 
@@ -111,7 +120,7 @@ int main(int argc, char *argv[]) {
   ntop = new Ntop(prefs, 
 		  (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
 		  (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
-  ntop->registerInterface(iface = new NetworkInterface(ifName));
+  ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
   signal(SIGINT, sigproc);

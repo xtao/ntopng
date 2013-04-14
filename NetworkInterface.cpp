@@ -56,7 +56,7 @@ static void free_wrapper(void *freeable)
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(char *name) {
+NetworkInterface::NetworkInterface(char *name, bool change_user) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
 
@@ -93,8 +93,9 @@ NetworkInterface::NetworkInterface(char *name) {
   } else
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
 
-  dropPrivileges();
   pcap_datalink_type = pcap_datalink(pcap_handle);
+
+  if(change_user) dropPrivileges();
 
   flows_hash = new FlowHash(4096, 32768), hosts_hash = new HostHash(4096, 32768);
 
@@ -572,7 +573,7 @@ void NetworkInterface::dropPrivileges() {
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to drop privileges [%s]",
 		 strerror(errno));
     } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changed to %s", username);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changeod to %s", username);
   } else {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate user %s", username);
   }
