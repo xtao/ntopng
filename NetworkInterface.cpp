@@ -21,7 +21,10 @@
 
 #include "ntop_includes.h"
 #include <pwd.h>
+
+#ifdef DARWIN
 #include <uuid/uuid.h>
+#endif
 
 #ifndef ETH_P_IP
 #define ETH_P_IP 0x0800

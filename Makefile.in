@@ -26,6 +26,10 @@ ifeq ($(OS),Linux)
 LIBS += -lrt
 endif
 
+ifeq ($(OS),Darwin)
+CPPFLAGS += -DDARWIN
+endif
+
 .PHONY: default all clean
 
 default: $(LIBNDPI) $(LUAJIT_LIB) $(TARGET)
