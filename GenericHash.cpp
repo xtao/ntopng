@@ -61,10 +61,10 @@ bool GenericHash::add(HashEntry *h) {
   if(current_size < max_hash_size) {
     u_int32_t hash = (h->key() % num_hashes);
 
-    locks[hash]->lock(__FUNCTION__, __LINE__);
+    locks[hash]->lock(__FILE__, __LINE__);
     h->set_next(table[hash]);
     table[hash] = h, current_size++;
-    locks[hash]->unlock(__FUNCTION__, __LINE__);
+    locks[hash]->unlock(__FILE__, __LINE__);
 
     return(true);
   } else
@@ -82,7 +82,7 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
     HashEntry *head, *prev = NULL;
     bool ret;
     
-    if(lock_hash) locks[hash]->lock(__FUNCTION__, __LINE__);
+    if(lock_hash) locks[hash]->lock(__FILE__, __LINE__);
 
     head = table[hash];
     while(head && (!head->equal(h))) {
@@ -102,7 +102,7 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
     } else
       ret = false;
     
-    if(lock_hash) locks[hash]->unlock(__FUNCTION__, __LINE__);
+    if(lock_hash) locks[hash]->unlock(__FILE__, __LINE__);
     return(ret);
   }
 }
@@ -116,7 +116,7 @@ void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user
     if(table[i] != NULL) {
       HashEntry *head;
 
-      locks[i]->lock(__FUNCTION__, __LINE__);
+      locks[i]->lock(__FILE__, __LINE__);
       head = table[i];
 
       while(head) {
@@ -126,6 +126,6 @@ void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user
 	head = next;
       } /* while */
 
-      locks[i]->unlock(__FUNCTION__, __LINE__);
+      locks[i]->unlock(__FILE__, __LINE__);
     }
 }

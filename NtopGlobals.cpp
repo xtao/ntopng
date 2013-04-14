@@ -46,8 +46,8 @@ NtopGlobals::~NtopGlobals() {
 /* **************************************** */
 
 char* NtopGlobals::get_temp_filename(char *buf, u_int buf_len) {
-  mutex->lock(__FUNCTION__, __LINE__);
+  mutex->lock(__FILE__, __LINE__);
   snprintf(buf, buf_len, "%s_%d", tmp_file_path, file_id++);
-  mutex->unlock(__FUNCTION__, __LINE__);
+  mutex->unlock(__FILE__, __LINE__);
   return(buf);
 };

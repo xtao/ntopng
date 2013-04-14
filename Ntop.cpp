@@ -66,5 +66,5 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
-  pa->loop();
+  pa->startPeriodicLoop();
 }
