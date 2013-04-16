@@ -25,6 +25,10 @@
 
 static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
+	 "-n <mode>              | DNS address resolution mode\n"
+	 "                       | 0 - Decode DNS responses and resolve numeric IPs\n"
+	 "                       | 1 - Decode DNS responses and don't resolve numeric IPs\n"
+	 "                       | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>         | Input interface name\n"
 	 "-w <http port>         | HTTP port\n"
 	 "-r <redis host[:port]> | Redis host[:port]\n"
@@ -70,11 +74,28 @@ int main(int argc, char *argv[]) {
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
+  Prefs *prefs = new Prefs();
 
-  while((c = getopt(argc, argv, "hi:w:r:s")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:r:sn:")) != '?') {
     if(c == 255) break;
 
     switch(c) {
+    case 'n':
+      switch(atoi(optarg)) {
+      case 0:
+	break;
+      case 1:
+	prefs->disable_dns_resolution();
+	break;
+      case 2:
+	prefs->disable_dns_resolution();
+	prefs->disable_dns_responses_decoding();
+	break;
+      default:
+	help();
+      }
+      break;
+
     case 'h':
       help();
       break;
@@ -117,7 +138,7 @@ int main(int argc, char *argv[]) {
 
   if(redis == NULL) redis = new Redis();
 
-  ntop = new Ntop(redis, 
+  ntop = new Ntop(prefs, redis, 
 		  (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
 		  (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
   ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));

@@ -437,15 +437,23 @@ void NetworkInterface::updateHostStats() {
 static void hosts_get_list(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->dumpKeyToLua(vm);
+  ((Host*)h)->dumpKeyToLua(vm, false);
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getActiveHostsList(lua_State* vm) {
+static void hosts_get_list_details(HashEntry *h, void *user_data) {
+  lua_State* vm = (lua_State*)user_data;
+
+  ((Host*)h)->dumpKeyToLua(vm, true);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
   lua_newtable(vm);
 
-  hosts_hash->walk(hosts_get_list, (void*)vm);
+  hosts_hash->walk(host_details ? hosts_get_list_details : hosts_get_list, (void*)vm);
 }
 
 /* **************************************************** */

@@ -73,6 +73,7 @@ extern "C" {
 #include "Trace.h"
 #include "Redis.h"
 #include "NtopGlobals.h"
+#include "Prefs.h"
 #include "Mutex.h"
 #include "IpAddress.h"
 #include "NdpiStats.h"

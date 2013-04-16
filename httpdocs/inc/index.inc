@@ -58,8 +58,6 @@ function sankey() {
     d3.json("/iface_flows_sankey.lua", function(hosts) {
 	d3.select("#chart").select("svg").remove();
 
-	//	var svg = d3.select("#chart").append("svg")
-
 	var svg = d3.select("#chart").append("svg")
 	  .attr("width", width + margin.left + margin.right)
 	  .attr("height", height + margin.top + margin.bottom)
@@ -113,6 +111,20 @@ function sankey() {
 	  .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
 	  .append("title")
 	  .text(function(d) { return d.name + "\n" + format(d.value); });
+
+	/* Hook for clicking on host name */
+	node.append("rect")
+	  .attr("x", -4 -100)
+	  .attr("y", function(d) { return (d.dy/2)-7; })
+	  .attr("height", 12)
+	  .attr("width", 150)
+	  .style("opacity", "0")
+	  .on("click", function(d) { window.location.href = "/hostDeatils.lua?host="+escape(d.name+".html");  })
+	  .attr("transform", null)
+	  .filter(function(d) { return d.x < width / 2; })
+	  .attr("x", 4 + sankey.nodeWidth())
+	  .append("title")
+	  .text(function(d) { return "About "+d.name });
 
 	node.append("text")
 	  .attr("x", -6)

@@ -80,17 +80,17 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
     if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
        || (l4_proto == IPPROTO_UDP)
        || ((l4_proto == IPPROTO_TCP) && ((cli2srv_packets+srv2cli_packets) > 10))) {
-
-
       switch(detected_protocol) {
       case NDPI_PROTOCOL_DNS:
-	if(ndpi_flow->host_server_name[0] != '\0') {
-	  char delimiter = '@';
-	  char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
-	  
-	  if(at) {
-	    at[0] = '\0';
-	    ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
+	if(ntop->getPrefs()->decode_dns_responses()) {
+	  if(ndpi_flow->host_server_name[0] != '\0') {
+	    char delimiter = '@';
+	    char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
+	    
+	    if(at) {
+	      at[0] = '\0';
+	      ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
+	    }
 	  }
 	}
 	break;

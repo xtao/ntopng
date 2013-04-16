@@ -78,7 +78,7 @@ class NetworkInterface {
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
-  void getActiveHostsList(lua_State* vm);
+  void getActiveHostsList(lua_State* v, bool host_details);
   void getFlowPeersList(lua_State* vm);
 
   bool removeFlow(Flow *flow, bool lock_hash);

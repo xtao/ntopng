@@ -33,9 +33,10 @@ class Ntop {
   Redis *redis;
   PeriodicActivities *pa;
   Address *address;
+  Prefs *prefs;
 
  public:
-  Ntop(Redis *_redis, char *_data_dir, char *_callbacks_dir);
+  Ntop(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
   void start();
@@ -50,6 +51,7 @@ class Ntop {
   inline NtopGlobals*      getGlobals()           { return(globals); };
   inline Trace*            getTrace()             { return(globals->getTrace()); };
   inline Redis*            getRedis()             { return(redis);               };
+  inline Prefs*            getPrefs()             { return(prefs);               };
 };
 
 extern Ntop *ntop;

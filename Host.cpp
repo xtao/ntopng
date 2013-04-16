@@ -73,12 +73,22 @@ void Host::initialize(bool init_all) {
 
 /* *************************************** */
 
-void Host::dumpKeyToLua(lua_State* vm) {
+void Host::dumpKeyToLua(lua_State* vm, bool host_details) {
   char buf[64];
 
-  lua_pushstring(vm, get_name(buf, sizeof(buf)));
-  lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
-  lua_settable(vm, -3);
+  if(host_details) {
+    lua_newtable(vm);
+    lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
+    lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
+    lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
+    lua_pushstring(vm, get_ip()->print(buf, sizeof(buf)));
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
+  } else {
+    lua_pushstring(vm, get_name(buf, sizeof(buf)));
+    lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
+    lua_settable(vm, -3);
+  }
 }
 
 /* ***************************************** */

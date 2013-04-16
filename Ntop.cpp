@@ -25,7 +25,7 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop(Redis *_redis, char *_data_dir, char *_callbacks_dir) {
+Ntop::Ntop(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir) {
   struct stat statbuf;
 
   redis = _redis;
@@ -51,6 +51,7 @@ Ntop::Ntop(Redis *_redis, char *_data_dir, char *_callbacks_dir) {
   
   pa = new PeriodicActivities();
   address = new Address();
+  prefs = _prefs;
 }
 
 /* ******************************************* */
@@ -71,3 +72,4 @@ void Ntop::start() {
   pa->startPeriodicLoop();
   address->startResolveAddressLoop();
 }
+

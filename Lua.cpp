@@ -117,7 +117,23 @@ static int ntop_get_interface_hosts(lua_State* vm) {
     return(0);
   }
 
-  ntop_interface->getActiveHostsList(vm);
+  ntop_interface->getActiveHostsList(vm, false);
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_hosts_info(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  ntop_interface->getActiveHostsList(vm, true);
 
   return(1);
 }
@@ -317,6 +333,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getStats",       ntop_get_interface_stats },
   { "getNdpiStats",   ntop_get_ndpi_interface_stats },
   { "getHosts",       ntop_get_interface_hosts },
+  { "getHostsInfo",   ntop_get_interface_hosts_info },
   { "getFlowPeers",   ntop_get_interface_flows_peers },
 
   { NULL,             NULL}
@@ -379,6 +396,48 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
 
 /* ****************************************** */
 
+#if 0
+/**
+ * Iterator over key-value pairs where the value
+ * maybe made available in increments and/or may
+ * not be zero-terminated.  Used for processing
+ * POST data.
+ *
+ * @param cls user-specified closure
+ * @param kind type of the value
+ * @param key 0-terminated key for the value
+ * @param filename name of the uploaded file, NULL if not known
+ * @param content_type mime-type of the data, NULL if not known
+ * @param transfer_encoding encoding of the data, NULL if not known
+ * @param data pointer to size bytes of data at the
+ *              specified offset
+ * @param off offset of data in the overall value
+ * @param size number of bytes in data available
+ * @return MHD_YES to continue iterating,
+ *         MHD_NO to abort the iteration
+ */
+static int post_iterator(void *cls,
+			 enum MHD_ValueKind kind,
+			 const char *key,
+			 const char *filename,
+			 const char *content_type,
+			 const char *transfer_encoding,
+			 const char *data, uint64_t off, size_t size)
+{
+  struct Request *request = cls;
+  char tmp[1024];
+  u_int len = min(size, sizeof(tmp)-1);
+
+  memcpy(tmp, &data[off], len);
+  tmp[len] = '\0';
+
+  fprintf(stdout, "[POST] [%s][%s]\n", key, tmp);
+  return MHD_YES;
+}
+#endif
+
+/* ****************************************** */
+
 int MHD_KeyValueIteratorGet(void *cls, enum MHD_ValueKind kind,
 			    const char *key, const char *value) {
   lua_State *L = (lua_State*)cls;
@@ -427,10 +486,16 @@ int Lua::handle_script_request(char *script_path,
   lua_pushinteger(L, tmp_file);
   lua_setglobal(L, "tmp_file");
 
-  /* Put the GET params into the environment */
-  lua_newtable(L);
-  MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
-  lua_setglobal(L, "_GET"); /* Like in php */
+  if(!strcmp(method, MHD_HTTP_METHOD_POST)) {
+#if 0
+    request->pp = MHD_create_post_processor (connection, 1024, &post_iterator, request);
+#endif
+  } else {
+    /* Put the GET params into the environment */
+    lua_newtable(L);
+    MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
+    lua_setglobal(L, "_GET"); /* Like in php */
+  }
 
   tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, tmp_file);
 

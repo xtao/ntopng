@@ -23,7 +23,7 @@
 
 /* **************************************** */
 
-Redis::Redis(char *redis_host, int redis_port) {  
+Redis::Redis(char *redis_host, int redis_port) {
   if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
      || (credis_ping(redis) != 0)) {
     printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
@@ -88,27 +88,30 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 
 /* **************************************** */
 
-int Redis::queueHostToResolve(char *hostname) {  
-  int rc;
-  char key[128], *val;
+int Redis::queueHostToResolve(char *hostname) {
+  if(ntop->getPrefs()->is_dns_resolution_enabled()) {
+    int rc;
+    char key[128], *val;
 
-  l->lock(__FILE__, __LINE__);
+    l->lock(__FILE__, __LINE__);
 
-  snprintf(key, sizeof(key), "dns.cache.%s", hostname);
-  /*
-    Add only if the address has not been resolved yet
-  */
-  if(credis_get(redis, key, &val) < 0)
-    rc = credis_rpush(redis, "dns.toresolve", hostname);
+    snprintf(key, sizeof(key), "dns.cache.%s", hostname);
+    /*
+      Add only if the address has not been resolved yet
+    */
+    if(credis_get(redis, key, &val) < 0)
+      rc = credis_rpush(redis, "dns.toresolve", hostname);
 
-  l->unlock(__FILE__, __LINE__);
+    l->unlock(__FILE__, __LINE__);
 
-  return(rc);
+    return(rc);
+  } else
+    return(0);
 }
 
 /* **************************************** */
 
-int Redis::popHostToResolve(char *hostname, u_int hostname_len) {  
+int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
   char *val;
   int rc;
 
@@ -120,7 +123,7 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
     snprintf(hostname, hostname_len, "%s", val);
   else
     hostname[0] = '\0';
-  
+
   return(rc);
 }
 
@@ -137,7 +140,7 @@ void Redis::setDefaults() {
 int Redis::getAddress(char *numeric_ip, char *rsp, u_int rsp_len) {
   char key[64];
   int rc;
-  
+
   snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
   rc = get(key, rsp, rsp_len);
 
