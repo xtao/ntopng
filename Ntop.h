@@ -36,7 +36,8 @@ class Ntop {
   Prefs *prefs;
 
  public:
-  Ntop(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
+  Ntop();
+  void registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
   void start();

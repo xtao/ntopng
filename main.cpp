@@ -136,11 +136,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if((ntop = new Ntop()) == NULL) exit(0);
+
   if(redis == NULL) redis = new Redis();
 
-  ntop = new Ntop(prefs, redis, 
-		  (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
-		  (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
+  ntop->registerPrefs(prefs, redis, 
+		      (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
+		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
+
   ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
@@ -150,7 +153,6 @@ int main(int argc, char *argv[]) {
 
   ntop->start();
   iface->startPacketPolling();
-
 
 #if 1
   while(1) {

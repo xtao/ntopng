@@ -24,12 +24,21 @@
 /* **************************************** */
 
 Redis::Redis(char *redis_host, int redis_port) {
+  REDIS_INFO info;
+
   if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
-     || (credis_ping(redis) != 0)) {
-    printf("Unable to connect to redis %s:%d\n", redis_host, redis_port);
+     || (credis_ping(redis) != 0)
+     || (credis_info(redis, &info) != 0)
+     ) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				 "Unable to connect to redis %s:%d",
+				 redis_host, redis_port);
     exit(-1);
   }
 
+  ntop->getTrace()->traceEvent(TRACE_NORMAL,
+			       "Succesfully connected to Redis %d bit v.%s", 
+			       info.arch_bits, info.redis_version);
   l = new Mutex();
   setDefaults();
 }

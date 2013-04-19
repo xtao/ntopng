@@ -25,11 +25,21 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir) {
+Ntop::Ntop() {
+  globals = new NtopGlobals();
+  pa = new PeriodicActivities();
+  address = new Address();
+
+  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
+			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);  
+}
+
+/* ******************************************* */
+
+void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir) {
   struct stat statbuf;
 
-  redis = _redis;
-  globals = new NtopGlobals();
+  prefs = _prefs, redis = _redis;
 
   if(stat(_data_dir, &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
@@ -46,12 +56,6 @@ Ntop::Ntop(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir) 
   }
 
   data_dir = strdup(_data_dir), callbacks_dir = strdup(_callbacks_dir);
-  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
-			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
-  
-  pa = new PeriodicActivities();
-  address = new Address();
-  prefs = _prefs;
 }
 
 /* ******************************************* */
