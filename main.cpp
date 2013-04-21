@@ -154,20 +154,11 @@ int main(int argc, char *argv[]) {
   ntop->start();
   iface->startPacketPolling();
 
-#if 1
   while(1) {
-    NdpiStats stats;
-
     sleep(3);
-    iface->updateHostStats();
-    iface->getnDPIStats(&stats);
-    //stats.print(iface);
-
-    //iface->dumpFlows();
+    /* TODO - Do all this for all registered interfaces */
+    iface->runHousekeepingTasks();
   }
-#else
-  sleep(3);
-#endif
 
   sigproc(0);
   delete ntop;

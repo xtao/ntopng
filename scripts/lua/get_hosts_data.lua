@@ -16,8 +16,11 @@ else
 end
 
 
+if(ifname == nil) then	  
+  ifname = "any"
+end
 
-interface.find("any")
+interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
@@ -33,7 +36,7 @@ for key, value in pairs(hosts_stats) do
 	    print ",\n"
 	 end
 	 
-	 print ("{ \"column_0\" : \"" .. key .. "\", \"column_1\" : \"" .. value["name"] .. "\", \"column_2\" : \"" .. (value["bytes.sent"]+value["bytes.rcvd"]) .. "\" } ")
+	 print ("{ \"column_0\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. "</A>\", \"column_1\" : \"" .. value["name"] .. "\", \"column_2\" : \"" .. (value["bytes.sent"]+value["bytes.rcvd"]) .. "\" } ")
 	 num = num + 1
       end
    end

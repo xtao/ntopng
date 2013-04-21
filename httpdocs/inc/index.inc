@@ -2,7 +2,7 @@
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
           <li class="active"><a href="#">Home</a></li>
-          <li><a href="/interface_stats.lua">Interfaces</a></li>
+          <li><a href="/flows_stats.lua">Flows</a></li>
        	     <li><a href="/hosts_stats.lua">Hosts</a></li>
         </ul>
         <h3 class="muted"><img src="/img/logo.png"></h3>
@@ -119,7 +119,7 @@ function sankey() {
 	  .attr("height", 12)
 	  .attr("width", 150)
 	  .style("opacity", "0")
-	  .on("click", function(d) { window.location.href = "/hostDeatils.lua?host="+escape(d.name+".html");  })
+	  .on("click", function(d) { window.location.href = "/host_details.lua?host="+escape(d.name+".html");  })
 	  .attr("transform", null)
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 4 + sankey.nodeWidth())

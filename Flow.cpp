@@ -280,3 +280,26 @@ bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_in
 
 
 /* *************************************** */
+
+void Flow::dumpFlowToLua(lua_State* vm, bool detailed_dump) {
+  char buf[64];
+
+  lua_newtable(vm);
+  lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf)));
+  lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm, "src.port", get_src_port());
+  lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf)));
+  lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm, "dst.port", get_dst_port());
+  lua_push_int_table_entry(vm, "vlan", get_vlan_id());
+  lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
+  lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+  lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
+
+  lua_pushinteger(vm, key());
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+}
+
+/* *************************************** */
+

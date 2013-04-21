@@ -72,14 +72,6 @@ NetworkInterface::NetworkInterface(char *name, bool change_user) {
   ifname = strdup(name);
   ifStats = new TrafficStats();
 
-#ifndef WIN32
-  if(strstr(ifname, ".pcap") != NULL) {
-
-    printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
-
-  }
-#endif
-
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
 				   ntop->getGlobals()->getPromiscuousMode(),
 				   500, pcap_error_buffer)) == NULL) {
@@ -458,6 +450,23 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 
 /* **************************************************** */
 
+static void flows_get_list_details(HashEntry *h, void *user_data) {
+  lua_State* vm = (lua_State*)user_data;
+  Flow *flow = (Flow*)h;
+
+  flow->dumpFlowToLua(vm, false /* Minimum details */);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getActiveFlowsList(lua_State* vm) {
+  lua_newtable(vm);
+
+  flows_hash->walk(flows_get_list_details, (void*)vm);
+}
+
+/* **************************************************** */
+
 static void flow_peers_walker(HashEntry *h, void *user_data) {
   Flow *flow = (Flow*)h;
 
@@ -587,4 +596,15 @@ void NetworkInterface::dropPrivileges() {
 
   umask(0);
 #endif
+}
+
+/* **************************************************** */
+
+void NetworkInterface::runHousekeepingTasks() {
+  // NdpiStats stats;
+
+  updateHostStats();
+  // getnDPIStats(&stats);
+  //stats.print(iface);  
+  //dumpFlows();
 }

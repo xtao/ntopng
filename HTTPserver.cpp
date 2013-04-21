@@ -34,18 +34,23 @@ extern "C" {
 
 static HTTPserver *httpserver;
 
-#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/error.png> Page &quot;%s&quot; was not found</body></html>"
-#define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/error.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
+#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
+#define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 
 /* ****************************************** */
 
 int page_not_found(struct MHD_Connection *connection, const char *url) {
   char rsp[4096];
+  int ret;
 
   snprintf(rsp, sizeof(rsp), PAGE_NOT_FOUND, url);
 
   struct MHD_Response *response = MHD_create_response_from_buffer(strlen(rsp), (void *)rsp, MHD_RESPMEM_PERSISTENT);
-  int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
+
+  // FIX
+  MHD_add_response_header(response, "Redirect", "/page_not_found.lua");
+
+  ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
   MHD_destroy_response(response);
 
   ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Page not found %s", url);

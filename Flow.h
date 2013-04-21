@@ -64,7 +64,10 @@ class Flow : public HashEntry {
   inline u_int16_t get_src_port()                 { return(src_port);  };
   inline u_int16_t get_dst_port()                 { return(dst_port);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
+  inline u_int8_t  get_protocol()                 { return(protocol);    };  
+  inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol)); };
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
+  inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
   inline Host* get_src_host()                     { return(src_host); };
   inline Host* get_dst_host()                     { return(dst_host); };
   int compare(Flow *fb);
@@ -72,7 +75,7 @@ class Flow : public HashEntry {
   void update_hosts_stats();
   void print_peers(lua_State* vm); 
   inline u_int32_t key()                          { return(src_ip+dst_ip+src_port+dst_port+vlanId+protocol); }
-
+  void dumpFlowToLua(lua_State* vm, bool detailed_dump);
   bool equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol);
 };
 

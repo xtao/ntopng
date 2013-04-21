@@ -759,12 +759,13 @@ REDIS credis_connect(const char *host, int port, int timeout)
                        &(rhnd->version.minor),
                        &(rhnd->version.patch));
 
-    items = sscanf(rhnd->reply.bulk,
-		   "# Server\r\nredis_version:%d.%d.%d\r\n",
-		   &(rhnd->version.major),
-		   &(rhnd->version.minor),
-		   &(rhnd->version.patch));
-
+    if(items == 0)
+      items = sscanf(rhnd->reply.bulk,
+		     "# Server\r\nredis_version:%d.%d.%d\r\n",
+		     &(rhnd->version.major),
+		     &(rhnd->version.minor),
+		     &(rhnd->version.patch));
+    
     if (items < 2)
       goto error;
     if (items == 2) {

@@ -79,6 +79,7 @@ class NetworkInterface {
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
   void getActiveHostsList(lua_State* v, bool host_details);
+  void getActiveFlowsList(lua_State* v);
   void getFlowPeersList(lua_State* vm);
 
   bool removeFlow(Flow *flow, bool lock_hash);
@@ -89,6 +90,8 @@ class NetworkInterface {
 
   u_int getNumFlows();
   u_int getNumHosts();
+
+  void runHousekeepingTasks();
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

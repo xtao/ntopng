@@ -71,6 +71,7 @@ extern "C" {
 };
 
 #include "Trace.h"
+#include "Utils.h"
 #include "Redis.h"
 #include "NtopGlobals.h"
 #include "Prefs.h"
