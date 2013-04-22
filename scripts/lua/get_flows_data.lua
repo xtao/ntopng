@@ -51,7 +51,8 @@ for key, value in pairs(hosts_stats) do
 	   dst_port=""
          end
 
-	 print ("{ \"column_key\" : \"<A HREF='/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "'><img border=0 src='/img/info.png'></A>")
+	 descr=value["src.host"]..":"..value["src.port"].." &lt;-&gt; "..value["dst.host"]..":"..value["dst.port"]
+	 print ("{ \"column_key\" : \"<A HREF='/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><img border=0 src='/img/info.png'></A>")
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])

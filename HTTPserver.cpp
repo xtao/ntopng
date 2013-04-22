@@ -43,14 +43,12 @@ int page_not_found(struct MHD_Connection *connection, const char *url) {
   char rsp[4096];
   int ret;
 
-  snprintf(rsp, sizeof(rsp), PAGE_NOT_FOUND, url);
+  struct MHD_Response *response = MHD_create_response_from_buffer(strlen(PAGE_NOT_FOUND), (void *)PAGE_NOT_FOUND, MHD_RESPMEM_PERSISTENT);
 
-  struct MHD_Response *response = MHD_create_response_from_buffer(strlen(rsp), (void *)rsp, MHD_RESPMEM_PERSISTENT);
+  snprintf(rsp, sizeof(rsp), "/page_not_found.lua?url=%s", url);
+  MHD_add_response_header(response, "Location", rsp);
 
-  // FIX
-  MHD_add_response_header(response, "Redirect", "/page_not_found.lua");
-
-  ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
+  ret = MHD_queue_response(connection, MHD_HTTP_MOVED_PERMANENTLY, response);
   MHD_destroy_response(response);
 
   ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Page not found %s", url);

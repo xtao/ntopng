@@ -9,6 +9,9 @@
       </div>
 
       <hr>
+
+<div class="alert alert-warning"><b>IMPORTANT</b>: This is a development version of ntopng: not alla features have been implemented !</div>
+
       <div class="jumbotron">
         <h4>Top Talkers Relationships</h4>
 <style>

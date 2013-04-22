@@ -1,11 +1,13 @@
 ntop.dumpFile("./httpdocs/inc/header.inc")
 ntop.dumpFile("./httpdocs/inc/menu.inc")
 
-print ("<center><img src=/img/warning.png><H3>Unable to find URL <i>")
+print('<div class="alert alert-error"><img src=/img/warning.png> Page not found</div>')
+
+print ("<center><H4>Unable to find URL <i>")
 
 print(_GET["url"])
 
-print("</i></H3></center>\n")
+print("</i></center></H4>\n")
 
 dofile "./scripts/lua/footer.inc.lua"
 
