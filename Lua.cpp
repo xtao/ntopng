@@ -101,7 +101,7 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   }
 
   ntop_interface->getnDPIStats(&stats);
-  stats.dumpToLua(ntop_interface, vm);
+  stats.lua(ntop_interface, vm);
 
   return(1);
 }
@@ -190,20 +190,14 @@ void lua_push_int_table_entry(lua_State *L, const char *key, u_int32_t value) {
 
 static int ntop_get_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface;
-  TrafficStats *stats;
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
     return(0);
-  } else
-    stats = ntop_interface->getStats();
+  }
 
-  lua_newtable(vm);
-  lua_push_int_table_entry(vm, "packets", stats->getNumPkts());
-  lua_push_int_table_entry(vm, "bytes", stats->getNumBytes());
-  lua_push_int_table_entry(vm, "num_flows", ntop_interface->getNumFlows());
-  lua_push_int_table_entry(vm, "num_hosts", ntop_interface->getNumHosts());
+  ntop_interface->lua(vm);
 
   return(1);
 }

@@ -26,12 +26,6 @@
 #include <uuid/uuid.h>
 #endif
 
-#ifndef ETH_P_IP
-#define ETH_P_IP 0x0800
-#endif
-
-#define GTP_U_V1_PORT              2152
-#define MAX_NUM_INTERFACE_HOSTS   65536
 
 /* **************************************** */
 
@@ -70,7 +64,6 @@ NetworkInterface::NetworkInterface(char *name, bool change_user) {
   }
 
   ifname = strdup(name);
-  ifStats = new TrafficStats();
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
 				   ntop->getGlobals()->getPromiscuousMode(),
@@ -120,8 +113,6 @@ NetworkInterface::~NetworkInterface() {
   if(pcap_handle)
     pcap_close(pcap_handle);
 
-  delete ifStats;
-
   delete flows_hash;
   delete hosts_hash;
 
@@ -146,7 +137,9 @@ void NetworkInterface::dumpFlows() {
 
 /* **************************************************** */
 
-Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction) {
+Flow* NetworkInterface::getFlow(const struct ndpi_ethhdr *eth,
+				u_int16_t vlan_id, const struct ndpi_iphdr *iph, 
+				u_int16_t ipsize, bool *src2dst_direction) {
   u_int16_t l4_packet_len;
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
@@ -206,7 +199,9 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
   ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, iph->protocol, vlan_id);
 
   if(ret == NULL) {
-    ret = new Flow(this, vlan_id, iph->protocol, src_ip, src_port, dst_ip, dst_port);
+    ret = new Flow(this, vlan_id, iph->protocol, 
+		   (u_int8_t*)eth->h_source, src_ip, src_port, 
+		   (u_int8_t*)eth->h_dest, dst_ip, dst_port);
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);
@@ -228,26 +223,31 @@ Flow* NetworkInterface::getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph,
 
 /* **************************************************** */
 
-void NetworkInterface::packet_processing(const u_int64_t time, u_int16_t vlan_id,
+void NetworkInterface::packet_processing(const u_int64_t time, 
+					 const struct ndpi_ethhdr *eth,
+					 u_int16_t vlan_id,
 					 const struct ndpi_iphdr *iph,
 					 u_int16_t ipsize, u_int16_t rawsize)
 {
   bool src2dst_direction;
-  Flow *flow = getFlow(vlan_id, iph, ipsize, &src2dst_direction);
+  Flow *flow = getFlow(eth, vlan_id, iph, ipsize, &src2dst_direction);
   u_int16_t frag_off = ntohs(iph->frag_off);
 
   if(flow == NULL) return; else flow->incStats(src2dst_direction, rawsize);
   if(flow->isDetectionCompleted()) return;
 
-  // only handle unfragmented packets
   if((frag_off & 0x3FFF) == 0) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
     struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct,
-							    ndpi_flow, (uint8_t *)iph, ipsize, time, src, dst),
+							    ndpi_flow, (uint8_t *)iph, 
+							    ipsize, time, src, dst),
 			      iph->protocol);
+  } else {
+    // FIX - only handle unfragmented packets  
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
   }
 }
 
@@ -263,8 +263,6 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
   int pcap_datalink_type = iface->get_datalink();
 
-  iface->incStats(h->ts.tv_sec, h->caplen);
-
   time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
   if(lasttime > time) time = lasttime;
 
@@ -277,58 +275,81 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   } else if(pcap_datalink_type == 113 /* Linux Cooked Capture */) {
     type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-  } else
+    iface->incStats(h->ts.tv_sec, 0, h->caplen);
+  } else {
+    iface->incStats(h->ts.tv_sec, 0, h->caplen);
     return;
+  }
 
   if(type == 0x8100 /* VLAN */) {
     Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
-    vlan_id = ntohs(qType->vlanId) & 0xFFF;
 
+    vlan_id = ntohs(qType->vlanId) & 0xFFF;
     type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
     ip_offset += 4;
   }
 
+  iface->incStats(h->ts.tv_sec, type, h->caplen);
+
   iph = (struct ndpi_iphdr *) &packet[ip_offset];
 
-  // just work on Ethernet packets that contain IP
-  if(type == ETH_P_IP && h->caplen >= ip_offset) {
-    u_int16_t frag_off = ntohs(iph->frag_off);
+  // just work on Ethernet packets that contain IPv4
+  switch(type) {
+  case ETHERTYPE_IP:
+    if(h->caplen >= ip_offset) {
+      u_int16_t frag_off = ntohs(iph->frag_off);
 
-    if(iph->version != 4) {
-      /* FIX - Add IPv6 support */
-      return;
-    }
-
-    if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
-      u_short ip_len = ((u_short)iph->ihl * 4);
-      struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
-      u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
-
-      if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
-	/* Check if it's GTPv1 */
-	u_int offset = (u_int)(ip_offset+ip_len+sizeof(struct ndpi_udphdr));
-	u_int8_t flags = packet[offset];
-	u_int8_t message_type = packet[offset+1];
-
-	if((((flags & 0xE0) >> 5) == 1 /* GTPv1 */) && (message_type == 0xFF /* T-PDU */)) {
-	  ip_offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr)+8 /* GTPv1 header len */;
-
-	  if(flags & 0x04) ip_offset += 1; /* next_ext_header is present */
-	  if(flags & 0x02) ip_offset += 4; /* sequence_number is present (it also includes next_ext_header and pdu_number) */
-	  if(flags & 0x01) ip_offset += 1; /* pdu_number is present */
-
-	  iph = (struct ndpi_iphdr *) &packet[ip_offset];
-
-	  if(iph->version != 4) {
-	    /* FIX - Add IPv6 support */
-	    return;
-	  }
-	}
+      if(iph->version != 4) {
+	/* FIX - Add IPv6 support */
+	return;
       }
 
-    }
+      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
+	u_short ip_len = ((u_short)iph->ihl * 4);
+	struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
+	u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
 
-    iface->packet_processing(time, vlan_id, iph, h->len - ip_offset, h->len);
+	if((sport == GTP_U_V1_PORT) || (dport == GTP_U_V1_PORT)) {
+	  /* Check if it's GTPv1 */
+	  u_int offset = (u_int)(ip_offset+ip_len+sizeof(struct ndpi_udphdr));
+	  u_int8_t flags = packet[offset];
+	  u_int8_t message_type = packet[offset+1];
+
+	  if((((flags & 0xE0) >> 5) == 1 /* GTPv1 */) && (message_type == 0xFF /* T-PDU */)) {
+	    ip_offset = ip_offset+ip_len+sizeof(struct ndpi_udphdr)+8 /* GTPv1 header len */;
+
+	    if(flags & 0x04) ip_offset += 1; /* next_ext_header is present */
+	    if(flags & 0x02) ip_offset += 4; /* sequence_number is present (it also includes next_ext_header and pdu_number) */
+	    if(flags & 0x01) ip_offset += 1; /* pdu_number is present */
+
+	    iph = (struct ndpi_iphdr *) &packet[ip_offset];
+
+	    if(iph->version != 4) {
+	      /* FIX - Add IPv6 support */
+	      return;
+	    }
+	  }
+	}
+
+      }
+
+      iface->packet_processing(time, ethernet, vlan_id, iph, h->len - ip_offset, h->len);
+    }
+    break;
+
+  case ETHERTYPE_IPV6:
+    if(h->caplen >= ip_offset) {
+      /* TODO */
+    }
+    break;
+    
+  default: /* No IPv4 nor IPv6 */
+    Host *srcHost = iface->findHostByMac((const u_int8_t*)ethernet->h_source, true);
+    Host *dstHost = iface->findHostByMac((const u_int8_t*)ethernet->h_dest, true);
+
+    if(srcHost) srcHost->incStats(NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
+    if(dstHost) dstHost->incStats(NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
+    break;
   }
 
   iface->purgeIdleFlows();
@@ -361,7 +382,9 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
-void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
+void NetworkInterface::findFlowHosts(Flow *flow, 
+				     u_int8_t src_mac[6], Host **src, 
+				     u_int8_t dst_mac[6], Host **dst) {
   IpAddress ip;
 
   // FIX - Add IPv6 support
@@ -369,7 +392,7 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*src) = hosts_hash->get(&ip);
 
   if((*src) == NULL) {
-    (*src) = new Host(this, flow->get_src_ipv4());
+    (*src) = new Host(this, src_mac, flow->get_src_ipv4());
     if(!hosts_hash->add(*src)) {
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *src;
@@ -384,7 +407,7 @@ void NetworkInterface::findFlowHosts(Flow *flow, Host **src, Host **dst) {
   (*dst) = hosts_hash->get(&ip);
 
   if((*dst) == NULL) {
-    (*dst) = new Host(this, flow->get_dst_ipv4());
+    (*dst) = new Host(this, dst_mac, flow->get_dst_ipv4());
     if(!hosts_hash->add(*dst)) {
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *dst;
@@ -429,7 +452,7 @@ void NetworkInterface::updateHostStats() {
 static void hosts_get_list(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->dumpKeyToLua(vm, false);
+  ((Host*)h)->lua(vm, false);
 }
 
 /* **************************************************** */
@@ -437,7 +460,7 @@ static void hosts_get_list(HashEntry *h, void *user_data) {
 static void hosts_get_list_details(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->dumpKeyToLua(vm, true);
+  ((Host*)h)->lua(vm, true);
 }
 
 /* **************************************************** */
@@ -454,7 +477,7 @@ static void flows_get_list_details(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
   Flow *flow = (Flow*)h;
 
-  flow->dumpFlowToLua(vm, false /* Minimum details */);
+  flow->lua(vm, false /* Minimum details */);
 }
 
 /* **************************************************** */
@@ -521,17 +544,11 @@ void NetworkInterface::purgeIdleFlows() {
 /* **************************************************** */
 
 bool NetworkInterface::removeFlow(Flow *flow, bool lock_hash) {  return(flows_hash->remove(flow, lock_hash)); };
-
-/* **************************************************** */
-
 bool NetworkInterface::removeHost(Host *host, bool lock_hash) {  return(hosts_hash->remove(host, lock_hash)); };
 
 /* **************************************************** */
 
 u_int NetworkInterface::getNumFlows() { return(flows_hash->getNumEntries()); };
-
-/* **************************************************** */
-
 u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
 
 /* **************************************************** */
@@ -598,13 +615,39 @@ void NetworkInterface::dropPrivileges() {
 #endif
 }
 
+/* *************************************** */
+
+void NetworkInterface::lua(lua_State *vm) {
+  lua_newtable(vm);
+  lua_push_str_table_entry(vm, "name", ifname);
+ 
+  lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
+  lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
+  lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
+  lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
+
+  ethStats.lua(vm);
+ 
+  lua_pushinteger(vm, 0); //  Index
+  lua_insert(vm, -2);
+  //  lua_settable(vm, -3);
+}
+
 /* **************************************************** */
 
 void NetworkInterface::runHousekeepingTasks() {
   // NdpiStats stats;
 
+  /* TO COMPLETE */
   updateHostStats();
   // getnDPIStats(&stats);
   //stats.print(iface);  
   //dumpFlows();
+}
+
+/* **************************************************** */
+
+Host* NetworkInterface::findHostByMac(const u_int8_t mac[6], bool createIfNotPresent) {
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() NOT IMPLEMENTED", __FUNCTION__);
+  return(NULL);
 }

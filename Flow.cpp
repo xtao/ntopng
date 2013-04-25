@@ -25,8 +25,8 @@
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
-	   u_int32_t _src_ip, u_int16_t _src_port,
-	   u_int32_t _dst_ip, u_int16_t _dst_port) : HashEntry(_iface) {
+	   u_int8_t src_mac[6], u_int32_t _src_ip, u_int16_t _src_port,
+	   u_int8_t dst_mac[6], u_int32_t _dst_ip, u_int16_t _dst_port) : HashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol,
     src_ip = _src_ip, src_port = _src_port,
     dst_ip = _dst_ip, dst_port = _dst_port;
@@ -35,7 +35,9 @@ Flow::Flow(NetworkInterface *_iface,
  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
 
-  iface->findFlowHosts(this, &src_host, &dst_host);
+  iface->findFlowHosts(this,
+		       src_mac, &src_host,
+		       dst_mac, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
   first_seen = last_seen = iface->getTimeLastPktRcvd();
@@ -281,7 +283,7 @@ bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_in
 
 /* *************************************** */
 
-void Flow::dumpFlowToLua(lua_State* vm, bool detailed_dump) {
+void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
   lua_newtable(vm);
@@ -296,10 +298,9 @@ void Flow::dumpFlowToLua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
 
-  lua_pushinteger(vm, key());
+  lua_pushinteger(vm, key()); // Index
   lua_insert(vm, -2);
   lua_settable(vm, -3);
 }
 
 /* *************************************** */
-

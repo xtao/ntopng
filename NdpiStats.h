@@ -44,7 +44,7 @@ class NdpiStats {
   NdpiStats();
 
   void sumStats(NdpiStats *stats);
-  void dumpToLua(lua_State* vm);
+  void lua(lua_State* vm);
 
   inline void incStats(u_int proto_id,
 		       u_int32_t sent_packets, u_int32_t sent_bytes,
@@ -58,7 +58,7 @@ class NdpiStats {
   inline TrafficCounter* getPackets(u_int16_t proto_id) { if(proto_id < (MAX_NDPI_PROTOS)) return(&packets[proto_id]); else return(NULL); };
   inline TrafficCounter* getBytes(u_int16_t proto_id)   { if(proto_id < (MAX_NDPI_PROTOS)) return(&bytes[proto_id]);   else return(NULL); };
   void print(NetworkInterface *iface);
-  void dumpToLua(NetworkInterface *iface, lua_State* vm);
+  void lua(NetworkInterface *iface, lua_State* vm);
 };
 
 #endif /* _NDPI_STATS_H_ */

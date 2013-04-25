@@ -19,21 +19,24 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef _PROTO_STATS_H_
+#define _PROTO_STATS_H_
 
 #include "ntop_includes.h"
 
-/* ******************************* */
-
-class Utils {
+class ProtoStats {
  private:
+  u_int64_t numPkts, numBytes;
 
  public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
+  ProtoStats();
+
+  inline void reset()                              { numPkts = 0, numBytes = 0; };
+  inline void inc(u_int32_t pkts, u_int32_t bytes) { numPkts += pkts, numBytes += bytes; };
+  inline u_int64_t getPkts()                       { return(numPkts);  };
+  inline u_int64_t getBytes()                      { return(numBytes); };
+  void lua(lua_State *vm, const char *prefix);
+  void print(const char *prefix);
 };
 
-
-#endif /* _UTILS_H_ */
+#endif /* _PROTO_STATS_H_ */

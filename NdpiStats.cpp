@@ -50,7 +50,7 @@ void NdpiStats::print(NetworkInterface *iface) {
 
 /* *************************************** */
 
-void NdpiStats::dumpToLua(NetworkInterface *iface, lua_State* vm) {
+void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
   lua_newtable(vm);
 
   for(int i=0; i<MAX_NDPI_PROTOS; i++)

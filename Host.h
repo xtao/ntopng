@@ -26,43 +26,41 @@
 
 class Host : public HashEntry {
  private:
+  u_int8_t mac_address[6];
   char *symbolic_name;
   u_int16_t num_uses;
   IpAddress *ip;
-  NdpiStats ndpiStats;
+  NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   bool name_resolved;
   Mutex *m;
 
-  void initialize(bool init_all);
+  void initialize(u_int8_t mac[6], bool init_all);
 
  public:
   Host(NetworkInterface *_iface);
-  Host(NetworkInterface *_iface, u_int32_t _ipv4);
-  Host(NetworkInterface *_iface, struct in6_addr _ipv6);
+  Host(NetworkInterface *_iface, u_int8_t mac[6]);
+  Host(NetworkInterface *_iface, u_int8_t mac[6], u_int32_t _ipv4);
+  Host(NetworkInterface *_iface, u_int8_t mac[6], struct in6_addr _ipv6);
   ~Host();
 
   inline void set_ipv4(u_int32_t _ipv4)       { ip->set_ipv4(_ipv4); }
   inline void set_ipv6(struct in6_addr _ipv6) { ip->set_ipv6(_ipv6); }
   inline u_int32_t key()                      { return(ip->key());   }
   inline IpAddress* get_ip()                  { return(ip);          }
+  inline u_int8_t*  get_mac()                 { return(mac_address); }
+  char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);
 
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
-
-  inline void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
-    if(sent_packets || rcvd_packets) {
-      sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
-      ndpiStats.incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
-      updateSeen();
-    }
-  }
+  
+  void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
 
   inline int compare(Host *node)     { return(ip->compare(node->ip)); };
-  inline NdpiStats* get_ndpi_stats() { return(&ndpiStats);            };
+  inline NdpiStats* get_ndpi_stats() { return(ndpiStats);             };
   bool isIdle(u_int max_idleness);
-  void dumpKeyToLua(lua_State* vm, bool host_details);
+  void lua(lua_State* vm, bool host_details);
   void resolveHostName();
   void setName(char *name);
 };

@@ -24,8 +24,6 @@
 
 #include "ntop_includes.h"
 
-#define NUM_ROOTS 512
-
 class Flow;
 class FlowHash;
 class Host;
@@ -39,7 +37,7 @@ typedef struct ether80211q {
 class NetworkInterface {
  private:
   char *ifname;
-  TrafficStats *ifStats;
+  EthStats ethStats;
   pcap_t *pcap_handle;
   int pcap_datalink_type;
   pthread_t pollLoop;
@@ -52,7 +50,9 @@ class NetworkInterface {
   bool polling_started;
 
   void dropPrivileges();
-  Flow* getFlow(u_int16_t vlan_id, const struct ndpi_iphdr *iph, u_int16_t ipsize, bool *src2dst_direction);
+  Flow* getFlow(const struct ndpi_ethhdr *eth, u_int16_t vlan_id,
+		const struct ndpi_iphdr *iph, 
+		u_int16_t ipsize, bool *src2dst_direction);
 
  public:
   NetworkInterface(char *name, bool change_user);
@@ -66,18 +66,23 @@ class NetworkInterface {
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
-  inline void incStats(time_t last, u_int pkt_len) { last_pkt_rcvd = last, ifStats->incStats(pkt_len); };
-  inline TrafficStats* getStats()   { return(ifStats);                 };
-  inline int get_datalink()           { return(pcap_datalink_type);      };
-  inline pcap_t* get_pcap_handle()    { return(pcap_handle);             };
+  inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
+  inline EthStats* getStats()      { return(&ethStats);          };
+  inline int get_datalink()        { return(pcap_datalink_type); };
+  inline pcap_t* get_pcap_handle() { return(pcap_handle);        };
 
-  void findFlowHosts(Flow *flow, Host **src, Host **dst);
-  void packet_processing(const u_int64_t time, u_int16_t vlan_id,
+  void findFlowHosts(Flow *flow, 
+		     u_int8_t src_mac[6], Host **src,
+		     u_int8_t dst_mac[6], Host **dst);
+  void packet_processing(const u_int64_t time,
+			 const struct ndpi_ethhdr *eth,
+			 u_int16_t vlan_id,
 			 const struct ndpi_iphdr *iph,
 			 u_int16_t ipsize, u_int16_t rawsize);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
+  void lua(lua_State* v);
   void getActiveHostsList(lua_State* v, bool host_details);
   void getActiveFlowsList(lua_State* v);
   void getFlowPeersList(lua_State* vm);
@@ -90,8 +95,11 @@ class NetworkInterface {
 
   u_int getNumFlows();
   u_int getNumHosts();
+  inline u_int getNumPackets() { return(ethStats.getNumPackets());  };
+  inline u_int getNumBytes()   { return(ethStats.getNumBytes());    };
 
   void runHousekeepingTasks();
+  Host* findHostByMac(const u_int8_t mac[6], bool createIfNotPresent);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

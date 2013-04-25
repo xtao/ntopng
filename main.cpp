@@ -54,9 +54,9 @@ void sigproc(int sig) {
   sleep(2); /* Wait until all threads know that we're shutting down... */  
 
   if(NetworkInterface *iface = ntop->get_NetworkInterface("any")) {
-    TrafficStats *stats = iface->getStats();
+    EthStats *stats = iface->getStats();
 
-    stats->printStats();
+    stats->print();
     iface->shutdown();
   }
 

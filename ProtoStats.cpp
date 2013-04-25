@@ -19,21 +19,33 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
-
 #include "ntop_includes.h"
 
-/* ******************************* */
+/* *************************************** */
 
-class Utils {
- private:
+ProtoStats::ProtoStats() {
+  reset();
+}
 
- public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-};
+/* *************************************** */
 
+void ProtoStats::print(const char *prefix) {
+  char bytes_buf[32], packets_buf[32];
+  
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+			       "%s %s/%s Packets", prefix,
+			       Utils::formatTraffic(numBytes, false, bytes_buf),
+			       Utils::formatPackets(numPkts, packets_buf));
+}
 
-#endif /* _UTILS_H_ */
+/* *************************************** */
+
+void ProtoStats::lua(lua_State *vm, const char *prefix) {
+  char key_buf[32];
+
+  snprintf(key_buf, sizeof(key_buf), "%sbytes", prefix);
+  lua_push_int_table_entry(vm, key_buf, numBytes);
+
+  snprintf(key_buf, sizeof(key_buf), "%spackets", prefix);
+  lua_push_int_table_entry(vm, key_buf, numPkts);
+}

@@ -23,7 +23,7 @@
 
 /* ****************************************************** */
 
-char* Utils::formatTraffic(float numBits, int bits, char *buf) {
+char* Utils::formatTraffic(float numBits, bool bits, char *buf) {
   char unit;
 
   if(bits)

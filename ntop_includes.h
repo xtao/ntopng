@@ -70,6 +70,7 @@ extern "C" {
 #include "lualib.h"
 };
 
+#include "ntop_defines.h"
 #include "Trace.h"
 #include "Utils.h"
 #include "Redis.h"
@@ -79,6 +80,8 @@ extern "C" {
 #include "IpAddress.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"
+#include "ProtoStats.h"
+#include "EthStats.h"
 #include "HashEntry.h"
 #include "GenericHash.h"
 #include "NetworkInterface.h"
@@ -92,10 +95,5 @@ extern "C" {
 #include "HTTPserver.h"
 #include "Ntop.h"
 
-#define FLOW_PURGE_FREQUENCY     5 /* sec */
-#define FLOW_MAX_IDLE           30 /* sec */
-
-#define HOST_PURGE_FREQUENCY     5 /* sec */
-#define HOST_MAX_IDLE           60 /* sec */
 
 #endif /* _NTOP_H_ */

@@ -25,35 +25,45 @@
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
-  ip = new IpAddress(0);
-  initialize(false);
+  ip = new IpAddress(0), ndpiStats = new NdpiStats();
+  initialize(NULL, false);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int32_t _ipv4) : HashEntry(_iface) {
-  ip = new IpAddress(_ipv4);
-  initialize(true);
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int32_t _ipv4) : HashEntry(_iface) {
+  ip = new IpAddress(_ipv4), ndpiStats = new NdpiStats();
+  initialize(mac, true);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, struct in6_addr _ipv6) : HashEntry(_iface) {
-  ip = new IpAddress(_ipv6);
-  initialize(true);
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : HashEntry(_iface) {
+  ip = NULL;
+  initialize(mac, true);
+}
+
+/* *************************************** */
+
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], struct in6_addr _ipv6) : HashEntry(_iface) {
+  ip = new IpAddress(_ipv6), ndpiStats = new NdpiStats();
+  initialize(mac, true);
 }
 
 /* *************************************** */
 
 Host::~Host() {
   if(symbolic_name) free(symbolic_name);
+  if(ndpiStats) delete ndpiStats;
   delete ip;
   delete m;
 }
 
 /* *************************************** */
 
-void Host::initialize(bool init_all) {
+void Host::initialize(u_int8_t mac[6], bool init_all) {
+  if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
+
   num_uses = 0, name_resolved = false, symbolic_name = NULL;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   /* FIX - set ip.localHost */
@@ -73,15 +83,29 @@ void Host::initialize(bool init_all) {
 
 /* *************************************** */
 
-void Host::dumpKeyToLua(lua_State* vm, bool host_details) {
+char* Host::get_mac(char *buf, u_int buf_len) {
+  snprintf(buf, buf_len,
+	   "%02X:%02X:%02X:%02X:%02X:%02X",
+	   mac_address[0] & 0xFF, mac_address[1] & 0xFF,
+	   mac_address[2] & 0xFF, mac_address[3] & 0xFF,
+	   mac_address[4] & 0xFF, mac_address[5] & 0xFF);
+
+  return(buf);
+}
+
+/* *************************************** */
+
+void Host::lua(lua_State* vm, bool host_details) {
   char buf[64];
 
   if(host_details) {
     lua_newtable(vm);
+    lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
-    lua_pushstring(vm, get_ip()->print(buf, sizeof(buf)));
+    if(ip != NULL)
+      lua_pushstring(vm, ip->print(buf, sizeof(buf)));
     lua_insert(vm, -2);
     lua_settable(vm, -3);
   } else {
@@ -119,15 +143,30 @@ void Host::setName(char *name) {
 /* ***************************************** */
 
 char* Host::get_name(char *buf, u_int buf_len) {
-  char *addr;
-
-  if(symbolic_name != NULL)
-    return(symbolic_name);
-
-  addr = get_ip()->print(buf, buf_len);
-  if(ntop->getRedis()->getAddress(addr, buf, buf_len) == 0) {
+  if(ip == NULL) {
+    return(get_mac(buf, buf_len));
+  } else {
+    char *addr;
+    
+    if(symbolic_name != NULL)
+      return(symbolic_name);
+    
+    addr = ip->print(buf, buf_len);
+    if(ntop->getRedis()->getAddress(addr, buf, buf_len) == 0) {
     setName(buf);
     return(symbolic_name);
-  } else
-    return(addr);
+    } else
+      return(addr);
+  }
 }
+
+/* *************************************** */
+
+void Host::incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
+    if(sent_packets || rcvd_packets) {
+      sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
+      if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
+	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
+      updateSeen();
+    }
+  }
