@@ -99,7 +99,8 @@
             , data: $.extend({}, o.get, {
                   currentPage: o.currentPage
                 , perPage: o.perPage
-                , sort: o.sort
+                , sortColumn: o.sort[0][0]
+                , sortOrder: o.sort[0][1]
                 , filter: o.filter
               })
             , success: function( res ) {

@@ -34,6 +34,9 @@
 				 field: "column_2",
 
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
 				 }
 			     ]
 	       });

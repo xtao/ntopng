@@ -1,7 +1,11 @@
+package.path = "./scripts/lua/modules/?.lua;" .. package.path
+require "lua_utils"
+
 ifname      = _GET["if"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
-columnSort  = _GET["sort"]
+sortColumn      = _GET["sortColumn"]
+sortOrder       = _GET["sortOrder"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -27,7 +31,38 @@ print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 num = 0
 total = 0
 to_skip = (currentPage-1) * perPage
+
+
+vals = {}
 for key, value in pairs(hosts_stats) do
+--   print("==>"..hosts_stats[key]["bytes.sent"].."\n")
+   if(sortColumn == "column_client") then
+   vals[hosts_stats[key]["src.ip"]] = key
+   elseif(sortColumn == "column_server") then
+   vals[hosts_stats[key]["dst.ip"]] = key
+   elseif(sortColumn == "column_bytes") then
+   vals[hosts_stats[key]["bytes"]] = key
+   elseif(sortColumn == "column_ndpi") then
+   vals[hosts_stats[key]["proto.ndpi"]] = key
+   elseif(sortColumn == "column_proto_l4") then
+   vals[hosts_stats[key]["proto.l4"]] = key
+else
+   vals[key] = key
+   end
+end
+
+table.sort(vals)
+
+if(sortOrder == "asc") then
+   funct = asc
+else
+   funct = rev
+end
+
+for _key, _value in pairsByKeys(vals, funct) do
+   key = vals[_key]   
+   value = hosts_stats[key]
+
     -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
    if(to_skip > 0) then
       to_skip = to_skip-1
@@ -58,7 +93,7 @@ for key, value in pairs(hosts_stats) do
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
-	 print ( "\", \"column_bytes\" : " .. value["bytes"])
+	 print ( "\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "\"")
 	 print (" }\n")
 	 num = num + 1
       end
@@ -69,4 +104,14 @@ end -- for
 
 
 print ("\n], \"perPage\" : " .. perPage .. ",\n")
-print ("\"sort\" : [ [ \"column_0\", \"desc\" ] ],\n \"totalRows\" : " .. total .. " \n}")
+
+if(sortColumn == nil) then
+   sortColumn = ""
+end
+
+if(sortOrder == nil) then
+   sortOrder = ""
+end
+
+print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
+print ("\"totalRows\" : " .. total .. " \n}")

@@ -22,16 +22,25 @@
 			     {
 			     title: "Info",
 				 field: "column_key",
+	 	             css: { 
+			        textAlign: 'center'
+			     }
 				 },
 			     {
 			     title: "Application",
 				 field: "column_ndpi",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
 				 },
 			     {
 			     title: "L4 Proto",
 				 field: "column_proto_l4",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
 				 },
 			     {
 			     title: "Client",
@@ -47,6 +56,10 @@
 			     title: "Bytes",
 				 field: "column_bytes",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
+
 				 }
 			     ]
 	       });
