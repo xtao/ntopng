@@ -29,16 +29,9 @@ IpAddress::IpAddress() {
 
 /* ******************************************* */
 
-IpAddress::IpAddress(u_int32_t _ipv4) {
-  set_ipv4(_ipv4);
+IpAddress::IpAddress(IpAddress *ip) {
+  memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
 }
-
-/* ******************************************* */
-
-IpAddress::IpAddress(struct in6_addr _ipv6) {
-  set_ipv6(_ipv6);
-}
-
 /* ******************************************* */
 
 int IpAddress::compare(IpAddress *ip) {
@@ -47,7 +40,7 @@ int IpAddress::compare(IpAddress *ip) {
   if(addr.ipVersion == 4)
     return(memcmp(&addr.ipType.ipv4, &ip->addr.ipType.ipv4, sizeof(u_int32_t)));
   else
-    return(memcmp(&addr.ipType.ipv6, &ip->addr.ipType.ipv6, sizeof(struct in6_addr)));
+    return(memcmp(&addr.ipType.ipv6, &ip->addr.ipType.ipv6, sizeof(struct ndpi_in6_addr)));
 }
 
 /* ******************************************* */
@@ -131,7 +124,7 @@ void IpAddress::dump(struct sockaddr *sa) {
   } else {
     struct sockaddr_in6 *in6 = (struct sockaddr_in6*)sa;
 
-    memcpy(&in6->sin6_addr, &addr.ipType.ipv6, sizeof(struct in6_addr));
+    memcpy(&in6->sin6_addr, &addr.ipType.ipv6, sizeof(struct ndpi_in6_addr));
     in6->sin6_family = AF_INET6;
   }
 }

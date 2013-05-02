@@ -40,15 +40,14 @@ class Host : public HashEntry {
  public:
   Host(NetworkInterface *_iface);
   Host(NetworkInterface *_iface, u_int8_t mac[6]);
-  Host(NetworkInterface *_iface, u_int8_t mac[6], u_int32_t _ipv4);
-  Host(NetworkInterface *_iface, u_int8_t mac[6], struct in6_addr _ipv6);
+  Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip);
   ~Host();
 
-  inline void set_ipv4(u_int32_t _ipv4)       { ip->set_ipv4(_ipv4); }
-  inline void set_ipv6(struct in6_addr _ipv6) { ip->set_ipv6(_ipv6); }
-  inline u_int32_t key()                      { return(ip->key());   }
-  inline IpAddress* get_ip()                  { return(ip);          }
-  inline u_int8_t*  get_mac()                 { return(mac_address); }
+  inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4); }
+  inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
+  inline u_int32_t key()                       { return(ip->key());   }
+  inline IpAddress* get_ip()                   { return(ip);          }
+  inline u_int8_t*  get_mac()                  { return(mac_address); }
   char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);
 
@@ -57,12 +56,14 @@ class Host : public HashEntry {
   
   void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
 
-  inline int compare(Host *node)     { return(ip->compare(node->ip)); };
-  inline NdpiStats* get_ndpi_stats() { return(ndpiStats);             };
+  inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   bool isIdle(u_int max_idleness);
   void lua(lua_State* vm, bool host_details);
   void resolveHostName();
   void setName(char *name);
+  int compare(Host *h);
+  inline bool equal(u_int32_t ipv4_addr)              { if(ip == NULL) return(false); else return(ip->equal(ipv4_addr)); };
+  inline bool equal(struct ndpi_in6_addr *ipv6_addr)  { if(ip == NULL) return(false); else return(ip->equal(ipv6_addr)); };
 };
 
 #endif /* _HOST_H_ */

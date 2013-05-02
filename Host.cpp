@@ -25,14 +25,14 @@
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
-  ip = new IpAddress(0), ndpiStats = new NdpiStats();
+  ip = new IpAddress(), ndpiStats = new NdpiStats();
   initialize(NULL, false);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int32_t _ipv4) : HashEntry(_iface) {
-  ip = new IpAddress(_ipv4), ndpiStats = new NdpiStats();
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip) : HashEntry(_iface) {
+  ip = new IpAddress(_ip), ndpiStats = new NdpiStats();
   initialize(mac, true);
 }
 
@@ -40,13 +40,6 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int32_t _ipv4) : HashEnt
 
 Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : HashEntry(_iface) {
   ip = NULL;
-  initialize(mac, true);
-}
-
-/* *************************************** */
-
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], struct in6_addr _ipv6) : HashEntry(_iface) {
-  ip = new IpAddress(_ipv6), ndpiStats = new NdpiStats();
   initialize(mac, true);
 }
 
@@ -153,8 +146,8 @@ char* Host::get_name(char *buf, u_int buf_len) {
     
     addr = ip->print(buf, buf_len);
     if(ntop->getRedis()->getAddress(addr, buf, buf_len) == 0) {
-    setName(buf);
-    return(symbolic_name);
+      setName(buf);
+      return(symbolic_name);
     } else
       return(addr);
   }
@@ -170,3 +163,13 @@ void Host::incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_byt
       updateSeen();
     }
   }
+
+/* *************************************** */
+
+int Host::compare(Host *h) {
+  if(ip)
+    return(ip->compare(h->ip));
+  else
+    return(memcmp(mac_address, h->mac_address, 6));
+}
+

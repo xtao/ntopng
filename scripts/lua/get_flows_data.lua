@@ -72,14 +72,24 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 
-	 src_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>"..value["src.host"].."</A>"
+	 name = value["src.host"]
+	 if(name == "") then
+	    name = value["src.ip"]
+	 end
+
+	 src_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. name .."</A>"
 	 if(value["src.port"] > 0) then
   	   src_port=":<A HREF='/port_details.lua?interface=".. ifname .. "&port=" .. value["src.port"] .. "'>"..value["src.port"].."</A>"
          else
 	   src_port=""
          end
 
-	 dst_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>"..value["dst.host"].."</A>"
+	 name = value["dst.host"]
+	 if(name == "") then
+	    name = value["dst.ip"]
+	 end
+
+	 dst_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. name .."</A>"
 	 if(value["dst.port"] > 0) then
   	   dst_port=":<A HREF='/port_details.lua?interface=".. ifname .. "&port=" .. value["dst.port"] .. "'>"..value["dst.port"].."</A>"
          else

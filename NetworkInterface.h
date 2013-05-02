@@ -50,9 +50,11 @@ class NetworkInterface {
   bool polling_started;
 
   void dropPrivileges();
-  Flow* getFlow(const struct ndpi_ethhdr *eth, u_int16_t vlan_id,
-		const struct ndpi_iphdr *iph, 
-		u_int16_t ipsize, bool *src2dst_direction);
+  Flow* getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
+		struct ndpi_iphdr *iph,
+		struct ndpi_ip6_hdr *ip6,
+		u_int16_t ipsize, bool *src2dst_direction,
+		u_int8_t *l4_proto);
 
  public:
   NetworkInterface(char *name, bool change_user);
@@ -71,13 +73,14 @@ class NetworkInterface {
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline pcap_t* get_pcap_handle() { return(pcap_handle);        };
 
-  void findFlowHosts(Flow *flow, 
-		     u_int8_t src_mac[6], Host **src,
-		     u_int8_t dst_mac[6], Host **dst);
+  void findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
+		     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst);
+
   void packet_processing(const u_int64_t time,
-			 const struct ndpi_ethhdr *eth,
+			 struct ndpi_ethhdr *eth,
 			 u_int16_t vlan_id,
-			 const struct ndpi_iphdr *iph,
+			 struct ndpi_iphdr *iph,
+			 struct ndpi_ip6_hdr *ip6,
 			 u_int16_t ipsize, u_int16_t rawsize);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);

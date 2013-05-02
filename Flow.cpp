@@ -25,19 +25,15 @@
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
-	   u_int8_t src_mac[6], u_int32_t _src_ip, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], u_int32_t _dst_ip, u_int16_t _dst_port) : HashEntry(_iface) {
-  vlanId = _vlanId, protocol = _protocol,
-    src_ip = _src_ip, src_port = _src_port,
-    dst_ip = _dst_ip, dst_port = _dst_port;
+	   u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, u_int16_t _src_port,
+	   u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port) : HashEntry(_iface) {
+  vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
 
-  iface->findFlowHosts(this,
-		       src_mac, &src_host,
-		       dst_mac, &dst_host);
+  iface->findFlowHosts(src_mac, _src_ipv4, _src_ipv6, &src_host, dst_mac, _dst_ipv4, _dst_ipv6, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
   first_seen = last_seen = iface->getTimeLastPktRcvd();
@@ -124,10 +120,12 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 /* *************************************** */
 
 int Flow::compare(Flow *fb) {
+  int c;
+
   if(vlanId < fb->vlanId) return(-1); else { if(vlanId > fb->vlanId) return(1); }
-  if(src_ip < fb->src_ip) return(-1); else { if(src_ip > fb->src_ip) return(1); }
+  c = src_host->compare(fb->get_src_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
   if(src_port < fb->src_port) return(-1); else { if(src_port > fb->src_port) return(1); }
-  if(dst_ip < fb->dst_ip) return(-1); else { if(dst_ip > fb->dst_ip) return(1); }
+  c = dst_host->compare(fb->get_dst_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
   if(dst_port < fb->dst_port) return(-1); else { if(dst_port > fb->dst_port) return(1); }
   if(protocol < fb->protocol) return(-1); else { if(protocol > fb->protocol) return(1); }
 
@@ -234,10 +232,8 @@ void Flow::print() {
 
   printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%u/%u bytes]\n",
 	 ipProto2Name(protocol),
-	 intoaV4(ntohl(src_ip), buf1, sizeof(buf1)),
-	 ntohs(src_port),
-	 intoaV4(ntohl(dst_ip), buf2, sizeof(buf2)),
-	 ntohs(dst_port),
+	 src_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(src_port),
+	 dst_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(dst_port),
 	 detected_protocol,
 	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
 	 cli2srv_packets, srv2cli_packets,
@@ -273,13 +269,25 @@ void Flow::update_hosts_stats() {
 bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(((_src_ip == src_ip) || (_dst_ip == dst_ip) || (_src_port == src_port) || (_dst_port == dst_port))
-     || ((_dst_ip == src_ip) || (_src_ip == dst_ip) || (_dst_port == src_port) || (_src_port == dst_port)))
+  if(((src_host->equal(_src_ip) && dst_host->equal(_dst_ip) && (_src_port == src_port) && (_dst_port == dst_port))
+      || (dst_host->equal(_src_ip) && src_host->equal(_dst_ip) && (_dst_port == src_port) && (_src_port == dst_port))))
     return(true);
   else
     return(false);
 }
 
+/* *************************************** */
+
+bool Flow::equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
+		 u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol) {
+  if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
+
+  if(((src_host->equal(ip6_src) && dst_host->equal(ip6_dst) && (_src_port == src_port) && (_dst_port == dst_port))
+      || (dst_host->equal(ip6_src) && src_host->equal(ip6_dst) && (_dst_port == src_port) && (_src_port == dst_port))))
+    return(true);
+  else
+    return(false);
+}
 
 /* *************************************** */
 
@@ -297,6 +305,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
   lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
+  lua_push_int_table_entry(vm, "duration", 1+last_seen-first_seen);
 
   lua_pushinteger(vm, key()); // Index
   lua_insert(vm, -2);
