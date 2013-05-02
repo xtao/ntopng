@@ -197,8 +197,8 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
 		     (u_int8_t*)eth->h_dest, iph->daddr, NULL, dst_port);
     else
       ret = new Flow(this, vlan_id, *l4_proto, 
-		     (u_int8_t*)eth->h_source, NULL, &ip6->ip6_src, src_port, 
-		     (u_int8_t*)eth->h_dest, NULL, &ip6->ip6_dst, dst_port);
+		     (u_int8_t*)eth->h_source, 0, &ip6->ip6_src, src_port, 
+		     (u_int8_t*)eth->h_dest, 0, &ip6->ip6_dst, dst_port);
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);

@@ -14,8 +14,8 @@ max_num_hosts = 8
 -- 1. compute total traffic
 total_traffic = 0
 for key, values in pairs(peers) do
---   print(key.."\n")
    total_traffic = total_traffic + values["sent"] + values["rcvd"]
+   -- print("->"..key.."(".. total_traffic..")" .. "\n")
 end
 
 -- 2. compute flow threshold under which we do not print any relation
@@ -110,8 +110,9 @@ for key, values in pairs(peers) do
    if((val > threshold) or ((top_host ~= nil) and (string.find(key, top_host) >= 0)) and (num < max_num_links)) then
       e = {}
       id = 0
+      --print("->"..key.."\n")
       for key,word in pairs(split(key, " ")) do
-	 -- print(word .. "=" .. hosts[word].."\n")
+	 --print(word .. "=" .. hosts[word].."\n")
 	 e[id] = hosts[word]
 	 id = id + 1
       end

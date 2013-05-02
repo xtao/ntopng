@@ -51,8 +51,8 @@ u_int32_t IpAddress::key() {
   else {
     u_int32_t key=0;
 
-    for(u_int32_t i=0; i<16; i++)
-      key += addr.ipType.ipv6.s6_addr[i];
+    for(u_int32_t i=0; i<4; i++)
+      key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];
 
     return(key);
   }
@@ -100,9 +100,9 @@ char* IpAddress::_intoa(char* buf, u_short bufLen) {
     if(ret == NULL) {
       /* Internal error (buffer too short) */
       buf[0] = '\0';
-    }
-
-    return(buf);
+      return(buf);
+    } else
+      return(ret);
   }
 }
 

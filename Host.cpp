@@ -139,13 +139,13 @@ char* Host::get_name(char *buf, u_int buf_len) {
   if(ip == NULL) {
     return(get_mac(buf, buf_len));
   } else {
-    char *addr;
+    char *addr, redis_buf[64];
     
     if(symbolic_name != NULL)
       return(symbolic_name);
     
     addr = ip->print(buf, buf_len);
-    if(ntop->getRedis()->getAddress(addr, buf, buf_len) == 0) {
+    if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf)) == 0) {
       setName(buf);
       return(symbolic_name);
     } else

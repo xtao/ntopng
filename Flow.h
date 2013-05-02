@@ -46,14 +46,14 @@ class Flow : public HashEntry {
 
  public:
   Flow(NetworkInterface *_iface,
-       u_int16_t _vlanId, u_int8_t _protocol, 
+       u_int16_t _vlanId, u_int8_t _protocol,
        u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, u_int16_t _src_port,
        u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port);
   ~Flow();
 
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
-  inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };  
+  inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };
@@ -62,8 +62,8 @@ class Flow : public HashEntry {
   inline u_int32_t get_dst_ipv4()                 { return(dst_host->get_ip()->get_ipv4());  };
   inline u_int16_t get_src_port()                 { return(src_port);  };
   inline u_int16_t get_dst_port()                 { return(dst_port);  };
-  inline u_int16_t get_vlan_id()                  { return(vlanId);    };  
-  inline u_int8_t  get_protocol()                 { return(protocol);    };  
+  inline u_int16_t get_vlan_id()                  { return(vlanId);    };
+  inline u_int8_t  get_protocol()                 { return(protocol);  };
   inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol)); };
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
@@ -72,14 +72,14 @@ class Flow : public HashEntry {
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();
-  void print_peers(lua_State* vm); 
+  void print_peers(lua_State* vm);
   inline u_int32_t key()                          { return(src_host->key()+dst_host->key()+src_port+dst_port+vlanId+protocol); }
   void lua(lua_State* vm, bool detailed_dump);
   bool equal(u_int32_t _src_ip, u_int32_t _dst_ip,
 	     u_int16_t _src_port, u_int16_t _dst_port,
 	     u_int16_t _vlanId, u_int8_t _protocol);
-  bool equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst, 
-	     u_int16_t _src_port, u_int16_t _dst_port, 
+  bool equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
+	     u_int16_t _src_port, u_int16_t _dst_port,
 	     u_int16_t _vlanId, u_int8_t _protocol);
 };
 

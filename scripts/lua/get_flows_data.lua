@@ -97,13 +97,14 @@ for _key, _value in pairsByKeys(vals, funct) do
          end
 
 	 descr=value["src.host"]..":"..value["src.port"].." &lt;-&gt; "..value["dst.host"]..":"..value["dst.port"]
-	 print ("{ \"column_key\" : \"<A HREF='/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><img border=0 src='/img/info.png'></A>")
+	 print ("{ \"column_key\" : \"<A HREF='/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
-	 print ( "\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "\"")
+	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
+	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "\"")
 	 print (" }\n")
 	 num = num + 1
       end

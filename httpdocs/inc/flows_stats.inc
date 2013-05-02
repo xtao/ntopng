@@ -53,6 +53,14 @@
 				 sortable: true,
 				 },
 			     {
+			     title: "Duration",
+				 field: "column_duration",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			       }
+			       },
+			     {
 			     title: "Bytes",
 				 field: "column_bytes",
 				 sortable: true,

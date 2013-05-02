@@ -2,7 +2,6 @@
 -- (C) 2013 - ntop.org
 --
 
-
 function pairsByKeys(t, f)
    local a = {}
    for n in pairs(t) do table.insert(a, n) end
@@ -76,3 +75,19 @@ end
    return Table
 end
 
+
+function secondsToTime(seconds)
+   days = math.floor(seconds / 86400)
+   hours = (seconds / 3600) - (days * 24)
+   minutes = (seconds / 60) - (days * 1440) - (hours * 60)
+   seconds = seconds % 60
+   
+   if(days > 0) then
+      msg = days .. " days, "
+   else
+      msg = ""
+   end
+   
+   msg = msg .. string.format("%02d:%02d:%02d", hours, minutes, seconds);
+   return msg
+end

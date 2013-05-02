@@ -40,38 +40,33 @@ Address::~Address() {
 
 /* ***************************************** */
 
-bool Address::isNumericIp(char *numeric_ip) {
-  int a, b, c, d;
-
-  /* FIX: Add IPv6 support */
-  if(sscanf(numeric_ip, "%d.%d.%d.%d", &a, &b, &c, &d) == 4)
-    return(true);
-
-  return(false);
-}
-
-/* ***************************************** */
-
 void Address::resolveHostName(char *numeric_ip) {
-  if(isNumericIp(numeric_ip)) {
-    char rsp[128];
+  char rsp[128];
+  
+  if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp)) < 0) {
+    char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
+    struct sockaddr sa;
+    int rc;
 
-    if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp)) < 0) {
-      char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
-      struct sockaddr sa;
+    if(strchr(numeric_ip, '.') != NULL) {
       struct sockaddr_in *in4 = (struct sockaddr_in*)&sa;
 
-      /* FIX - Add IPv6 support */
       in4->sin_family = AF_INET, in4->sin_addr.s_addr = inet_addr(numeric_ip);
+    } else {
+      struct sockaddr_in6* in6 = (struct sockaddr_in6*)&sa;
 
-      if(getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD) == 0) {
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s -> %s", numeric_ip, hostname);
-	ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
-	num_resolved_addresses++;
-      } else {
-	num_resolved_fails++;
-	ntop->getRedis()->setResolvedAddress(numeric_ip, numeric_ip); /* So we avoid to continuously resolver the same address */
-      }
+      in6->sin6_family = AF_INET6, inet_pton(AF_INET6, numeric_ip, &in6->sin6_addr);
+    }
+
+    if((rc = getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD)) == 0) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s -> %s", numeric_ip, hostname);
+      ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
+      num_resolved_addresses++;
+    } else {
+      num_resolved_fails++;
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Error resolution failure for %s [%d/%s/%s]", 
+				   numeric_ip, rc, gai_strerror(rc), strerror(errno));
+      ntop->getRedis()->setResolvedAddress(numeric_ip, numeric_ip); /* So we avoid to continuously resolver the same address */
     }
   }
 }

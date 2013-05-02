@@ -193,7 +193,7 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 /* *************************************** */
 
 void Flow::print_peers(lua_State* vm) {
-  char buf1[32], buf2[32], buf[256];
+  char buf1[64], buf2[64], buf[256];
   Host *src = get_src_host(), *dst = get_dst_host();
 
   if((src == NULL) || (dst == NULL)) return;
@@ -243,7 +243,7 @@ void Flow::print() {
 /* *************************************** */
 
 void Flow::update_hosts_stats() {
-  if(detection_completed) {
+  /* if(detection_completed) */ {
     u_int32_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
     u_int32_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
     
