@@ -469,7 +469,7 @@ int Lua::run_script(char *script_path) {
 
 static ssize_t file_reader (void *cls, uint64_t pos, char *buf, size_t max)
 {
-  int tmp_file = (int)cls;
+  int tmp_file = *(int*)cls;
 
   (void) lseek (tmp_file, pos, SEEK_SET);
   
@@ -478,8 +478,9 @@ static ssize_t file_reader (void *cls, uint64_t pos, char *buf, size_t max)
 
 static void file_free_callback (void *cls)
 {
-  int f = (int)cls;
+  int f = *(int*)cls;
   close(f);
+  free(cls);
 }
 
 /* ****************************************** */
@@ -531,8 +532,10 @@ int Lua::handle_script_request(char *script_path,
     fsync(tmp_file);
     where = lseek(tmp_file, 0, SEEK_CUR); /* Get current position */
     lseek(tmp_file, 0, SEEK_SET);
-    
-    tmp_response = MHD_create_response_from_callback(where, 2048, &file_reader, (void*)tmp_file, file_free_callback);
+    int *a = (int*)malloc(sizeof(int));
+    *a = tmp_file;
+
+    tmp_response = MHD_create_response_from_callback(where, 2048, &file_reader, (void*)a, file_free_callback);
 
 
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
