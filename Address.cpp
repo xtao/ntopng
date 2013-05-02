@@ -59,7 +59,6 @@ void Address::resolveHostName(char *numeric_ip) {
     }
 
     if((rc = getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD)) == 0) {
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s -> %s", numeric_ip, hostname);
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
       num_resolved_addresses++;
     } else {

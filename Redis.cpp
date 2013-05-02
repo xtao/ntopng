@@ -150,6 +150,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp, u_int rsp_len) {
   char key[64];
   int rc;
 
+  rsp[0] = '\0';
   snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
   rc = get(key, rsp, rsp_len);
 

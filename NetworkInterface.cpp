@@ -303,7 +303,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
 
       iph = (struct ndpi_iphdr *) &packet[ip_offset];
 
-      if(iph->version == 4) {
+      if(iph->version != 4) {
 	/* This is not IPv4 */
 	return;
       } else
@@ -657,6 +657,12 @@ void NetworkInterface::runHousekeepingTasks() {
 /* **************************************************** */
 
 Host* NetworkInterface::findHostByMac(const u_int8_t mac[6], bool createIfNotPresent) {
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() NOT IMPLEMENTED", __FUNCTION__);
+  static u_int8_t printed = 0;
+
+  if(!printed) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() NOT IMPLEMENTED", __FUNCTION__);
+    printed = 1;
+  }
+
   return(NULL);
 }

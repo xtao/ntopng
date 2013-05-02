@@ -102,7 +102,7 @@ void Host::lua(lua_State* vm, bool host_details) {
     lua_insert(vm, -2);
     lua_settable(vm, -3);
   } else {
-    lua_pushstring(vm, get_name(buf, sizeof(buf)));
+    lua_pushstring(vm,  get_name(buf, sizeof(buf)));
     lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
     lua_settable(vm, -3);
   }
@@ -146,7 +146,7 @@ char* Host::get_name(char *buf, u_int buf_len) {
     
     addr = ip->print(buf, buf_len);
     if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf)) == 0) {
-      setName(buf);
+      setName(redis_buf);
       return(symbolic_name);
     } else
       return(addr);

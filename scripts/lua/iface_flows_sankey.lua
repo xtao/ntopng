@@ -27,6 +27,9 @@ print '{"nodes":[\n'
 for key, values in pairs(peers) do
    if((values["sent"] + values["rcvd"]) > threshold) then
       for key,word in pairs(split(key, " ")) do
+	    if(num >= max_num_hosts) then
+	       break
+	    end
 	 
 	 if(hosts[word] == nil) then
 	    hosts[word] = num
@@ -35,12 +38,9 @@ for key, values in pairs(peers) do
 	       print ",\n"
 	    end
 	    -- 3. print nodes
-	    print ("{\"name\": \"" .. word .. "\"}")
+	    print ("\t{\"name\": \"" .. word .. "\"}")
 	    num = num + 1
 
-	    if(num >= max_num_hosts) then
-	       break
-	    end
 	 end
       end
    end
@@ -103,6 +103,9 @@ print '"links" : [\n'
 -- 4. print links
 --  print (top_host)
 num = 0
+
+-- Avoid to have a link A->B, and B->A
+reverse_nodes = {}
 for key, values in pairs(peers) do
    val = values["sent"] + values["rcvd"]
    --print(key.."\n")
@@ -117,11 +120,13 @@ for key, values in pairs(peers) do
 	 id = id + 1
       end
       
-      if((e[0] ~= nil) and (e[1] ~= nil) and (e[0] ~= e[1])) then
+      if((e[0] ~= nil) and (e[1] ~= nil) and (e[0] ~= e[1]) and (reverse_nodes[e[0]..":"..e[1]] == nil)) then
 	 if(num > 0) then
 	    print ",\n"
 	 end
-	 
+
+	 reverse_nodes[e[1]..":"..e[0]] = 1
+
 	 print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent"] .. ", \"rcvd\": ".. values["rcvd"] .. "}")
 	 num = num + 1
       end
@@ -132,7 +137,5 @@ end
 
 
 print ("\n]}\n")
-
-
 
 

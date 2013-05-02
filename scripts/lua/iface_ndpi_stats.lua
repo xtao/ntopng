@@ -44,9 +44,17 @@ for key, value in pairsByKeys(_ifstats, rev) do
 end
 end
 
+if(tot == 0) then
+   tot = 1
+end
+
 -- In case there is some leftover do print it as "Other"
 if(accumulate < tot) then
-      print(",\n\t { \"label\": \"Other\", \"value\": ".. (tot-accumulate) .." }")
+   if(num > 0) then
+      print (",\n")
+   end
+
+   print("\t { \"label\": \"Other\", \"value\": ".. (tot-accumulate) .." }")
 end
 
 print "\n]"
