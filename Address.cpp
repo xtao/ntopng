@@ -45,20 +45,22 @@ void Address::resolveHostName(char *numeric_ip) {
   
   if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp)) < 0) {
     char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
-    struct sockaddr sa;
-    int rc;
+    struct sockaddr *sa;
+    struct sockaddr_in in4;
+    struct sockaddr_in6 in6;
+    int rc, len;
 
     if(strchr(numeric_ip, '.') != NULL) {
-      struct sockaddr_in *in4 = (struct sockaddr_in*)&sa;
-
-      in4->sin_family = AF_INET, in4->sin_addr.s_addr = inet_addr(numeric_ip);
+      in4.sin_family = AF_INET, in4.sin_addr.s_addr = inet_addr(numeric_ip);
+      len = sizeof(struct sockaddr_in), sa = (struct sockaddr*)&in4;
     } else {
-      struct sockaddr_in6* in6 = (struct sockaddr_in6*)&sa;
+      memset(&in6, 0, sizeof(struct sockaddr_in6));
 
-      in6->sin6_family = AF_INET6, inet_pton(AF_INET6, numeric_ip, &in6->sin6_addr);
+      in6.sin6_family = AF_INET6, inet_pton(AF_INET6, numeric_ip, &in6.sin6_addr);
+      len = sizeof(struct sockaddr_in6), sa = (struct sockaddr*)&in6;
     }
 
-    if((rc = getnameinfo(&sa, sizeof(sa), hostname, NI_MAXHOST, sbuf, NI_MAXSERV, NI_NAMEREQD)) == 0) {
+    if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), sbuf, sizeof(sbuf), NI_NAMEREQD)) == 0) {
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
       num_resolved_addresses++;
     } else {
