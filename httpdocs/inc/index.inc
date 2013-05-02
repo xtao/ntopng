@@ -122,7 +122,7 @@ function sankey() {
 	  .attr("height", 12)
 	  .attr("width", 150)
 	  .style("opacity", "0")
-	  .on("click", function(d) { window.location.href = "/host_details.lua?host="+escape(d.name+".html");  })
+	  .on("click", function(d) { window.location.href = "/host_details.lua?host="+escape(d.name);  })
 	  .attr("transform", null)
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 4 + sankey.nodeWidth())
