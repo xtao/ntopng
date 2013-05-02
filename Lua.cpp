@@ -467,6 +467,23 @@ int Lua::run_script(char *script_path) {
 
 /* ****************************************** */
 
+static ssize_t file_reader (void *cls, uint64_t pos, char *buf, size_t max)
+{
+  int tmp_file = (int)cls;
+
+  (void) lseek (tmp_file, pos, SEEK_SET);
+  
+  return read(tmp_file, buf, max);
+}
+
+static void file_free_callback (void *cls)
+{
+  int f = (int)cls;
+  close(f);
+}
+
+/* ****************************************** */
+
 int Lua::handle_script_request(char *script_path,
 			       void *cls,
 			       struct MHD_Connection *connection,
@@ -508,16 +525,24 @@ int Lua::handle_script_request(char *script_path,
     lua_setglobal(L, "_GET"); /* Like in php */
   }
 
-  tmp_response = MHD_create_response_from_fd(MHD_SIZE_UNKNOWN, tmp_file);
-
   if(luaL_dofile(L, script_path) == 0) {
+    off_t where;
+
     fsync(tmp_file);
+    where = lseek(tmp_file, 0, SEEK_CUR); /* Get current position */
+    lseek(tmp_file, 0, SEEK_SET);
+    
+    tmp_response = MHD_create_response_from_callback(where, 2048, &file_reader, (void*)tmp_file, file_free_callback);
+
+
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
     ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);
   } else
     ret = page_error(connection, url, lua_tostring(L, -1));
 
   MHD_destroy_response(tmp_response);
+
+  
   //fclose(tmp_file);
   unlink(tmp_filename);
 
