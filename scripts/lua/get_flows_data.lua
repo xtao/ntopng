@@ -6,6 +6,7 @@ currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn      = _GET["sortColumn"]
 sortOrder       = _GET["sortOrder"]
+host       = _GET["host"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -28,32 +29,50 @@ interface.find(ifname)
 hosts_stats = interface.getFlowsInfo()
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
-num = 0
 total = 0
 to_skip = (currentPage-1) * perPage
 
-
+--host = "a"
 vals = {}
+num = 0
 for key, value in pairs(hosts_stats) do
 --   print(key.."\n")
    --print("==>"..hosts_stats[key]["bytes.sent"].."\n")
-   if(sortColumn == "column_client") then
-      vals[hosts_stats[key]["src.ip"]] = key
-      elseif(sortColumn == "column_server") then
-      vals[hosts_stats[key]["dst.ip"]] = key
-      elseif(sortColumn == "column_bytes") then
-      vals[hosts_stats[key]["bytes"]] = key
-      elseif(sortColumn == "column_ndpi") then
-      vals[hosts_stats[key]["proto.ndpi"]] = key
-    elseif(sortColumn == "column_duration") then
-    vals[hosts_stats[key]["duration"]] = key	  
-    elseif(sortColumn == "column_proto_l4") then
-    vals[hosts_stats[key]["proto.l4"]] = key
-   else
-      vals[key] = key
+
+   process = 1
+   if(host ~= nil) then
+      if((hosts_stats[key]["src.ip"] ~= host) and (hosts_stats[key]["dst.ip"] ~= host)) then
+	 process = 0
+      end
    end
+
+   if(process == 1) then 
+      -- postfix is used to create a unique key otherwise entries with the same key will disappear
+      num = num + 1
+      postfix = string.format("0.%04u", num)
+      if(sortColumn == "column_client") then
+	 vkey = hosts_stats[key]["src.ip"]..postfix
+	 elseif(sortColumn == "column_server") then
+	 vkey = hosts_stats[key]["dst.ip"]..postfix
+	 elseif(sortColumn == "column_bytes") then
+	 vkey = hosts_stats[key]["bytes"]+postfix
+	 elseif(sortColumn == "column_ndpi") then
+	 vkey = hosts_stats[key]["proto.ndpi"]..postfix
+	 elseif(sortColumn == "column_duration") then
+	 vkey = hosts_stats[key]["duration"]+postfix	  
+	 elseif(sortColumn == "column_proto_l4") then
+	 vkey = hosts_stats[key]["proto.l4"]..postfix
+      else
+	 -- By default sort by bytes
+	 vkey = hosts_stats[key]["bytes"]+postfix
+      end
+      
+      --print("-->"..num.."="..vkey.."\n")
+      vals[vkey] = key
+      end
 end
 
+num = 0
 table.sort(vals)
 
 if(sortOrder == "asc") then

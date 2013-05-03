@@ -58,7 +58,7 @@ class Host : public HashEntry {
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   bool isIdle(u_int max_idleness);
-  void lua(lua_State* vm, bool host_details);
+  void lua(lua_State* vm, bool host_details, bool returnHost);
   void resolveHostName();
   void setName(char *name);
   int compare(Host *h);

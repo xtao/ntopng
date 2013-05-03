@@ -48,11 +48,92 @@ end
 print [[
 </ul>
 </div>
-            </div>
-          </div>
+</div>
+</div>
+   ]]
 
-Hello
+if((page == "overview") or (page == nil)) then
+   ifname = _GET["interface"]
+   if(ifname == nil) then	  
+      ifname = "any"
+   end
+
+   interface.find(ifname)
+   host = interface.getHostInfo( _GET["host"])
+   print(host["name"])
+
+elseif(page == "flows") then
+
+print [[
+      <div id="table-hosts"></div>
+	 <script>
+	 $("#table-hosts").datatable({
+				  ]]
+				  print("url: \"/get_flows_data.lua?host=" .. _GET["host"].."\",\n")
 
 
-]]
+print [[
+	       showPagination: true,
+	       title: "Active Flows",
+	        columns: [
+			     {
+			     title: "Info",
+				 field: "column_key",
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Application",
+				 field: "column_ndpi",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "L4 Proto",
+				 field: "column_proto_l4",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Client",
+				 field: "column_client",
+				 sortable: true,
+				 },
+			     {
+			     title: "Server",
+				 field: "column_server",
+				 sortable: true,
+				 },
+			     {
+			     title: "Duration",
+				 field: "column_duration",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			       }
+			       },
+			     {
+			     title: "Bytes",
+				 field: "column_bytes",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
+
+				 }
+			     ]
+	       });
+       </script>
+
+   ]]
+else
+   print(page)
+end
+
+
 dofile "./scripts/lua/footer.inc.lua"

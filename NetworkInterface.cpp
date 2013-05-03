@@ -453,7 +453,7 @@ void NetworkInterface::updateHostStats() {
 static void hosts_get_list(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->lua(vm, false);
+  ((Host*)h)->lua(vm, false, false);
 }
 
 /* **************************************************** */
@@ -461,7 +461,7 @@ static void hosts_get_list(HashEntry *h, void *user_data) {
 static void hosts_get_list_details(HashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->lua(vm, true);
+  ((Host*)h)->lua(vm, true, false);
 }
 
 /* **************************************************** */
@@ -470,6 +470,24 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
   lua_newtable(vm);
 
   hosts_hash->walk(host_details ? hosts_get_list_details : hosts_get_list, (void*)vm);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
+  IpAddress *ip = new IpAddress(host_ip);
+
+  if(ip) {
+    Host *h = hosts_hash->get(ip);
+
+    if(ip) {
+      lua_newtable(vm);
+      
+      h->lua(vm, true, true);
+    }
+
+    delete ip;
+  }
 }
 
 /* **************************************************** */

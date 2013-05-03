@@ -29,6 +29,21 @@ IpAddress::IpAddress() {
 
 /* ******************************************* */
 
+IpAddress::IpAddress(char *numeric_ip) {
+  if(strchr(numeric_ip, '.')) {
+    addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = inet_addr(numeric_ip);
+  } else {
+    if(inet_pton(AF_INET6, numeric_ip, &addr.ipType.ipv6) <= 0) {
+      /* We failed */
+      addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = 0;
+    } else {
+      addr.ipVersion = 6, addr.localHost = 0;
+    }
+  }
+}
+
+/* ******************************************* */
+
 IpAddress::IpAddress(IpAddress *ip) {
   memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
 }

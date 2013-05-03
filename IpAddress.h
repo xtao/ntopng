@@ -46,6 +46,7 @@ class IpAddress {
 
  public:
   IpAddress();
+  IpAddress(char *numeric_ip);
   IpAddress(IpAddress *ip);
   IpAddress(u_int32_t _ipv4);
   IpAddress(struct ndpi_in6_addr *_ipv6);

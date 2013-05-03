@@ -43,7 +43,7 @@ for key, value in pairs(hosts_stats) do
    elseif(sortColumn == "column_2") then
    vals[hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]] = key
 else
-   vals[key] = key
+   vals[hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]] = key
    end
 end
 

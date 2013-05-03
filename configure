@@ -591,8 +591,6 @@ DATE
 EXTN
 SYSTEM
 MACHINE
-HAVE_GCRYPT_FALSE
-HAVE_GCRYPT_TRUE
 HAVE_GNUTLS_FALSE
 HAVE_GNUTLS_TRUE
 OBJEXT
@@ -2646,8 +2644,8 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_GNUTLS $gnutls
 _ACEOF
 
-if "$gnutls" = "true"
-then
+if "x$gnutls" = "xtrue"
+ then
   LIBGNUTLS="-lgnutls"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gcrypt" >&5
@@ -2692,21 +2690,8 @@ if test "x$ac_cv_lib_gcrypt_gcry_check_version" = xyes; then :
   gcrypt=true
 fi
 
-   if test x$gcrypt = xtrue; then
-  HAVE_GCRYPT_TRUE=
-  HAVE_GCRYPT_FALSE='#'
-else
-  HAVE_GCRYPT_TRUE='#'
-  HAVE_GCRYPT_FALSE=
-fi
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GCRYPT $gcrypt
-_ACEOF
-
-  if "$gcrypt" = "true"
-  then
+  if "x$gcrypt" = "xtrue"
+ then
     LIBGNUTLS="${LIBGNUTLS} -lgcrypt"
   fi
 fi
@@ -2848,10 +2833,6 @@ LTLIBOBJS=$ac_ltlibobjs
 
 if test -z "${HAVE_GNUTLS_TRUE}" && test -z "${HAVE_GNUTLS_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_GNUTLS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_GCRYPT_TRUE}" && test -z "${HAVE_GCRYPT_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_GCRYPT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

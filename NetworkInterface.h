@@ -103,6 +103,7 @@ class NetworkInterface {
 
   void runHousekeepingTasks();
   Host* findHostByMac(const u_int8_t mac[6], bool createIfNotPresent);
+  void getHostInfo(lua_State* vm, char *host_ip);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */
