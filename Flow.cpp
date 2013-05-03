@@ -266,26 +266,35 @@ void Flow::update_hosts_stats() {
 
 /* *************************************** */
 
-bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol) {
+bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, 
+		 u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol,
+		 bool *src2dst_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(((src_host->equal(_src_ip) && dst_host->equal(_dst_ip) && (_src_port == src_port) && (_dst_port == dst_port))
-      || (dst_host->equal(_src_ip) && src_host->equal(_dst_ip) && (_dst_port == src_port) && (_src_port == dst_port))))
+  if(src_host->equal(_src_ip) && dst_host->equal(_dst_ip) && (_src_port == src_port) && (_dst_port == dst_port)) {
+    *src2dst_direction = true;
     return(true);
-  else
+  } else if(dst_host->equal(_src_ip) && src_host->equal(_dst_ip) && (_dst_port == src_port) && (_src_port == dst_port)) {
+    *src2dst_direction = false;
+    return(true);
+  } else
     return(false);
 }
 
 /* *************************************** */
 
 bool Flow::equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
-		 u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol) {
+		 u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId,
+		 u_int8_t _protocol, bool *src2dst_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(((src_host->equal(ip6_src) && dst_host->equal(ip6_dst) && (_src_port == src_port) && (_dst_port == dst_port))
-      || (dst_host->equal(ip6_src) && src_host->equal(ip6_dst) && (_dst_port == src_port) && (_src_port == dst_port))))
+  if(src_host->equal(ip6_src) && dst_host->equal(ip6_dst) && (_src_port == src_port) && (_dst_port == dst_port)) {
+    *src2dst_direction = true;
     return(true);
-  else
+  } else if(dst_host->equal(ip6_src) && src_host->equal(ip6_dst) && (_dst_port == src_port) && (_src_port == dst_port)) {
+    *src2dst_direction = false;
+    return(true);
+  } else
     return(false);
 }
 
@@ -305,7 +314,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
   lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
-  lua_push_int_table_entry(vm, "duration", 1+last_seen-first_seen);
+  lua_push_int_table_entry(vm, "duration", get_duration());
 
   lua_pushinteger(vm, key()); // Index
   lua_insert(vm, -2);

@@ -187,8 +187,7 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
     return(NULL);
   }
 
-
-  ret = flows_hash->find(iph, ip6, src_port, dst_port, *l4_proto, vlan_id);
+  ret = flows_hash->find(iph, ip6, src_port, dst_port, vlan_id, *l4_proto, src2dst_direction);
 
   if(ret == NULL) {
     if(iph)
@@ -207,15 +206,8 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
       return(NULL); 
     }
-  } else {
-    if((ret->get_src_ipv4() == iph->saddr) && (ret->get_dst_ipv4() == iph->daddr)
-       && (ret->get_src_port() == src_port) && (ret->get_dst_port() == dst_port))
-      *src2dst_direction = true;
-    else
-      *src2dst_direction = false;
-
+  } else
     return(ret);
-  }
 }
 
 /* **************************************************** */

@@ -77,10 +77,12 @@ class Flow : public HashEntry {
   void lua(lua_State* vm, bool detailed_dump);
   bool equal(u_int32_t _src_ip, u_int32_t _dst_ip,
 	     u_int16_t _src_port, u_int16_t _dst_port,
-	     u_int16_t _vlanId, u_int8_t _protocol);
+	     u_int16_t _vlanId, u_int8_t _protocol,
+	     bool *src2dst_direction);
   bool equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
 	     u_int16_t _src_port, u_int16_t _dst_port,
-	     u_int16_t _vlanId, u_int8_t _protocol);
+	     u_int16_t _vlanId, u_int8_t _protocol,
+	     bool *src2dst_direction);
 };
 
 #endif /* _FLOW_H_ */

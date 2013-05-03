@@ -32,14 +32,15 @@ FlowHash::FlowHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_h
 Flow* FlowHash::find(struct ndpi_iphdr *iph, 
 		     struct ndpi_ip6_hdr *ip6,
 		     u_int16_t src_port, u_int16_t dst_port, 
-		     u_int16_t vlanId, u_int8_t protocol) {
+		     u_int16_t vlanId, u_int8_t protocol,
+		     bool *src2dst_direction) {
 
   if(iph) {
     u_int32_t hash = ((iph->saddr+iph->daddr+src_port+dst_port+vlanId+protocol) % num_hashes);
     Flow *head = (Flow*)table[hash];
   
     while(head) {
-      if(head->equal(iph->saddr, iph->daddr, src_port, dst_port, vlanId, protocol))
+      if(head->equal(iph->saddr, iph->daddr, src_port, dst_port, vlanId, protocol, src2dst_direction))
 	return(head);
       else
 	head = (Flow*)head->next();
@@ -51,7 +52,7 @@ Flow* FlowHash::find(struct ndpi_iphdr *iph,
     Flow *head = (Flow*)table[hash];
 
     while(head) {
-      if(head->equal(&ip6->ip6_src, &ip6->ip6_dst, src_port, dst_port, vlanId, protocol))
+      if(head->equal(&ip6->ip6_src, &ip6->ip6_dst, src_port, dst_port, vlanId, protocol, src2dst_direction))
 	return(head);
       else
 	head = (Flow*)head->next();

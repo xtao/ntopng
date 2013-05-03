@@ -28,7 +28,9 @@ class FlowHash : public GenericHash {
  public:
   FlowHash(u_int _num_hashes, u_int _max_hash_size);
   
-  Flow* find(struct ndpi_iphdr *iph, struct ndpi_ip6_hdr *ip6, u_int16_t src_port, u_int16_t dst_port, u_int16_t vlanId, u_int8_t protocol);
+  Flow* find(struct ndpi_iphdr *iph, struct ndpi_ip6_hdr *ip6, u_int16_t src_port,
+	     u_int16_t dst_port, u_int16_t vlanId, u_int8_t protocol,
+	     bool *src2dst_direction);
 };
 
 #endif /* _FLOW_HASH_H_ */

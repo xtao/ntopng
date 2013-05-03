@@ -540,12 +540,10 @@ int Lua::handle_script_request(char *script_path,
 
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
     ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);
+    MHD_destroy_response(tmp_response);
   } else
     ret = page_error(connection, url, lua_tostring(L, -1));
-
-  MHD_destroy_response(tmp_response);
-
-  
+ 
   //fclose(tmp_file);
   unlink(tmp_filename);
 
