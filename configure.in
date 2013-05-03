@@ -24,16 +24,23 @@ AC_MSG_CHECKING(for gnutls)
 AC_CHECK_LIB([gnutls], [gnutls_priority_set], gnutls=true)
 AM_CONDITIONAL(HAVE_GNUTLS, test x$gnutls = xtrue)
 AC_DEFINE_UNQUOTED([HAVE_GNUTLS], $gnutls, [We have gnutls])
-if "x$gnutls" = "xtrue"
+if test x$gnutls = xtrue
  then
   LIBGNUTLS="-lgnutls"
 
   AC_MSG_CHECKING(for gcrypt)
   AC_CHECK_LIB([gcrypt], [gcry_check_version], gcrypt=true)
-  if "x$gcrypt" = "xtrue"
- then
+  if test x$gcrypt = xtrue
+  then
     LIBGNUTLS="${LIBGNUTLS} -lgcrypt"
   fi
+fi
+
+
+GMAKE=`which gmake`
+if test x$GMAKE = x
+then
+	GMAKE="make"
 fi
 
 umask 002
@@ -48,8 +55,11 @@ AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(LINK_OPTS)
 AC_SUBST(LIBGNUTLS)
+AC_SUBST(GMAKE)
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT
+
+echo "You are now reaady to compile typing $GMAKE"

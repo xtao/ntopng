@@ -51,13 +51,13 @@ $(TARGET): $(OBJECTS) $(LIBMICROHTTPD)
 
 $(LIBNDPI):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
-	cd nDPI; ./configure; make
+	cd nDPI; ./configure; @GMAKE@
 
 $(LUAJIT_LIB):
-	cd $(LUAJIT_HOME); make
+	cd $(LUAJIT_HOME); @GMAKE@
 
 $(LIBMICROHTTPD): 
-	cd $(LIBMICRO_HOME); ./configure; make
+	cd $(LIBMICRO_HOME); ./configure; @GMAKE@
 
 clean:
 	-rm -f *.o *~ svn-commit.* #config.h
