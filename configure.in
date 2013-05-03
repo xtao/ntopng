@@ -20,6 +20,15 @@ if test $SYSTEM = "Darwin"; then
    fi
 fi
 
+AC_MSG_CHECKING(for gnutls)
+AC_CHECK_LIB([gnutls], [gnutls_priority_set], gnutls=true)
+AM_CONDITIONAL(HAVE_GNUTLS, test x$gnutls = xtrue)
+AC_DEFINE_UNQUOTED([HAVE_GNUTLS], $gnutls, [We have gnutls])
+if "$gnutls" = "true"
+then
+  LIBGNUTLS="-lgnutls"
+fi
+
 umask 002
 
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
@@ -31,6 +40,7 @@ AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(LINK_OPTS)
+AC_SUBST(LIBGNUTLS)
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)

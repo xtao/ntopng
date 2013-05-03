@@ -35,19 +35,22 @@ to_skip = (currentPage-1) * perPage
 
 vals = {}
 for key, value in pairs(hosts_stats) do
---   print("==>"..hosts_stats[key]["bytes.sent"].."\n")
+--   print(key.."\n")
+   --print("==>"..hosts_stats[key]["bytes.sent"].."\n")
    if(sortColumn == "column_client") then
-   vals[hosts_stats[key]["src.ip"]] = key
-   elseif(sortColumn == "column_server") then
-   vals[hosts_stats[key]["dst.ip"]] = key
-   elseif(sortColumn == "column_bytes") then
-   vals[hosts_stats[key]["bytes"]] = key
-   elseif(sortColumn == "column_ndpi") then
-   vals[hosts_stats[key]["proto.ndpi"]] = key
-   elseif(sortColumn == "column_proto_l4") then
-   vals[hosts_stats[key]["proto.l4"]] = key
-else
-   vals[key] = key
+      vals[hosts_stats[key]["src.ip"]] = key
+      elseif(sortColumn == "column_server") then
+      vals[hosts_stats[key]["dst.ip"]] = key
+      elseif(sortColumn == "column_bytes") then
+      vals[hosts_stats[key]["bytes"]] = key
+      elseif(sortColumn == "column_ndpi") then
+      vals[hosts_stats[key]["proto.ndpi"]] = key
+    elseif(sortColumn == "column_duration") then
+    vals[hosts_stats[key]["duration"]] = key	  
+    elseif(sortColumn == "column_proto_l4") then
+    vals[hosts_stats[key]["proto.l4"]] = key
+   else
+      vals[key] = key
    end
 end
 
@@ -59,10 +62,14 @@ else
    funct = rev
 end
 
+
+
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
    value = hosts_stats[key]
 
+--   print(key.."="..hosts_stats[key]["duration"].."\n");
+--   print(key.."=".."\n");
     -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
    if(to_skip > 0) then
       to_skip = to_skip-1
