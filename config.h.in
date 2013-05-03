@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+/* We have gcrypt */
+#undef HAVE_GCRYPT
+
 /* We have gnutls */
 #undef HAVE_GNUTLS
 
