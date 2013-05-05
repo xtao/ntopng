@@ -41,6 +41,12 @@ void HashEntry::updateSeen() {
 
 /* ***************************************** */
 
+bool HashEntry::idle() {
+  return(true); // Virtual
+}
+
+/* ***************************************** */
+
 bool HashEntry::isIdle(u_int max_idleness) {
   return((iface->getTimeLastPktRcvd() > (last_seen+max_idleness)) ? true : false);
 }

@@ -57,7 +57,7 @@ class Host : public HashEntry {
   void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
-  bool isIdle(u_int max_idleness);
+  inline bool idle()                 { return(isIdle(HOST_MAX_IDLE)); };
   void lua(lua_State* vm, bool host_details, bool returnHost);
   void resolveHostName();
   void setName(char *name);

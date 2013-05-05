@@ -37,8 +37,9 @@ class GenericHash {
  
   inline u_int getNumEntries() { return(current_size); };
   bool add(HashEntry *h);
-  bool remove(HashEntry *h, bool lock_hash); /* Note: HashEntry* memory is NOT freed */
+  bool remove(HashEntry *h); /* Note: HashEntry* memory is NOT freed */
   void walk(void (*walker)(HashEntry *h, void *user_data), void *user_data);
+  void purgeIdle();
 };
 
 #endif /* _GENERIC_HASH_H_ */

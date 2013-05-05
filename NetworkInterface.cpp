@@ -536,18 +536,6 @@ int ptr_compare(const void *a, const void *b) {
 }
 
 /* **************************************************** */
-
-static void idle_flow_walker(HashEntry *h, void *user_data) {
-  Flow *flow = (Flow*)h;
-  NetworkInterface *iface = (NetworkInterface*)user_data;
-
-  if(flow->isIdle(FLOW_MAX_IDLE)) {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Delete idle flow");
-    iface->removeFlow(flow, false /* Don't double lock */);
-    delete flow;
-  }
-}
-
 /* **************************************************** */
 
 void NetworkInterface::purgeIdleFlows() {
@@ -559,33 +547,15 @@ void NetworkInterface::purgeIdleFlows() {
   else {
     /* Time to purge flows */
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle flows");
-    flows_hash->walk(idle_flow_walker, (void*)this);
+    flows_hash->purgeIdle();
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
   }
 }
 
 /* **************************************************** */
 
-bool NetworkInterface::removeFlow(Flow *flow, bool lock_hash) {  return(flows_hash->remove(flow, lock_hash)); };
-bool NetworkInterface::removeHost(Host *host, bool lock_hash) {  return(hosts_hash->remove(host, lock_hash)); };
-
-/* **************************************************** */
-
 u_int NetworkInterface::getNumFlows() { return(flows_hash->getNumEntries()); };
 u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
-
-/* **************************************************** */
-
-static void idle_host_walker(HashEntry *h, void *user_data) {
-  Host *host = (Host*)h;
-  NetworkInterface *iface = (NetworkInterface*)user_data;
-
-  if(host->isIdle(HOST_MAX_IDLE)) {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Delete idle host");
-    iface->removeHost(host, false /* Don't double lock */);
-    delete host;
-  }
-}
 
 /* **************************************************** */
 
@@ -598,7 +568,7 @@ void NetworkInterface::purgeIdleHosts() {
   else {
     /* Time to purge hosts */
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
-    hosts_hash->walk(idle_host_walker, (void*)this);
+    //    hosts_hash->purgeIdle();
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
   }
 }
@@ -661,7 +631,7 @@ void NetworkInterface::runHousekeepingTasks() {
   // NdpiStats stats;
 
   /* TO COMPLETE */
-  updateHostStats();
+  //   updateHostStats();
   // getnDPIStats(&stats);
   //stats.print(iface);  
   //dumpFlows();

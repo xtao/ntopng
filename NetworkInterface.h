@@ -90,10 +90,7 @@ class NetworkInterface {
   void getActiveFlowsList(lua_State* v);
   void getFlowPeersList(lua_State* vm);
 
-  bool removeFlow(Flow *flow, bool lock_hash);
   void purgeIdleFlows();
-
-  bool removeHost(Host *host, bool lock_hash);
   void purgeIdleHosts();
 
   u_int getNumFlows();

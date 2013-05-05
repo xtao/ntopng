@@ -69,6 +69,7 @@ class Flow : public HashEntry {
   inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
   inline Host* get_src_host()                     { return(src_host); };
   inline Host* get_dst_host()                     { return(dst_host); };
+  inline bool idle()                              { return(isIdle(FLOW_MAX_IDLE)); };
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();

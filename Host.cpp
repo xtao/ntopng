@@ -122,18 +122,6 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
 
 /* ***************************************** */
 
-bool Host::isIdle(u_int max_idleness) {
-  if(num_uses > 0)
-    return(false);
-  else {
-    HashEntry *h = (HashEntry*)this;
-
-    return(h->isIdle(max_idleness));
-  }
-}
-
-/* ***************************************** */
-
 /*
   As this method can be called from Lua, in order to avoid concurency issues
   we need to lock/unlock

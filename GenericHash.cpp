@@ -73,7 +73,7 @@ bool GenericHash::add(HashEntry *h) {
 
 /* ************************************ */
 
-bool GenericHash::remove(HashEntry *h, bool lock_hash) {
+bool GenericHash::remove(HashEntry *h) {
   u_int32_t hash = (h->key() % num_hashes);
 
   if(table[hash] == NULL)
@@ -82,7 +82,7 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
     HashEntry *head, *prev = NULL;
     bool ret;
     
-    if(lock_hash) locks[hash]->lock(__FILE__, __LINE__);
+    locks[hash]->lock(__FILE__, __LINE__);
 
     head = table[hash];
     while(head && (!head->equal(h))) {
@@ -102,7 +102,7 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
     } else
       ret = false;
     
-    if(lock_hash) locks[hash]->unlock(__FILE__, __LINE__);
+    locks[hash]->unlock(__FILE__, __LINE__);
     return(ret);
   }
 }
@@ -112,12 +112,13 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
 void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user_data) {
   if(ntop->getGlobals()->isShutdown()) return;
 
-  for(u_int i = 0; i < num_hashes; i++) {
-    if(table[i] != NULL) {
+  for(u_int hash_id = 0; hash_id < num_hashes; hash_id++) {
+    if(table[hash_id] != NULL) {
       HashEntry *head;
       
-      locks[i]->lock(__FILE__, __LINE__);
-      head = table[i];
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Locking %d [%p]", hash_id, locks[hash_id]);
+      locks[hash_id]->lock(__FILE__, __LINE__);
+      head = table[hash_id];
 
       while(head) {
 	HashEntry *next = head->next();
@@ -126,7 +127,44 @@ void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user
 	head = next;
       } /* while */
 
+      locks[hash_id]->unlock(__FILE__, __LINE__);
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Unlocked %d", hash_id);
+    }
+  }
+}
+
+/* ************************************ */
+
+void GenericHash::purgeIdle() {
+  if(ntop->getGlobals()->isShutdown()) return;
+
+  for(u_int i = 0; i < num_hashes; i++) {
+    if(table[i] != NULL) {
+      HashEntry *head, *prev = NULL;
+
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[purge] Locking %d", i);
+      locks[i]->lock(__FILE__, __LINE__);
+      head = table[i];
+
+      while(head) {
+	HashEntry *next = head->next();
+
+	if(head->idle()) {
+	  if(prev == NULL) {
+	    table[i] = next;
+	  } else {
+	    prev->set_next(next);
+	    delete(head);
+	    head = next;
+	  }
+	} else {
+	  prev = head;
+	  head = next;
+	}
+      } /* while */
+
       locks[i]->unlock(__FILE__, __LINE__);
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[purge] Unlocked %d", i);
     }
   }
 }
