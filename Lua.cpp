@@ -101,6 +101,8 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   }
 
   ntop_interface->getnDPIStats(&stats);
+
+  lua_newtable(vm);  
   stats.lua(ntop_interface, vm);
 
   return(1);
@@ -153,9 +155,10 @@ static int ntop_get_interface_host_info(lua_State* vm) {
     return(0);
   }
 
-  ntop_interface->getHostInfo(vm, host_ip);
-
-  return(1);
+  if(!ntop_interface->getHostInfo(vm, host_ip))
+    return(0);
+  else
+    return(1);
 }
 
 /* ****************************************** */

@@ -24,17 +24,18 @@
 
 #include "ntop_includes.h"
 
-// #define MUTEX_DEBUG 1
+#define MUTEX_DEBUG 1
 
 /* ******************************* */
 
 class Mutex {
  private:
   pthread_mutex_t the_mutex;
-  bool initialized, locked;  
+  bool locked;  
 #ifdef MUTEX_DEBUG
   char last_lock_file[64], last_unlock_file[64];
   int  last_lock_line, last_unlock_line;
+  u_int num_locks, num_unlocks;
 #endif
   void initialize();
 

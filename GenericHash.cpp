@@ -8,7 +8,7 @@
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the ho2pe that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -112,10 +112,10 @@ bool GenericHash::remove(HashEntry *h, bool lock_hash) {
 void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user_data) {
   if(ntop->getGlobals()->isShutdown()) return;
 
-  for(u_int i = 0; i < num_hashes; i++)
+  for(u_int i = 0; i < num_hashes; i++) {
     if(table[i] != NULL) {
       HashEntry *head;
-
+      
       locks[i]->lock(__FILE__, __LINE__);
       head = table[i];
 
@@ -128,4 +128,5 @@ void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user
 
       locks[i]->unlock(__FILE__, __LINE__);
     }
+  }
 }

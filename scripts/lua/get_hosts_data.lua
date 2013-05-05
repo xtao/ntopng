@@ -67,7 +67,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 	 
-	 print ("{ \"column_0\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. "</A>\", \"column_1\" : \"" .. value["name"] .. "\", \"column_2\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]) .. "\" } ")
+	 print ("{ \"column_ip\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. "</A>\", \"column_name\" : \"" .. value["name"] .. "\", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", \"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]) .. "\" } ")
 	 num = num + 1
       end
    end

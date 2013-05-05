@@ -21,18 +21,22 @@
 	        columns: [
 			     {
 			     title: "IP Address",
-				 field: "column_0",
+				 field: "column_ip",
 				 sortable: true,
 				 },
 			     {
 			     title: "Symbolic Name",
-				 field: "column_1",
+				 field: "column_name",
+				 sortable: true,
+				 },
+			     {
+			     title: "Seen Since",
+				 field: "column_since",
 				 sortable: true,
 				 },
 			     {
 			     title: "Traffic",
-				 field: "column_2",
-
+				 field: "column_traffic",
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'right'

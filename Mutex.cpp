@@ -26,6 +26,9 @@
 Mutex::Mutex() {
   pthread_mutex_init(&the_mutex, NULL);
   locked = false;  
+#ifdef MUTEX_DEBUG
+  num_locks = num_unlocks = 0;
+#endif
 }
 
 /* ******************************* */
@@ -40,12 +43,12 @@ void Mutex::lock(const char *filename, const int line) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, 
 					"pthread_mutex_lock() returned %d [%s][errno=%d]", 
 					rc, strerror(rc), errno);
-
-  locked = true;
+  else
+    locked = true;
 
 #ifdef MUTEX_DEBUG
   snprintf(last_lock_file, sizeof(last_lock_file), "%s", filename);
-  last_lock_line = line;
+  last_lock_line = line, num_locks++;
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(%p)", __FUNCTION__, this);
 #endif
 }
@@ -63,11 +66,11 @@ void Mutex::unlock(const char *filename, const int line) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, 
 					"pthread_mutex_unlock() returned %d [%s][errno=%d]",
 					rc, strerror(rc), errno);
-  locked = false;
+  locked = false; /* Always unlock */
 
 #ifdef MUTEX_DEBUG
   snprintf(last_unlock_file, sizeof(last_unlock_file), "%s", filename);
-  last_unlock_line = line;
+  last_unlock_line = line, num_unlocks++;
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(%p)", __FUNCTION__, this);
 #endif
 }

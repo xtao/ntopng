@@ -44,7 +44,6 @@ class NdpiStats {
   NdpiStats();
 
   void sumStats(NdpiStats *stats);
-  void lua(lua_State* vm);
 
   inline void incStats(u_int proto_id,
 		       u_int32_t sent_packets, u_int32_t sent_bytes,

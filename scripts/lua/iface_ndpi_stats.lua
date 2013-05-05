@@ -6,15 +6,22 @@ require "lua_utils"
 
 ifname = _GET["if"]
 interface.find("any")
-ifstats = interface.getNdpiStats()
 
+if(_GET["host"] == nil) then
+   stats = interface.getNdpiStats()
+else
+   stats = interface.getHostInfo( _GET["host"])
+end
 
 tot = 0
 _ifstats = {}
-for key, value in pairs(ifstats) do
-     _ifstats[value] = key
-       tot = tot +value
+for key, value in pairs(stats["ndpi"]) do
+   traffic = stats["ndpi"][key]["sent"] + stats["ndpi"][key]["rcvd"]
+   _ifstats[traffic] = key
+   --print(key.."="..traffic)
+   tot = tot + traffic
 end
+
 
 -- Print up to this number of entries
 max_num_entries = 5
@@ -58,5 +65,4 @@ if(accumulate < tot) then
 end
 
 print "\n]"
-
 

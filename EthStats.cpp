@@ -57,13 +57,13 @@ void EthStats::incStats(u_int16_t proto, u_int32_t num_pkts, u_int32_t num_bytes
 /* *************************************** */
 
 void EthStats::lua(lua_State *vm) {
-  eth_IPv4.lua(vm,  "stats_IPv4_");
-  eth_IPv6.lua(vm,  "stats_IPv6_");
-  eth_ARP.lua(vm,   "stats_ARP_");
-  eth_MPLS.lua(vm,  "stats_MPLS_");
-  eth_other.lua(vm, "stats_other_");
-  lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
-  lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
+  eth_IPv4.lua(vm,  "stats.IPv4_");
+  eth_IPv6.lua(vm,  "stats.IPv6_");
+  eth_ARP.lua(vm,   "stats.ARP_");
+  eth_MPLS.lua(vm,  "stats.MPLS_");
+  eth_other.lua(vm, "stats.other_");
+  lua_push_int_table_entry(vm, "stats.bytes",   getNumBytes());
+  lua_push_int_table_entry(vm, "stats.packets", getNumPackets());
 }
 
 /* *************************************** */

@@ -93,10 +93,16 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
 
   if(host_details) {
     lua_newtable(vm);
+    lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
+    lua_push_int_table_entry(vm, "seen.first", first_seen);
+    lua_push_int_table_entry(vm, "seen.last", last_seen);
+    lua_push_int_table_entry(vm, "duration", get_duration());
+
+    ndpiStats->lua(iface, vm);
 
     if(returnHost) {
       ;
@@ -106,9 +112,10 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
       lua_insert(vm, -2);
       lua_settable(vm, -3);
     }
-    } else {
+  } else {
     lua_pushstring(vm,  get_name(buf, sizeof(buf)));
     lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
+    lua_push_int_table_entry(vm, "duration", get_duration());
     lua_settable(vm, -3);
   }
 }

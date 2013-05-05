@@ -474,20 +474,24 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 
 /* **************************************************** */
 
-void NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
+bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
   IpAddress *ip = new IpAddress(host_ip);
+  bool found = false;
 
   if(ip) {
     Host *h = hosts_hash->get(ip);
 
-    if(ip) {
+    if(ip && h) {
       lua_newtable(vm);
       
       h->lua(vm, true, true);
+      found = true;
     }
 
     delete ip;
   }
+
+  return(found);
 }
 
 /* **************************************************** */
@@ -649,7 +653,6 @@ void NetworkInterface::lua(lua_State *vm) {
  
   lua_pushinteger(vm, 0); //  Index
   lua_insert(vm, -2);
-  //  lua_settable(vm, -3);
 }
 
 /* **************************************************** */
