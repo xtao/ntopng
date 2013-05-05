@@ -161,6 +161,20 @@ static int handle_http_request(void *cls,
     if(response == NULL) {
       fclose(file);
       return MHD_NO;
+    } else {
+      u_int len = strlen(path);
+      const char *mime = NULL;
+
+      if(!strcmp(&path[len-3], ".js"))        mime = "application/x-javascript";
+      else if(!strcmp(&path[len-4], ".css"))  mime = "text/css";
+      else if(!strcmp(&path[len-4], ".html")) mime = "text/html";
+      else if(!strcmp(&path[len-4], ".png"))  mime = "image/png";
+      else if(!strcmp(&path[len-4], ".gif"))  mime = "image/gif";
+      else if(!strcmp(&path[len-4], ".jpg"))  mime = "image/jped";
+      else if(!strcmp(&path[len-4], ".ico"))  mime = "image/x-icon";
+
+      if(mime)
+	MHD_add_response_header(response, "Content-Type", mime);
     }
 
     ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
