@@ -109,13 +109,15 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     } else {
       if(ip != NULL)
 	lua_pushstring(vm, ip->print(buf, sizeof(buf)));
+      else
+	lua_pushstring(vm, get_mac(buf, sizeof(buf)));
+
       lua_insert(vm, -2);
       lua_settable(vm, -3);
     }
   } else {
     lua_pushstring(vm,  get_name(buf, sizeof(buf)));
     lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
-    lua_push_int_table_entry(vm, "duration", get_duration());
     lua_settable(vm, -3);
   }
 }

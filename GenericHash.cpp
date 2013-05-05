@@ -116,7 +116,7 @@ void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user
     if(table[hash_id] != NULL) {
       HashEntry *head;
       
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Locking %d [%p]", hash_id, locks[hash_id]);
+      //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Locking %d [%p]", hash_id, locks[hash_id]);
       locks[hash_id]->lock(__FILE__, __LINE__);
       head = table[hash_id];
 
@@ -151,12 +151,13 @@ void GenericHash::purgeIdle() {
 
 	if(head->idle()) {
 	  if(prev == NULL) {
-	    table[i] = next;
+	    table[i] = next;	    
 	  } else {
 	    prev->set_next(next);
 	    delete(head);
-	    head = next;
 	  }
+
+	  head = next;
 	} else {
 	  prev = head;
 	  head = next;

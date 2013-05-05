@@ -10,12 +10,13 @@ interface.find("any")
 if(_GET["host"] == nil) then
    stats = interface.getNdpiStats()
 else
-   stats = interface.getHostInfo( _GET["host"])
+   stats = interface.getHostInfo(_GET["host"])
 end
 
 tot = 0
 _ifstats = {}
 for key, value in pairs(stats["ndpi"]) do
+    --    print("->"..key.."\n")
    traffic = stats["ndpi"][key]["sent"] + stats["ndpi"][key]["rcvd"]
    _ifstats[traffic] = key
    --print(key.."="..traffic)

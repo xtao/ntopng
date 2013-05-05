@@ -631,7 +631,7 @@ void NetworkInterface::runHousekeepingTasks() {
   // NdpiStats stats;
 
   /* TO COMPLETE */
-  //   updateHostStats();
+  updateHostStats();
   // getnDPIStats(&stats);
   //stats.print(iface);  
   //dumpFlows();

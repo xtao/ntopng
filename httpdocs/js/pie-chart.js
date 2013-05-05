@@ -21,6 +21,8 @@ function do_pie(name, update_url, url_params, units, refresh) {
     // STREAKER CONNECTION ////////////////////////////////////
     ///////////////////////////////////////////////////////////
 
+    // Needed to draw the pie immediately
+    update();
     update();
 
     var updateInterval = window.setInterval(update, refresh);

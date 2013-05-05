@@ -72,7 +72,11 @@ if((page == "overview") or (page == nil)) then
 
    if(host["ndpi"] ~= nil) then
 
-      print [[ <div class="pie-chart" id="topApplicationProtocols"></div> 
+      print [[ 
+
+      <table class="table table-bordered table-striped">
+      	<tr><th class="text-center">Protocol Overview</th><td colspan=2><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+	</div>		       
 
 	       <script type='text/javascript'>
 	       window.onload=function() {
@@ -85,8 +89,8 @@ if((page == "overview") or (page == nil)) then
 	    </script><p>
 	]]
 
-      print("<table class=\"table table-bordered\">\n")
-      print("<thead><tr><th  class=\"text-center\">Application Protocol</th><th  class=\"text-center\">Sent</th><th  class=\"text-center\">Received</th></tr><thead>\n")
+
+      print("<tr><th  class=\"text-center\">Application Protocol</th><th  class=\"text-center\">Sent</th><th  class=\"text-center\">Received</th></tr>\n")
       
       vals = {}
       for k in pairs(host["ndpi"]) do
