@@ -2,6 +2,10 @@
 -- (C) 2013 - ntop.org
 --
 
+function firstToUpper(str)
+return (str:gsub("^%l", string.upper))
+end
+
 function pairsByKeys(t, f)
    local a = {}
    for n in pairs(t) do table.insert(a, n) end

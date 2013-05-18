@@ -11,7 +11,6 @@ hosts_stats = interface.getHosts()
 tot = 0
 _hosts_stats = {}
 for key, value in pairs(hosts_stats) do
-
    if(key == "255.255.255.255") then
       key = "Broadcast"
    end

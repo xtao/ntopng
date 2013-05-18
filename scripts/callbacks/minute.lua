@@ -12,7 +12,9 @@ if(diff > 30) then
    return
 end
 
-debug = 1
+-- Toggle debug
+debug = 0
+
 interface.find("any")
 hosts_stats = interface.getHostsInfo()
 for key, value in pairs(hosts_stats) do
@@ -33,8 +35,8 @@ for key, value in pairs(hosts_stats) do
 	 name,
 	 '--start', 'now',
 	 '--step', '300',
-	 'DS:sent:COUNTER:600:U:U',
-	 'DS:rcvd:COUNTER:600:U:U',
+	 'DS:sent:DERIVE:600:U:U',
+	 'DS:rcvd:DERIVE:600:U:U',
 	 'RRA:AVERAGE:0.5:1:50400',  -- raw: 7 days = 7 * 24 = 168 * 300 sec = 50400
 	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
 	 'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
@@ -55,8 +57,8 @@ for key, value in pairs(hosts_stats) do
 	       name,
 	       '--start', 'now',
 	       '--step', '300',
-	       'DS:sent:COUNTER:600:U:U',
-	       'DS:rcvd:COUNTER:600:U:U',
+	       'DS:sent:DERIVE:600:U:U',
+	       'DS:rcvd:DERIVE:600:U:U',
 	       'RRA:AVERAGE:0.5:1:50400',  -- raw: 7 days = 7 * 24 = 168 * 300 sec = 50400
 	       'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
 	       'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days

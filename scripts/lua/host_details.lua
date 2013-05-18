@@ -1,5 +1,6 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
+require "graph_utils"
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
 ntop.dumpFile("./httpdocs/inc/menu.inc")
@@ -10,6 +11,8 @@ ifname = _GET["interface"]
 if(ifname == nil) then
    ifname = "any"
 end
+
+rrdname = ntop.getDataDir() .. "/rrd/" .. _GET["host"] .. "/bytes.rrd"
 
 interface.find(ifname)
 host = interface.getHostInfo( _GET["host"])
@@ -47,10 +50,12 @@ else
   print("<li><a href=\""..url.."&page=flows\">Active Flows</a></li>")
 end
 
+if(ntop.exists(rrdname)) then
 if(page == "historical") then
   print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
 else
   print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
+end
 end
 
 print [[
@@ -175,6 +180,14 @@ print [[
        </script>
 
    ]]
+elseif(page == "historical") then
+if(_GET["rrd_file"] == nil) then
+   rrdfile = "bytes.rrd"
+else
+   rrdfile=_GET["rrd_file"]
+end
+
+drawRRD(_GET["host"], rrdfile, _GET["graph_zoom"], '/host_details.lua?host='.._GET["host"]..'&page=historical')
 else
    print(page)
 end

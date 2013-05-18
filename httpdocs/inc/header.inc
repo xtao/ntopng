@@ -10,8 +10,10 @@
     <script src="/js/bootstrap-datatable.js"></script>
     <script src="/js/d3.v2.min.js"></script>
     <script src="/js/jquery.peity.min.js"></script>
+    <script src="/js/rickshaw.min.js"></script>
     <script src="/js/pie-chart.js"></script>
     <link href="/css/pie-chart.css" rel="stylesheet">
+    <link href="/css/rickshaw.min.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
