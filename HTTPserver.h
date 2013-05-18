@@ -35,8 +35,8 @@ class HTTPserver {
   HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir);
   ~HTTPserver();
 
-  inline char* get_docs_dir()    { return(docs_dir);    };
-  inline char* get_scripts_dir() { return(scripts_dir); };
+  inline char* get_docs_dir()      { return(docs_dir);    };
+  inline char* get_scripts_dir()   { return(scripts_dir); };
 };
 
 extern int page_not_found(struct MHD_Connection *connection, const char *url);

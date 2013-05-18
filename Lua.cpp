@@ -21,6 +21,11 @@
 
 #include "ntop_includes.h"
 
+#define _GETOPT_H
+#define LIB_VERSION "1.4.7"
+
+#include "third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c"
+
 /* ******************************* */
 
 Lua::Lua() {
@@ -142,6 +147,34 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_file_dir_exists(lua_State* vm) {
+  char *path;
+  struct stat buf;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  path = (char*)lua_tostring(vm, 1);
+
+  return((stat(path, &buf) != 0) ? 0 : 1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_flows_info(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  ntop_interface->getActiveFlowsList(vm);
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
@@ -159,22 +192,6 @@ static int ntop_get_interface_host_info(lua_State* vm) {
     return(0);
   else
     return(1);
-}
-
-/* ****************************************** */
-
-static int ntop_get_interface_flows_info(lua_State* vm) {
-  NetworkInterface *ntop_interface;
-
-  lua_getglobal(vm, "ntop_interface");
-  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
-  }
-
-  ntop_interface->getActiveFlowsList(vm);
-
-  return(1);
 }
 
 /* ****************************************** */
@@ -198,6 +215,14 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
 void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
+  lua_settable(L, -3);
+}
+
+/* ****************************************** */
+
+void lua_push_bool_table_entry(lua_State *L, const char *key, bool value) {
+  lua_pushstring(L, key);
+  lua_pushboolean(L, value ? 1 : 0);
   lua_settable(L, -3);
 }
 
@@ -258,6 +283,57 @@ static int ntop_get_resolved_address(lua_State* vm) {
   return(1);
 }
 
+/* ******************************************* */
+
+static void revertSlashIfWIN32(char *str, int mode) {
+#ifdef WIN32
+  int i;
+
+  for(i=0; str[i] != '\0'; i++)
+    switch(mode) {
+    case 0:
+      if(str[i] == '/') str[i] = '\\';
+      //else if(str[i] == ' ') str[i] = '_';
+      break;
+    case 1:
+      if(str[i] == '\\') str[i] = '/';
+      break;
+    }
+#endif
+}
+
+/* ****************************************** */
+
+static int ntop_mkdir_tree(lua_State* vm) {
+  char *dir, path[256];
+  int permission = 0777, i, rc;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  if((dir = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
+  if(dir[0] == '\0')                                   return(1); /* Nothing to do */
+
+  snprintf(path, sizeof(path), "%s", dir);
+	   
+  revertSlashIfWIN32(path, 0);
+
+  /* Start at 1 to skip the root */
+  for(i=1; path[i] != '\0'; i++)
+    if(path[i] == CONST_PATH_SEP) {
+#ifdef WIN32
+      /* Do not create devices directory */
+      if((i > 1) && (path[i-1] == ':')) continue;
+#endif
+
+      path[i] = '\0';
+      rc = ntop_mkdir(path, permission);
+      path[i] = CONST_PATH_SEP;
+    }
+
+  rc = ntop_mkdir(path, permission);
+
+  return(rc == 0 ? 1 : -1);
+}
+
 /* ****************************************** */
 
 static int ntop_get_redis(lua_State* vm) {
@@ -270,6 +346,13 @@ static int ntop_get_redis(lua_State* vm) {
   value = (redis->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"";
   lua_pushfstring(vm, "%s", value);
 
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_datadir(lua_State* vm) {
+  lua_pushfstring(vm, "%s", ntop->get_data_dir());
   return(1);
 }
 
@@ -377,9 +460,12 @@ static const luaL_Reg ntop_interface_reg[] = {
 static const luaL_Reg ntop_reg[] = {
   { "getInfo",     ntop_get_info },
   { "dumpFile",    ntop_dump_file },
+  { "getDataDir",  ntop_get_datadir },
   { "getCache",    ntop_get_redis },
   { "setCache",    ntop_set_redis },
   { "getResolvedAddress",    ntop_get_resolved_address },
+  { "mkdir",       ntop_mkdir_tree },
+  { "exists",      ntop_get_file_dir_exists },
   { NULL,          NULL}
 };
 
@@ -427,6 +513,9 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
     lua_register(L, "print", ntop_lua_http_print);
   } else
     lua_register(L, "print", ntop_lua_cli_print);
+
+  /* Register RRD bindings */
+  luaopen_rrd(L);
 }
 
 /* ****************************************** */

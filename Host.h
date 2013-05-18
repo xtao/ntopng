@@ -34,7 +34,9 @@ class Host : public HashEntry {
   TrafficStats sent, rcvd;
   bool name_resolved;
   Mutex *m;
+  bool localHost;
 
+  void updateLocal();
   void initialize(u_int8_t mac[6], bool init_all);
 
  public:
@@ -48,6 +50,7 @@ class Host : public HashEntry {
   inline u_int32_t key()                       { return(ip->key());   }
   inline IpAddress* get_ip()                   { return(ip);          }
   inline u_int8_t*  get_mac()                  { return(mac_address); }
+  inline bool isLocalHost()                    { return(localHost);   }
   char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);
 

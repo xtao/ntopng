@@ -55,7 +55,7 @@ static char **make_argv(const char *cmd, lua_State * L)
   int i;
   int argc = lua_gettop(L) + 1;
 
-  if (!(argv = calloc(argc, sizeof (char *)))) 
+  if (!(argv = (char**)calloc(argc, sizeof (char *)))) 
     /* raise an error and never return */
     luaL_error(L, "Can't allocate memory for arguments array", cmd);
 
@@ -66,7 +66,7 @@ static char **make_argv(const char *cmd, lua_State * L)
   for (i=1; i<argc; i++) {
     /* accepts string or number */
     if (lua_isstring(L, i) || lua_isnumber(L, i)) {
-      if (!(argv[i] = lua_tostring (L, i))) {
+      if (!(argv[i] = (char*)lua_tostring (L, i))) {
         /* raise an error and never return */
         luaL_error(L, "%s - error duplicating string area for arg #%d",
                    cmd, i);
@@ -267,6 +267,7 @@ lua_rrd_last (lua_State * L)
   return 1;
 }
 
+#ifdef HAVE_RRD_GRAPH
 static int
 lua_rrd_graph (lua_State * L)
 {
@@ -291,6 +292,7 @@ lua_rrd_graph (lua_State * L)
   rrd_freemem(calcpr);
   return 3;
 }
+#endif
 
 static int
 lua_rrd_flushcached(lua_State *L)
@@ -305,11 +307,13 @@ lua_rrd_info (lua_State * L)
   return lua_rrd_infocall(L, "info", rrd_info);
 }
 
+#ifdef HAVE_RRD_GRAPH
 static int
 lua_rrd_graphv (lua_State * L)
 {
   return lua_rrd_infocall(L, "graphv", rrd_graph_v);
 }
+#endif
 
 static int
 lua_rrd_updatev (lua_State * L)
@@ -347,7 +351,9 @@ static const struct luaL_reg rrd[] = {
   {"dump", lua_rrd_dump},
   {"fetch", lua_rrd_fetch},
   {"first", lua_rrd_first},
+#ifdef HAVE_RRD_GRAPH
   {"graph", lua_rrd_graph},
+#endif
   {"last", lua_rrd_last},
   {"resize", lua_rrd_resize},
   {"restore", lua_rrd_restore},
@@ -357,7 +363,9 @@ static const struct luaL_reg rrd[] = {
 #if defined(DINF)
   {"info", lua_rrd_info},
   {"updatev", lua_rrd_updatev},
+#ifdef HAVE_RRD_GRAPH
   {"graphv", lua_rrd_graphv},
+#endif
 #endif
   {NULL, NULL}
 };

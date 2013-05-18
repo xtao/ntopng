@@ -58,4 +58,12 @@
 #define HOST_PURGE_FREQUENCY     5 /* sec */
 #define HOST_MAX_IDLE           60 /* sec */
 
+#ifdef WIN32
+#define ntop_mkdir(a, b) _mkdir(a)
+#define CONST_PATH_SEP                    '\\'
+#else
+#define ntop_mkdir(a, b) mkdir(a, b)
+#define CONST_PATH_SEP                    '/'
+#endif
+
 #endif /* _NTOP_DEFINES_H_ */

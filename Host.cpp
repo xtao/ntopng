@@ -68,10 +68,21 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
 
     if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp)) == 0)
       symbolic_name = strdup(rsp);
-    else {
+    else
       ntop->getRedis()->queueHostToResolve(host);
-    }
-  }
+    
+    updateLocal();
+  } else
+    localHost = false;
+}
+
+/* *************************************** */
+
+void Host::updateLocal() {
+  /* We need to check if this is a local host */
+
+  localHost = true; // FIX
+
 }
 
 /* *************************************** */
@@ -93,6 +104,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
 
   if(host_details) {
     lua_newtable(vm);
+    lua_push_bool_table_entry(vm, "localhost", isLocalHost());
     lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
