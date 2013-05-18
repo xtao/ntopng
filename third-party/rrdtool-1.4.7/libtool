@@ -2,7 +2,7 @@
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by config.status (rrdtool) 1.4.7
-# Libtool was configured on host iMacLuca.local:
+# Libtool was configured on host Lucas-MacBook-Air.local:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
@@ -132,7 +132,7 @@ old_postuninstall_cmds=""
 LTCC="gcc"
 
 # LTCC compiler flags.
-LTCFLAGS="-g -O2 -D_GNU_SOURCE -fno-strict-aliasing -Wall -std=gnu99 -pedantic -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Wold-style-definition -W "
+LTCFLAGS="-g -O2 -D_GNU_SOURCE -fno-strict-aliasing -Wall -std=gnu99 -pedantic -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Wold-style-definition -W  -fno-common -DPIC"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
 global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([BCDEGRST][BCDEGRST]*\\)[	 ][	 ]*_\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 _\\2 \\2/p'"
