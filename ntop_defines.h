@@ -66,4 +66,6 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
+#define CONST_DEFAULT_DATA_DIR "./data"
+
 #endif /* _NTOP_DEFINES_H_ */

@@ -76,7 +76,6 @@ if((page == "overview") or (page == nil)) then
    elseif((page == "ndpi")) then
 
    if(host["ndpi"] ~= nil) then
-
       print [[ 
 
       <table class="table table-bordered table-striped">
@@ -105,7 +104,11 @@ if((page == "overview") or (page == nil)) then
 
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
-	 print("<tr><th>"..k.."</th><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["rcvd"]) .. "</td></tr>\n")
+	 print("<tr><th>")
+
+	 print("<A HREF=\"/host_details.lua?host=" .. _GET["host"] .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+
+	 print("</th><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["rcvd"]) .. "</td></tr>\n")
       end
       
       print("</table>\n")

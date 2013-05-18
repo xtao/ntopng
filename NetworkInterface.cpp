@@ -475,23 +475,31 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 /* **************************************************** */
 
 bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
-  IpAddress *ip = new IpAddress(host_ip);
-  bool found = false;
+  struct in_addr  a4;
+  struct in6_addr a6;
 
-  if(ip) {
-    Host *h = hosts_hash->get(ip);
+  /* Check if address is invalid */
+  if(inet_pton(AF_INET, (const char*)host_ip, &a4)
+     || inet_pton(AF_INET6, (const char*)host_ip, &a6)) {
+    IpAddress *ip = new IpAddress(host_ip);
+    bool found = false;
 
-    if(ip && h) {
-      lua_newtable(vm);
+    if(ip) {
+      Host *h = hosts_hash->get(ip);
+
+      if(ip && h) {
+	lua_newtable(vm);
       
-      h->lua(vm, true, true);
-      found = true;
+	h->lua(vm, true, true);
+	found = true;
+      }
+
+      delete ip;
     }
 
-    delete ip;
-  }
-
-  return(found);
+    return(found);
+  } else
+    return(false);
 }
 
 /* **************************************************** */

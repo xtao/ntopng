@@ -62,6 +62,9 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
 	       v = 0
 	    else
 	       v = tonumber(w)
+	       if(v < 0) then
+		  v = 0
+	       end
 	    end
 	    
 	    s[elemId] = v

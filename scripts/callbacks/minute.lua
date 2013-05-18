@@ -23,7 +23,7 @@ for key, value in pairs(hosts_stats) do
    basedir = ntop.getDataDir() .. "/rrd/" .. key
 
    if(not(ntop.exists(basedir))) then
-      if(debug) then io.write('Creating base directory', basedir, '\n') end
+      if(debug) then io.write('Creating base directory ', basedir, '\n') end
       ntop.mkdir(basedir)
    end
 

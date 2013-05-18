@@ -21,6 +21,10 @@
 
 #include "ntop_includes.h"
 
+extern "C" {
+  extern char* rrd_strversion(void);
+};
+
 /* ******************************************* */
 
 static void help() {
@@ -33,7 +37,8 @@ static void help() {
 	 "-w <http port>         | HTTP port\n"
 	 "-r <redis host[:port]> | Redis host[:port]\n"
 	 "-s                     | Do not change user (debug only)\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
+	 "-d <path>              | Data directory (must be writable). Default: %s\n"
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR);
   exit(0);
 }
 
@@ -68,7 +73,7 @@ void sigproc(int sig) {
 
 int main(int argc, char *argv[]) {
   u_char c;
-  char *ifName = NULL;
+  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   u_int http_port = 3000;
   bool change_user = true;
   NetworkInterface *iface = NULL;
@@ -76,7 +81,7 @@ int main(int argc, char *argv[]) {
   Redis *redis = NULL;
   Prefs *prefs = new Prefs();
 
-  while((c = getopt(argc, argv, "hi:w:r:sn:")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:r:sn:d:")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -133,6 +138,11 @@ int main(int argc, char *argv[]) {
     case 's':
       change_user = false;
       break;
+
+    case 'd':
+      free(data_dir);
+      data_dir = strdup(optarg);
+      break;      
     }
   }
 
@@ -140,12 +150,34 @@ int main(int argc, char *argv[]) {
 
   if(redis == NULL) redis = new Redis();
 
-  ntop->registerPrefs(prefs, redis, 
-		      (char*)"./data" /* Directory where ntopng will dump data: make sure it can write it there */,
+  ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
   ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
+
+  /*
+    We have created the network interface and thus changed user. Let's not check
+    if we can write on the data directory 
+  */
+  {
+    char path[256];
+    FILE *fd;
+
+    snprintf(path, sizeof(path), "%s/.test", ntop->get_data_dir());
+    if((fd = fopen(path, "w")) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				   "Unable to write on %s: please specify a different directory", 
+				   ntop->get_data_dir());
+      exit(0);
+    } else
+      fclose(fd); /* All right */
+  }
+
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL,
+			       "Using RRD version %s",
+			       rrd_strversion());
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);
