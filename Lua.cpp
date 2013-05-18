@@ -21,8 +21,13 @@
 
 #include "ntop_includes.h"
 
+#ifndef _GETOPT_H
 #define _GETOPT_H
+#endif
+
+#ifndef LIB_VERSION
 #define LIB_VERSION "1.4.7"
+#endif
 
 #include "third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c"
 
