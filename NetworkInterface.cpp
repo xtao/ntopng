@@ -474,30 +474,49 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 
 /* **************************************************** */
 
+struct host_find_info {
+  char *host_to_find;
+  Host *h;
+};
+
+static void find_host_by_name(HashEntry *h, void *user_data) {
+  struct host_find_info *info = (struct host_find_info*)user_data;
+  Host *host                  = (Host*)h;
+
+  if((info->h == NULL) && host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+    info->h = host;
+}
+
+/* **************************************************** */
+
 bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
   struct in_addr  a4;
   struct in6_addr a6;
-
+  Host *h = NULL;
+  
   /* Check if address is invalid */
-  if(inet_pton(AF_INET, (const char*)host_ip, &a4)
-     || inet_pton(AF_INET6, (const char*)host_ip, &a6)) {
+  if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0) && (inet_pton(AF_INET6, (const char*)host_ip, &a6) == 0)) {
+    /* Looks like a symbolic name */
+    struct host_find_info info;
+
+    info.host_to_find = host_ip, info.h = NULL;    
+    hosts_hash->walk(find_host_by_name, (void*)&info);
+
+    h = info.h;
+  } else {
     IpAddress *ip = new IpAddress(host_ip);
-    bool found = false;
-
+    
     if(ip) {
-      Host *h = hosts_hash->get(ip);
-
-      if(ip && h) {
-	lua_newtable(vm);
-      
-	h->lua(vm, true, true);
-	found = true;
-      }
-
+      h = hosts_hash->get(ip);      
       delete ip;
     }
-
-    return(found);
+  }
+    
+  if(h) {
+    lua_newtable(vm);
+    
+    h->lua(vm, true, true);
+    return(true);
   } else
     return(false);
 }

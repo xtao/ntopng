@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
   iface->startPacketPolling();
 
   while(1) {
-    sleep(3);
+    sleep(1);
     /* TODO - Do all this for all registered interfaces */
     iface->runHousekeepingTasks();
   }

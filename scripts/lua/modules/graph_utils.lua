@@ -19,8 +19,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
       { "1m", "now-1mon" }, 
       { "6m", "now-6mon" }, 
       { "1y", "now-1y" } 
-   }   
-   
+   }      
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -34,15 +33,21 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
 
    end_time = "now"
 
+   local maxval_time = 0
+   local maxval = 0
+   local minval = 0
+   local minval_time = 0
+   local lastval = 0
+   local lastval_time = 0
    
+   prefixLabel = string.gsub(rrdFile, ".rrd", "")
+   
+   if(prefixLabel == "bytes") then
+      prefixLabel = "Traffic"
+   end
+
    if(ntop.exists(rrdname)) then
       local fstart, fstep, fnames, fdata = rrd.fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
-
-      prefixLabel = string.gsub(rrdFile, ".rrd", "")
-      
-      if(prefixLabel == "bytes") then
-	 prefixLabel = "Traffic"
-      end
      
       num = 0
       for i, n in ipairs(fnames) do
@@ -61,11 +66,14 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
 	       -- This is a NaN
 	       v = 0
 	    else
-	       v = tonumber(w)
+	       v = tonumber(w)*8
 	       if(v < 0) then
 		  v = 0
 	       end
 	    end
+ 	 
+	    lastval_time = s[0] 
+	    lastval = v
 	    
 	    s[elemId] = v
 	    elemId = elemId + 1
@@ -75,6 +83,25 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
       id = id + 1
    end
 end
+
+for key, value in pairs(series) do
+   local t = 0
+
+   for elemId=0,(num-1) do
+      t = t + value[elemId+1]
+   end
+   
+   if((minval_time == 0) or (minval >= t)) then
+      minval_time = value[0] 
+      minval = t
+   end
+   
+   if((maxval_time == 0) or (maxval <= t)) then
+      maxval_time = value[0] 
+      maxval = t
+   end
+end
+
 
 
 print [[
@@ -154,9 +181,27 @@ print [[
  <div class="span1"></div>
 <div id="chart_container">
    <div id="y_axis"></div>
-   <div id="chart"></div>
-   <div id="legend"></div>
+   <div id="chart"></div> 
+   <table border=0>
+   <tr><td><div id="legend"></div></td></tr>
+   <tr><td>
+
+   <table class="table table-bordered table-striped">
+   ]]
+
+
+print('   <tr><th>' .. prefixLabel .. '</th><th>Time</th><th>Value</th></tr>\n')
+print('   <tr><th>Min Value</th><td>' .. os.date("%x %X", minval_time) .. '</td><td>' .. bitsToSize(minval) .. '</td></tr>\n')
+print('   <tr><th>Max Value</th><td>' .. os.date("%x %X", maxval_time) .. '</td><td>' .. bitsToSize(maxval) .. '</td></tr>\n')
+print('   <tr><th>Last Value</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval)  .. '</td></tr>\n')
+
+print [[
+   </table>
+
+   </td></tr>
+   </table>
 </div>
+
 </div>
 
 <script>
@@ -173,8 +218,8 @@ var graph = new Rickshaw.Graph( {
 
 				]]
 
-num=1
-for elemId=0,num do
+				if(names ~= nil) then
+for elemId=0,(num-1) do
    if(elemId > 0) then
       print ","
    end
@@ -194,7 +239,7 @@ for elemId=0,num do
 
       print("\n]}\n")
 end
-
+end
 
 print [[
 				   ]

@@ -65,7 +65,7 @@ void Address::resolveHostName(char *numeric_ip) {
       num_resolved_addresses++;
     } else {
       num_resolved_fails++;
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Error resolution failure for %s [%d/%s/%s]", 
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Error resolution failure for %s [%d/%s/%s]", 
 				   numeric_ip, rc, gai_strerror(rc), strerror(errno));
       ntop->getRedis()->setResolvedAddress(numeric_ip, numeric_ip); /* So we avoid to continuously resolver the same address */
     }

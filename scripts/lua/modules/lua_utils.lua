@@ -44,19 +44,40 @@ function bytesToSize(bytes)
    megabyte = kilobyte * 1024;
    gigabyte = megabyte * 1024;
    terabyte = gigabyte * 1024;
-   
+
    if ((bytes >= 0) and (bytes < kilobyte)) then
       return bytes;
    elseif ((bytes >= kilobyte) and (bytes < megabyte)) then
-      return round(bytes / kilobyte, precision) .. ' KB';      
+      return round(bytes / kilobyte, precision) .. ' KB';
    elseif ((bytes >= megabyte) and (bytes < gigabyte)) then
       return round(bytes / megabyte, precision) .. ' MB';
    elseif ((bytes >= gigabyte) and (bytes < terabyte)) then
-      return round(bytes / gigabyte, precision) .. ' GB';	 
+      return round(bytes / gigabyte, precision) .. ' GB';
    elseif (bytes >= terabyte) then
       return round(bytes / terabyte, precision) .. ' TB';
    else
       return bytes .. ' B';
+   end
+end
+
+-- Convert bits to human readable format
+function bitsToSize(bits)
+   precision = 2
+   kilobit = 1024;
+   megabit = kilobit * 1024;
+   gigabit = megabit * 1024;
+   terabit = gigabit * 1024;
+
+   if ((bits >= kilobit) and (bits < megabit)) then
+      return round(bits / kilobit, precision) .. ' Kbit';
+   elseif ((bits >= megabit) and (bits < gigabit)) then
+      return round(bits / megabit, precision) .. ' Mbit';
+   elseif ((bits >= gigabit) and (bits < terabit)) then
+      return round(bits / gigabit, precision) .. ' Gbit';
+   elseif (bits >= terabit) then
+      return round(bits / terabit, precision) .. ' Tbit';
+   else
+      return round(bits, precision) .. ' bps';
    end
 end
 
@@ -82,16 +103,16 @@ end
 
 function secondsToTime(seconds)
    days = math.floor(seconds / 86400)
-   hours = (seconds / 3600) - (days * 24)
+   hours =  math.floor((seconds / 3600) - (days * 24))
    minutes = (seconds / 60) - (days * 1440) - (hours * 60)
-   seconds = seconds % 60
-   
+   sec = seconds % 60
+
    if(days > 0) then
       msg = days .. " days, "
    else
       msg = ""
    end
-   
-   msg = msg .. string.format("%02d:%02d:%02d", hours, minutes, seconds);
+
+   msg = msg .. string.format("%02d:%02d:%02d", hours, minutes, sec);
    return msg
 end

@@ -3,7 +3,7 @@ require "lua_utils"
 require "graph_utils"
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
-ntop.dumpFile("./httpdocs/inc/menu.inc")
+dofile("./scripts/lua/menu.lua")
 
 page = _GET["page"]
 
@@ -70,32 +70,32 @@ if((page == "overview") or (page == nil)) then
    print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
    print("<tr><th>IP Address</th><td>" .. host["ip"] .. "</td></tr>\n")
    print("<tr><th>Name</th><td>" .. host["name"] .. "</td></tr>\n")
-   print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) .. " [" .. secondsToTime(host["duration"]) .. "]" .. "</td></tr>\n")
+   print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
 
    print("</table>\n")
    elseif((page == "ndpi")) then
 
    if(host["ndpi"] ~= nil) then
-      print [[ 
+      print [[
 
       <table class="table table-bordered table-striped">
       	<tr><th class="text-center">Protocol Overview</th><td colspan=2><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
-	</div>		       
+	</div>
 
-	       <script type='text/javascript'>
+        <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any", host: ]] 
+				   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any", host: ]]
 	print("\"".._GET["host"].."\"")
 	print [[ }, "", refresh);
 				}
-				
+
 	    </script><p>
 	]]
 
-
       print("<tr><th  class=\"text-center\">Application Protocol</th><th  class=\"text-center\">Sent</th><th  class=\"text-center\">Received</th></tr>\n")
-      
+
       vals = {}
       for k in pairs(host["ndpi"]) do
 	 vals[k] = k
@@ -110,7 +110,7 @@ if((page == "overview") or (page == nil)) then
 
 	 print("</th><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["rcvd"]) .. "</td></tr>\n")
       end
-      
+
       print("</table>\n")
    end
 
