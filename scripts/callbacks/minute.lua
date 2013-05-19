@@ -65,7 +65,7 @@ for key, value in pairs(hosts_stats) do
 	       'RRA:HWPREDICT:1440:0.1:0.0035:20')
 	    
 	 end
-	 rrd.update(name, "N:".. host["ndpi"][k]["sent"] .. ":" .. host["ndpi"][k]["rcvd"])
+	 rrd.update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
 	 if(debug) then io.write('Updating RRD '..name..'\n') end
       end
    end

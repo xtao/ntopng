@@ -56,8 +56,10 @@ void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
   for(int i=0; i<MAX_NDPI_PROTOS; i++)
     if(packets[i].sent || packets[i].rcvd) {
       lua_newtable(vm);
-      lua_push_int_table_entry(vm, "sent", packets[i].sent);
-      lua_push_int_table_entry(vm, "rcvd", packets[i].rcvd);
+      lua_push_int_table_entry(vm, "packets.sent", packets[i].sent);
+      lua_push_int_table_entry(vm, "packets.rcvd", packets[i].rcvd);
+      lua_push_int_table_entry(vm, "bytes.sent", bytes[i].sent);
+      lua_push_int_table_entry(vm, "bytes.rcvd", bytes[i].rcvd);
 
       lua_pushstring(vm, iface->get_ndpi_proto_name(i)); // Index
       lua_insert(vm, -2);

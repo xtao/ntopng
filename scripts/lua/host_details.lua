@@ -15,9 +15,9 @@ end
 rrdname = ntop.getDataDir() .. "/rrd/" .. _GET["host"] .. "/bytes.rrd"
 
 host_ip = _GET["host"]
- 
+
 interface.find(ifname)
-host = interface.getHostInfo( host_ip)
+host = interface.getHostInfo(host_ip)
 
 
 
@@ -86,7 +86,7 @@ if((page == "overview") or (page == nil)) then
       print [[
 
       <table class="table table-bordered table-striped">
-      	<tr><th class="text-center">Protocol Overview</th><td colspan=2><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      	<tr><th class="text-center">Protocol Overview</th><td colspan=4><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
 
         <script type='text/javascript'>
@@ -100,21 +100,25 @@ if((page == "overview") or (page == nil)) then
 	    </script><p>
 	]]
 
-      print("<tr><th  class=\"text-center\">Application Protocol</th><th  class=\"text-center\">Sent</th><th  class=\"text-center\">Received</th></tr>\n")
+      print("<tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th colspan=2>Total</th></tr>\n")
+
+      total = host["bytes.sent"]+host["bytes.rcvd"]
 
       vals = {}
       for k in pairs(host["ndpi"]) do
 	 vals[k] = k
+	 -- print(k)
       end
       table.sort(vals)
+
+      print("<tr><th>Total</th><td  class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td><td colspan=2>" ..  bytesToSize(total).. "</td></tr>\n")
 
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-
 	 print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
-
-	 print("</th><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["rcvd"]) .. "</td></tr>\n")
+	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
+	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td><td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
       print("</table>\n")

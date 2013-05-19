@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     snprintf(path, sizeof(path), "%s/.test", ntop->get_data_dir());
     if((fd = fopen(path, "w")) == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, 
-				   "Unable to write on %s: please specify a different directory", 
+				   "Unable to write on %s: please specify a different directory (-d)", 
 				   ntop->get_data_dir());
       exit(0);
     } else

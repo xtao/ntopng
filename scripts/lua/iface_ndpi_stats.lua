@@ -17,7 +17,7 @@ tot = 0
 _ifstats = {}
 for key, value in pairs(stats["ndpi"]) do
     --    print("->"..key.."\n")
-   traffic = stats["ndpi"][key]["sent"] + stats["ndpi"][key]["rcvd"]
+   traffic = stats["ndpi"][key]["bytes.sent"] + stats["ndpi"][key]["bytes.rcvd"]
    _ifstats[traffic] = key
    --print(key.."="..traffic)
    tot = tot + traffic
