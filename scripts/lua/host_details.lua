@@ -14,12 +14,18 @@ end
 
 rrdname = ntop.getDataDir() .. "/rrd/" .. _GET["host"] .. "/bytes.rrd"
 
+host_ip = _GET["host"]
+ 
 interface.find(ifname)
-host = interface.getHostInfo( _GET["host"])
+host = interface.getHostInfo( host_ip)
+
+
 
 if(host == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. _GET["host"] .. " cannot be found (expired ?)</div>")
+   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
 else
+
+   host_ip = host["ip"]
 
 print [[
 <div class="bs-docs-example">
@@ -28,9 +34,9 @@ print [[
 <ul class="nav">
 ]]
 
-url="/host_details.lua?host=".._GET["host"]
+url="/host_details.lua?host="..host_ip
 
-print("<li><a href=\"#\">Host: ".._GET["host"].."</a></li>\n")
+print("<li><a href=\"#\">Host: "..host_ip.." </a></li>\n")
 
 if((page == "overview") or (page == nil)) then
   print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")
@@ -87,7 +93,7 @@ if((page == "overview") or (page == nil)) then
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
 				   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any", host: ]]
-	print("\"".._GET["host"].."\"")
+	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
 
@@ -106,7 +112,7 @@ if((page == "overview") or (page == nil)) then
 	 k = vals[_k]
 	 print("<tr><th>")
 
-	 print("<A HREF=\"/host_details.lua?host=" .. _GET["host"] .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	 print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 
 	 print("</th><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["rcvd"]) .. "</td></tr>\n")
       end
@@ -121,7 +127,7 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/get_flows_data.lua?host=" .. _GET["host"].."\",\n")
+				  print("url: \"/get_flows_data.lua?host=" .. host_ip.."\",\n")
 
 
 print [[
@@ -190,7 +196,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(_GET["host"], rrdfile, _GET["graph_zoom"], '/host_details.lua?host='.._GET["host"]..'&page=historical')
+drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/host_details.lua?host='..host_ip..'&page=historical')
 else
    print(page)
 end

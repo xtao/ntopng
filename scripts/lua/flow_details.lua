@@ -1,6 +1,6 @@
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
-ntop.dumpFile("./httpdocs/inc/menu.inc")
+dofile("./scripts/lua/menu.lua")
 
 print [[
 
