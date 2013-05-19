@@ -73,7 +73,7 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
-  pa->startPeriodicLoop();
+  pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
 }
 

@@ -34,10 +34,11 @@ static void help() {
 	 "                       | 1 - Decode DNS responses and don't resolve numeric IPs\n"
 	 "                       | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>         | Input interface name\n"
+	 "-d <path>              | Data directory (must be writable). Default: %s\n"
 	 "-w <http port>         | HTTP port\n"
 	 "-r <redis host[:port]> | Redis host[:port]\n"
 	 "-s                     | Do not change user (debug only)\n"
-	 "-d <path>              | Data directory (must be writable). Default: %s\n"
+	 "-v                     | Verbose tracing\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR);
   exit(0);
 }
@@ -56,7 +57,7 @@ void sigproc(int sig) {
   }
 
   ntop->getGlobals()->shutdown();
-  sleep(2); /* Wait until all threads know that we're shutting down... */  
+  sleep(2); /* Wait until all threads know that we're shutting down... */
 
   if(NetworkInterface *iface = ntop->get_NetworkInterface("any")) {
     EthStats *stats = iface->getStats();
@@ -81,7 +82,9 @@ int main(int argc, char *argv[]) {
   Redis *redis = NULL;
   Prefs *prefs = new Prefs();
 
-  while((c = getopt(argc, argv, "hi:w:r:sn:d:")) != '?') {
+  if((ntop = new Ntop()) == NULL) exit(0);
+
+  while((c = getopt(argc, argv, "hi:w:r:sn:d:v")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -142,11 +145,13 @@ int main(int argc, char *argv[]) {
     case 'd':
       free(data_dir);
       data_dir = strdup(optarg);
-      break;      
+      break;
+
+    case 'v':
+      ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
+      break;
     }
   }
-
-  if((ntop = new Ntop()) == NULL) exit(0);
 
   if(redis == NULL) redis = new Redis();
 
@@ -158,7 +163,7 @@ int main(int argc, char *argv[]) {
 
   /*
     We have created the network interface and thus changed user. Let's not check
-    if we can write on the data directory 
+    if we can write on the data directory
   */
   {
     char path[256];
@@ -166,8 +171,8 @@ int main(int argc, char *argv[]) {
 
     snprintf(path, sizeof(path), "%s/.test", ntop->get_data_dir());
     if((fd = fopen(path, "w")) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, 
-				   "Unable to write on %s: please specify a different directory (-d)", 
+      ntop->getTrace()->traceEvent(TRACE_ERROR,
+				   "Unable to write on %s: please specify a different directory (-d)",
 				   ntop->get_data_dir());
       exit(0);
     } else
@@ -187,7 +192,7 @@ int main(int argc, char *argv[]) {
   iface->startPacketPolling();
 
   while(1) {
-    sleep(1);
+    sleep(2);
     /* TODO - Do all this for all registered interfaces */
     iface->runHousekeepingTasks();
   }

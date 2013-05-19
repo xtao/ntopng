@@ -15,7 +15,7 @@ info = ntop.getInfo()
 
 print (info["version"])
 print [[</font></div>
-  <div class="span1 offset3"> <span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>  </div>
+  <div class="span1 offset3"> <A href="/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
   <div class="span4"><div id="network-load"></div></div></div>
 
 </div> <!-- /row --> 

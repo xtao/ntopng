@@ -2,24 +2,23 @@
 -- (C) 2013 - ntop.org
 --
 
-function drawRRD(host, rrdFile, zoomLevel, baseurl)
-
+function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
    rrdname = ntop.getDataDir() .. "/rrd/" .. host .. "/" .. rrdFile
    names =  {}
    series = {}
-   vals = {  
-      { "10m", "now-10m" }, 
-      { "1h", "now-1h" }, 
-      { "3h", "now-3h" }, 
-      { "6h", "now-6h" }, 
-      { "12h", "now-12h" }, 
-      { "1d", "now-1d" }, 
-      { "1w", "now-1w" }, 
-      { "2w", "now-2w" }, 
-      { "1m", "now-1mon" }, 
-      { "6m", "now-6mon" }, 
-      { "1y", "now-1y" } 
-   }      
+   vals = {
+      { "10m", "now-10m" },
+      { "1h", "now-1h" },
+      { "3h", "now-3h" },
+      { "6h", "now-6h" },
+      { "12h", "now-12h" },
+      { "1d", "now-1d" },
+      { "1w", "now-1w" },
+      { "2w", "now-2w" },
+      { "1m", "now-1mon" },
+      { "6m", "now-6mon" },
+      { "1y", "now-1y" }
+   }
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -31,54 +30,65 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl)
       end
    end
 
+   --start_time = "now-10s"
    end_time = "now"
 
-   local maxval_time = 0
-   local maxval = 0
-   local minval = 0
-   local minval_time = 0
-   local lastval = 0
-   local lastval_time = 0
-   
+   local maxval_bits_time = 0
+   local maxval_bits = 0
+   local minval_bits = 0
+   local minval_bits_time = 0
+   local lastval_bits = 0
+   local lastval_bits_time = 0
+   local total_bytes = 0
+   local num_points = 0
+   local step
+
    prefixLabel = string.gsub(rrdFile, ".rrd", "")
-   
+
    if(prefixLabel == "bytes") then
       prefixLabel = "Traffic"
    end
 
    if(ntop.exists(rrdname)) then
       local fstart, fstep, fnames, fdata = rrd.fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
-     
+
+      step = fstep
       num = 0
       for i, n in ipairs(fnames) do
 	 names[num] = prefixLabel .. " " .. firstToUpper(n)
 	 num = num + 1
       end
-      
+
       id = 0
+      fend = 0
       for i, v in ipairs(fdata) do
 	 s = {}
 	 s[0] = fstart + (i-1)*fstep
-	 
+	 num_points = num_points + 1
+
 	 local elemId = 1
-	 for _, w in ipairs(v) do	 
+	 for _, w in ipairs(v) do
 	    if(w ~= w) then
 	       -- This is a NaN
 	       v = 0
 	    else
-	       v = tonumber(w)*8
+	       v = tonumber(w)
 	       if(v < 0) then
 		  v = 0
 	       end
 	    end
- 	 
-	    lastval_time = s[0] 
-	    lastval = v
-	    
-	    s[elemId] = v
+
+	    if(v > 0) then
+	       lastval_bits_time = s[0]
+	       lastval_bits = v
+	    end
+
+	    s[elemId] = v*8 -- bps
 	    elemId = elemId + 1
+	    total_bytes = total_bytes + v*fstep
+	    -- print(" | " .. (v*fstep) .." |\n")
       end
-      
+
       series[id] = s
       id = id + 1
    end
@@ -88,21 +98,22 @@ for key, value in pairs(series) do
    local t = 0
 
    for elemId=0,(num-1) do
-      t = t + value[elemId+1]
+      -- print(">"..value[elemId+1].. "<")
+      t = t + value[elemId+1] -- bps
    end
-   
-   if((minval_time == 0) or (minval >= t)) then
-      minval_time = value[0] 
-      minval = t
+
+   t = t * step
+
+   if((minval_bits_time == 0) or (minval_bits >= t)) then
+      minval_bits_time = value[0]
+      minval_bits = t
    end
-   
-   if((maxval_time == 0) or (maxval <= t)) then
-      maxval_time = value[0] 
-      maxval = t
+
+   if((maxval_bits_time == 0) or (maxval_bits <= t)) then
+      maxval_bits_time = value[0]
+      maxval_bits = t
    end
 end
-
-
 
 print [[
 
@@ -128,7 +139,11 @@ font-family: Arial, Helvetica, sans-serif;
 
 <div class="row">
  <div class="span1"></div>
+]]
 
+
+if(show_timeseries == 1) then
+print [[
 
 <div class="btn-group">
   <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
@@ -143,7 +158,7 @@ rrds = ntop.readdir(ntop.getDataDir() .. "/rrd/" .. host)
 
 for k,v in pairsByKeys(rrds, asc) do
    proto = string.gsub(rrds[k], ".rrd", "")
-   
+
    if(proto ~= "bytes") then
       print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel ..'">'.. string.gsub(rrds[k], ".rrd", "") ..'</a></li>\n')
    end
@@ -152,12 +167,11 @@ end
 print [[
   </ul>
 </div><!-- /btn-group -->
-
-
-&nbsp; <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">
-
 ]]
 
+end
+
+print('&nbsp; <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
 
 for k,v in ipairs(vals) do
    print('<a class="btn btn-small ')
@@ -181,7 +195,8 @@ print [[
  <div class="span1"></div>
 <div id="chart_container">
    <div id="y_axis"></div>
-   <div id="chart"></div> 
+   <div id="chart"></div>
+   
    <table border=0>
    <tr><td><div id="legend"></div></td></tr>
    <tr><td>
@@ -191,9 +206,12 @@ print [[
 
 
 print('   <tr><th>' .. prefixLabel .. '</th><th>Time</th><th>Value</th></tr>\n')
-print('   <tr><th>Min Value</th><td>' .. os.date("%x %X", minval_time) .. '</td><td>' .. bitsToSize(minval) .. '</td></tr>\n')
-print('   <tr><th>Max Value</th><td>' .. os.date("%x %X", maxval_time) .. '</td><td>' .. bitsToSize(maxval) .. '</td></tr>\n')
-print('   <tr><th>Last Value</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval)  .. '</td></tr>\n')
+print('   <tr><th>Min Value</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. bitsToSize(minval_bits/step) .. '</td></tr>\n')
+print('   <tr><th>Max Value</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. bitsToSize(maxval_bits/step) .. '</td></tr>\n')
+print('   <tr><th>Last Value</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval_bits/step)  .. '</td></tr>\n')
+print('   <tr><th>Avg Value</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
+print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes)..  '</td></tr>\n')
+
 
 print [[
    </table>
@@ -250,7 +268,7 @@ graph.render();
 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
 						     graph: graph,
     xFormatter: function(x) { return new Date( x * 1000 ); },
-    yFormatter: function(bits) { 	
+    yFormatter: function(bits) {
 		      var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
 		      if (bits == 0) return 'n/a';
 		      var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));

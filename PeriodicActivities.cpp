@@ -32,24 +32,28 @@ PeriodicActivities::PeriodicActivities() {
 PeriodicActivities::~PeriodicActivities() {
   void *res;
 
-  pthread_join(periodicLoop, &res);
+  pthread_join(secondLoop, &res);
+  pthread_join(minuteLoop, &res);
+  pthread_join(hourLoop, &res);
+  pthread_join(dayLoop, &res);
 }
 
 /* **************************************************** */
 
-static void* activitiesLoop(void* ptr) {
-  PeriodicActivities *a = (PeriodicActivities*)ptr;
-
-  a->loop();
-  return(NULL);
-}
+static void* secondStartLoop(void* ptr) {  ((PeriodicActivities*)ptr)->secondActivitiesLoop(); return(NULL); }
+static void* minuteStartLoop(void* ptr) {  ((PeriodicActivities*)ptr)->minuteActivitiesLoop(); return(NULL); }
+static void* hourStartLoop(void* ptr)   {  ((PeriodicActivities*)ptr)->hourActivitiesLoop(); return(NULL);   }
+static void* dayStartLoop(void* ptr)    {  ((PeriodicActivities*)ptr)->dayActivitiesLoop(); return(NULL);    }
 
 /* ******************************************* */
 
-void PeriodicActivities::startPeriodicLoop() {
+void PeriodicActivities::startPeriodicActivitiesLoop() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started periodic activities loop...");
 
-  pthread_create(&periodicLoop, NULL, activitiesLoop, (void*)this);
+  pthread_create(&secondLoop, NULL, secondStartLoop, (void*)this);
+  pthread_create(&minuteLoop, NULL, minuteStartLoop, (void*)this);
+  pthread_create(&hourLoop,   NULL, hourStartLoop,   (void*)this);
+  pthread_create(&dayLoop,    NULL, dayStartLoop,    (void*)this);
 }
 
 /* ******************************************* */
@@ -60,44 +64,68 @@ void PeriodicActivities::runScript(char *path) {
   if(stat(path, &statbuf) == 0) {
     Lua *l = new Lua();
 
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Running script %s", path);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Running script %s", path);
 
     l->run_script(path);
     delete l;
+  } else
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Missing script %s", path);
+}
+
+/* ******************************************* */
+
+void PeriodicActivities::secondActivitiesLoop() {
+  char script[256];
+
+  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), SECOND_SCRIPT_PATH);
+
+  while(!ntop->getGlobals()->isShutdown()) {
+    runScript(script);
+    sleep(1);
   }
 }
 
 /* ******************************************* */
 
-void PeriodicActivities::loop() {
-  char minute_script[256], hourly_script[256], daily_script[256], *cd = ntop->get_callbacks_dir();
+void PeriodicActivities::minuteActivitiesLoop() {
+  char script[256];
 
-  snprintf(minute_script, sizeof(minute_script), "%s/%s", cd, MINUTE_SCRIPT_PATH);
-  snprintf(hourly_script, sizeof(hourly_script), "%s/%s", cd, HOURLY_SCRIPT_PATH);
-  snprintf(daily_script, sizeof(daily_script), "%s/%s", cd, DAILY_SCRIPT_PATH);
-  
+  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), MINUTE_SCRIPT_PATH);
+
   while(!ntop->getGlobals()->isShutdown()) {
     u_int now = (u_int)time(NULL);
 
-    if((now % 60) == 0) {
-      /* Minute script */
+    if((now % 60) == 0) runScript(script);
+    sleep(1);
+  }
+}
 
-      runScript(minute_script);      
-    }
+/* ******************************************* */
 
-    if((now % 3600) == 0) {
-      /* Hourly script */
+void PeriodicActivities::hourActivitiesLoop() {
+  char script[256];
 
-      runScript(hourly_script);
-    }
+  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), HOURLY_SCRIPT_PATH);
 
-    if((now % 86400) == 0) {
-      /* Daily script */
+  while(!ntop->getGlobals()->isShutdown()) {
+    u_int now = (u_int)time(NULL);
 
-      runScript(daily_script);
-    }
+    if((now % 3600) == 0) runScript(script);
+    sleep(1);
+  }
+}
 
-    /* We sleep only one second so in case of shutdown we're responsive */
+/* ******************************************* */
+
+void PeriodicActivities::dayActivitiesLoop() {
+  char script[256];
+
+  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), DAILY_SCRIPT_PATH);
+
+  while(!ntop->getGlobals()->isShutdown()) {
+    u_int now = (u_int)time(NULL);
+
+    if((now % 86400) == 0) runScript(script);
     sleep(1);
   }
 }

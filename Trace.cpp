@@ -35,8 +35,16 @@ Trace::~Trace() {
 
 /* ******************************* */
 
-void Trace::traceEvent(int eventTraceLevel,
-		       const char* file, const int line, const char * format, ...) {
+void Trace::set_trace_level(u_int8_t id) {
+  if(id > MAX_TRACE_LEVEL) id = MAX_TRACE_LEVEL;
+
+  traceLevel = id;
+}
+
+/* ******************************* */
+
+void Trace::traceEvent(int eventTraceLevel, const char* file,
+		       const int line, const char * format, ...) {
   va_list va_ap;
   struct tm result;
 

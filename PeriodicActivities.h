@@ -24,13 +24,14 @@
 
 #include "ntop_includes.h"
 
+#define SECOND_SCRIPT_PATH   "second.lua"
 #define MINUTE_SCRIPT_PATH   "minute.lua"
 #define HOURLY_SCRIPT_PATH   "hourly.lua"
 #define DAILY_SCRIPT_PATH    "daily.lua"
 
 class PeriodicActivities {
  private:
-  pthread_t periodicLoop;
+  pthread_t secondLoop, minuteLoop, hourLoop, dayLoop;
 
   void runScript(char *path);
 
@@ -39,7 +40,11 @@ class PeriodicActivities {
   ~PeriodicActivities();
 
   void loop();
-  void startPeriodicLoop();
+  void startPeriodicActivitiesLoop();
+  void secondActivitiesLoop();
+  void minuteActivitiesLoop();
+  void hourActivitiesLoop();
+  void dayActivitiesLoop();
 };
 
 #endif /* _PERIODIC_ACTIVITIES_H_ */

@@ -45,9 +45,9 @@ else
 end
 
 if(page == "ndpi") then
-  print("<li class=\"active\"><a href=\"#\">L7 Protocols</a></li>\n")
+  print("<li class=\"active\"><a href=\"#\">Traffic</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=ndpi\">L7 Protocols</a></li>")
+  print("<li><a href=\""..url.."&page=ndpi\">Traffic</a></li>")
 end
 
 if(page == "flows") then
@@ -200,7 +200,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/host_details.lua?host='..host_ip..'&page=historical')
+drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/host_details.lua?host='..host_ip..'&page=historical', 1)
 else
    print(page)
 end

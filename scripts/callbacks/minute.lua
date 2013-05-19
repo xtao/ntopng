@@ -13,7 +13,7 @@ if(diff > 30) then
 end
 
 -- Toggle debug
-debug = 0
+local enable_minute_debug = 0
 
 interface.find("any")
 hosts_stats = interface.getHostsInfo()
@@ -23,14 +23,14 @@ for key, value in pairs(hosts_stats) do
    basedir = ntop.getDataDir() .. "/rrd/" .. key
 
    if(not(ntop.exists(basedir))) then
-      if(debug) then io.write('Creating base directory ', basedir, '\n') end
+      if(enable_minute_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
       ntop.mkdir(basedir)
    end
 
    -- Traffic stats
    name = basedir .. "/bytes.rrd"
    if(not(ntop.exists(name))) then
-      if(debug) then io.write('Creating RRD ', name, '\n') end
+      if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
       rrd.create(
 	 name,
 	 '--start', 'now',
@@ -44,7 +44,7 @@ for key, value in pairs(hosts_stats) do
       
    end
    rrd.update(name, "N:"..hosts_stats[key]["bytes.sent"] .. ":" .. hosts_stats[key]["bytes.rcvd"])
-   if(debug) then io.write('Updating RRD '..name..'\n') end
+   if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
 
    -- nDPI Protocols
    host = interface.getHostInfo(key)
@@ -52,7 +52,7 @@ for key, value in pairs(hosts_stats) do
       for k in pairs(host["ndpi"]) do
 	 name = basedir .. "/".. k .. ".rrd"
 	 if(not(ntop.exists(name))) then
-	    if(debug) then io.write('Creating RRD ', name, '\n') end
+	    if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
 	    rrd.create(
 	       name,
 	       '--start', 'now',
@@ -66,7 +66,7 @@ for key, value in pairs(hosts_stats) do
 	    
 	 end
 	 rrd.update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
-	 if(debug) then io.write('Updating RRD '..name..'\n') end
+	 if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
       end
    end
 end
