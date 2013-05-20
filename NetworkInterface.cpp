@@ -595,7 +595,7 @@ void NetworkInterface::purgeIdleHosts() {
   else {
     /* Time to purge hosts */
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
-    //    hosts_hash->purgeIdle();
+    hosts_hash->purgeIdle();
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
   }
 }

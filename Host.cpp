@@ -187,3 +187,8 @@ int Host::compare(Host *h) {
     return(memcmp(mac_address, h->mac_address, 6));
 }
 
+/* ***************************************** */
+
+bool Host::isIdle(u_int max_idleness) {
+  return(((num_uses == 0) && (iface->getTimeLastPktRcvd() > (last_seen+max_idleness))) ? true : false);
+}

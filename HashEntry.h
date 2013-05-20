@@ -31,7 +31,6 @@ class HashEntry {
  protected:
   time_t first_seen, last_seen;
   NetworkInterface *iface;
-  bool isIdle(u_int max_idleness);
 
  public:
   HashEntry(NetworkInterface *_iface);
@@ -44,6 +43,7 @@ class HashEntry {
   virtual bool idle();
   inline u_int get_duration()        { return(1+last_seen-first_seen); };
   virtual u_int32_t key()            { return(0);         };  
+  virtual bool isIdle(u_int max_idleness);
 };
 
 #endif /* _HASH_ENTRY_H_ */

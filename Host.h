@@ -50,7 +50,7 @@ class Host : public HashEntry {
   inline u_int32_t key()                       { return(ip->key());   }
   inline IpAddress* get_ip()                   { return(ip);          }
   inline u_int8_t*  get_mac()                  { return(mac_address); }
-  inline char* get_name()                     { return(symbolic_name); }
+  inline char* get_name()                      { return(symbolic_name); }
   inline bool isLocalHost()                    { return(localHost);   }
   char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);
@@ -68,6 +68,7 @@ class Host : public HashEntry {
   int compare(Host *h);
   inline bool equal(u_int32_t ipv4_addr)              { if(ip == NULL) return(false); else return(ip->equal(ipv4_addr)); };
   inline bool equal(struct ndpi_in6_addr *ipv6_addr)  { if(ip == NULL) return(false); else return(ip->equal(ipv6_addr)); };
+  bool isIdle(u_int max_idleness);
 };
 
 #endif /* _HOST_H_ */
