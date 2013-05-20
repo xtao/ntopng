@@ -12,20 +12,18 @@ if(ifname == nil) then
    ifname = "any"
 end
 
-rrdname = ntop.getDataDir() .. "/rrd/" .. _GET["host"] .. "/bytes.rrd"
 
 host_ip = _GET["host"]
 
 interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
-
-
 if(host == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
 else
-
    host_ip = host["ip"]
+
+rrdname = ntop.getDataDir() .. "/rrd/" .. host_ip .. "/bytes.rrd"
 
 print [[
 <div class="bs-docs-example">
