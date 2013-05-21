@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Host : public HashEntry {
+class Host : public GenericHashEntry {
  private:
   u_int8_t mac_address[6];
   char *symbolic_name;

@@ -23,30 +23,30 @@
 
 /* ***************************************** */
 
-HashEntry::HashEntry(NetworkInterface *_iface) {
+GenericHashEntry::GenericHashEntry(NetworkInterface *_iface) {
   hash_next = NULL, iface = _iface;
 }
 
 /* ***************************************** */
 
-HashEntry::~HashEntry() {
+GenericHashEntry::~GenericHashEntry() {
   ;
 }
 
 /* ***************************************** */
 
-void HashEntry::updateSeen() {
+void GenericHashEntry::updateSeen() {
   last_seen = iface->getTimeLastPktRcvd();
 }
 
 /* ***************************************** */
 
-bool HashEntry::idle() {
+bool GenericHashEntry::idle() {
   return(true); // Virtual
 }
 
 /* ***************************************** */
 
-bool HashEntry::isIdle(u_int max_idleness) {
+bool GenericHashEntry::isIdle(u_int max_idleness) {
   return((iface->getTimeLastPktRcvd() > (last_seen+max_idleness)) ? true : false);
 }

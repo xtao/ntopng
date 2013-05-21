@@ -24,21 +24,21 @@
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface) : HashEntry(_iface) {
+Host::Host(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ip = new IpAddress(), ndpiStats = new NdpiStats();
   initialize(NULL, false);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip) : HashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip) : GenericHashEntry(_iface) {
   ip = new IpAddress(_ip), ndpiStats = new NdpiStats();
   initialize(mac, true);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : HashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : GenericHashEntry(_iface) {
   ip = NULL;
   initialize(mac, true);
 }

@@ -34,6 +34,11 @@
         margin: 0 auto;
         max-width: 1024px;
       }
+
+      /* Custom container */
+      .progress {
+        margin-bottom: 0px;
+      }
       .container-narrow > hr {
         margin: 30px 0;
       }

@@ -26,7 +26,7 @@
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
 	   u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port) : HashEntry(_iface) {
+	   u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   

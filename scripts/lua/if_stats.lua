@@ -54,7 +54,7 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
    print("<tr><th>Bytes</th><td>" .. bytesToSize(ifstats.stats_bytes) .. "</td></tr>\n")
-   print("<tr><th>Packets</th><td>" .. ifstats.stats_packets .. "</td></tr>\n")
+   print("<tr><th>Packets</th><td>" .. formatPackets(ifstats.stats_packets) .. "</td></tr>\n")
    print("</table>\n")
 else
 drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0)

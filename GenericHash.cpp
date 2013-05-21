@@ -26,7 +26,7 @@
 GenericHash::GenericHash(u_int _num_hashes, u_int _max_hash_size) {
   num_hashes = _num_hashes, max_hash_size = _max_hash_size, current_size = 0;
 
-  table = new HashEntry*[num_hashes];
+  table = new GenericHashEntry*[num_hashes];
   for(u_int i = 0; i < num_hashes; i++)
     table[i] = NULL;
 
@@ -39,10 +39,10 @@ GenericHash::GenericHash(u_int _num_hashes, u_int _max_hash_size) {
 GenericHash::~GenericHash() {
   for(u_int i = 0; i < num_hashes; i++)
     if(table[i] != NULL) {
-      HashEntry *head = table[i];
+      GenericHashEntry *head = table[i];
 
       while(head) {
-	HashEntry *next = head->next();
+	GenericHashEntry *next = head->next();
 
 	delete(head);
 	head = next;
@@ -57,7 +57,7 @@ GenericHash::~GenericHash() {
 
 /* ************************************ */
 
-bool GenericHash::add(HashEntry *h) {
+bool GenericHash::add(GenericHashEntry *h) {
   if(current_size < max_hash_size) {
     u_int32_t hash = (h->key() % num_hashes);
 
@@ -73,13 +73,13 @@ bool GenericHash::add(HashEntry *h) {
 
 /* ************************************ */
 
-bool GenericHash::remove(HashEntry *h) {
+bool GenericHash::remove(GenericHashEntry *h) {
   u_int32_t hash = (h->key() % num_hashes);
 
   if(table[hash] == NULL)
     return(false);
   else {
-    HashEntry *head, *prev = NULL;
+    GenericHashEntry *head, *prev = NULL;
     bool ret;
     
     locks[hash]->lock(__FILE__, __LINE__);
@@ -109,19 +109,19 @@ bool GenericHash::remove(HashEntry *h) {
 
 /* ************************************ */
 
-void GenericHash::walk(void (*walker)(HashEntry *h, void *user_data), void *user_data) {
+void GenericHash::walk(void (*walker)(GenericHashEntry *h, void *user_data), void *user_data) {
   if(ntop->getGlobals()->isShutdown()) return;
 
   for(u_int hash_id = 0; hash_id < num_hashes; hash_id++) {
     if(table[hash_id] != NULL) {
-      HashEntry *head;
+      GenericHashEntry *head;
       
       //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Locking %d [%p]", hash_id, locks[hash_id]);
       locks[hash_id]->lock(__FILE__, __LINE__);
       head = table[hash_id];
 
       while(head) {
-	HashEntry *next = head->next();
+	GenericHashEntry *next = head->next();
 
 	walker(head, user_data);
 	head = next;
@@ -140,14 +140,14 @@ void GenericHash::purgeIdle() {
 
   for(u_int i = 0; i < num_hashes; i++) {
     if(table[i] != NULL) {
-      HashEntry *head, *prev = NULL;
+      GenericHashEntry *head, *prev = NULL;
 
       // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[purge] Locking %d", i);
       locks[i]->lock(__FILE__, __LINE__);
       head = table[i];
 
       while(head) {
-	HashEntry *next = head->next();
+	GenericHashEntry *next = head->next();
 
 	if(head->idle()) {
 	  if(prev == NULL) {
@@ -172,9 +172,9 @@ void GenericHash::purgeIdle() {
 
 /* ************************************ */
 
-HashEntry* GenericHash::findByKey(u_int32_t key) {
+GenericHashEntry* GenericHash::findByKey(u_int32_t key) {
   u_int32_t hash = key % num_hashes;
-  HashEntry *head = table[hash];
+  GenericHashEntry *head = table[hash];
 
   if(head == NULL) return(NULL);
 

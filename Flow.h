@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Flow : public HashEntry {
+class Flow : public GenericHashEntry {
  private:
   Host *src_host, *dst_host;
   u_int16_t src_port, dst_port;

@@ -123,7 +123,7 @@ NetworkInterface::~NetworkInterface() {
 
 /* **************************************************** */
 
-static void node_proto_guess_walker(HashEntry *node, void *user_data) {
+static void node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
 
   flow->print();
@@ -420,7 +420,7 @@ void NetworkInterface::findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, s
 
 /* **************************************************** */
 
-static void hosts_node_sum_protos(HashEntry *h, void *user_data) {
+static void hosts_node_sum_protos(GenericHashEntry *h, void *user_data) {
   NdpiStats *stats = (NdpiStats*)user_data;
 
   ((Host*)h)->get_ndpi_stats()->sumStats(stats);
@@ -436,7 +436,7 @@ void NetworkInterface::getnDPIStats(NdpiStats *stats) {
 
 /* **************************************************** */
 
-static void flow_update_hosts_stats(HashEntry *node, void *user_data) {
+static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
 
   flow->update_hosts_stats();
@@ -450,7 +450,7 @@ void NetworkInterface::updateHostStats() {
 
 /* **************************************************** */
 
-static void hosts_get_list(HashEntry *h, void *user_data) {
+static void hosts_get_list(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
   ((Host*)h)->lua(vm, false, false);
@@ -458,7 +458,7 @@ static void hosts_get_list(HashEntry *h, void *user_data) {
 
 /* **************************************************** */
 
-static void hosts_get_list_details(HashEntry *h, void *user_data) {
+static void hosts_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
   ((Host*)h)->lua(vm, true, false);
@@ -479,7 +479,7 @@ struct host_find_info {
   Host *h;
 };
 
-static void find_host_by_name(HashEntry *h, void *user_data) {
+static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
 
@@ -523,7 +523,7 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
 
 /* **************************************************** */
 
-static void flows_get_list_details(HashEntry *h, void *user_data) {
+static void flows_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
   Flow *flow = (Flow*)h;
 
@@ -540,7 +540,7 @@ void NetworkInterface::getActiveFlowsList(lua_State* vm) {
 
 /* **************************************************** */
 
-static void flow_peers_walker(HashEntry *h, void *user_data) {
+static void flow_peers_walker(GenericHashEntry *h, void *user_data) {
   Flow *flow = (Flow*)h;
 
   flow->print_peers((lua_State*)user_data);

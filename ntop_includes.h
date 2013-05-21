@@ -82,7 +82,7 @@ extern "C" {
 #include "TrafficStats.h"
 #include "ProtoStats.h"
 #include "EthStats.h"
-#include "HashEntry.h"
+#include "GenericHashEntry.h"
 #include "GenericHash.h"
 #include "NetworkInterface.h"
 #include "Host.h"

@@ -26,7 +26,7 @@
  
 class GenericHash {
  protected:
-  HashEntry **table;
+  GenericHashEntry **table;
   u_int num_hashes, current_size, max_hash_size;
   Mutex **locks;
   NetworkInterface *iface;
@@ -36,11 +36,11 @@ class GenericHash {
   ~GenericHash();
  
   inline u_int getNumEntries() { return(current_size); };
-  bool add(HashEntry *h);
-  bool remove(HashEntry *h); /* Note: HashEntry* memory is NOT freed */
-  void walk(void (*walker)(HashEntry *h, void *user_data), void *user_data);
+  bool add(GenericHashEntry *h);
+  bool remove(GenericHashEntry *h); /* Note: GenericHashEntry* memory is NOT freed */
+  void walk(void (*walker)(GenericHashEntry *h, void *user_data), void *user_data);
   void purgeIdle();
-  HashEntry* findByKey(u_int32_t key);
+  GenericHashEntry* findByKey(u_int32_t key);
 };
 
 #endif /* _GENERIC_HASH_H_ */

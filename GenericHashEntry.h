@@ -19,33 +19,33 @@
  *
  */
 
-#ifndef _HASH_ENTRY_H_
-#define _HASH_ENTRY_H_
+#ifndef _GENERIC_HASH_ENTRY_H_
+#define _GENERIC_HASH_ENTRY_H_
 
 #include "ntop_includes.h"
 
-class HashEntry {
+class GenericHashEntry {
  private:
-  HashEntry *hash_next;
+  GenericHashEntry *hash_next;
 
  protected:
   time_t first_seen, last_seen;
   NetworkInterface *iface;
 
  public:
-  HashEntry(NetworkInterface *_iface);
-  virtual ~HashEntry();
+  GenericHashEntry(NetworkInterface *_iface);
+  virtual ~GenericHashEntry();
 
   inline time_t get_first_seen()     { return(first_seen); };
   inline time_t get_last_seen()      { return(last_seen); };
-  inline HashEntry* next()           { return(hash_next); };
-  inline void set_next(HashEntry *n) { hash_next = n;     };
+  inline GenericHashEntry* next()           { return(hash_next); };
+  inline void set_next(GenericHashEntry *n) { hash_next = n;     };
   void updateSeen();
-  bool equal(HashEntry *b)           { return((this == b) ? true : false); };  
+  bool equal(GenericHashEntry *b)           { return((this == b) ? true : false); };  
   virtual bool idle();
   inline u_int get_duration()        { return(1+last_seen-first_seen); };
   virtual u_int32_t key()            { return(0);         };  
   virtual bool isIdle(u_int max_idleness);
 };
 
-#endif /* _HASH_ENTRY_H_ */
+#endif /* _GENERIC_HASH_ENTRY_H_ */
