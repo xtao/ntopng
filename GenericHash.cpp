@@ -156,10 +156,10 @@ u_int GenericHash::purgeIdle() {
 	    table[i] = next;	    
 	  } else {
 	    prev->set_next(next);
-	    num_purged++, current_size--;
-	    delete(head);
 	  }
 
+	  num_purged++, current_size--;
+	  delete(head);
 	  head = next;
 	} else {
 	  prev = head;

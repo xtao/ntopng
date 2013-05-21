@@ -357,10 +357,12 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   }
 
   if((n = iface->purgeIdleFlows()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u idle flows", n);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle flows", 
+				 n, iface->getNumFlows());
 
   if((n = iface->purgeIdleHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u idle hosts", n);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle hosts", 
+				 n, iface->getNumHosts());
 }
 
 /* **************************************************** */
