@@ -258,6 +258,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   u_int16_t type, ip_offset, vlan_id = 0;
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
   int pcap_datalink_type = iface->get_datalink();
+  u_int n;
 
   time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
   if(lasttime > time) time = lasttime;
@@ -355,8 +356,11 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
     break;
   }
 
-  iface->purgeIdleFlows();
-  iface->purgeIdleHosts();
+  if((n = iface->purgeIdleFlows()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u idle flows", n);
+
+  if((n = iface->purgeIdleHosts()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u idle hosts", n);
 }
 
 /* **************************************************** */
@@ -565,17 +569,20 @@ int ptr_compare(const void *a, const void *b) {
 /* **************************************************** */
 /* **************************************************** */
 
-void NetworkInterface::purgeIdleFlows() {
+u_int NetworkInterface::purgeIdleFlows() {
   if(next_idle_flow_purge == 0) {
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
-    return;
+    return(0);
   } else if(last_pkt_rcvd < next_idle_flow_purge)
-    return; /* Too early */
+    return(0); /* Too early */
   else {
     /* Time to purge flows */
+    u_int n;
+
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle flows");
-    flows_hash->purgeIdle();
+    n = flows_hash->purgeIdle();
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
+    return(n);
   }
 }
 
@@ -586,17 +593,20 @@ u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
 
 /* **************************************************** */
 
-void NetworkInterface::purgeIdleHosts() {
+u_int NetworkInterface::purgeIdleHosts() {
   if(next_idle_host_purge == 0) {
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
-    return;
+    return(0);
   } else if(last_pkt_rcvd < next_idle_host_purge)
-    return; /* Too early */
+    return(0); /* Too early */
   else {
     /* Time to purge hosts */
+    u_int n;
+    
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
-    hosts_hash->purgeIdle();
+    n = hosts_hash->purgeIdle();
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
+    return(n);
   }
 }
 

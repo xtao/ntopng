@@ -91,8 +91,8 @@ class NetworkInterface {
   void getActiveFlowsList(lua_State* v);
   void getFlowPeersList(lua_State* vm);
 
-  void purgeIdleFlows();
-  void purgeIdleHosts();
+  u_int purgeIdleFlows();
+  u_int purgeIdleHosts();
 
   u_int getNumFlows();
   u_int getNumHosts();

@@ -71,7 +71,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 
 	 sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
-	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. sent2rcvd .."%;'></div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'></div></div>")
+	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. sent2rcvd .."%;'>Sent</div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
 
 
 	 print("\" } ")

@@ -135,8 +135,10 @@ void GenericHash::walk(void (*walker)(GenericHashEntry *h, void *user_data), voi
 
 /* ************************************ */
 
-void GenericHash::purgeIdle() {
-  if(ntop->getGlobals()->isShutdown()) return;
+u_int GenericHash::purgeIdle() {
+  u_int num_purged = 0;
+
+  if(ntop->getGlobals()->isShutdown()) return(0);
 
   for(u_int i = 0; i < num_hashes; i++) {
     if(table[i] != NULL) {
@@ -154,6 +156,7 @@ void GenericHash::purgeIdle() {
 	    table[i] = next;	    
 	  } else {
 	    prev->set_next(next);
+	    num_purged++, current_size--;
 	    delete(head);
 	  }
 
@@ -168,6 +171,8 @@ void GenericHash::purgeIdle() {
       // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[purge] Unlocked %d", i);
     }
   }
+
+  return(num_purged);
 }
 
 /* ************************************ */

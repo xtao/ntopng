@@ -39,7 +39,7 @@ class GenericHash {
   bool add(GenericHashEntry *h);
   bool remove(GenericHashEntry *h); /* Note: GenericHashEntry* memory is NOT freed */
   void walk(void (*walker)(GenericHashEntry *h, void *user_data), void *user_data);
-  void purgeIdle();
+  u_int purgeIdle();
   GenericHashEntry* findByKey(u_int32_t key);
 };
 
