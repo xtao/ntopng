@@ -110,6 +110,8 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
+    lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
+    lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());

@@ -35,7 +35,6 @@ class Flow : public HashEntry {
   u_int16_t detected_protocol;
   void *src_id, *dst_id;
 
-
   /* Stats */
   u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
   u_int32_t cli2srv_last_packets, cli2srv_last_bytes, srv2cli_last_packets, srv2cli_last_bytes; /* Counter values at last host update */

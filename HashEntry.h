@@ -36,6 +36,8 @@ class HashEntry {
   HashEntry(NetworkInterface *_iface);
   virtual ~HashEntry();
 
+  inline time_t get_first_seen()     { return(first_seen); };
+  inline time_t get_last_seen()      { return(last_seen); };
   inline HashEntry* next()           { return(hash_next); };
   inline void set_next(HashEntry *n) { hash_next = n;     };
   void updateSeen();

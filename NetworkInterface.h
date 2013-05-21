@@ -75,6 +75,7 @@ class NetworkInterface {
 
   void findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
 		     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst);
+  Flow* findFlowByKey(u_int32_t key);
 
   void packet_processing(const u_int64_t time,
 			 struct ndpi_ethhdr *eth,

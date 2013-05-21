@@ -1,3 +1,6 @@
+package.path = "./scripts/lua/modules/?.lua;" .. package.path
+require "lua_utils"
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 dofile("./scripts/lua/menu.lua")
@@ -9,15 +12,57 @@ print [[
   <li><A HREF=/flows_stats.lua>Flows</A> <span class="divider">/</span></li>
 ]]
 
+print("<li>".._GET["label"].."</li></ul>")
 
-print("<li>".._GET["label"].."</li>"	)
+ifname = _GET["if"]
+if(ifname == nil) then	  
+  ifname = "any"
+end
+
+flow_key = _GET["flow_key"]
+if(flow_key == nil) then
+   flow = nil
+else
+   interface.find(ifname)
+   flow = interface.findFlowByKey(tonumber(flow_key))
+end
+
+if(flow == nil) then
+   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
+else   
+  
+   print("<table class=\"table table-bordered\">\n")
+   if(flow["vlan"] ~= 0) then
+      print("<tr><th>VLAN ID</th><td>" .. flow["vlan"].. "</td></tr>\n")
+   end
+   print("<tr><th>Client</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["src.ip"] .. "\">".. flow["src.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["src.port"].. "\">" .. flow["src.port"].. "</A></td></tr>\n")
+   print("<tr><th>Server</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["dst.ip"] .. "\">".. flow["dst.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["dst.port"].. "\">" .. flow["dst.port"].. "</A></td></tr>\n")
+   print("<tr><th>Protocol</th><td>" .. flow["proto.l4"] .. "</td></tr>\n")
+   print("<tr><th>Application Protocol</th><td>" .. flow["proto.ndpi"] .. "</td></tr>\n")
+   print("<tr><th>First Seen</th><td>" .. os.date("%x %X", flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</td></tr>\n")
+
+   print("<tr><th>Total Traffic Volume</th><td>" .. bytesToSize(flow["bytes"]) .. "</td></tr>\n")
+
+   print("<tr><th>Client vs Server Traffic Breakdown</th><td>")  
+   cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
+
+
+   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["src.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["dst.ip"] .. '</div></div>')
+   print("</td></tr>\n")
+
+   print("<tr><th>Client to Server Traffic</th><td>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</td></tr>\n")
+   print("<tr><th>Server to Client Traffic</th><td>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</td></tr>\n")
+   
+   print("</table>\n")
+end
 
 print [[
-</ul>
+<script>
+      $(document).ready(function() {
+	      $('.progress .bar').progressbar({ use_percentage: true, display_text: 1 });
+   });
+</script>
+ ]]
 
-
-Hello
-
-
-]]
 dofile "./scripts/lua/footer.inc.lua"

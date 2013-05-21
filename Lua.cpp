@@ -240,6 +240,31 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_flow_by_key(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  u_int32_t key;
+  Flow *f;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(0);
+  key = (u_int32_t)lua_tonumber(vm, 1);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(false);
+  } else
+    f = ntop_interface->findFlowByKey(key);
+
+  if(f == NULL)
+    return(false);
+  else {
+    f->lua(vm, true);
+    return(true);
+  }
+}
+
+/* ****************************************** */
+
 void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -481,7 +506,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getHostInfo",    ntop_get_interface_host_info },
   { "getFlowsInfo",   ntop_get_interface_flows_info },
   { "getFlowPeers",   ntop_get_interface_flows_peers },
-
+  { "findFlowByKey",  ntop_get_interface_flow_by_key },
   { NULL,             NULL}
 };
 

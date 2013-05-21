@@ -304,6 +304,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
   lua_newtable(vm);
+  
   lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf)));
   lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
   lua_push_int_table_entry(vm, "src.port", get_src_port());
@@ -314,11 +315,20 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
   lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
+  lua_push_int_table_entry(vm, "seen.first", get_first_seen());
+  lua_push_int_table_entry(vm, "seen.last", get_last_seen());
   lua_push_int_table_entry(vm, "duration", get_duration());
-
-  lua_pushinteger(vm, key()); // Index
-  lua_insert(vm, -2);
-  lua_settable(vm, -3);
+  lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
+  lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
+  
+  if(!detailed_dump) {
+    lua_pushinteger(vm, key()); // Index
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
+  } else {
+    lua_push_int_table_entry(vm, "cli2srv.packets", cli2srv_packets);
+    lua_push_int_table_entry(vm, "srv2cli.packets", srv2cli_packets);
+  }
 }
 
 /* *************************************** */

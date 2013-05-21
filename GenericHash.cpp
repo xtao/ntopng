@@ -169,3 +169,24 @@ void GenericHash::purgeIdle() {
     }
   }
 }
+
+/* ************************************ */
+
+HashEntry* GenericHash::findByKey(u_int32_t key) {
+  u_int32_t hash = key % num_hashes;
+  HashEntry *head = table[hash];
+
+  if(head == NULL) return(NULL);
+
+  locks[hash]->lock(__FILE__, __LINE__);
+  while(head != NULL) {
+    if(head->key() == key)
+      break;
+    else      
+      head = head->next();
+  }
+  
+  locks[hash]->unlock(__FILE__, __LINE__);
+  
+  return(head);
+}

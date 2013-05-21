@@ -81,6 +81,17 @@ function bitsToSize(bits)
    end
 end
 
+function formatPackets(amount)
+  local formatted = amount
+  while true do  
+     formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+     if (k==0) then
+      break
+     end
+  end
+  return formatted.." Pkts"
+end
+
 function split(pString, pPattern)
    local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
    local fpat = "(.-)" .. pPattern

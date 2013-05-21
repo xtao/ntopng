@@ -676,3 +676,9 @@ Host* NetworkInterface::findHostByMac(const u_int8_t mac[6], bool createIfNotPre
 
   return(NULL);
 }
+
+/* **************************************************** */
+
+Flow* NetworkInterface::findFlowByKey(u_int32_t key) {
+  return((Flow*)(flows_hash->findByKey(key)));
+}

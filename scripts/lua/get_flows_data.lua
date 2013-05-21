@@ -4,9 +4,9 @@ require "lua_utils"
 ifname      = _GET["if"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
-sortColumn      = _GET["sortColumn"]
-sortOrder       = _GET["sortOrder"]
-host       = _GET["host"]
+sortColumn  = _GET["sortColumn"]
+sortOrder   = _GET["sortOrder"]
+host        = _GET["host"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -19,7 +19,6 @@ if(perPage == nil) then
 else
    perPage = tonumber(perPage)
 end
-
 
 if(ifname == nil) then	  
   ifname = "any"
@@ -82,7 +81,6 @@ else
 end
 
 
-
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
    value = hosts_stats[key]
@@ -130,8 +128,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
-	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "\"")
-	 print (" }\n")
+	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
+
+	 cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)
+	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'></div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'></div></div>")
+
+	 print ("\" }\n")
 	 num = num + 1
       end
    end

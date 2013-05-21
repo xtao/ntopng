@@ -40,6 +40,7 @@ class GenericHash {
   bool remove(HashEntry *h); /* Note: HashEntry* memory is NOT freed */
   void walk(void (*walker)(HashEntry *h, void *user_data), void *user_data);
   void purgeIdle();
+  HashEntry* findByKey(u_int32_t key);
 };
 
 #endif /* _GENERIC_HASH_H_ */

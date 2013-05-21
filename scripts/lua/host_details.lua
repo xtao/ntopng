@@ -77,6 +77,18 @@ if((page == "overview") or (page == nil)) then
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
 
+   print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")  
+   sent2rcvd = round((host["bytes.sent"] * 100) / (host["bytes.sent"]+host["bytes.rcvd"]), 0)
+
+   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. sent2rcvd.. '%;">Sent</div><div class="bar bar-info" style="width: ' .. (100-sent2rcvd) .. '%;">Received</div></div>')
+   print("</td></tr>\n")
+
+
+   print("<tr><th>Traffic Sent</th><td>" .. formatPackets(host["pkts.sent"]) .. " / ".. bytesToSize(host["bytes.sent"]) .. "</td></tr>\n")
+   print("<tr><th>Traffic Received</th><td>" .. formatPackets(host["pkts.rcvd"]) .. " / ".. bytesToSize(host["bytes.rcvd"]) .. "</td></tr>\n")
+
+
+
    print("</table>\n")
    elseif((page == "ndpi")) then
 
