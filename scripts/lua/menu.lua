@@ -10,6 +10,6 @@ dofile("./scripts/lua/search_host_box.lua")
 
 print [[
   </ul>
-        <h3 class="muted"><img src="/img/logo.png"></h3>
+        <h3 class="muted"><A href=http://www.ntop.org><img src="/img/logo.png"></A></h3>
       </div>
    ]]

@@ -2,6 +2,18 @@
 -- (C) 2013 - ntop.org
 --
 
+function findString(str, tofind)
+   str1    = string.gsub(str, "-", "_")
+   tofind1 = string.gsub(tofind, "-", "_")
+   rsp = string.find(str1, tofind1, 1)
+
+   --print(str1 .. "/" .. tofind1.."\n")
+   --print(rsp)
+   --print("\n")
+
+   return(rsp)
+end
+
 function firstToUpper(str)
 return (str:gsub("^%l", string.upper))
 end

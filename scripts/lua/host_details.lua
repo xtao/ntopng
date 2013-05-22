@@ -54,6 +54,12 @@ else
   print("<li><a href=\""..url.."&page=flows\">Active Flows</a></li>")
 end
 
+if(page == "talkers") then
+  print("<li class=\"active\"><a href=\"#\">Talkers</a></li>\n")
+else
+  print("<li><a href=\""..url.."&page=talkers\">Talkers</a></li>")
+end
+
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
   print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
@@ -203,6 +209,8 @@ print [[
        </script>
 
    ]]
+elseif(page == "talkers") then
+dofile("./scripts/lua/sankey.lua")
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
    rrdfile = "bytes.rrd"

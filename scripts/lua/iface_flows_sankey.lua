@@ -4,6 +4,8 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+tracked_host = _GET["host"]
+
 ifname = _GET["if"]
 interface.find("any")
 peers = interface.getFlowPeers()
@@ -27,20 +29,21 @@ print '{"nodes":[\n'
 for key, values in pairs(peers) do
    if((values["sent"] + values["rcvd"]) > threshold) then
       for key,word in pairs(split(key, " ")) do
-	    if(num >= max_num_hosts) then
-	       break
-	    end
-	 
-	 if(hosts[word] == nil) then
-	    hosts[word] = num
+	 if(num >= max_num_hosts) then
+	    break
+	 end
 
-	    if(num > 0) then
-	       print ",\n"
-	    end
-	    -- 3. print nodes
-	    print ("\t{\"name\": \"" .. word .. "\"}")
-	    num = num + 1
+	 if((tracked_host == nil) or (tracked_host == word)) then
+	    if(hosts[word] == nil) then
+	       hosts[word] = num
 
+	       if(num > 0) then
+		  print ",\n"
+	       end
+	       -- 3. print nodes
+	       print ("\t{\"name\": \"" .. word .. "\"}")
+	       num = num + 1
+	    end
 	 end
       end
    end
@@ -63,12 +66,12 @@ if(num == 0) then
 
    if(top_host ~= nil) then
       -- We now have have to find this host and some peers
-      hosts[top_host] = 0 
+      hosts[top_host] = 0
       print ("{\"name\": \"" .. top_host .. "\"}")
       num = num + 1
 
       for key, values in pairs(peers) do
-	 if(string.find(key, top_host) >= 0) then
+	 if(findString(key, top_host) ~= nil) then
 	    for key,word in pairs(split(key, " ")) do
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
@@ -85,13 +88,13 @@ if(num == 0) then
 	       if(num >= max_num_hosts) then
 		  break
 	       end
-	       
+
 	    end -- for
 	 end -- if
 
 	 if(num >= max_num_hosts) then
 	    break
-	 end	 
+	 end
       end -- for
    end -- if
 end -- if
@@ -108,9 +111,8 @@ num = 0
 reverse_nodes = {}
 for key, values in pairs(peers) do
    val = values["sent"] + values["rcvd"]
-   --print(key.."\n")
 
-   if((val > threshold) or ((top_host ~= nil) and (string.find(key, top_host) >= 0)) and (num < max_num_links)) then
+   if((val > threshold) or ((top_host ~= nil) and (findString(key, top_host) ~= nil)) and (num < max_num_links)) then
       e = {}
       id = 0
       --print("->"..key.."\n")
@@ -119,7 +121,7 @@ for key, values in pairs(peers) do
 	 e[id] = hosts[word]
 	 id = id + 1
       end
-      
+
       if((e[0] ~= nil) and (e[1] ~= nil) and (e[0] ~= e[1]) and (reverse_nodes[e[0]..":"..e[1]] == nil)) then
 	 if(num > 0) then
 	    print ",\n"

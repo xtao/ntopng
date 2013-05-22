@@ -1,12 +1,6 @@
+print [[
 
-      <hr>
-
-<div class="alert alert-warning"><b>IMPORTANT</b>: This is a development version of ntopng: not alla features have been implemented !</div>
-
-      <div class="jumbotron">
-        <h4>Top Talkers Relationships</h4>
 <style>
-
 
 #chart {
   height: 380px;
@@ -48,8 +42,17 @@ function sankey() {
   var formatNumber = d3.format(",.0f"),
     format = function(sent, rcvd) { return "[sent: "+formatNumber(sent)+", rcvd: "+formatNumber(rcvd)+"]"; },
     color = d3.scale.category20();
-    
-    d3.json("/iface_flows_sankey.lua", function(hosts) {
+
+]]    
+
+if(_GET["host"] == nil) then
+   print('d3.json("/iface_flows_sankey.lua" ')
+else
+   print('d3.json("/iface_flows_sankey.lua?host=' .. _GET["host"] .. '" ')
+end
+
+print [[ 
+    , function(hosts) {
 	d3.select("#chart").select("svg").remove();
 
 	var svg = d3.select("#chart").append("svg")
@@ -144,30 +147,6 @@ sankey();
 // Refresh every 5 seconds
 window.setInterval(sankey, 5000);
 
-
 </script>
-      </div>
 
-      <div class="row-fluid marketing">
-        <div class="span6">
-          <h4>Top Hosts</h4>
-	  <div class="pie-chart" id="topHosts"></div>
-        </div>
-        <div class="span6">
-          <h4>Top Application Protocols</h4>
-	  <div class="pie-chart" id="topApplicationProtocols"></div>
-        </div>
-
-      </div>
-
-
-<script type='text/javascript'>
-
-window.onload=function() {
-   var refresh = 3000 /* ms */;
-
-   do_pie("#topHosts", '/iface_hosts_list.lua', { if: "any" }, "", refresh);
-   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
-}
-
-</script>
+]]

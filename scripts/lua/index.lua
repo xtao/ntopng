@@ -12,8 +12,10 @@ dofile("./scripts/lua/search_host_box.lua")
 
 print [[
   </ul>
-        <h3 class="muted"><img src="/img/logo.png"></h3>
+        <h3 class="muted"><A href=http://www.ntop.org><img src="/img/logo.png"></A></h3>
       </div>
    ]]
-ntop.dumpFile("./httpdocs/inc/index.inc")
+ntop.dumpFile("./httpdocs/inc/index_top.inc")
+dofile("./scripts/lua/sankey.lua")
+ntop.dumpFile("./httpdocs/inc/index_bottom.inc")
 dofile("./scripts/lua/footer.inc.lua")
