@@ -67,9 +67,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 	 
-	 print ("{ \"column_ip\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. "</A>\", \"column_name\" : \"" .. value["name"] .. "\", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", \"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	 print ("{ \"column_ip\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
+	 print("</A>\", \"column_name\" : \"" .. value["name"] .. "\", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", \"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
 
-
+	 print ("\", \"column_location\" : \"")
+	 if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end
+	 
 	 sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
 	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. sent2rcvd .."%;'>Sent</div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
 

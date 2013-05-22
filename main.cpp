@@ -84,10 +84,13 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "hi:w:r:sn:d:v")) != '?') {
+  while((c = getopt(argc, argv, "hi:w:r:sm:n:d:v")) != '?') {
     if(c == 255) break;
 
     switch(c) {
+    case 'm':
+      ntop->setLocalNetworks(optarg);
+      break;
     case 'n':
       switch(atoi(optarg)) {
       case 0:

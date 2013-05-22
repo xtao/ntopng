@@ -27,6 +27,7 @@
 class Address {
   u_int32_t num_resolved_addresses, num_resolved_fails;
   pthread_t resolveThreadLoop;
+  patricia_tree_t *ptree;
 
  public:
   Address();
@@ -35,6 +36,8 @@ class Address {
   void startResolveAddressLoop();
   void resolveHostName(char *numeric_ip);
 
+  void setLocalNetworks(char *rule);
+  bool findAddress(int family, void *addr);
 };
 
 #endif /* _ADDRESS_H_ */

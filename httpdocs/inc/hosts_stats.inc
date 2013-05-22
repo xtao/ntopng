@@ -17,6 +17,11 @@
 				 sortable: true,
 				 },
 			     {
+			     title: "Location",
+				 field: "column_location",
+				 sortable: false,
+				 },			     
+			     {
 			     title: "Symbolic Name",
 				 field: "column_name",
 				 sortable: true,

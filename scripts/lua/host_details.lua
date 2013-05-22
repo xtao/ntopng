@@ -79,7 +79,10 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
    print("<tr><th>IP Address</th><td>" .. host["ip"] .. "</td></tr>\n")
-   print("<tr><th>Name</th><td>" .. host["name"] .. "</td></tr>\n")
+   print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
+   if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
+   print("</td></tr>\n")
+
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
 
@@ -210,7 +213,9 @@ print [[
 
    ]]
 elseif(page == "talkers") then
+print("<center>")
 dofile("./scripts/lua/sankey.lua")
+print("</center>")
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
    rrdfile = "bytes.rrd"

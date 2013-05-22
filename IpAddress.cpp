@@ -143,3 +143,15 @@ void IpAddress::dump(struct sockaddr *sa) {
     in6->sin6_family = AF_INET6;
   }
 }
+
+/* ******************************************* */
+
+bool IpAddress::isLocalHost() {
+  if(addr.ipVersion == 4) {
+    u_int32_t v = /* htonl */(addr.ipType.ipv4);
+
+    return(ntop->isLocalAddress(AF_INET, (void*)&v));
+  } else {
+    return(ntop->isLocalAddress(AF_INET6, (void*)&addr.ipType.ipv6));
+  }
+}

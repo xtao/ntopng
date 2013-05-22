@@ -71,6 +71,7 @@ extern "C" {
 };
 
 #include "ntop_defines.h"
+#include "patricia.h"
 #include "Trace.h"
 #include "Utils.h"
 #include "Redis.h"

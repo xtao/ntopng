@@ -62,8 +62,9 @@ class IpAddress {
   int compare(IpAddress *ip);
   u_int key();
   void dump(struct sockaddr *sa);
-
+  bool islocalAddress();
   char* print(char *str, u_int str_len);
+  bool isLocalHost();
 };
 
 #endif /* _IP_ADDRESS_H_ */

@@ -59,8 +59,6 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
 
   num_uses = 0, name_resolved = false, symbolic_name = NULL;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
-  /* FIX - set ip.localHost */
-
   m = new Mutex();
 
   if(init_all) {
@@ -79,10 +77,13 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
 /* *************************************** */
 
 void Host::updateLocal() {
-  /* We need to check if this is a local host */
-
-  localHost = true; // FIX
-
+  localHost = ip->isLocalHost();
+  
+  {
+    char buf[64];
+    
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s", ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
+  }
 }
 
 /* *************************************** */
@@ -104,6 +105,8 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
 
   if(host_details) {
     lua_newtable(vm);
+
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[LUA] %s is %s", ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
     lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));

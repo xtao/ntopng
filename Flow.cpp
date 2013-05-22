@@ -200,15 +200,10 @@ void Flow::print_peers(lua_State* vm) {
   
   lua_newtable(vm);
 
-  // Sent
-  lua_pushstring(vm, "sent");
-  lua_pushnumber(vm, cli2srv_bytes);
-  lua_settable(vm, -3);
-  
-  // Rcvd
-  lua_pushstring(vm, "rcvd");
-  lua_pushnumber(vm, srv2cli_bytes);
-  lua_settable(vm, -3);
+  lua_push_str_table_entry(vm, "client", get_src_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_str_table_entry(vm, "server", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
+  lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
     
   // Key
   snprintf(buf, sizeof(buf), "%s %s", 
