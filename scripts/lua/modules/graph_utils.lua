@@ -51,6 +51,13 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
 
    if(ntop.exists(rrdname)) then
       local fstart, fstep, fnames, fdata = rrd.fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
+      local num_points_found = table.getn(fdata)
+      local sample_rate = round(num_points_found / max_num_points)
+      
+      if(sample_rate < 1) then 
+	 sample_rate = 1 
+      end
 
       step = fstep
       num = 0
@@ -61,11 +68,13 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
 
       id = 0
       fend = 0
+      sampling = 0
+      sample_rate = sample_rate-1
       for i, v in ipairs(fdata) do
 	 s = {}
 	 s[0] = fstart + (i-1)*fstep
 	 num_points = num_points + 1
-
+	 
 	 local elemId = 1
 	 for _, w in ipairs(v) do
 	    if(w ~= w) then
@@ -77,44 +86,50 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
 		  v = 0
 	       end
 	    end
-
+	    
 	    if(v > 0) then
 	       lastval_bits_time = s[0]
 	       lastval_bits = v
 	    end
-
+	    
 	    s[elemId] = v*8 -- bps
 	    elemId = elemId + 1
-	    total_bytes = total_bytes + v*fstep
-	    -- print(" | " .. (v*fstep) .." |\n")
+	 end
+
+	 total_bytes = total_bytes + v*fstep
+	 -- print(" | " .. (v*fstep) .." |\n")
+      
+	 if(sampling == sample_rate) then
+	    series[id] = s
+	    id = id + 1
+	    sampling = 0
+	 else
+	    sampling = sampling + 1 
+	 end
       end
-
-      series[id] = s
-      id = id + 1
-   end
-end
-
-for key, value in pairs(series) do
-   local t = 0
-
-   for elemId=0,(num-1) do
-      -- print(">"..value[elemId+1].. "<")
-      t = t + value[elemId+1] -- bps
    end
 
-   t = t * step
-
-   if((minval_bits_time == 0) or (minval_bits >= t)) then
-      minval_bits_time = value[0]
-      minval_bits = t
+   for key, value in pairs(series) do
+      local t = 0
+      
+      for elemId=0,(num-1) do
+	 -- print(">"..value[elemId+1].. "<")
+	 t = t + value[elemId+1] -- bps
+      end
+      
+      t = t * step
+      
+      if((minval_bits_time == 0) or (minval_bits >= t)) then
+	 minval_bits_time = value[0]
+	 minval_bits = t
+      end
+      
+      if((maxval_bits_time == 0) or (maxval_bits <= t)) then
+	 maxval_bits_time = value[0]
+	 maxval_bits = t
+      end
    end
-
-   if((maxval_bits_time == 0) or (maxval_bits <= t)) then
-      maxval_bits_time = value[0]
-      maxval_bits = t
-   end
-end
-
+   
 print [[
 
 <style>
@@ -143,7 +158,7 @@ font-family: Arial, Helvetica, sans-serif;
 
 
 if(show_timeseries == 1) then
-print [[
+   print [[
 
 <div class="btn-group">
   <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
