@@ -64,7 +64,7 @@ $(LIBMICROHTTPD):
 	cd $(LIBMICRO_HOME); ./configure; @GMAKE@
 
 $(LIBRRDTOOL_LIB):
-	cd $(LIBRRDTOOL_HOME); ./configure --disable-rrd_graph; cd src; @GMAKE@ librrd_th.la
+	cd $(LIBRRDTOOL_HOME); ./configure --disable-rrd_graph --disable-libdbi --disable-libwrap --disable-rrdcgi --disable-libtool-lock --disable-nls --disable-rpath --disable-perl --disable-ruby --disable-lua --disable-tcl --disable-python --disable-dependency-tracking; cd src; @GMAKE@ librrd_th.la
 
 clean:
 	-rm -f *.o *~ svn-commit.* #config.h

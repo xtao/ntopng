@@ -22,7 +22,7 @@ fi
 
 AC_MSG_CHECKING(for gnutls)
 AC_CHECK_LIB([gnutls], [gnutls_priority_set], gnutls=true)
-AM_CONDITIONAL(HAVE_GNUTLS, test x$gnutls = xtrue)
+
 AC_DEFINE_UNQUOTED([HAVE_GNUTLS], $gnutls, [We have gnutls])
 if test x$gnutls = xtrue
  then
@@ -43,6 +43,14 @@ then
 echo "Please install libxml2 (RRD prerequisite)"
 exit
 fi
+
+AC_CHECK_LIB([glib-2.0], [glib_check_version], glib2=true)
+if test x$glib2 = x
+then
+echo "Please install libglib-2.0 (RRD prerequisite)"
+exit
+fi
+
 
 
 GMAKE=`which gmake`
