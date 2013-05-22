@@ -44,7 +44,7 @@ void Address::resolveHostName(char *numeric_ip) {
   char rsp[128];
   
   if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp)) < 0) {
-    char hostname[NI_MAXHOST], sbuf[NI_MAXSERV];
+    char hostname[NI_MAXHOST];
     struct sockaddr *sa;
     struct sockaddr_in in4;
     struct sockaddr_in6 in6;
@@ -60,7 +60,7 @@ void Address::resolveHostName(char *numeric_ip) {
       len = sizeof(struct sockaddr_in6), sa = (struct sockaddr*)&in6;
     }
 
-    if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), sbuf, sizeof(sbuf), NI_NAMEREQD)) == 0) {
+    if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD)) == 0) {
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
       num_resolved_addresses++;
     } else {
