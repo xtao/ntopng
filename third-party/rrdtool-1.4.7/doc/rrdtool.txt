@@ -164,13 +164,13 @@ DDEESSCCRRIIPPTTIIOONN
                RRRRDDttooooll provides the building blocks for near real-time
                aberrant behavior detection. These components include:
 
-               ·   An algorithm for predicting the value of a time series one
+               +o   An algorithm for predicting the value of a time series one
                    time step into the future.
 
-               ·   A measure of deviation between predicted and observed
+               +o   A measure of deviation between predicted and observed
                    values.
 
-               ·   A mechanism to decide if and when an observed value or
+               +o   A mechanism to decide if and when an observed value or
                    sequence of observed values is _t_o_o _d_e_v_i_a_n_t from the
                    predicted value(s).
 

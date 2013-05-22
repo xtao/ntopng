@@ -22,12 +22,12 @@ DDEESSCCRRIIPPTTIIOONN
        database, there are distinct differences between RRDtool databases and
        other databases as listed below:
 
-       ·   RRDtool stores data; that makes it a back-end tool. The RRDtool
+       +o   RRDtool stores data; that makes it a back-end tool. The RRDtool
            command set allows the creation of graphs; that makes it a front-
            end tool as well. Other databases just store data and can not
            create graphs.
 
-       ·   In case of linear databases, new data gets appended at the bottom
+       +o   In case of linear databases, new data gets appended at the bottom
            of the database table. Thus its size keeps on increasing, whereas
            the size of an RRDtool database is determined at creation time.
            Imagine an RRDtool database as the perimeter of a circle. Data is
@@ -36,11 +36,11 @@ DDEESSCCRRIIPPTTIIOONN
            RRDtool database always remains constant. The name "Round Robin"
            stems from this behavior.
 
-       ·   Other databases store the values as supplied. RRDtool can be
+       +o   Other databases store the values as supplied. RRDtool can be
            configured to calculate the rate of change from the previous to the
            current value and store this information instead.
 
-       ·   Other databases get updated when values are supplied. The RRDtool
+       +o   Other databases get updated when values are supplied. The RRDtool
            database is structured in such a way that it needs data at
            predefined time intervals. If it does not get a new value during
            the interval, it stores an UNKNOWN value for that interval. So,

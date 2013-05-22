@@ -333,11 +333,11 @@ SSoommee eexxaammpplleess
        router2.rrd) for the bigger part of your stats. You could solve this in
        a few ways:
 
-       ·   While creating the new database, fill it with zeros from the start
+       +o   While creating the new database, fill it with zeros from the start
            to now.  You have to make the database start at or before the least
            recent time in the other database.
 
-       ·   Alternatively, you could use CDEF and alter unknown data to zero.
+       +o   Alternatively, you could use CDEF and alter unknown data to zero.
 
        Both methods have their pros and cons. The first method is troublesome
        and if you want to do that you have to figure it out yourself. It is
@@ -398,12 +398,12 @@ SSoommee eexxaammpplleess
        translated into zero and therefore you won't see that there was a
        problem. This is not good and what you really want to do is:
 
-       ·   If there is unknown data, look at the time that this sample was
+       +o   If there is unknown data, look at the time that this sample was
            taken.
 
-       ·   If the unknown value is before time xxx, make it zero.
+       +o   If the unknown value is before time xxx, make it zero.
 
-       ·   If it is after time xxx, leave it as unknown data.
+       +o   If it is after time xxx, leave it as unknown data.
 
        This is doable: you can compare the time that the sample was taken to
        some known time. Assuming you started to monitor your device on Friday
@@ -611,9 +611,9 @@ SSoommee eexxaammpplleess
        You could combine the two CDEF lines into one (we don't use "allusers")
        if you like.  But there are good reasons for writing two CDEFS:
 
-       ·   It improves the readability of the script.
+       +o   It improves the readability of the script.
 
-       ·   It can be used inside GPRINT to display the total number of users.
+       +o   It can be used inside GPRINT to display the total number of users.
 
        If you choose to combine them, you can substitute the "allusers" in the
        second CDEF with the part after the equal sign from the first line:

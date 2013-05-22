@@ -105,30 +105,30 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
            present, the command line argument takes precedence.
 
 EEXXAAMMPPLLEESS
-       ·   "rrdtool update demo1.rrd N:3.44:3.15:U:23"
+       +o   "rrdtool update demo1.rrd N:3.44:3.15:U:23"
 
            Update the database file demo1.rrd with 3 known and one _*_U_N_K_N_O_W_N_*
            value. Use the current time as the update time.
 
-       ·   "rrdtool update demo2.rrd 887457267:U 887457521:22 887457903:2.7"
+       +o   "rrdtool update demo2.rrd 887457267:U 887457521:22 887457903:2.7"
 
            Update the database file demo2.rrd which expects data from a single
            data-source, three times. First with an _*_U_N_K_N_O_W_N_* value then with
            two regular readings. The update interval seems to be around 300
            seconds.
 
-       ·   "rrdtool update demo3.rrd -- -5:21 N:42"
+       +o   "rrdtool update demo3.rrd -- -5:21 N:42"
 
            Update the database file demo3.rrd two times, using five seconds in
            the past and the current time as the update times.
 
-       ·   "rrdtool update --cache /var/lib/rrd/demo3.rrd N:42"
+       +o   "rrdtool update --cache /var/lib/rrd/demo3.rrd N:42"
 
            Update the file "/var/lib/rrd/demo3.rrd" with a single data source,
            using the current time. If the caching daemon cannot be reached, do
            nnoott fall back to direct file access.
 
-       ·   "rrdtool update --daemon unix:/tmp/rrdd.sock demo4.rrd N:23"
+       +o   "rrdtool update --daemon unix:/tmp/rrdd.sock demo4.rrd N:23"
 
            Use the UNIX domain socket "/tmp/rrdd.sock" to contact the caching
            daemon. If the caching daemon is not available, update the file

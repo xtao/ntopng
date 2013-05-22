@@ -51,7 +51,7 @@ DDEEFF
 
        If consolidation needs to be done, the CCFF of the RRRRAA specified in the
        DDEEFF itself will be used to reduce the data density. This behavior can
-       be changed using ":reduce=_<CCFF_>_".  This optional parameter specifies the
+       be changed using ":reduce=<CF>".  This optional parameter specifies the
        CCFF to use during the data reduction phase.
 
        Example:

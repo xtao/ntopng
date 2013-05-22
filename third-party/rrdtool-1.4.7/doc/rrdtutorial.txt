@@ -890,18 +890,18 @@ TTUUTTOORRIIAALL
                    DEF:lined=all.rrd:d:AVERAGE LINE3:lined#000000:"Line D"
 
    RRRRDDttooooll uunnddeerr tthhee MMiiccrroossccooppee
-       · Line A is a COUNTER type, so it should continuously increment and
+       +o Line A is a COUNTER type, so it should continuously increment and
          RRDtool must calculate the differences. Also, RRDtool needs to divide
          the difference by the amount of time lapsed. This should end up as a
          straight line at 1 (the deltas are 300, the time is 300).
 
-       · Line B is of type GAUGE. These are "real" values so they should match
+       +o Line B is of type GAUGE. These are "real" values so they should match
          what we put in: a sort of a wave.
 
-       · Line C is of type DERIVE. It should be a counter that can decrease.
+       +o Line C is of type DERIVE. It should be a counter that can decrease.
          It does so between 2400 and 0, with 1800 in-between.
 
-       · Line D is of type ABSOLUTE. This is like counter but it works on
+       +o Line D is of type ABSOLUTE. This is like counter but it works on
          values without calculating the difference. The numbers are the same
          and as you can see (hopefully) this has a different result.
 
@@ -922,7 +922,7 @@ TTUUTTOORRIIAALL
 
        Let's go over the data again:
 
-       · Line A: 300,600,900 and so on. The counter delta is a constant 300
+       +o Line A: 300,600,900 and so on. The counter delta is a constant 300
          and so is the time delta. A number divided by itself is always 1
          (except when dividing by zero which is undefined/illegal).
 
@@ -931,16 +931,16 @@ TTUUTTOORRIIAALL
          calculate the delta from, so we don't know where we started. It would
          be wrong to assume we started at zero so we don't!
 
-       · Line B: There is nothing to calculate. The numbers are as they are.
+       +o Line B: There is nothing to calculate. The numbers are as they are.
 
-       · Line C: Again, the start-out value is unknown. The same story is
+       +o Line C: Again, the start-out value is unknown. The same story is
          holds as for line A. In this case the deltas are not constant,
          therefore the line is not either. If we would put the same numbers in
          the database as we did for line A, we would have gotten the same
          line. Unlike type counter, this type can decrease and I hope to show
          you later on why this makes a difference.
 
-       · Line D: Here the device calculates the deltas. Therefore we DO know
+       +o Line D: Here the device calculates the deltas. Therefore we DO know
          the first delta and it is plotted. We had the same input as with line
          A, but the meaning of this input is different and thus the line is
          different.  In this case the deltas increase each time with 300. The

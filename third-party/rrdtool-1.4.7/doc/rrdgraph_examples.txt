@@ -67,7 +67,7 @@ EEXXAAMMPPLLEESS
    OOffffsseettttiinngg aa lliinnee oonn tthhee yy--aaxxiiss
        Depending on your needs you can do this in two ways:
 
-       ·   Offset the data, then graph this
+       +o   Offset the data, then graph this
 
                DEF:mydata=my.rrd:ds:AVERAGE
 
@@ -76,7 +76,7 @@ EEXXAAMMPPLLEESS
                CDEF:data=mydata,100,+
                LINE1:data#FF0000:"Data with offset"
 
-       ·   Graph the original data, with an offset
+       +o   Graph the original data, with an offset
 
                DEF:mydata=my.rrd:ds:AVERAGE
 
@@ -91,10 +91,10 @@ EEXXAAMMPPLLEESS
    DDrraawwiinngg ddaasshheedd lliinneess
        Also works for HRULE and VRULE
 
-       ·   default style: - - - - -
+       +o   default style: - - - - -
                LINE1:data#FF0000:"dashed line":dashes
 
-       ·   more fancy style with offset: - -  --- -  --- -
+       +o   more fancy style with offset: - -  --- -  --- -
                LINE1:data#FF0000:"another dashed
            line":dashes=15,5,5,10:dash-offset=10
 

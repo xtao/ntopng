@@ -33,10 +33,10 @@ OOPPTTIIOONNSS
            "getaddrinfo()".
 
            For network sockets, a port may be specified by using the form
-           "[[_a_d_d_r_e_s_s]]::_p_o_r_t_". If the address is an IPv4 address or a fully
+           "[address]:port". If the address is an IPv4 address or a fully
            qualified domain name (i. e. the address contains at least one dot
            (".")), the square brackets can be omitted, resulting in the
-           (simpler) "_a_d_d_r_e_s_s::_p_o_r_t_" pattern. The default port is 4422221177//ttccpp. If
+           (simpler) "address:port" pattern. The default port is 4422221177//ttccpp. If
            you specify a network socket, it is mandatory to read the "SECURITY
            CONSIDERATIONS" section.
 
@@ -110,9 +110,9 @@ OOPPTTIIOONNSS
            A complete list of available commands can be found in the section
            "Valid Commands" below. There are two minor special exceptions:
 
-           ·   The "HELP" and "QUIT" commands are always allowed.
+           +o   The "HELP" and "QUIT" commands are always allowed.
 
-           ·   If the "BATCH" command is accepted, the .. command will
+           +o   If the "BATCH" command is accepted, the .. command will
                automatically be accepted, too.
 
            Please also read "SECURITY CONSIDERATIONS" below.
@@ -137,7 +137,7 @@ OOPPTTIIOONNSS
 
        --pp _f_i_l_e
            Sets the name and location of the PID-file. If not specified, the
-           default, "_$_l_o_c_a_l_s_t_s_t_e_d_i_r_/_r_u_n_/_r_r_d_c_a_c_h_e_d_._p_i_d_" will be used.
+           default, "$localststedir/run/rrdcached.pid" will be used.
 
        --tt _w_r_i_t_e___t_h_r_e_a_d_s
            Specifies the number of threads used for writing RRD files.  The
@@ -210,25 +210,25 @@ AAFFFFEECCTTEEDD RRRRDDTTOOOOLL CCOOMMMMAANNDDSS
        command line argument ----ddaaeemmoonn or the environment variable
        RRRRDDCCAACCHHEEDD__AADDDDRREESSSS:
 
-       ·   dump
+       +o   dump
 
-       ·   fetch
+       +o   fetch
 
-       ·   flush
+       +o   flush
 
-       ·   graph
+       +o   graph
 
-       ·   graphv
+       +o   graphv
 
-       ·   info
+       +o   info
 
-       ·   last
+       +o   last
 
-       ·   lastupdate
+       +o   lastupdate
 
-       ·   update
+       +o   update
 
-       ·   xport
+       +o   xport
 
        The uuppddaattee command can send values to the daemon instead of writing
        them to the disk itself. All other commands can send a FFLLUUSSHH command
@@ -310,19 +310,19 @@ HHOOWW IITT WWOORRKKSS
 
        The above diagram demonstrates:
 
-       ·   Files/values are stored in a (balanced) tree.
+       +o   Files/values are stored in a (balanced) tree.
 
-       ·   Tree nodes and entries in the update queue are the same data
+       +o   Tree nodes and entries in the update queue are the same data
            structure.
 
-       ·   The local time ("First") and the time specified in updates ("Time")
+       +o   The local time ("First") and the time specified in updates ("Time")
            may differ.
 
-       ·   Timed out values are inserted at the "tail".
+       +o   Timed out values are inserted at the "tail".
 
-       ·   Explicitly flushed values are inserted at the "head".
+       +o   Explicitly flushed values are inserted at the "head".
 
-       ·   ASCII art rocks.
+       +o   ASCII art rocks.
 
 SSEECCUURRIITTYY CCOONNSSIIDDEERRAATTIIOONNSS
    AAuutthheennttiiccaattiioonn
@@ -369,11 +369,11 @@ SSEECCUURRIITTYY CCOONNSSIIDDEERRAATTIIOONNSS
        the future, your files will be messed up good!
 
    CCoonncclluussiioonn
-       ·   Security is the job of the administrator.
+       +o   Security is the job of the administrator.
 
-       ·   We recommend to allow write access via UNIX domain sockets only.
+       +o   We recommend to allow write access via UNIX domain sockets only.
 
-       ·   You have been warned.
+       +o   You have been warned.
 
 PPRROOTTOOCCOOLL
        The daemon communicates with clients using a line based ASCII protocol

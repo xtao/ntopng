@@ -192,19 +192,19 @@ AAbbeerrrraanntt BBeehhaavviioorr DDeetteeccttiioonn w
        Winters forecasting algorithm), confidence bands, and the flagging
        aberrant behavior in the data source time series:
 
-       ·   RRRRAA::_H_W_P_R_E_D_I_C_T::_r_o_w_s::_a_l_p_h_a::_b_e_t_a::_s_e_a_s_o_n_a_l _p_e_r_i_o_d[::_r_r_a_-_n_u_m]
+       +o   RRRRAA::_H_W_P_R_E_D_I_C_T::_r_o_w_s::_a_l_p_h_a::_b_e_t_a::_s_e_a_s_o_n_a_l _p_e_r_i_o_d[::_r_r_a_-_n_u_m]
 
-       ·   RRRRAA::_M_H_W_P_R_E_D_I_C_T::_r_o_w_s::_a_l_p_h_a::_b_e_t_a::_s_e_a_s_o_n_a_l _p_e_r_i_o_d[::_r_r_a_-_n_u_m]
+       +o   RRRRAA::_M_H_W_P_R_E_D_I_C_T::_r_o_w_s::_a_l_p_h_a::_b_e_t_a::_s_e_a_s_o_n_a_l _p_e_r_i_o_d[::_r_r_a_-_n_u_m]
 
-       ·   RRRRAA::_S_E_A_S_O_N_A_L::_s_e_a_s_o_n_a_l _p_e_r_i_o_d::_g_a_m_m_a::_r_r_a_-
+       +o   RRRRAA::_S_E_A_S_O_N_A_L::_s_e_a_s_o_n_a_l _p_e_r_i_o_d::_g_a_m_m_a::_r_r_a_-
            _n_u_m[::ssmmooootthhiinngg--wwiinnddooww==_f_r_a_c_t_i_o_n]
 
-       ·   RRRRAA::_D_E_V_S_E_A_S_O_N_A_L::_s_e_a_s_o_n_a_l _p_e_r_i_o_d::_g_a_m_m_a::_r_r_a_-
+       +o   RRRRAA::_D_E_V_S_E_A_S_O_N_A_L::_s_e_a_s_o_n_a_l _p_e_r_i_o_d::_g_a_m_m_a::_r_r_a_-
            _n_u_m[::ssmmooootthhiinngg--wwiinnddooww==_f_r_a_c_t_i_o_n]
 
-       ·   RRRRAA::_D_E_V_P_R_E_D_I_C_T::_r_o_w_s::_r_r_a_-_n_u_m
+       +o   RRRRAA::_D_E_V_P_R_E_D_I_C_T::_r_o_w_s::_r_r_a_-_n_u_m
 
-       ·   RRRRAA::_F_A_I_L_U_R_E_S::_r_o_w_s::_t_h_r_e_s_h_o_l_d::_w_i_n_d_o_w _l_e_n_g_t_h::_r_r_a_-_n_u_m
+       +o   RRRRAA::_F_A_I_L_U_R_E_S::_r_o_w_s::_t_h_r_e_s_h_o_l_d::_w_i_n_d_o_w _l_e_n_g_t_h::_r_r_a_-_n_u_m
 
        These RRRRAAss differ from the true consolidation functions in several
        ways.  First, each of the RRRRAAs is updated once for every primary data
@@ -314,15 +314,15 @@ AAbbeerrrraanntt BBeehhaavviioorr DDeetteeccttiioonn w
        The dependent RRRRAA for each RRRRAA requiring the _r_r_a_-_n_u_m argument is listed
        here:
 
-       ·   HWPREDICT _r_r_a_-_n_u_m is the index of the SEASONAL RRRRAA.
+       +o   HWPREDICT _r_r_a_-_n_u_m is the index of the SEASONAL RRRRAA.
 
-       ·   SEASONAL _r_r_a_-_n_u_m is the index of the HWPREDICT RRRRAA.
+       +o   SEASONAL _r_r_a_-_n_u_m is the index of the HWPREDICT RRRRAA.
 
-       ·   DEVPREDICT _r_r_a_-_n_u_m is the index of the DEVSEASONAL RRRRAA.
+       +o   DEVPREDICT _r_r_a_-_n_u_m is the index of the DEVSEASONAL RRRRAA.
 
-       ·   DEVSEASONAL _r_r_a_-_n_u_m is the index of the HWPREDICT RRRRAA.
+       +o   DEVSEASONAL _r_r_a_-_n_u_m is the index of the HWPREDICT RRRRAA.
 
-       ·   FAILURES _r_r_a_-_n_u_m is the index of the DEVSEASONAL RRRRAA.
+       +o   FAILURES _r_r_a_-_n_u_m is the index of the DEVSEASONAL RRRRAA.
 
        _t_h_r_e_s_h_o_l_d is the minimum number of violations (observed values outside
        the confidence bounds) within a window that constitutes a failure. If

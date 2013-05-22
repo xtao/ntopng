@@ -36,6 +36,14 @@ if test x$gnutls = xtrue
   fi
 fi
 
+echo "Checking RRD prerequisites..."
+AC_CHECK_LIB([xml2], [xmlParseFile], xml2=true)
+if test x$xml2 = x
+then
+echo "Please install libxml2 (RRD prerequisite)"
+exit
+fi
+
 
 GMAKE=`which gmake`
 if test x$GMAKE = x
