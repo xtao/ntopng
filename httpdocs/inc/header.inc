@@ -35,6 +35,11 @@
         max-width: 1024px;
       }
 
+      /* Smaller table row padding */
+      .table th, .table td {
+        padding: 6px;
+      }
+
       /* Custom container */
       .progress {
         margin-bottom: 0px;

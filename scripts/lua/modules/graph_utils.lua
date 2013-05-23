@@ -41,7 +41,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
    local lastval_bits_time = 0
    local total_bytes = 0
    local num_points = 0
-   local step
+   local step = 1
 
    prefixLabel = string.gsub(rrdFile, ".rrd", "")
 
@@ -54,9 +54,9 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
       local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
       local sample_rate = round(num_points_found / max_num_points)
-      
-      if(sample_rate < 1) then 
-	 sample_rate = 1 
+
+      if(sample_rate < 1) then
+	 sample_rate = 1
       end
 
       step = fstep
@@ -74,7 +74,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
 	 s = {}
 	 s[0] = fstart + (i-1)*fstep
 	 num_points = num_points + 1
-	 
+
 	 local elemId = 1
 	 for _, w in ipairs(v) do
 	    if(w ~= w) then
@@ -86,50 +86,50 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
 		  v = 0
 	       end
 	    end
-	    
+
 	    if(v > 0) then
 	       lastval_bits_time = s[0]
 	       lastval_bits = v
 	    end
-	    
+
 	    s[elemId] = v*8 -- bps
 	    elemId = elemId + 1
 	 end
 
 	 total_bytes = total_bytes + v*fstep
 	 -- print(" | " .. (v*fstep) .." |\n")
-      
+
 	 if(sampling == sample_rate) then
 	    series[id] = s
 	    id = id + 1
 	    sampling = 0
 	 else
-	    sampling = sampling + 1 
+	    sampling = sampling + 1
 	 end
       end
-   end
+
 
    for key, value in pairs(series) do
       local t = 0
-      
+
       for elemId=0,(num-1) do
 	 -- print(">"..value[elemId+1].. "<")
 	 t = t + value[elemId+1] -- bps
       end
-      
+
       t = t * step
-      
+
       if((minval_bits_time == 0) or (minval_bits >= t)) then
 	 minval_bits_time = value[0]
 	 minval_bits = t
       end
-      
+
       if((maxval_bits_time == 0) or (maxval_bits <= t)) then
 	 maxval_bits_time = value[0]
 	 maxval_bits = t
       end
    end
-   
+
 print [[
 
 <style>
@@ -150,6 +150,7 @@ font-family: Arial, Helvetica, sans-serif;
    float: left;
    width: 40px;
 }
+
 </style>
 
 <div class="row">
@@ -211,20 +212,20 @@ print [[
 <div id="chart_container">
    <div id="y_axis"></div>
    <div id="chart"></div>
-   
+
    <table border=0>
-   <tr><td><div id="legend"></div></td></tr>
-   <tr><td>
+   <tr><td><div id="legend"></div></td><td><div id="chart_legend"></div></td></tr>
+   <tr><td colspan=2>
 
    <table class="table table-bordered table-striped">
    ]]
 
 
 print('   <tr><th>' .. prefixLabel .. '</th><th>Time</th><th>Value</th></tr>\n')
-print('   <tr><th>Min Value</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. bitsToSize(minval_bits/step) .. '</td></tr>\n')
-print('   <tr><th>Max Value</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. bitsToSize(maxval_bits/step) .. '</td></tr>\n')
-print('   <tr><th>Last Value</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval_bits/step)  .. '</td></tr>\n')
-print('   <tr><th>Avg Value</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
+print('   <tr><th>Min</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. bitsToSize(minval_bits/step) .. '</td></tr>\n')
+print('   <tr><th>Max</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. bitsToSize(maxval_bits/step) .. '</td></tr>\n')
+print('   <tr><th>Last</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval_bits/step)  .. '</td></tr>\n')
+print('   <tr><th>Average</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
 print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes)..  '</td></tr>\n')
 
 
@@ -280,20 +281,84 @@ print [[
 
 graph.render();
 
-var hoverDetail = new Rickshaw.Graph.HoverDetail( {
-						     graph: graph,
-    xFormatter: function(x) { return new Date( x * 1000 ); },
-    yFormatter: function(bits) {
+var chart_legend = document.querySelector('#chart_legend');
+
+
+function fdate(when) {
+      var epoch = when*1000;
+      var d = new Date(epoch);
+
+      return(d);
+}
+
+function fbits(bits) {
 		      var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
 		      if (bits == 0) return 'n/a';
 		      var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
-		      return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i]; }
-						  } );
+		      return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
+    graph: graph,
+    xFormatter: function(x) { return new Date( x * 1000 ); },
+    yFormatter: function(bits) { return(fbits(bits)); },
+    render: function(args) {
+		var graph = this.graph;
+		var points = args.points;
+		var point = points.filter( function(p) { return p.active } ).shift();
+
+		if (point.value.y === null) return;
+
+		var formattedXValue = fdate(point.value.x); // point.formattedXValue;
+		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
+
+		this.element.innerHTML = '';
+		this.element.style.left = graph.x(point.value.x) + 'px';
+
+		var xLabel = document.createElement('div');
+
+		xLabel.className = 'x_label';
+		xLabel.innerHTML = formattedXValue;
+		this.element.appendChild(xLabel);
+
+		var item = document.createElement('div');
+
+		item.className = 'item';
+		item.innerHTML = this.formatter(point.series, point.value.x, point.value.y, formattedXValue, formattedYValue, point);
+		item.style.top = this.graph.y(point.value.y0 + point.value.y) + 'px';
+
+		this.element.appendChild(item);
+
+		var dot = document.createElement('div');
+
+		dot.className = 'dot';
+		dot.style.top = item.style.top;
+		dot.style.borderColor = point.series.color;
+
+		this.element.appendChild(dot);
+
+		if (point.active) {
+			item.className = 'item active';
+			dot.className = 'dot active';
+		}
+
+		this.show();
+
+		if (typeof this.onRender == 'function') {
+			this.onRender(args);
+		}
+
+		// Put the selected graph epoch into the legend
+		chart_legend.innerHTML = point.value.x; // Epoch
+		event
+	}
+} );
+
+var hover = new Hover( { graph: graph } );
 
 var legend = new Rickshaw.Graph.Legend( {
 					   graph: graph,
 					   element: document.getElementById('legend')
-
 					} );
 
 //var axes = new Rickshaw.Graph.Axis.Time( { graph: graph } ); axes.render();
@@ -309,5 +374,8 @@ yAxis.render();
 </script>
 
 ]]
+ else
+   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This archive file cannot be found</div>")
 
 end
+   end
