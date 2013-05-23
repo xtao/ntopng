@@ -161,7 +161,17 @@ int main(int argc, char *argv[]) {
   ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
-  ntop->registerInterface(iface = new PcapNetworkInterface(ifName, change_user));
+#ifdef HAVE_PF_RING
+  try {
+    iface = new PFRingNetworkInterface(ifName, change_user);
+  } catch (int) {
+#endif
+  iface = new PcapNetworkInterface(ifName, change_user);
+#ifdef HAVE_PF_RING
+  }
+#endif
+
+  ntop->registerInterface(iface);
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
   /*

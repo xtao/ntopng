@@ -34,8 +34,7 @@ PFRingNetworkInterface::PFRingNetworkInterface(char *name, bool change_user) : N
 
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),
 				   ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {
-    printf("ERROR: could not open interface %s\n", ifname);
-    exit(0);
+    throw 1;
   } else
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
 
