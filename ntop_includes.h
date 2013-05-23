@@ -86,6 +86,10 @@ extern "C" {
 #include "GenericHashEntry.h"
 #include "GenericHash.h"
 #include "NetworkInterface.h"
+#include "PcapNetworkInterface.h"
+#ifdef HAVE_PF_RING
+#include "PFRingNetworkInterface.h"
+#endif
 #include "Host.h"
 #include "Flow.h"
 #include "FlowHash.h"

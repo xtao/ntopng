@@ -35,10 +35,9 @@ typedef struct ether80211q {
 } Ether80211q;
 
 class NetworkInterface {
- private:
+ protected:
   char *ifname;
   EthStats ethStats;
-  pcap_t *pcap_handle;
   int pcap_datalink_type;
   pthread_t pollLoop;
 
@@ -50,6 +49,7 @@ class NetworkInterface {
   bool polling_started;
 
   void dropPrivileges();
+  void deleteDataStructures();
   Flow* getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
 		struct ndpi_iphdr *iph,
 		struct ndpi_ip6_hdr *ip6,
@@ -59,8 +59,8 @@ class NetworkInterface {
  public:
   NetworkInterface(char *name, bool change_user);
   ~NetworkInterface();
-  void startPacketPolling();
-  void shutdown();
+  virtual void startPacketPolling();
+  virtual void shutdown();
 
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
@@ -71,12 +71,12 @@ class NetworkInterface {
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
-  inline pcap_t* get_pcap_handle() { return(pcap_handle);        };
 
   void findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
 		     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst);
   Flow* findFlowByKey(u_int32_t key);
 
+  void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
   void packet_processing(const u_int64_t time,
 			 struct ndpi_ethhdr *eth,
 			 u_int16_t vlan_id,

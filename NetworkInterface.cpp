@@ -65,23 +65,6 @@ NetworkInterface::NetworkInterface(char *name, bool change_user) {
 
   ifname = strdup(name);
 
-  if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
-				   ntop->getGlobals()->getPromiscuousMode(),
-				   500, pcap_error_buffer)) == NULL) {
-    pcap_handle = pcap_open_offline(ifname, pcap_error_buffer);
-
-    if(pcap_handle == NULL) {
-      printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
-      exit(0);
-    } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
-  } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
-
-  pcap_datalink_type = pcap_datalink(pcap_handle);
-
-  if(change_user) dropPrivileges();
-
   flows_hash = new FlowHash(4096, 32768), hosts_hash = new HostHash(4096, 32768);
 
   // init global detection structure
@@ -102,23 +85,18 @@ NetworkInterface::NetworkInterface(char *name, bool change_user) {
 
 /* **************************************************** */
 
-NetworkInterface::~NetworkInterface() {
-  if(polling_started) {
-    void *res;
-
-    if(pcap_handle) pcap_breakloop(pcap_handle);
-    pthread_join(pollLoop, &res);
-  }
-
-  if(pcap_handle)
-    pcap_close(pcap_handle);
-
+void NetworkInterface::deleteDataStructures() {
   delete flows_hash;
   delete hosts_hash;
 
   ndpi_exit_detection_module(ndpi_struct, free_wrapper);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
   free(ifname);
+}
+
+/* **************************************************** */
+
+NetworkInterface::~NetworkInterface() {
 }
 
 /* **************************************************** */
@@ -249,15 +227,14 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
 /* **************************************************** */
 
-static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, const u_char * packet) {
-  NetworkInterface *iface = (NetworkInterface*)args;
+void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
   struct ndpi_ethhdr *ethernet;
   struct ndpi_iphdr *iph;
   u_int64_t time;
   static u_int64_t lasttime = 0;
   u_int16_t type, ip_offset, vlan_id = 0;
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
-  int pcap_datalink_type = iface->get_datalink();
+  int pcap_datalink_type = get_datalink();
   u_int n;
 
   time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
@@ -272,9 +249,9 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
   } else if(pcap_datalink_type == 113 /* Linux Cooked Capture */) {
     type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-    iface->incStats(h->ts.tv_sec, 0, h->caplen);
+    incStats(h->ts.tv_sec, 0, h->caplen);
   } else {
-    iface->incStats(h->ts.tv_sec, 0, h->caplen);
+    incStats(h->ts.tv_sec, 0, h->caplen);
     return;
   }
 
@@ -286,7 +263,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
     ip_offset += 4;
   }
 
-  iface->incStats(h->ts.tv_sec, type, h->caplen);
+  incStats(h->ts.tv_sec, type, h->caplen);
 
   // just work on Ethernet packets that contain IPv4
   switch(type) {
@@ -331,7 +308,7 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
 
       }
 
-      iface->packet_processing(time, ethernet, vlan_id, iph, NULL, h->len - ip_offset, h->len);
+      packet_processing(time, ethernet, vlan_id, iph, NULL, h->len - ip_offset, h->len);
     }
     break;
 
@@ -343,50 +320,38 @@ static void pcap_packet_callback(u_char * args, const struct pcap_pkthdr *h, con
 	/* This is not IPv6 */
 	return;
       } else
-	iface->packet_processing(time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
+	packet_processing(time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
     }
     break;
     
   default: /* No IPv4 nor IPv6 */
-    Host *srcHost = iface->findHostByMac((const u_int8_t*)ethernet->h_source, true);
-    Host *dstHost = iface->findHostByMac((const u_int8_t*)ethernet->h_dest, true);
+    Host *srcHost = findHostByMac((const u_int8_t*)ethernet->h_source, true);
+    Host *dstHost = findHostByMac((const u_int8_t*)ethernet->h_dest, true);
 
     if(srcHost) srcHost->incStats(NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
     if(dstHost) dstHost->incStats(NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
     break;
   }
 
-  if((n = iface->purgeIdleFlows()) > 0)
+  if((n = purgeIdleFlows()) > 0)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle flows", 
-				 n, iface->getNumFlows());
+				 n, getNumFlows());
 
-  if((n = iface->purgeIdleHosts()) > 0)
+  if((n = purgeIdleHosts()) > 0)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle hosts", 
-				 n, iface->getNumHosts());
-}
-
-/* **************************************************** */
-
-static void* packetPollLoop(void* ptr) {
-  NetworkInterface *iface = (NetworkInterface*)ptr;
-
-  pcap_loop(iface->get_pcap_handle(), -1, &pcap_packet_callback, (u_char*)iface);
-  return(NULL);
+				 n, getNumHosts());
 }
 
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
-
-  pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
   polling_started = true;
 }
 
 /* **************************************************** */
 
 void NetworkInterface::shutdown() {
-  pcap_breakloop(pcap_handle);
 }
 
 /* **************************************************** */

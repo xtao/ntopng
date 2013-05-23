@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
   ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
-  ntop->registerInterface(iface = new NetworkInterface(ifName, change_user));
+  ntop->registerInterface(iface = new PcapNetworkInterface(ifName, change_user));
   ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
 
   /*
