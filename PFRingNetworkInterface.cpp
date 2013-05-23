@@ -64,7 +64,7 @@ PFRingNetworkInterface::~PFRingNetworkInterface() {
 
 static void pfring_packet_callback(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes) {
   NetworkInterface *iface = (NetworkInterface *) user_bytes;
-  iface->packet_dissector((const struct pcap_pkthdr *) h, packet);
+  iface->packet_dissector((const struct pcap_pkthdr *) h, p);
 }
 
 /* **************************************************** */

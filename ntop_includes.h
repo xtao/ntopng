@@ -68,6 +68,9 @@ extern "C" {
 #include "luajit.h"
 #include "lauxlib.h"
 #include "lualib.h"
+#ifdef HAVE_PF_RING
+#include "pfring.h"
+#endif
 };
 
 #include "ntop_defines.h"

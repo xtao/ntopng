@@ -33,7 +33,7 @@ class PFRingNetworkInterface : public NetworkInterface {
  public:
   PFRingNetworkInterface(char *name, bool change_user);
   ~PFRingNetworkInterface();
-  inline pfring_t* get_pfring_handle() { return(pfring_handle); };
+  inline pfring* get_pfring_handle() { return(pfring_handle); };
   void startPacketPolling();
   void shutdown();
 };
