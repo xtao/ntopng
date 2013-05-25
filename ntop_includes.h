@@ -46,7 +46,6 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
-#include <pcap.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -89,9 +88,9 @@ extern "C" {
 #include "GenericHashEntry.h"
 #include "GenericHash.h"
 #include "NetworkInterface.h"
-#include "PcapNetworkInterface.h"
+#include "PcapInterface.h"
 #ifdef HAVE_PF_RING
-#include "PFRingNetworkInterface.h"
+#include "PF_RINGInterface.h"
 #endif
 #include "Geolocation.h"
 #include "Host.h"

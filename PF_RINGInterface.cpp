@@ -19,9 +19,10 @@
  *
  */
 
+#include "ntop_includes.h"
+
 #ifdef HAVE_PF_RING
 
-#include "ntop_includes.h"
 #include <pwd.h>
 
 #ifdef DARWIN
@@ -30,13 +31,14 @@
 
 /* **************************************************** */
 
-PFRingNetworkInterface::PFRingNetworkInterface(char *name, bool change_user) : NetworkInterface(name, change_user) {
+PF_RINGInterface::PF_RINGInterface(char *name, bool change_user)
+  : NetworkInterface(name, change_user) {
 
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),
-				   ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {
+				  ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {
     throw 1;
   } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = DLT_EN10MB;
 
@@ -45,7 +47,7 @@ PFRingNetworkInterface::PFRingNetworkInterface(char *name, bool change_user) : N
 
 /* **************************************************** */
 
-PFRingNetworkInterface::~PFRingNetworkInterface() {
+PF_RINGInterface::~PF_RINGInterface() {
   if(polling_started) {
     void *res;
 
@@ -69,7 +71,7 @@ static void pfring_packet_callback(const struct pfring_pkthdr *h, const u_char *
 /* **************************************************** */
 
 static void* packetPollLoop(void* ptr) {
-  PFRingNetworkInterface *iface = (PFRingNetworkInterface*)ptr;
+  PF_RINGInterface *iface = (PF_RINGInterface*)ptr;
 
   pfring_loop(iface->get_pfring_handle(), pfring_packet_callback, (u_char*) iface, 1 /* wait mode */);
 
@@ -78,7 +80,7 @@ static void* packetPollLoop(void* ptr) {
 
 /* **************************************************** */
 
-void PFRingNetworkInterface::startPacketPolling() {
+void PF_RINGInterface::startPacketPolling() {
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
 
   NetworkInterface::startPacketPolling();
@@ -86,7 +88,7 @@ void PFRingNetworkInterface::startPacketPolling() {
 
 /* **************************************************** */
 
-void PFRingNetworkInterface::shutdown() {
+void PF_RINGInterface::shutdown() {
   pfring_breakloop(pfring_handle);
 }
 

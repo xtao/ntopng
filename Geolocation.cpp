@@ -129,7 +129,7 @@ void Geolocation::getInfo(IpAddress *addr, char **country_code, char **city, flo
     *latitude = geo->latitude, *longitude = geo->longitude;
     GeoIPRecord_delete(geo);
   } else
-    *country_code = NULL, *city = NULL, *latitude = *latitude = 0;
+    *country_code = NULL, *city = NULL, *latitude = *longitude = 0;
 #endif
 }
 

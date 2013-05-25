@@ -58,7 +58,8 @@ class NetworkInterface {
 
  public:
   NetworkInterface(char *name, bool change_user);
-  ~NetworkInterface();
+  virtual ~NetworkInterface();
+
   virtual void startPacketPolling();
   virtual void shutdown();
 

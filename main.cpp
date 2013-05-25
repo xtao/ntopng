@@ -77,7 +77,7 @@ void sigproc(int sig) {
 
 int main(int argc, char *argv[]) {
   u_char c;
-  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  "./httpdocs";
+  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
   u_int http_port = 3000;
   bool change_user = true, localnets = false;
   NetworkInterface *iface = NULL;
@@ -169,10 +169,10 @@ int main(int argc, char *argv[]) {
 
 #ifdef HAVE_PF_RING
   try {
-    iface = new PFRingNetworkInterface(ifName, change_user);
+    iface = new PF_RINGInterface(ifName, change_user);
   } catch (int) {
 #endif
-  iface = new PcapNetworkInterface(ifName, change_user);
+  iface = new PcapInterface(ifName, change_user);
 #ifdef HAVE_PF_RING
   }
 #endif

@@ -26,13 +26,14 @@
 
 #include "ntop_includes.h"
 
-class PFRingNetworkInterface : public NetworkInterface {
+class PF_RINGInterface : public NetworkInterface {
  private:
   pfring *pfring_handle;
 
  public:
-  PFRingNetworkInterface(char *name, bool change_user);
-  ~PFRingNetworkInterface();
+  PF_RINGInterface(char *name, bool change_user);
+  ~PF_RINGInterface();
+
   inline pfring* get_pfring_handle() { return(pfring_handle); };
   void startPacketPolling();
   void shutdown();

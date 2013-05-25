@@ -28,7 +28,7 @@
 
 /* **************************************************** */
 
-PcapNetworkInterface::PcapNetworkInterface(char *name, bool change_user) : NetworkInterface(name, change_user) {
+PcapInterface::PcapInterface(char *name, bool change_user) : NetworkInterface(name, change_user) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
@@ -51,7 +51,7 @@ PcapNetworkInterface::PcapNetworkInterface(char *name, bool change_user) : Netwo
 
 /* **************************************************** */
 
-PcapNetworkInterface::~PcapNetworkInterface() {
+PcapInterface::~PcapInterface() {
   if(polling_started) {
     void *res;
 
@@ -75,7 +75,7 @@ static void pcap_packet_callback(u_char *args, const struct pcap_pkthdr *h, cons
 /* **************************************************** */
 
 static void* packetPollLoop(void* ptr) {
-  PcapNetworkInterface *iface = (PcapNetworkInterface*)ptr;
+  PcapInterface *iface = (PcapInterface*)ptr;
 
   pcap_loop(iface->get_pcap_handle(), -1, &pcap_packet_callback, (u_char*)iface);
   return(NULL);
@@ -83,14 +83,14 @@ static void* packetPollLoop(void* ptr) {
 
 /* **************************************************** */
 
-void PcapNetworkInterface::startPacketPolling() {
+void PcapInterface::startPacketPolling() {
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
   NetworkInterface::startPacketPolling();
 }
 
 /* **************************************************** */
 
-void PcapNetworkInterface::shutdown() {
+void PcapInterface::shutdown() {
   pcap_breakloop(pcap_handle);
 }
 

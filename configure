@@ -2035,6 +2035,21 @@ fi
 
 DATE=`date +"%Y-%m-%d"`
 
+PF_RING_HOME=${HOME}/PF_RING
+if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_PF_RING 1
+_ACEOF
+
+  if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
+  echo "A"
+      LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a"
+      CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib"
+  else
+      LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
+  fi
+fi
 
 if test $SYSTEM = "Darwin"; then
    if test $MACHINE = "x86_64"; then

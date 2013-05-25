@@ -19,21 +19,22 @@
  *
  */
 
-#ifndef _PCAP_NETWORK_INTERFACE_H_
-#define _PCAP_NETWORK_INTERFACE_H_
+#ifndef _PCAP_INTERFACE_H_
+#define _PCAP_INTERFACE_H_
 
 #include "ntop_includes.h"
 
-class PcapNetworkInterface : public NetworkInterface {
+class PcapInterface : public NetworkInterface {
  private:
   pcap_t *pcap_handle;
 
  public:
-  PcapNetworkInterface(char *name, bool change_user);
-  ~PcapNetworkInterface();
+  PcapInterface(char *name, bool change_user);
+  ~PcapInterface();
+
   inline pcap_t* get_pcap_handle() { return(pcap_handle); };
   void startPacketPolling();
   void shutdown();
 };
 
-#endif /* _PCAP_NETWORK_INTERFACE_H_ */
+#endif /* _PCAP_INTERFACE_H_ */
