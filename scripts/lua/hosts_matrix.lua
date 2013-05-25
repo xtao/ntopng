@@ -52,23 +52,24 @@ else
    -- Header
    print("<tr><th>&nbsp;</th>")
    for key, value in pairs(localhosts) do
-      print("<th class=\"vertical\"><div class=\"vertical\">"..localhosts[key]["name"].."</div></th>")
+      print("<th>"..shortHostName(localhosts[key]["name"]).."</th>\n")
    end
    print("</tr>\n")
 
    for row_key, row_value in pairs(localhosts) do
-      print("<tr><th><A HREF=/host_details.lua?interface=any&host="..localhosts[row_key]["name"]..">"..localhosts[row_key]["name"].."</A></th>")
+      print("<tr><th><A HREF=/host_details.lua?interface=any&host="..localhosts[row_key]["name"]..">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
       for column_key, column_value in pairs(localhosts) do	
 	 val = "&nbsp;"
 	 if(row_key ~= column_key) then
 	    rsp = getTraffic(flows_stats, row_key, column_key)
 	    if((rsp[1] > 0) or (rsp[2] > 0)) then	       
+	       val = ""
 	       if(rsp[1] > 0) then val = val .. '<span class="label label-warning" data-toggle="tooltip" data-placement="top" title="'..localhosts[row_key]["name"]..' -> ' .. localhosts[column_key]["name"] .. '\">'..bytesToSize(rsp[1]) .. '</span> ' end
 	       if(rsp[2] > 0) then val = val .. '<span class="label label-info" data-toggle="tooltip" data-placement="bottom" title="'..localhosts[column_key]["name"]..' -> ' .. localhosts[row_key]["name"]..'\">'..bytesToSize(rsp[2]) .. '</span> ' end
 	    end
 	 end
 	 
-	 print("<td align=center>" .. val .. "</td>")
+	 print("<td align=center>" .. val .. "</td>\n")
       end
       print("</tr>\n")
    end

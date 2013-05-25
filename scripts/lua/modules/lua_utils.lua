@@ -21,6 +21,19 @@ function findString(str, tofind)
    return(rsp)
 end
 
+
+function shortHostName(name)
+   local chunks = {name:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")}
+   if (#chunks == 4) then
+      return(name)
+   else
+      for token in string.gmatch(name, "(%w+).") do
+	 return(token)
+      end
+   end
+end
+
+
 function l4Label(proto)
    local id
 
