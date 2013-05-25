@@ -28,7 +28,7 @@ class HostHash : public GenericHash {
  public:
   HostHash(u_int _num_hashes, u_int _max_hash_size);
 
-  Host* get(IpAddress *key);
+  Host* get(u_int16_t vlanId, IpAddress *key);
 };
 
 #endif /* _HOST_HASH_H_ */

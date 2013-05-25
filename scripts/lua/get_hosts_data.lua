@@ -36,10 +36,14 @@ to_skip = (currentPage-1) * perPage
 vals = {}
 for key, value in pairs(hosts_stats) do
 --   print("==>"..hosts_stats[key]["bytes.sent"].."\n")
-   if(sortColumn == "column_0") then
+   if(sortColumn == "column_ip") then
       vals[key] = key
-   elseif(sortColumn == "column_1") then
+   elseif(sortColumn == "column_name") then
    vals[hosts_stats[key]["name"]] = key
+   elseif(sortColumn == "column_since") then
+   vals[hosts_stats[key]["duration"]] = key
+   elseif(sortColumn == "column_asn") then
+   vals[hosts_stats[key]["asn"]] = key
    elseif(sortColumn == "column_2") then
    vals[hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]] = key
 else
@@ -71,7 +75,14 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print("</A>\", \"column_name\" : \"" .. value["name"] .. " ")
 	 print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
 
-	 print("\", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", \"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	 print("\", \"column_vlan\" : "..value["vlan"])
+
+	 if(value["asn"] == 0) then
+	    print(", \"column_asn\" : 0")
+	 else
+	    print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
+	 end
+	 print(", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", \"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
 
 	 print ("\", \"column_location\" : \"")
 	 if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end

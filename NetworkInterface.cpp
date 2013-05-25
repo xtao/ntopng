@@ -78,7 +78,7 @@ NetworkInterface::NetworkInterface(char *name, bool change_user) {
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
-  
+
   next_idle_flow_purge = next_idle_host_purge = 0;
   polling_started = false;
 }
@@ -116,7 +116,7 @@ void NetworkInterface::dumpFlows() {
 /* **************************************************** */
 
 Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
-				struct ndpi_iphdr *iph, 
+				struct ndpi_iphdr *iph,
 				struct ndpi_ip6_hdr *ip6,
 				u_int16_t ipsize, bool *src2dst_direction,
 				u_int8_t *l4_proto) {
@@ -146,7 +146,7 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
 
     if(ipsize < sizeof(const struct ndpi_ip6_hdr))
       return NULL;
-    
+
     l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen)-sizeof(const struct ndpi_ip6_hdr);
     *l4_proto = ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt;
     l4 = (u_int8_t*)ip6 + sizeof(const struct ndpi_ip6_hdr);
@@ -169,12 +169,12 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
 
   if(ret == NULL) {
     if(iph)
-      ret = new Flow(this, vlan_id, *l4_proto, 
-		     (u_int8_t*)eth->h_source, iph->saddr, NULL, src_port, 
+      ret = new Flow(this, vlan_id, *l4_proto,
+		     (u_int8_t*)eth->h_source, iph->saddr, NULL, src_port,
 		     (u_int8_t*)eth->h_dest, iph->daddr, NULL, dst_port);
     else
-      ret = new Flow(this, vlan_id, *l4_proto, 
-		     (u_int8_t*)eth->h_source, 0, &ip6->ip6_src, src_port, 
+      ret = new Flow(this, vlan_id, *l4_proto,
+		     (u_int8_t*)eth->h_source, 0, &ip6->ip6_src, src_port,
 		     (u_int8_t*)eth->h_dest, 0, &ip6->ip6_dst, dst_port);
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
@@ -182,7 +182,7 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
     } else {
       delete ret;
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
-      return(NULL); 
+      return(NULL);
     }
   } else
     return(ret);
@@ -190,7 +190,7 @@ Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
 
 /* **************************************************** */
 
-void NetworkInterface::packet_processing(const u_int64_t time, 
+void NetworkInterface::packet_processing(const u_int64_t time,
 					 struct ndpi_ethhdr *eth,
 					 u_int16_t vlan_id,
 					 struct ndpi_iphdr *iph,
@@ -220,7 +220,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 							    ip, ipsize, time, src, dst),
 			      l4_proto);
   } else {
-    // FIX - only handle unfragmented packets  
+    // FIX - only handle unfragmented packets
     ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
   }
 }
@@ -323,7 +323,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 	packet_processing(time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
     }
     break;
-    
+
   default: /* No IPv4 nor IPv6 */
     Host *srcHost = findHostByMac((const u_int8_t*)ethernet->h_source, true);
     Host *dstHost = findHostByMac((const u_int8_t*)ethernet->h_dest, true);
@@ -334,11 +334,11 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   }
 
   if((n = purgeIdleFlows()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle flows", 
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle flows",
 				 n, getNumFlows());
 
   if((n = purgeIdleHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle hosts", 
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle hosts",
 				 n, getNumHosts());
 }
 
@@ -356,15 +356,16 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
-void NetworkInterface::findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
+void NetworkInterface::findFlowHosts(u_int16_t vlanId,
+				     u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src,
 				     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst) {
   IpAddress ip;
 
   if(_src_ipv6) ip.set_ipv6(_src_ipv6); else ip.set_ipv4(_src_ipv4);
-  (*src) = hosts_hash->get(&ip);
+  (*src) = hosts_hash->get(vlanId, &ip);
 
   if((*src) == NULL) {
-    (*src) = new Host(this, src_mac, &ip);
+    (*src) = new Host(this, src_mac, vlanId, &ip);
     if(!hosts_hash->add(*src)) {
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *src;
@@ -376,10 +377,10 @@ void NetworkInterface::findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, s
   /* ***************************** */
 
   if(_dst_ipv6) ip.set_ipv6(_dst_ipv6); else ip.set_ipv4(_dst_ipv4);
-  (*dst) = hosts_hash->get(&ip);
+  (*dst) = hosts_hash->get(vlanId, &ip);
 
   if((*dst) == NULL) {
-    (*dst) = new Host(this, dst_mac, &ip);
+    (*dst) = new Host(this, dst_mac, vlanId, &ip);
     if(!hosts_hash->add(*dst)) {
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *dst;
@@ -447,6 +448,7 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 
 struct host_find_info {
   char *host_to_find;
+  u_int16_t vlan_id;
   Host *h;
 };
 
@@ -454,38 +456,41 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
 
-  if((info->h == NULL) && host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+  if((info->h == NULL)
+     && (host->get_vlan_id() == info->vlan_id)
+     && host->get_name()
+     && (!strcmp(host->get_name(), info->host_to_find)))
     info->h = host;
 }
 
 /* **************************************************** */
 
-bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip) {
+bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id) {
   struct in_addr  a4;
   struct in6_addr a6;
   Host *h = NULL;
-  
+
   /* Check if address is invalid */
   if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0) && (inet_pton(AF_INET6, (const char*)host_ip, &a6) == 0)) {
     /* Looks like a symbolic name */
     struct host_find_info info;
 
-    info.host_to_find = host_ip, info.h = NULL;    
+    info.host_to_find = host_ip, info.vlan_id = vlan_id, info.h = NULL;
     hosts_hash->walk(find_host_by_name, (void*)&info);
 
     h = info.h;
   } else {
     IpAddress *ip = new IpAddress(host_ip);
-    
+
     if(ip) {
-      h = hosts_hash->get(ip);      
+      h = hosts_hash->get(vlan_id, ip);
       delete ip;
     }
   }
-    
+
   if(h) {
     lua_newtable(vm);
-    
+
     h->lua(vm, true, true);
     return(true);
   } else
@@ -569,7 +574,7 @@ u_int NetworkInterface::purgeIdleHosts() {
   else {
     /* Time to purge hosts */
     u_int n;
-    
+
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
     n = hosts_hash->purgeIdle();
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
@@ -588,10 +593,10 @@ void NetworkInterface::dropPrivileges() {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Privileges are not dropped as we're not superuser");
     return;
   }
-  
+
   username = "nobody";
   pw = getpwnam(username);
-  
+
   if(pw == NULL) {
     username = "anonymous";
     pw = getpwnam(username);
@@ -617,14 +622,15 @@ void NetworkInterface::dropPrivileges() {
 void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "name", ifname);
- 
+
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
   lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
   lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
+  lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
 
   ethStats.lua(vm);
- 
+
   lua_pushinteger(vm, 0); //  Index
   lua_insert(vm, -2);
 }
@@ -637,7 +643,7 @@ void NetworkInterface::runHousekeepingTasks() {
   /* TO COMPLETE */
   updateHostStats();
   // getnDPIStats(&stats);
-  //stats.print(iface);  
+  //stats.print(iface);
   //dumpFlows();
 }
 

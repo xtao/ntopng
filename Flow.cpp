@@ -33,7 +33,7 @@ Flow::Flow(NetworkInterface *_iface,
  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
 
-  iface->findFlowHosts(src_mac, _src_ipv4, _src_ipv6, &src_host, dst_mac, _dst_ipv4, _dst_ipv6, &dst_host);
+  iface->findFlowHosts(_vlanId, src_mac, _src_ipv4, _src_ipv6, &src_host, dst_mac, _dst_ipv4, _dst_ipv6, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
   first_seen = last_seen = iface->getTimeLastPktRcvd();

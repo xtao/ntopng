@@ -96,3 +96,11 @@ void PcapInterface::shutdown() {
 
 /* **************************************************** */
 
+u_int PcapInterface::getNumDroppedPackets() {
+  struct pcap_stat pcapStat;
+ 
+  if(pcap_stats(pcap_handle, &pcapStat) >= 0) {
+    return(pcapStat.ps_drop);
+  } else
+    return(0);
+}

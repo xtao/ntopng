@@ -35,6 +35,7 @@ class PcapInterface : public NetworkInterface {
   inline pcap_t* get_pcap_handle() { return(pcap_handle); };
   void startPacketPolling();
   void shutdown();
+  u_int getNumDroppedPackets();
 };
 
 #endif /* _PCAP_INTERFACE_H_ */

@@ -73,9 +73,7 @@ Geolocation::~Geolocation() {
 
 /* *************************************** */
 
-u_int32_t Geolocation::getAS(IpAddress *addr) {
-  u_int32_t as = 0;
-
+void Geolocation::getAS(IpAddress *addr, u_int32_t *asn, char **asname) {
 #ifdef HAVE_GEOIP
   char *rsp = NULL;
   struct ipAddress *ip = addr->getIP();
@@ -94,11 +92,14 @@ u_int32_t Geolocation::getAS(IpAddress *addr) {
     break;
   }
 
-  if(rsp != NULL)
-    as = atoi(rsp);
+  if(rsp != NULL) {
+    *asn = atoi(&rsp[2]);
+    *asname = rsp;
+    return;
+  }
 #endif
 
-  return(as);
+  *asn = 0, *asname = NULL;
 }
 
 /* *************************************** */

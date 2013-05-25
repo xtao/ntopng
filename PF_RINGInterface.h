@@ -35,6 +35,7 @@ class PF_RINGInterface : public NetworkInterface {
   ~PF_RINGInterface();
 
   inline pfring* get_pfring_handle() { return(pfring_handle); };
+  u_int getNumDroppedPackets();
   void startPacketPolling();
   void shutdown();
 };

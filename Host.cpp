@@ -26,21 +26,21 @@
 
 Host::Host(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ip = new IpAddress(), ndpiStats = new NdpiStats();
-  initialize(NULL, false);
+  initialize(NULL, 0, false);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip) : GenericHashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHashEntry(_iface) {
   ip = new IpAddress(_ip), ndpiStats = new NdpiStats();
-  initialize(mac, true);
+  initialize(mac, _vlanId, true);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : GenericHashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHashEntry(_iface) {
   ip = NULL;
-  initialize(mac, true);
+  initialize(mac, _vlanId, true);
 }
 
 /* *************************************** */
@@ -50,16 +50,17 @@ Host::~Host() {
   if(ndpiStats) delete ndpiStats;
   if(country) free(country);
   if(city)    free(city);
+  if(asname)  free(asname);
   delete ip;
   delete m;
 }
 
 /* *************************************** */
 
-void Host::initialize(u_int8_t mac[6], bool init_all) {
+void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
-  num_uses = 0, name_resolved = false, symbolic_name = NULL;
+  num_uses = 0, name_resolved = false, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
 
@@ -71,12 +72,12 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
     else
       ntop->getRedis()->queueHostToResolve(host);
 
-    asn = ntop->getGeolocation()->getAS(ip);
+    ntop->getGeolocation()->getAS(ip, &asn, &asname);
     ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
     
     updateLocal();
   } else
-    localHost = false, asn = 0, country = NULL, city = NULL;
+    localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
 }
 
 /* *************************************** */
@@ -116,7 +117,9 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
+    lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "asn", asn);
+    lua_push_str_table_entry(vm, "asname", asname);
     lua_push_float_table_entry(vm, "latitude", latitude);
     lua_push_float_table_entry(vm, "longitude", longitude);
     lua_push_str_table_entry(vm, "country", country ? country : (char*)"");

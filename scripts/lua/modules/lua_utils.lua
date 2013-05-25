@@ -21,6 +21,13 @@ function findString(str, tofind)
    return(rsp)
 end
 
+function printASN(asn, asname)
+   if(asn > 0) then
+      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A>")
+   else
+      return("")
+   end
+end
 
 function shortHostName(name)
    local chunks = {name:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")}

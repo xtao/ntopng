@@ -62,6 +62,7 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
+  virtual u_int getNumDroppedPackets() { return(0); }
 
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
@@ -73,7 +74,8 @@ class NetworkInterface {
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
 
-  void findFlowHosts(u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
+  void findFlowHosts(u_int16_t vlan_id,
+		     u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
 		     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst);
   Flow* findFlowByKey(u_int32_t key);
 
@@ -102,7 +104,7 @@ class NetworkInterface {
 
   void runHousekeepingTasks();
   Host* findHostByMac(const u_int8_t mac[6], bool createIfNotPresent);
-  bool getHostInfo(lua_State* vm, char *host_ip);
+  bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

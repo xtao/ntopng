@@ -92,7 +92,8 @@ if((page == "overview") or (page == nil)) then
    
    print("</td></tr>\n")
 
-   if(host["asn"] ~= 0) then print("<tr><th>ASN</th><td>"..host["asn"].."</td></tr>\n") end
+   if(host["vlan"] > 0) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
+   if(host["asn"] > 0) then print("<tr><th>ASN</th><td>"..host["asn"].." [ " .. host.asname .. " ] </td></tr>\n") end
 
    print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end

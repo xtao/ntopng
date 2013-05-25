@@ -206,9 +206,13 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 static int ntop_get_interface_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
-
+  u_int16_t vlan_id;
+  
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   host_ip = (char*)lua_tostring(vm, 1);
+
+  /* Optional VLAN id */
+  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -216,7 +220,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
     return(0);
   }
 
-  if(!ntop_interface->getHostInfo(vm, host_ip))
+  if(!ntop_interface->getHostInfo(vm, host_ip, vlan_id))
     return(0);
   else
     return(1);

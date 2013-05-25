@@ -44,7 +44,7 @@ class Geolocation {
   Geolocation(char *db_home);
   ~Geolocation();
 
-  u_int32_t getAS(IpAddress *addr);
+  void getAS(IpAddress *addr, u_int32_t *asn, char **asname);
   void getInfo(IpAddress *addr, char **country_code, char **city, float *latitude, float *longitude);  
 };
 

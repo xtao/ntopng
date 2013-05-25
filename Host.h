@@ -28,8 +28,8 @@ class Host : public GenericHashEntry {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
-  char *symbolic_name, *country, *city;
-  u_int16_t num_uses;
+  char *symbolic_name, *country, *city, *asname;
+  u_int16_t num_uses, vlan_id;
   float latitude, longitude;
   IpAddress *ip;
   NdpiStats *ndpiStats;
@@ -43,12 +43,12 @@ class Host : public GenericHashEntry {
   bool localHost;
   
   void updateLocal();
-  void initialize(u_int8_t mac[6], bool init_all);
+  void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
 
  public:
   Host(NetworkInterface *_iface);
-  Host(NetworkInterface *_iface, u_int8_t mac[6]);
-  Host(NetworkInterface *_iface, u_int8_t mac[6], IpAddress *_ip);
+  Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId);
+  Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip);
   ~Host();
 
   inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4); }
@@ -56,6 +56,7 @@ class Host : public GenericHashEntry {
   inline u_int32_t key()                       { return(ip->key());   }
   inline IpAddress* get_ip()                   { return(ip);          }
   inline u_int8_t*  get_mac()                  { return(mac_address); }
+  inline u_int16_t get_vlan_id()               { return(vlan_id);     }
   inline char* get_name()                      { return(symbolic_name); }
   inline char* get_country()                   { return(country); }
   inline char* get_city()                      { return(city); }

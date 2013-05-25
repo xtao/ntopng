@@ -32,6 +32,11 @@
 				 sortable: true,
 				 },
 			     {
+			     title: "ASN",
+				 field: "column_asn",
+				 sortable: true,
+				 },
+			     {
 			     title: "Breakdown",
 				 field: "column_breakdown",
 				 sortable: false,
@@ -49,6 +54,8 @@
 				 }
 			     ]
 	       });
+
+
        </script>
 
 
