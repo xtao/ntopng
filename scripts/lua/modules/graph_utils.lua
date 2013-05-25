@@ -2,6 +2,19 @@
 -- (C) 2013 - ntop.org
 --
 
+
+
+function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
+   if((sent+rcvd) > 0) then
+      sent2rcvd = round((sent * 100) / (sent+rcvd), 0)
+      print('<div class="progress"><div class="bar bar-warning" style="width: ' .. sent2rcvd.. '%;">'..sentLabel)
+      print('</div><div class="bar bar-info" style="width: ' .. (100-sent2rcvd) .. '%;">' .. rcvdLabel .. '</div></div>')
+   else
+      print('&nbsp;')
+   end
+end
+
+
 function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
    rrdname = ntop.getDataDir() .. "/rrd/" .. host .. "/" .. rrdFile
    names =  {}
@@ -43,7 +56,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
    local num_points = 0
    local step = 1
 
-   prefixLabel = string.gsub(rrdFile, ".rrd", "")
+   prefixLabel = l4Label(string.gsub(rrdFile, ".rrd", ""))
 
    if(prefixLabel == "bytes") then
       prefixLabel = "Traffic"
@@ -164,7 +177,6 @@ if(show_timeseries == 1) then
 <div class="btn-group">
   <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
   <ul class="dropdown-menu">
-
 ]]
 
 print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel ..'">'.. "Traffic" ..'</a></li>\n')
@@ -174,9 +186,10 @@ rrds = ntop.readdir(ntop.getDataDir() .. "/rrd/" .. host)
 
 for k,v in pairsByKeys(rrds, asc) do
    proto = string.gsub(rrds[k], ".rrd", "")
-
+      
    if(proto ~= "bytes") then
-      print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel ..'">'.. string.gsub(rrds[k], ".rrd", "") ..'</a></li>\n')
+      label = l4Label(proto)
+      print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel ..'">'.. label ..'</a></li>\n')
    end
 end
 
@@ -378,4 +391,4 @@ yAxis.render();
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> This archive file cannot be found</div>")
 
 end
-   end
+end

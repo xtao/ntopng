@@ -79,7 +79,7 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
 void Host::updateLocal() {
   localHost = ip->isLocalHost();
   
-  {
+  if(0) {
     char buf[64];
     
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s", ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
@@ -106,7 +106,6 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
   if(host_details) {
     lua_newtable(vm);
 
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[LUA] %s is %s", ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
     lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
@@ -115,6 +114,27 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
     lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
     lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
+
+    lua_push_int_table_entry(vm, "udp.pkts.sent",  udp_sent.getNumPkts());
+    lua_push_int_table_entry(vm, "udp.bytes.sent", udp_sent.getNumBytes());
+    lua_push_int_table_entry(vm, "udp.pkts.rcvd",  udp_rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "udp.bytes.rcvd", udp_rcvd.getNumBytes());
+
+    lua_push_int_table_entry(vm, "tcp.pkts.sent",  tcp_sent.getNumPkts());
+    lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
+    lua_push_int_table_entry(vm, "tcp.pkts.rcvd",  tcp_rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());
+ 
+    lua_push_int_table_entry(vm, "icmp.pkts.sent",  icmp_sent.getNumPkts());
+    lua_push_int_table_entry(vm, "icmp.bytes.sent", icmp_sent.getNumBytes());
+    lua_push_int_table_entry(vm, "icmp.pkts.rcvd",  icmp_rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "icmp.bytes.rcvd", icmp_rcvd.getNumBytes());
+
+    lua_push_int_table_entry(vm, "other_ip.pkts.sent",  other_ip_sent.getNumPkts());
+    lua_push_int_table_entry(vm, "other_ip.bytes.sent", other_ip_sent.getNumBytes());
+    lua_push_int_table_entry(vm, "other_ip.pkts.rcvd",  other_ip_rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "other_ip.bytes.rcvd", other_ip_rcvd.getNumBytes());
+
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
@@ -174,11 +194,30 @@ char* Host::get_name(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
-void Host::incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
+void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int32_t sent_packets, 
+		    u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
     if(sent_packets || rcvd_packets) {
       sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
       if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
 	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
+
+      switch(l4_proto) {
+      case 0:
+	/* Unknown protocol */
+	break;
+      case IPPROTO_UDP:
+	udp_rcvd.incStats(rcvd_packets, rcvd_bytes), udp_sent.incStats(sent_packets, sent_bytes);
+	break;
+      case IPPROTO_TCP:
+	tcp_rcvd.incStats(rcvd_packets, rcvd_bytes), tcp_sent.incStats(sent_packets, sent_bytes);
+	break;
+      case IPPROTO_ICMP:
+	icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), icmp_sent.incStats(sent_packets, sent_bytes);
+	break;
+      default:
+	other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes), other_ip_sent.incStats(sent_packets, sent_bytes);
+	break;
+      }
       updateSeen();
     }
   }

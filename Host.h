@@ -32,6 +32,10 @@ class Host : public GenericHashEntry {
   IpAddress *ip;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
+  TrafficStats tcp_sent, tcp_rcvd;
+  TrafficStats udp_sent, udp_rcvd;
+  TrafficStats icmp_sent, icmp_rcvd;
+  TrafficStats other_ip_sent, other_ip_rcvd;
   bool name_resolved;
   Mutex *m;
   bool localHost;
@@ -58,7 +62,7 @@ class Host : public GenericHashEntry {
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
   
-  void incStats(u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
+  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int32_t sent_packets, u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes);
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   inline bool idle()                 { return(isIdle(HOST_MAX_IDLE)); };

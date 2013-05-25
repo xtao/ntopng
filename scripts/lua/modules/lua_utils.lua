@@ -2,6 +2,13 @@
 -- (C) 2013 - ntop.org
 --
 
+l4_keys = { 
+   { "TCP", "tcp" },
+   { "UDP", "udp" },
+   { "ICMP", "icmp" },
+   { "Other IP", "other_ip" }
+}
+
 function findString(str, tofind)
    str1    = string.gsub(str, "-", "_")
    tofind1 = string.gsub(tofind, "-", "_")
@@ -12,6 +19,21 @@ function findString(str, tofind)
    --print("\n")
 
    return(rsp)
+end
+
+function l4Label(proto)
+   local id
+
+   for id, _ in ipairs(l4_keys) do
+      local l = l4_keys[id][1]
+      local key = l4_keys[id][2]
+
+      if(key == proto) then
+	 return(l)
+      end
+   end
+
+   return(firstToUpper(proto))
 end
 
 function firstToUpper(str)

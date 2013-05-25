@@ -29,16 +29,19 @@ extern "C" {
 
 static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
-	 "-n <mode>              | DNS address resolution mode\n"
-	 "                       | 0 - Decode DNS responses and resolve numeric IPs\n"
-	 "                       | 1 - Decode DNS responses and don't resolve numeric IPs\n"
-	 "                       | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
-	 "-i <interface>         | Input interface name\n"
-	 "-d <path>              | Data directory (must be writable). Default: %s\n"
-	 "-w <http port>         | HTTP port\n"
-	 "-r <redis host[:port]> | Redis host[:port]\n"
-	 "-s                     | Do not change user (debug only)\n"
-	 "-v                     | Verbose tracing\n"
+	 "Usage: ntopng -m <local nets> -d <data dir> [-n mode] [-i <iface>] [-w <http port>]\n"
+	 "              [-r <redis>] [-s] [-v]\n\b"
+	 "-n <mode>               | DNS address resolution mode\n"
+	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
+	 "                        | 1 - Decode DNS responses and don't resolve numeric IPs\n"
+	 "                        | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
+	 "-i <interface>          | Input interface name\n"
+	 "-d <path>               | Data directory (must be writable). Default: %s\n"
+	 "-w <http port>          | HTTP port\n"
+	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
+	 "-r <redis host[:port]>  | Redis host[:port]\n"
+	 "-s                      | Do not change user (debug only)\n"
+	 "-v                      | Verbose tracing\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR);
   exit(0);
 }
@@ -76,7 +79,7 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   u_int http_port = 3000;
-  bool change_user = true;
+  bool change_user = true, localnets = false;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
@@ -90,6 +93,7 @@ int main(int argc, char *argv[]) {
     switch(c) {
     case 'm':
       ntop->setLocalNetworks(optarg);
+      localnets = true;
       break;
     case 'n':
       switch(atoi(optarg)) {
@@ -155,6 +159,8 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+
+  if(!localnets) help();
 
   if(redis == NULL) redis = new Redis();
 

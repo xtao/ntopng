@@ -251,10 +251,10 @@ void Flow::update_hosts_stats() {
     srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
     
     if(src_host)
-      src_host->incStats(detected_protocol, diff_sent_packets, diff_sent_bytes, 
+      src_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes, 
 			 diff_rcvd_packets, diff_rcvd_bytes);
     if(dst_host) 
-      dst_host->incStats(detected_protocol, diff_rcvd_packets, diff_rcvd_bytes, 
+      dst_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes, 
 			 diff_sent_packets, diff_sent_bytes);
   }
 }

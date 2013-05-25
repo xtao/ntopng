@@ -328,8 +328,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     Host *srcHost = findHostByMac((const u_int8_t*)ethernet->h_source, true);
     Host *dstHost = findHostByMac((const u_int8_t*)ethernet->h_dest, true);
 
-    if(srcHost) srcHost->incStats(NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
-    if(dstHost) dstHost->incStats(NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
+    if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
+    if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
     break;
   }
 

@@ -42,10 +42,16 @@ else
   print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
 end
 
-if(page == "ndpi") then
+if(page == "traffic") then
   print("<li class=\"active\"><a href=\"#\">Traffic</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=ndpi\">Traffic</a></li>")
+  print("<li><a href=\""..url.."&page=traffic\">Traffic</a></li>")
+end
+
+if(page == "ndpi") then
+  print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
+else
+  print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
 end
 
 if(page == "flows") then
@@ -86,26 +92,70 @@ if((page == "overview") or (page == nil)) then
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
 
-   print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")  
-   sent2rcvd = round((host["bytes.sent"] * 100) / (host["bytes.sent"]+host["bytes.rcvd"]), 0)
-
-   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. sent2rcvd.. '%;">Sent</div><div class="bar bar-info" style="width: ' .. (100-sent2rcvd) .. '%;">Received</div></div>')
+   print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")
+   breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
    print("</td></tr>\n")
-
 
    print("<tr><th>Traffic Sent</th><td>" .. formatPackets(host["pkts.sent"]) .. " / ".. bytesToSize(host["bytes.sent"]) .. "</td></tr>\n")
    print("<tr><th>Traffic Received</th><td>" .. formatPackets(host["pkts.rcvd"]) .. " / ".. bytesToSize(host["bytes.rcvd"]) .. "</td></tr>\n")
-
-
-
    print("</table>\n")
-   elseif((page == "ndpi")) then
 
+   elseif((page == "traffic")) then
+     total = 0
+     for id, _ in ipairs(l4_keys) do
+	k = l4_keys[id][2]
+	total = total + host[k..".bytes.sent"] + host[k..".bytes.rcvd"]
+     end
+
+     if(total == 0) then
+	print("<div class=\"alert alert-error\"><img src=/img/warning.png> No traffic has been observed for the specified host</div>")
+     else
+      print [[
+
+      <table class="table table-bordered table-striped">
+      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+	</div>
+
+        <script type='text/javascript'>
+	       window.onload=function() {
+				   var refresh = 3000 /* ms */;
+				   do_pie("#topApplicationProtocols", '/host_l4_stats.lua', { if: "any", host: ]]
+	print("\""..host_ip.."\"")
+	print [[ }, "", refresh);
+				}
+
+	    </script><p>
+	]]
+
+     print("<tr><th>Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
+     
+
+     for id, _ in ipairs(l4_keys) do
+	label = l4_keys[id][1]
+	k = l4_keys[id][2]
+	sent = host[k..".bytes.sent"]
+	rcvd = host[k..".bytes.rcvd"]
+
+	if((sent > 0) or (rcvd > 0)) then
+	   -- if(true) then
+	    print("<tr><th>")
+	    print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	    t = sent+rcvd
+	    print("</th><td>" .. bytesToSize(sent) .. "</td><td>" .. bytesToSize(rcvd) .. "</td><td>")
+	    breakdownBar(sent, "Sent", rcvd, "Rcvd")
+	    print("</td><td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+	 end
+      end
+      print("</table></tr>\n")
+      print("</table>\n")
+   end
+
+   elseif((page == "ndpi")) then
    if(host["ndpi"] ~= nil) then
       print [[
 
       <table class="table table-bordered table-striped">
-      	<tr><th class="text-center">Protocol Overview</th><td colspan=4><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
 
         <script type='text/javascript'>
@@ -119,7 +169,7 @@ if((page == "overview") or (page == nil)) then
 	    </script><p>
 	]]
 
-      print("<tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th colspan=2>Total</th></tr>\n")
+      print("<tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
 
       total = host["bytes.sent"]+host["bytes.rcvd"]
 
@@ -130,14 +180,26 @@ if((page == "overview") or (page == nil)) then
       end
       table.sort(vals)
 
-      print("<tr><th>Total</th><td  class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td><td colspan=2>" ..  bytesToSize(total).. "</td></tr>\n")
+      print("<tr><th>Total</th><td  class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td>")
+
+      print("<td>")
+      breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
+      print("</td>\n")
+
+      print("<td colspan=2>" ..  bytesToSize(total).. "</td></tr>\n")
 
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
 	 print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
-	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td><td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
+
+	 print("<td>")
+	 breakdownBar(host["ndpi"][k]["bytes.sent"], "Sent", host["ndpi"][k]["bytes.rcvd"], "Rcvd")
+	 print("</td>\n")
+
+	 print("<td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
       print("</table>\n")
