@@ -34,15 +34,18 @@ class Ntop {
   PeriodicActivities *pa;
   Address *address;
   Prefs *prefs;
+  Geolocation *geo;
 
  public:
   Ntop();
   void registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
+  void loadGeolocation(char *dir);
   inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   void start();
+  inline Geolocation* getGeolocation()               { return(geo); }
   inline char* get_data_dir()                        { return(data_dir); }
   inline char* get_callbacks_dir()                   { return(callbacks_dir); }
   inline void registerInterface(NetworkInterface *i) { iface = i;        };

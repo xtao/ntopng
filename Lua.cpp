@@ -289,6 +289,14 @@ void lua_push_int_table_entry(lua_State *L, const char *key, u_int32_t value) {
 
 /* ****************************************** */
 
+void lua_push_float_table_entry(lua_State *L, const char *key, float value) {
+  lua_pushstring(L, key);
+  lua_pushnumber(L, value);
+  lua_settable(L, -3);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface;
 

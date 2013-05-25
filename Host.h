@@ -27,8 +27,10 @@
 class Host : public GenericHashEntry {
  private:
   u_int8_t mac_address[6];
-  char *symbolic_name;
+  u_int32_t asn;
+  char *symbolic_name, *country, *city;
   u_int16_t num_uses;
+  float latitude, longitude;
   IpAddress *ip;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
@@ -39,7 +41,7 @@ class Host : public GenericHashEntry {
   bool name_resolved;
   Mutex *m;
   bool localHost;
-
+  
   void updateLocal();
   void initialize(u_int8_t mac[6], bool init_all);
 
@@ -55,6 +57,9 @@ class Host : public GenericHashEntry {
   inline IpAddress* get_ip()                   { return(ip);          }
   inline u_int8_t*  get_mac()                  { return(mac_address); }
   inline char* get_name()                      { return(symbolic_name); }
+  inline char* get_country()                   { return(country); }
+  inline char* get_city()                      { return(city); }
+  inline u_int32_t get_asn()                   { return(asn); }
   inline bool isLocalHost()                    { return(localHost);   }
   char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);

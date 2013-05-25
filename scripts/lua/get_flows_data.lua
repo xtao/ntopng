@@ -25,7 +25,7 @@ if(ifname == nil) then
 end
 
 interface.find(ifname)
-hosts_stats = interface.getFlowsInfo()
+flows_stats = interface.getFlowsInfo()
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 total = 0
@@ -34,13 +34,13 @@ to_skip = (currentPage-1) * perPage
 --host = "a"
 vals = {}
 num = 0
-for key, value in pairs(hosts_stats) do
+for key, value in pairs(flows_stats) do
 --   print(key.."\n")
-   --print("==>"..hosts_stats[key]["bytes.sent"].."\n")
+   --print("==>"..flows_stats[key]["bytes.sent"].."\n")
 
    process = 1
    if(host ~= nil) then
-      if((hosts_stats[key]["src.ip"] ~= host) and (hosts_stats[key]["dst.ip"] ~= host)) then
+      if((flows_stats[key]["src.ip"] ~= host) and (flows_stats[key]["dst.ip"] ~= host)) then
 	 process = 0
       end
    end
@@ -50,20 +50,20 @@ for key, value in pairs(hosts_stats) do
       num = num + 1
       postfix = string.format("0.%04u", num)
       if(sortColumn == "column_client") then
-	 vkey = hosts_stats[key]["src.ip"]..postfix
+	 vkey = flows_stats[key]["src.ip"]..postfix
 	 elseif(sortColumn == "column_server") then
-	 vkey = hosts_stats[key]["dst.ip"]..postfix
+	 vkey = flows_stats[key]["dst.ip"]..postfix
 	 elseif(sortColumn == "column_bytes") then
-	 vkey = hosts_stats[key]["bytes"]+postfix
+	 vkey = flows_stats[key]["bytes"]+postfix
 	 elseif(sortColumn == "column_ndpi") then
-	 vkey = hosts_stats[key]["proto.ndpi"]..postfix
+	 vkey = flows_stats[key]["proto.ndpi"]..postfix
 	 elseif(sortColumn == "column_duration") then
-	 vkey = hosts_stats[key]["duration"]+postfix	  
+	 vkey = flows_stats[key]["duration"]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
-	 vkey = hosts_stats[key]["proto.l4"]..postfix
+	 vkey = flows_stats[key]["proto.l4"]..postfix
       else
 	 -- By default sort by bytes
-	 vkey = hosts_stats[key]["bytes"]+postfix
+	 vkey = flows_stats[key]["bytes"]+postfix
       end
       
       --print("-->"..num.."="..vkey.."\n")
@@ -83,9 +83,9 @@ end
 
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
-   value = hosts_stats[key]
+   value = flows_stats[key]
 
---   print(key.."="..hosts_stats[key]["duration"].."\n");
+--   print(key.."="..flows_stats[key]["duration"].."\n");
 --   print(key.."=".."\n");
     -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
    if(to_skip > 0) then

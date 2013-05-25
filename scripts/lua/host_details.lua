@@ -84,7 +84,16 @@ print [[
 if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
-   print("<tr><th>IP Address</th><td>" .. host["ip"] .. "</td></tr>\n")
+   print("<tr><th>IP Address</th><td>" .. host["ip"])
+   
+   if((host["city"] ~= "") or (host["country"] ~= "")) then
+      print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
+   end
+   
+   print("</td></tr>\n")
+
+   if(host["asn"] ~= 0) then print("<tr><th>ASN</th><td>"..host["asn"].."</td></tr>\n") end
+
    print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
    print("</td></tr>\n")

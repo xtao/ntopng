@@ -1,5 +1,10 @@
 AC_INIT([Makefile.in], 0.1)
 
+dnl> Add /usr/local/ /opt/local
+CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"
+CPPFLAGS="${CPPFLAGS} -I/usr/local/include -I/opt/local/include"
+LDFLAGS="${LDFLAGS} -L/usr/local/lib -L/opt/local/lib"
+
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 SYSTEM=`uname -s`
@@ -51,6 +56,25 @@ echo "Please install libglib-2.0 (RRD prerequisite)"
 exit
 fi
 
+dnl> Check for package install
+AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum])
+AC_HAVE_HEADERS(GeoIP.h)
+if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum}" = ".yes" &&
+   test ".${ac_cv_header_GeoIP_h}" = ".yes"; then
+
+AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum_v6])
+if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
+   AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP IPv6 support is present])
+  dnl> LIBS="$LIBS -lGeoIP"
+  AC_DEFINE_UNQUOTED(HAVE_GEOIP, 1, [GeoIP support is present])
+  GEOIP_LIB="-lGeoIP" 
+  dnl> Download databases
+  echo "Please do not forget to download GeoIP databases doing: make geoip"
+fi
+else
+AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
+GEOIP_DEP=""
+fi
 
 
 GMAKE=`which gmake`
@@ -71,8 +95,11 @@ AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(LINK_OPTS)
 AC_SUBST(LIBGNUTLS)
+AC_SUBST(GEOIP_LIB)
 AC_SUBST(GMAKE)
-
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)
 

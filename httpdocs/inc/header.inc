@@ -12,9 +12,15 @@
     <script src="/js/jquery.peity.min.js"></script>
     <script src="/js/rickshaw.min.js"></script>
     <script src="/js/pie-chart.js"></script>
-
+    <link href="/css/flags.css" rel="stylesheet">
     <link href="/css/pie-chart.css" rel="stylesheet">
     <link href="/css/rickshaw.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/vertical-text.css" type="text/css" media="all" />
+    <!--[if IE]>
+    <link rel="stylesheet" href="/css/vertical-text-ie.css" type="text/css" media="all" />
+    <![endif]-->
+
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>

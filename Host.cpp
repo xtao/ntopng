@@ -48,6 +48,8 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6]) : GenericHashEntry(_iface)
 Host::~Host() {
   if(symbolic_name) free(symbolic_name);
   if(ndpiStats) delete ndpiStats;
+  if(country) free(country);
+  if(city)    free(city);
   delete ip;
   delete m;
 }
@@ -68,10 +70,13 @@ void Host::initialize(u_int8_t mac[6], bool init_all) {
       symbolic_name = strdup(rsp);
     else
       ntop->getRedis()->queueHostToResolve(host);
+
+    asn = ntop->getGeolocation()->getAS(ip);
+    ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
     
     updateLocal();
   } else
-    localHost = false;
+    localHost = false, asn = 0, country = NULL, city = NULL;
 }
 
 /* *************************************** */
@@ -107,9 +112,16 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_newtable(vm);
 
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
+
     lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
+    lua_push_int_table_entry(vm, "asn", asn);
+    lua_push_float_table_entry(vm, "latitude", latitude);
+    lua_push_float_table_entry(vm, "longitude", longitude);
+    lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
+    lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
+
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
     lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());

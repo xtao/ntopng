@@ -77,7 +77,7 @@ void sigproc(int sig) {
 
 int main(int argc, char *argv[]) {
   u_char c;
-  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR);
+  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  "./httpdocs";
   u_int http_port = 3000;
   bool change_user = true, localnets = false;
   NetworkInterface *iface = NULL;
@@ -178,7 +178,8 @@ int main(int argc, char *argv[]) {
 #endif
 
   ntop->registerInterface(iface);
-  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, "./httpdocs", "./scripts/lua"));
+  ntop->loadGeolocation(docsdir);
+  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docsdir, "./scripts/lua"));
 
   /*
     We have created the network interface and thus changed user. Let's not check

@@ -93,6 +93,7 @@ extern "C" {
 #ifdef HAVE_PF_RING
 #include "PFRingNetworkInterface.h"
 #endif
+#include "Geolocation.h"
 #include "Host.h"
 #include "Flow.h"
 #include "FlowHash.h"

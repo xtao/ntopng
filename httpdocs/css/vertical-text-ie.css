@@ -1,0 +1,16 @@
+div.vertical
+{
+	position: relative;
+	height: 210px;
+	width: 45px;
+	margin-left: 0;
+	padding-right: 10px;
+    writing-mode: tb-rl;
+    filter: flipv fliph;
+}
+
+th.vertical
+{
+	padding-bottom: 10px;
+	vertical-align: bottom;
+}

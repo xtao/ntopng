@@ -66,6 +66,7 @@ Ntop::~Ntop() {
 
   delete address;
   delete pa;
+  delete geo;
   delete redis;
   delete globals;
 }
@@ -77,3 +78,8 @@ void Ntop::start() {
   address->startResolveAddressLoop();
 }
 
+/* ******************************************* */
+
+void Ntop::loadGeolocation(char *dir) {
+  geo = new Geolocation(dir);
+}

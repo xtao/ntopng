@@ -23,8 +23,8 @@ LIBRRDTOOL_LIB=$(LIBRRDTOOL_HOME)/src/.libs/librrd_th.a
 
 ######
 TARGET = ntopng
-LIBS = $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ -lm -ldl -lpthread
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) -D SVN_RELEASE="@SVN_RELEASE@"
+LIBS = @LDFLAGS@ $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ -lm -ldl -lpthread
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) -D SVN_RELEASE="@SVN_RELEASE@" @CPPFLAGS@
 
 ifeq ($(OS),Linux)
 LIBS += -lrt
@@ -72,4 +72,19 @@ clean:
 
 veryclean:
 	-rm -rf nDPI
+
+
+geoip: httpdocs/geoip/GeoLiteCity.dat httpdocs/geoip/GeoLiteCityv6.dat httpdocs/geoip/GeoIPASNum.dat httpdocs/geoip/GeoIPASNumv6.dat
+
+httpdocs/geoip/GeoLiteCity.dat:
+	cd httpdocs/geoip; wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz; gunzip -f GeoLiteCity.dat.gz
+
+httpdocs/geoip/GeoLiteCityv6.dat:
+	cd httpdocs/geoip; wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz; gunzip -f GeoLiteCityv6.dat.gz
+
+httpdocs/geoip/GeoIPASNum.dat:
+	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip -f GeoIPASNum.dat.gz
+
+httpdocs/geoip/GeoIPASNumv6.dat:
+	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip -f GeoIPASNumv6.dat.gz
 

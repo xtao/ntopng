@@ -9,7 +9,7 @@
 	 $("#table-hosts").datatable({
 	   url: "/get_hosts_data.lua",
 	       showPagination: true,
-	       title: "Hosts",
+	       title: "Hosts List",
 	        columns: [
 			     {
 			     title: "IP Address",
