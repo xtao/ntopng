@@ -46,11 +46,12 @@ class Ntop {
   inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   void start();
-  inline Geolocation* getGeolocation()               { return(geo); }
-  inline char* get_data_dir()                        { return(data_dir); }
-  inline char* get_callbacks_dir()                   { return(callbacks_dir); }
-  inline void registerInterface(NetworkInterface *i) { iface = i;        };
-  inline void registerHTTPserver(HTTPserver *h)      { httpd = h;        };
+  inline Geolocation* getGeolocation()               { return(geo);            }
+  inline char* get_data_dir()                        { return(data_dir);       };
+  inline char* get_callbacks_dir()                   { return(callbacks_dir);  };
+  inline Categorization* get_categorization()        { return(categorization); };
+ inline void registerInterface(NetworkInterface *i)  { iface = i;              };
+  inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   inline void setCategorization(Categorization *c)   { categorization = c; };
   inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
   inline HTTPserver*       get_HTTPserver()       { return(httpd); };

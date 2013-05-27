@@ -185,6 +185,9 @@ void Host::setName(char *name) {
   if(symbolic_name) free(symbolic_name);
   symbolic_name = strdup(name);
   m->unlock(__FILE__, __LINE__);
+
+  if(ntop->get_categorization())
+    ntop->get_categorization()->categorizeHostName(symbolic_name);
 }
 
 /* ***************************************** */

@@ -51,16 +51,44 @@ Categorization::~Categorization() {
 /* ***************************************** */
 
 void Categorization::categorizeHostName(char *_url) {
-  char url[256];
-  struct http_response *hresp;
+  char key[256], buf[256];
 
-  snprintf(url, sizeof(url), "http://service.block.si/getRating?url=%s&apikey=%s", _url, license_key);
+  snprintf(key, sizeof(key), "domain.categorized.%s", _url);
+  if(ntop->getRedis()->get(key, buf, sizeof(buf)) == 0) {
+    ntop->getRedis()->expire(key, 86400);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, buf);
+  } else {
+    struct http_response *hresp;
 
-  hresp = http_get(url, "User-agent:ntopng\r\n");
+    snprintf(buf, sizeof(buf), "http://service.block.si/getRating?url=%s&apikey=%s", _url, license_key);
 
-  printf("%d\n", hresp->status_code_int);
-  printf("%s\n", hresp->body);
-  http_response_free(hresp);
+    hresp = http_get(buf, "User-agent:ntopng\r\n");
+
+#if 0
+    printf("%d\n", hresp->status_code_int);
+    printf("%s\n", hresp->body);
+#endif
+
+    if(hresp->status_code_int == 200) {
+      char *doublecolumn = strrchr(hresp->body, ':');
+
+      if(doublecolumn) {
+	char *end;
+
+	doublecolumn++;
+	doublecolumn++;
+
+	if((end = strchr(doublecolumn, '"')) != NULL) {
+	  end[0] = '\0';
+
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
+	  ntop->getRedis()->set(key, doublecolumn, 86400);
+	}
+      }
+    }
+
+    http_response_free(hresp);
+  }
 }
 
 /* **************************************************** */
