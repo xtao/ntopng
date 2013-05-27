@@ -138,6 +138,48 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
 /* **************************************** */
 
+int Redis::queueDomainToCategorize(char *domainname) {
+  if(ntop->getPrefs()->is_categorization_enabled()) {
+    int rc;
+    char key[128], *val;
+
+    l->lock(__FILE__, __LINE__);
+
+    snprintf(key, sizeof(key), "domain.categorized.%s", domainname);
+  
+    /*
+      Add only if the domain has not been categorized yet
+    */
+    if(credis_get(redis, key, &val) < 0)
+      rc = credis_rpush(redis, "domain.tocategorize", domainname);
+
+    l->unlock(__FILE__, __LINE__);
+
+    return(rc);
+  } else
+    return(0);
+}
+
+/* **************************************** */
+
+int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
+  char *val;
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_lpop(redis, (char*)"domain.tocategorize", &val);
+  l->unlock(__FILE__, __LINE__);
+
+  if(rc == 0)
+    snprintf(domainname, domainname_len, "%s", val);
+  else
+    domainname[0] = '\0';
+
+  return(rc);
+}
+
+/* **************************************** */
+
 void Redis::setDefaults() {
   setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");

@@ -42,6 +42,9 @@ class Redis {
   int queueHostToResolve(char *hostname);
   int popHostToResolve(char *hostname, u_int hostname_len);
 
+  int queueDomainToCategorize(char *domainname);
+  int popDomainToCategorize(char *domainname, u_int domainname_len);
+
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 };

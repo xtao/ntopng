@@ -35,6 +35,7 @@ class Ntop {
   Address *address;
   Prefs *prefs;
   Geolocation *geo;
+  Categorization *categorization;
 
  public:
   Ntop();
@@ -50,7 +51,7 @@ class Ntop {
   inline char* get_callbacks_dir()                   { return(callbacks_dir); }
   inline void registerInterface(NetworkInterface *i) { iface = i;        };
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;        };
-
+  inline void setCategorization(Categorization *c)   { categorization = c; };
   inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
   inline HTTPserver*       get_HTTPserver()       { return(httpd); };
 

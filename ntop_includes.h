@@ -100,6 +100,7 @@ extern "C" {
 #include "PeriodicActivities.h"
 #include "Lua.h"
 #include "Address.h"
+#include "Categorization.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
 

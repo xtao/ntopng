@@ -716,14 +716,14 @@ int Lua::handle_script_request(char *script_path,
 
     tmp_response = MHD_create_response_from_callback(where, 2048, &file_reader, (void*)a, file_free_callback);
 
-
     /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
     ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);
     MHD_destroy_response(tmp_response);
-  } else
-    ret = page_error(connection, url, lua_tostring(L, -1));
- 
-  //fclose(tmp_file);
+  } else {
+    ret = page_error(connection, url, lua_tostring(L, -1)); 
+    close(tmp_file);
+  }
+
   unlink(tmp_filename);
 
   return(ret);

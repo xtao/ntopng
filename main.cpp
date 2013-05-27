@@ -37,6 +37,7 @@ static void help() {
 	 "                        | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
+	 "-b <block.si key>       | Categorizazion key provided by block.si\n"
 	 "-w <http port>          | HTTP port\n"
 	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
@@ -87,10 +88,14 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "hi:w:r:sm:n:d:v")) != '?') {
+  while((c = getopt(argc, argv, "b:hi:w:r:sm:n:d:v")) != '?') {
     if(c == 255) break;
 
     switch(c) {
+    case 'b':
+      ntop->setCategorization(new Categorization(optarg));
+      prefs->enable_categorization();
+      break;
     case 'm':
       ntop->setLocalNetworks(optarg);
       localnets = true;

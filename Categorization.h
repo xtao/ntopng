@@ -3,7 +3,7 @@
  * (C) 2013 - ntop.org
  *
  *
- * This program is free software; you can redistribute it and/or modify
+ * This program is free software; you can addresstribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -19,18 +19,24 @@
  *
  */
 
+#ifndef _CATEGORIZATION_H_
+#define _CATEGORIZATION_H_
+
 #include "ntop_includes.h"
 
-/* ******************************************* */
+class Categorization {
+  u_int32_t num_categorized_categorizationes, num_categorized_fails;
+  char *license_key;
 
-Prefs::Prefs() {
-  enable_dns_resolution = sniff_dns_responses = true;
-  categorization_enabled = false;
-}
+  pthread_t categorizeThreadLoop;
 
-/* ******************************************* */
+ public:
+  Categorization(char *_license_key);
+  ~Categorization();
 
-Prefs::~Prefs() {
-  ;
-}
+  void startCategorizeCategorizationLoop();
+  void categorizeHostName(char *numeric_ip);
+  char* findCategory(char *url);
+};
 
+#endif /* _CATEGORIZATION_H_ */
