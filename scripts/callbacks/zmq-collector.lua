@@ -4,30 +4,30 @@
 
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
-require "zmq"
+local json = require ("dkjson")
 
-local context = zmq.init(1)
-local endpoint = "tcp://localhost:5556"
-local topic = "flow"
+-- nprobe --zmq tcp://127.0.0.1:5556
 
-print("Collecting flows...")
+ntop.zmq_connect("tcp://127.0.0.1:5556", "flow")
 
-local subscriber = context:socket(zmq.SUB)
+print("Connected\n")
 
-subscriber:connect(endpoint)
-subscriber:setopt(zmq.SUBSCRIBE, topic)
+i = 0
+while(i < 5) do
+  flow = ntop.zmq_receive()
+  print("Flow JSON: " .. flow .. "\n")
 
---TODO stop condition
-while 1 do
-  local hdr = subscriber:recv()
-  local msg = subscriber:recv()
+  local obj, pos, err = json.decode(flow, 1, nil)
+  if err then
+    print("Error:", err)
+  else
+    for key,value in pairs(obj) do
+      print("[" .. key .. "=" .. value .. "]")
+    end
+  end
 
-  print("recvd flow: ", msg, "\n")
-
-  --TODO process flow
-
+  i = i + 1
 end
 
-subscriber:close()
-context:term()
+ntop.zmq_disconnect()
 

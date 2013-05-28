@@ -281,7 +281,7 @@ static int ntop_zmq_receive(lua_State* vm) {
     
     payload[h.size] = '\0';
     lua_pushfstring(vm, "%s", payload);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%u] %s", h.size, payload);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
     free(payload);
     return(1);
   } else
