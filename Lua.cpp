@@ -374,6 +374,65 @@ static int ntop_get_interface_flow_by_key(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_process_flow(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  IpAddress src_ip, dst_ip;
+  u_int16_t src_port, dst_port;
+  u_int16_t vlan_id;
+  u_int16_t proto_id;
+  u_int8_t l4_proto;
+  u_int in_pkts, in_bytes, out_pkts, out_bytes;
+  char *str;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((str = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+  src_ip.set_from_string(str);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((str = (char*)lua_tostring(vm, 2)) == NULL)     return(-1);
+  dst_ip.set_from_string(str);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(0);
+  src_port = (u_int32_t)lua_tonumber(vm, 3);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TNUMBER)) return(0);
+  dst_port = (u_int32_t)lua_tonumber(vm, 4);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 5, LUA_TNUMBER)) return(0);
+  vlan_id = (u_int32_t)lua_tonumber(vm, 5);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 6, LUA_TNUMBER)) return(0);
+  proto_id = (u_int32_t)lua_tonumber(vm, 6);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 7, LUA_TNUMBER)) return(0);
+  l4_proto = (u_int32_t)lua_tonumber(vm, 7);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 8, LUA_TNUMBER)) return(0);
+  in_pkts = (u_int32_t)lua_tonumber(vm, 8);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 9, LUA_TNUMBER)) return(0);
+  in_bytes = (u_int32_t)lua_tonumber(vm, 9);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 10, LUA_TNUMBER)) return(0);
+  out_pkts = (u_int32_t)lua_tonumber(vm, 10);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 11, LUA_TNUMBER)) return(0);
+  out_bytes = (u_int32_t)lua_tonumber(vm, 11);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(false);
+  }
+
+  ntop_interface->flow_processing(&src_ip, &dst_ip, src_port, dst_port, vlan_id, proto_id, l4_proto,
+    in_pkts, in_bytes, out_pkts, out_bytes);
+
+  return(true);
+}
+
+/* ****************************************** */
+
 void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -624,6 +683,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getFlowsInfo",   ntop_get_interface_flows_info },
   { "getFlowPeers",   ntop_get_interface_flows_peers },
   { "findFlowByKey",  ntop_get_interface_flow_by_key },
+  { "processFlow",    ntop_process_flow },
   { NULL,             NULL}
 };
 

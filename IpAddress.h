@@ -60,6 +60,7 @@ class IpAddress {
   inline bool equal(struct ndpi_in6_addr *ip6_addr)   { if((addr.ipVersion == 6) && (memcmp(&addr.ipType.ipv6, ip6_addr, sizeof(struct ndpi_in6_addr)) == 0)) return(true); else return(false); };
   inline bool equal(IpAddress *_ip)                    { return(this->compare(_ip) == 0); };
 
+  void set_from_string(char *string);
   int compare(IpAddress *ip);
   u_int key();
   void dump(struct sockaddr *sa);

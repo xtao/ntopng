@@ -30,16 +30,7 @@ IpAddress::IpAddress() {
 /* ******************************************* */
 
 IpAddress::IpAddress(char *string) {
-  if(strchr(string, '.')) {
-    addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = inet_addr(string);
-  } else {
-    if(inet_pton(AF_INET6, string, &addr.ipType.ipv6) <= 0) {
-      /* We failed */
-      addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = 0;
-    } else {
-      addr.ipVersion = 6, addr.localHost = 0;
-    }
-  }
+  set_from_string(string);
 }
 
 /* ******************************************* */
@@ -58,6 +49,21 @@ IpAddress::IpAddress(u_int32_t _ipv4) {
 
 IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
   set_ipv6(_ipv6);
+}
+
+/* ******************************************* */
+
+void IpAddress::set_from_string(char *string) {
+  if(strchr(string, '.')) {
+    addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = inet_addr(string);
+  } else {
+    if(inet_pton(AF_INET6, string, &addr.ipType.ipv6) <= 0) {
+      /* We failed */
+      addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = 0;
+    } else {
+      addr.ipVersion = 6, addr.localHost = 0;
+    }
+  }
 }
 
 /* ******************************************* */

@@ -89,8 +89,10 @@ class NetworkInterface {
   void flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 		       u_int16_t src_port, u_int16_t dst_port,
 		       u_int16_t vlan_id,
+		       u_int16_t proto_id,
 		       u_int8_t l4_proto,
-		       u_int pkts, u_int bytes);
+		       u_int in_pkts, u_int in_bytes,
+		       u_int out_pkts, u_int out_bytes);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();

@@ -145,8 +145,10 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 				       u_int16_t src_port, u_int16_t dst_port,
 				       u_int16_t vlan_id,
+				       u_int16_t proto_id,
 				       u_int8_t l4_proto,
-				       u_int pkts, u_int bytes)
+				       u_int in_pkts, u_int in_bytes,
+				       u_int out_pkts, u_int out_bytes)
 {
   u_int8_t eth_src[6] = {0}, eth_dst[6] = {0};
   bool src2dst_direction;
@@ -156,8 +158,10 @@ void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 
   flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
 
-  if(flow == NULL) return; 
-  else flow->addStats(src2dst_direction, pkts, bytes);
+  if(flow == NULL) return;
+
+  flow->addStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes);
+  flow->setDetectedProtocol(proto_id, l4_proto);
 }
 
 /* **************************************************** */
