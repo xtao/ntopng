@@ -31,6 +31,14 @@
 
 #include "third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c"
 
+#define MSG_VERSION 0
+
+struct zmq_msg_hdr {
+  char url[32];
+  u_int32_t version;
+  u_int32_t size;
+};
+
 /* ******************************* */
 
 Lua::Lua() {
@@ -184,6 +192,103 @@ static int ntop_list_dir_files(lua_State* vm) {
 
   return(1);
 }
+
+#ifdef HAVE_LIBZMQ
+
+/* ****************************************** */
+
+static int ntop_zmq_connect(lua_State* vm) {
+  char *endpoint, *topic;
+  void *context, *subscriber;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((endpoint = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((topic = (char*)lua_tostring(vm, 2)) == NULL)     return(-1);
+
+  context = zmq_ctx_new(), subscriber = zmq_socket(context, ZMQ_SUB);
+
+  if(zmq_connect(subscriber, endpoint) != 0) {
+    zmq_close(subscriber);
+    zmq_ctx_destroy(context);
+    return(-1);
+  }
+
+  if(zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, topic, strlen(topic)) != 0) {
+    zmq_close(subscriber);
+    zmq_ctx_destroy(context);
+    return -1;
+  }
+
+  lua_pushlightuserdata(vm, context);
+  lua_setglobal(vm, "zmq_context");
+
+  lua_pushlightuserdata(vm, subscriber);
+  lua_setglobal(vm, "zmq_subscriber");
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_zmq_disconnect(lua_State* vm) {
+  void *context, *subscriber;
+
+  lua_getglobal(vm, "zmq_context");
+  if((context = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: NULL context");
+    return(0);
+  }
+
+  lua_getglobal(vm, "zmq_subscriber");
+  if((subscriber = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: NULL subscriber");
+    return(0);
+  }
+
+  zmq_close(subscriber);
+  zmq_ctx_destroy(context);
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_zmq_receive(lua_State* vm) {
+  void *subscriber;
+  int size;
+  struct zmq_msg_hdr h;
+  char *payload;
+  int payload_len;
+
+  lua_getglobal(vm, "zmq_subscriber");
+  if((subscriber = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: NULL subscriber");
+    return(0);
+  }
+
+  size = zmq_recv(subscriber, &h, sizeof(h), 0); 
+  
+  if(size != sizeof(h) || h.version != MSG_VERSION) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unsupported publisher version [%d]", h.version);
+    return -1;
+  }
+
+  payload_len = h.size + 1;
+  if((payload = (char*)malloc(payload_len)) != NULL) {
+    size = zmq_recv(subscriber, payload, payload_len, 0); 
+    
+    payload[h.size] = '\0';
+    lua_pushfstring(vm, "%s", payload);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%u] %s", h.size, payload);
+    free(payload);
+    return(1);
+  } else
+    return(-1);
+}
+
+#endif /* HAVE_LIBZMQ */
 
 /* ****************************************** */
 
@@ -532,6 +637,11 @@ static const luaL_Reg ntop_reg[] = {
   { "mkdir",       ntop_mkdir_tree },
   { "exists",      ntop_get_file_dir_exists },
   { "readdir",     ntop_list_dir_files },
+#ifdef HAVE_LIBZMQ
+  { "zmq_connect",    ntop_zmq_connect },
+  { "zmq_disconnect", ntop_zmq_disconnect },
+  { "zmq_receive",    ntop_zmq_receive },
+#endif
   { NULL,          NULL}
 };
 

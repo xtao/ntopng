@@ -2057,8 +2057,6 @@ if test $SYSTEM = "Darwin"; then
    fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnutls" >&5
-$as_echo_n "checking for gnutls... " >&6; }
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2849,6 +2847,62 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq_send in -lzmq" >&5
+$as_echo_n "checking for zmq_send in -lzmq... " >&6; }
+if ${ac_cv_lib_zmq_zmq_send+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lzmq  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char zmq_send ();
+int
+main ()
+{
+return zmq_send ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_zmq_zmq_send=yes
+else
+  ac_cv_lib_zmq_zmq_send=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_zmq_zmq_send" >&5
+$as_echo "$ac_cv_lib_zmq_zmq_send" >&6; }
+if test "x$ac_cv_lib_zmq_zmq_send" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBZMQ 1
+_ACEOF
+
+  LIBS="-lzmq $LIBS"
+
+fi
+
+if test "x$ac_cv_lib_zmq_zmq_send" = xyes; then :
+ LDFLAGS="${LDFLAGS} -lzmq"
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ZMQ 1
+_ACEOF
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnutls" >&5
+$as_echo_n "checking for gnutls... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnutls_priority_set in -lgnutls" >&5
 $as_echo_n "checking for gnutls_priority_set in -lgnutls... " >&6; }
 if ${ac_cv_lib_gnutls_gnutls_priority_set+:} false; then :

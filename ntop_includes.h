@@ -72,6 +72,10 @@ extern "C" {
 #endif
 };
 
+#ifdef HAVE_LIBZMQ
+#include <zmq.h>
+#endif
+
 #include "ntop_defines.h"
 #include "patricia.h"
 #include "Trace.h"
