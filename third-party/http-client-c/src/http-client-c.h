@@ -35,7 +35,7 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #pragma comment(lib, "Ws2_32.lib")
-#elif defined(_linux)
+#elif defined(linux)
 #include <sys/socket.h>
 #elif defined(__FreeBSD__) || defined(__APPLE__) /* ntop */
 #include <sys/socket.h>
@@ -47,7 +47,7 @@
 #endif
 
 #include <errno.h>
-#include "stringx.h";
+#include "stringx.h"
 #include "urlparser.h"
 
 /*

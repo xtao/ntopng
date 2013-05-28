@@ -73,7 +73,7 @@ static void pfring_packet_callback(const struct pfring_pkthdr *h, const u_char *
 static void* packetPollLoop(void* ptr) {
   PF_RINGInterface *iface = (PF_RINGInterface*)ptr;
 
-  pfring_loop(pfring_handle, pfring_packet_callback, (u_char*) iface, 1 /* wait mode */);
+  pfring_loop(iface->get_pfring_handle(), pfring_packet_callback, (u_char*) iface, 1 /* wait mode */);
 
   return(NULL);
 }
@@ -97,10 +97,10 @@ void PF_RINGInterface::shutdown() {
 u_int PF_RINGInterface::getNumDroppedPackets() {
   pfring_stat stats;
  
-  if(pfring_stats(pfring_handle, &stats) >= 0) {
-    return(pcapStat.drop);
-  } else
-    return(0);
+  if(pfring_stats(pfring_handle, &stats) >= 0)
+    return(stats.drop);
+
+  return(0);
 }
 
 /* **************************************************** */
