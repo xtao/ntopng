@@ -60,7 +60,7 @@ void Categorization::categorizeHostName(char *_url) {
   } else {
     struct http_response *hresp;
 
-    snprintf(buf, sizeof(buf), "http://service.block.si/getRating?url=%s&apikey=%s", _url, license_key);
+    snprintf(buf, sizeof(buf), "http://cloud.ntop.org/getCategory?url=%s&apikey=%s", _url, license_key);
 
     hresp = http_get(buf, "User-agent:ntopng\r\n");
 
