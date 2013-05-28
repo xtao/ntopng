@@ -30,14 +30,14 @@ extern "C" {
 static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
 	 "Usage: ntopng -m <local nets> -d <data dir> [-n mode] [-i <iface>] [-w <http port>]\n"
-	 "              [-r <redis>] [-s] [-v]\n\b"
+	 "              [-d <path>] [-c <cloud key>] [-r <redis>] [-s] [-v]\n\b"
 	 "-n <mode>               | DNS address resolution mode\n"
 	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
 	 "                        | 1 - Decode DNS responses and don't resolve numeric IPs\n"
 	 "                        | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
-	 "-b <block.si key>       | Categorizazion key provided by block.si\n"
+	 "-c <cloud key>          | Cloud key used to access ntop services on the cloud\n"
 	 "-w <http port>          | HTTP port\n"
 	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
@@ -88,11 +88,11 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "b:hi:w:r:sm:n:d:v")) != '?') {
+  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:d:v")) != '?') {
     if(c == 255) break;
 
     switch(c) {
-    case 'b':
+    case 'c':
       ntop->setCategorization(new Categorization(optarg));
       prefs->enable_categorization();
       break;
