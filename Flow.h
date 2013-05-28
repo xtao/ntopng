@@ -46,8 +46,8 @@ class Flow : public GenericHashEntry {
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol,
-       u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, u_int16_t _src_port,
-       u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port);
+       u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
+       u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port);
   ~Flow();
 
   void allocFlowMemory();
@@ -75,11 +75,7 @@ class Flow : public GenericHashEntry {
   void print_peers(lua_State* vm);
   inline u_int32_t key()                          { return(src_host->key()+dst_host->key()+src_port+dst_port+vlanId+protocol); }
   void lua(lua_State* vm, bool detailed_dump);
-  bool equal(u_int32_t _src_ip, u_int32_t _dst_ip,
-	     u_int16_t _src_port, u_int16_t _dst_port,
-	     u_int16_t _vlanId, u_int8_t _protocol,
-	     bool *src2dst_direction);
-  bool equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
+  bool equal(IpAddress *_src_ip, IpAddress *_dst_ip,
 	     u_int16_t _src_port, u_int16_t _dst_port,
 	     u_int16_t _vlanId, u_int8_t _protocol,
 	     bool *src2dst_direction);

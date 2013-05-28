@@ -25,15 +25,15 @@
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
-	   u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, u_int16_t _dst_port) : GenericHashEntry(_iface) {
+	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
+	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
- detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
+  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
 
-  iface->findFlowHosts(_vlanId, src_mac, _src_ipv4, _src_ipv6, &src_host, dst_mac, _dst_ipv4, _dst_ipv6, &dst_host);
+  iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
   first_seen = last_seen = iface->getTimeLastPktRcvd();
@@ -261,7 +261,7 @@ void Flow::update_hosts_stats() {
 
 /* *************************************** */
 
-bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port, 
+bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port, 
 		 u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol,
 		 bool *src2dst_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
@@ -270,23 +270,6 @@ bool Flow::equal(u_int32_t _src_ip, u_int32_t _dst_ip, u_int16_t _src_port,
     *src2dst_direction = true;
     return(true);
   } else if(dst_host->equal(_src_ip) && src_host->equal(_dst_ip) && (_dst_port == src_port) && (_src_port == dst_port)) {
-    *src2dst_direction = false;
-    return(true);
-  } else
-    return(false);
-}
-
-/* *************************************** */
-
-bool Flow::equal(struct ndpi_in6_addr *ip6_src, struct ndpi_in6_addr *ip6_dst,
-		 u_int16_t _src_port, u_int16_t _dst_port, u_int16_t _vlanId,
-		 u_int8_t _protocol, bool *src2dst_direction) {
-  if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
-
-  if(src_host->equal(ip6_src) && dst_host->equal(ip6_dst) && (_src_port == src_port) && (_dst_port == dst_port)) {
-    *src2dst_direction = true;
-    return(true);
-  } else if(dst_host->equal(ip6_src) && src_host->equal(ip6_dst) && (_dst_port == src_port) && (_src_port == dst_port)) {
     *src2dst_direction = false;
     return(true);
   } else

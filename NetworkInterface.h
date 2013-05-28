@@ -50,11 +50,11 @@ class NetworkInterface {
 
   void dropPrivileges();
   void deleteDataStructures();
-  Flow* getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
-		struct ndpi_iphdr *iph,
-		struct ndpi_ip6_hdr *ip6,
-		u_int16_t ipsize, bool *src2dst_direction,
-		u_int8_t *l4_proto);
+  Flow* getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
+  		IpAddress *src_ip, IpAddress *dst_ip,
+  		u_int16_t src_port, u_int16_t dst_port,
+		u_int8_t l4_proto,
+		bool *src2dst_direction);
 
  public:
   NetworkInterface(char *name, bool change_user);
@@ -75,8 +75,8 @@ class NetworkInterface {
   inline int get_datalink()        { return(pcap_datalink_type); };
 
   void findFlowHosts(u_int16_t vlan_id,
-		     u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src, 
-		     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst);
+		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 
+		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
   Flow* findFlowByKey(u_int32_t key);
 
   void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);

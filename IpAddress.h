@@ -46,7 +46,7 @@ class IpAddress {
 
  public:
   IpAddress();
-  IpAddress(char *numeric_ip);
+  IpAddress(char *string);
   IpAddress(IpAddress *ip);
   IpAddress(u_int32_t _ipv4);
   IpAddress(struct ndpi_in6_addr *_ipv6);
@@ -58,6 +58,7 @@ class IpAddress {
   inline struct ipAddress* getIP()                    { return(&addr); };
   inline bool equal(u_int32_t ipv4_addr)              { if((addr.ipVersion == 4) && (addr.ipType.ipv4 == ipv4_addr)) return(true); else return(false); };
   inline bool equal(struct ndpi_in6_addr *ip6_addr)   { if((addr.ipVersion == 6) && (memcmp(&addr.ipType.ipv6, ip6_addr, sizeof(struct ndpi_in6_addr)) == 0)) return(true); else return(false); };
+  inline bool equal(IpAddress *_ip)                    { return(this->compare(_ip) == 0); };
 
   int compare(IpAddress *ip);
   u_int key();

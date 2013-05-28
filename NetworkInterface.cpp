@@ -115,67 +115,19 @@ void NetworkInterface::dumpFlows() {
 
 /* **************************************************** */
 
-Flow* NetworkInterface::getFlow(struct ndpi_ethhdr *eth, u_int16_t vlan_id,
-				struct ndpi_iphdr *iph,
-				struct ndpi_ip6_hdr *ip6,
-				u_int16_t ipsize, bool *src2dst_direction,
-				u_int8_t *l4_proto) {
-  u_int16_t l4_packet_len;
-  struct ndpi_tcphdr *tcph = NULL;
-  struct ndpi_udphdr *udph = NULL;
-  u_int16_t src_port, dst_port;
+Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
+  				IpAddress *src_ip, IpAddress *dst_ip,
+  				u_int16_t src_port, u_int16_t dst_port,
+				u_int8_t l4_proto,
+				bool *src2dst_direction) {
   Flow *ret;
-  u_int8_t *l4;
 
-  if(iph != NULL) {
-    /* IPv4 */
-    if(ipsize < 20)
-      return NULL;
-
-    if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
-       || (iph->frag_off & htons(0x1FFF)) != 0) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "IPv4 fragments are not handled yet");
-      return NULL;
-    }
-
-    l4_packet_len = ntohs(iph->tot_len) - (iph->ihl * 4);
-    *l4_proto = iph->protocol;
-    l4 = ((u_int8_t *) iph + iph->ihl * 4);
-  } else {
-    /* IPv6 */
-
-    if(ipsize < sizeof(const struct ndpi_ip6_hdr))
-      return NULL;
-
-    l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen)-sizeof(const struct ndpi_ip6_hdr);
-    *l4_proto = ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt;
-    l4 = (u_int8_t*)ip6 + sizeof(const struct ndpi_ip6_hdr);
-  }
-
-  if((*l4_proto == IPPROTO_TCP) && (l4_packet_len >= 20)) {
-    // tcp
-    tcph = (struct ndpi_tcphdr *)l4;
-    src_port = tcph->source, dst_port = tcph->dest;
-  } else if((*l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
-    // udp
-    udph = (struct ndpi_udphdr *)l4;
-    src_port = udph->source,  dst_port = udph->dest;
-  } else {
-    // non tcp/udp protocols
-    return(NULL);
-  }
-
-  ret = flows_hash->find(iph, ip6, src_port, dst_port, vlan_id, *l4_proto, src2dst_direction);
+  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, vlan_id, l4_proto, src2dst_direction);
 
   if(ret == NULL) {
-    if(iph)
-      ret = new Flow(this, vlan_id, *l4_proto,
-		     (u_int8_t*)eth->h_source, iph->saddr, NULL, src_port,
-		     (u_int8_t*)eth->h_dest, iph->daddr, NULL, dst_port);
-    else
-      ret = new Flow(this, vlan_id, *l4_proto,
-		     (u_int8_t*)eth->h_source, 0, &ip6->ip6_src, src_port,
-		     (u_int8_t*)eth->h_dest, 0, &ip6->ip6_dst, dst_port);
+    ret = new Flow(this, vlan_id, l4_proto,
+		   src_eth, src_ip, src_port,
+		   dst_eth, dst_ip, dst_port);
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);
@@ -199,22 +151,80 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 {
   bool src2dst_direction;
   u_int8_t l4_proto;
-  Flow *flow = getFlow(eth, vlan_id, iph, ip6, ipsize, &src2dst_direction, &l4_proto);
+  Flow *flow;
   u_int16_t frag_off = iph ? ntohs(iph->frag_off) : 0;
+  u_int8_t *eth_src = eth->h_source, *eth_dst = eth->h_dest;
+  IpAddress *src_ip, *dst_ip;
+  u_int16_t src_port, dst_port;
+  struct ndpi_tcphdr *tcph = NULL;
+  struct ndpi_udphdr *udph = NULL;
+  u_int16_t l4_packet_len;
+  u_int8_t *l4;
   u_int8_t *ip;
 
+  if(iph != NULL) {
+    /* IPv4 */
+    if(ipsize < 20)
+      return;
+
+    if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
+       || (iph->frag_off & htons(0x1FFF /* IP_OFFSET */)) != 0) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "IPv4 fragments are not handled yet");
+      return;
+    }
+
+    l4_packet_len = ntohs(iph->tot_len) - (iph->ihl * 4);
+    l4_proto = iph->protocol;
+    l4 = ((u_int8_t *) iph + iph->ihl * 4);
+    ip = (u_int8_t*)iph;
+  } else {
+    /* IPv6 */
+    if(ipsize < sizeof(const struct ndpi_ip6_hdr))
+      return;
+
+    l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen)-sizeof(const struct ndpi_ip6_hdr);
+    l4_proto = ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt;
+    l4 = (u_int8_t*)ip6 + sizeof(const struct ndpi_ip6_hdr);
+    ip = (u_int8_t*)ip6;
+  }
+
+  if((l4_proto == IPPROTO_TCP) && (l4_packet_len >= 20)) {
+    /* tcp */
+    tcph = (struct ndpi_tcphdr *)l4;
+    src_port = tcph->source, dst_port = tcph->dest;
+  } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
+    /* udp */
+    udph = (struct ndpi_udphdr *)l4;
+    src_port = udph->source,  dst_port = udph->dest;
+  } else {
+    /* non tcp/udp protocols */
+    return;
+  }
+
+  if(iph != NULL) {
+    src_ip = new IpAddress(iph->saddr);
+    dst_ip = new IpAddress(iph->daddr);
+  } else {
+    src_ip = new IpAddress(&ip6->ip6_src);
+    dst_ip = new IpAddress(&ip6->ip6_dst);
+  }
+
+  /* Updating Flow */
+
+  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
+
+  delete src_ip, delete dst_ip;
+
   if(flow == NULL) return; else flow->incStats(src2dst_direction, rawsize);
+
+  /* Protocol Detection */
+
   if(flow->isDetectionCompleted()) return;
 
-  if((frag_off & 0x3FFF) == 0) {
+  if((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */) == 0) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
     struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
-
-    if(iph != NULL)
-      ip = (u_int8_t*)iph;
-    else
-      ip = (u_int8_t*)ip6;
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 							    ip, ipsize, time, src, dst),
@@ -279,7 +289,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       } else
 	frag_off = ntohs(iph->frag_off);
 
-      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF) == 0)) {
+      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */ ) == 0)) {
 	u_short ip_len = ((u_short)iph->ihl * 4);
 	struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
 	u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
@@ -357,15 +367,13 @@ void NetworkInterface::shutdown() {
 /* **************************************************** */
 
 void NetworkInterface::findFlowHosts(u_int16_t vlanId,
-				     u_int8_t src_mac[6], u_int32_t _src_ipv4, struct ndpi_in6_addr *_src_ipv6, Host **src,
-				     u_int8_t dst_mac[6], u_int32_t _dst_ipv4, struct ndpi_in6_addr *_dst_ipv6, Host **dst) {
-  IpAddress ip;
+				     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src,
+				     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst) {
 
-  if(_src_ipv6) ip.set_ipv6(_src_ipv6); else ip.set_ipv4(_src_ipv4);
-  (*src) = hosts_hash->get(vlanId, &ip);
+  (*src) = hosts_hash->get(vlanId, _src_ip);
 
   if((*src) == NULL) {
-    (*src) = new Host(this, src_mac, vlanId, &ip);
+    (*src) = new Host(this, src_mac, vlanId, _src_ip);
     if(!hosts_hash->add(*src)) {
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *src;
@@ -376,11 +384,10 @@ void NetworkInterface::findFlowHosts(u_int16_t vlanId,
 
   /* ***************************** */
 
-  if(_dst_ipv6) ip.set_ipv6(_dst_ipv6); else ip.set_ipv4(_dst_ipv4);
-  (*dst) = hosts_hash->get(vlanId, &ip);
+  (*dst) = hosts_hash->get(vlanId, _dst_ip);
 
   if((*dst) == NULL) {
-    (*dst) = new Host(this, dst_mac, vlanId, &ip);
+    (*dst) = new Host(this, dst_mac, vlanId, _dst_ip);
     if(!hosts_hash->add(*dst)) {
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
       delete *dst;

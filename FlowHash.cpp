@@ -29,35 +29,19 @@ FlowHash::FlowHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_h
 
 /* ************************************ */
 
-Flow* FlowHash::find(struct ndpi_iphdr *iph, 
-		     struct ndpi_ip6_hdr *ip6,
+Flow* FlowHash::find(IpAddress *src_ip, IpAddress *dst_ip,
 		     u_int16_t src_port, u_int16_t dst_port, 
 		     u_int16_t vlanId, u_int8_t protocol,
 		     bool *src2dst_direction) {
 
-  if(iph) {
-    u_int32_t hash = ((iph->saddr+iph->daddr+src_port+dst_port+vlanId+protocol) % num_hashes);
-    Flow *head = (Flow*)table[hash];
+  u_int32_t hash = ((src_ip->key()+dst_ip->key()+src_port+dst_port+vlanId+protocol) % num_hashes);
+  Flow *head = (Flow*)table[hash];
   
-    while(head) {
-      if(head->equal(iph->saddr, iph->daddr, src_port, dst_port, vlanId, protocol, src2dst_direction))
-	return(head);
-      else
-	head = (Flow*)head->next();
-    }
-  } else if(ip6) {
-    u_int32_t src = ip6->ip6_src.__u6_addr.__u6_addr32[0] + ip6->ip6_src.__u6_addr.__u6_addr32[1] + ip6->ip6_src.__u6_addr.__u6_addr32[2] + ip6->ip6_src.__u6_addr.__u6_addr32[3];
-    u_int32_t dst = ip6->ip6_dst.__u6_addr.__u6_addr32[0] + ip6->ip6_dst.__u6_addr.__u6_addr32[1] + ip6->ip6_dst.__u6_addr.__u6_addr32[2] + ip6->ip6_dst.__u6_addr.__u6_addr32[3];
-    u_int32_t hash = ((src+dst+src_port+dst_port+vlanId+protocol) % num_hashes);
-    Flow *head = (Flow*)table[hash];
-
-    while(head) {
-      if(head->equal(&ip6->ip6_src, &ip6->ip6_dst, src_port, dst_port, vlanId, protocol, src2dst_direction))
-	return(head);
-      else
-	head = (Flow*)head->next();
-    }
-    
+  while(head) {
+    if(head->equal(src_ip, dst_ip, src_port, dst_port, vlanId, protocol, src2dst_direction))
+      return(head);
+    else
+      head = (Flow*)head->next();
   }
 
   return(NULL);

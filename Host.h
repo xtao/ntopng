@@ -76,8 +76,7 @@ class Host : public GenericHashEntry {
   void resolveHostName();
   void setName(char *name);
   int compare(Host *h);
-  inline bool equal(u_int32_t ipv4_addr)              { if(ip == NULL) return(false); else return(ip->equal(ipv4_addr)); };
-  inline bool equal(struct ndpi_in6_addr *ipv6_addr)  { if(ip == NULL) return(false); else return(ip->equal(ipv6_addr)); };
+  inline bool equal(IpAddress *_ip)  { return(ip->equal(_ip)); };
   bool isIdle(u_int max_idleness);
 };
 
