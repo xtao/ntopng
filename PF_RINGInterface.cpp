@@ -31,7 +31,7 @@
 
 /* **************************************************** */
 
-PF_RINGInterface::PF_RINGInterface(char *name, bool change_user)
+PF_RINGInterface::PF_RINGInterface(const char *name, bool change_user)
   : NetworkInterface(name, change_user) {
 
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),

@@ -20,6 +20,7 @@
  */
 
 #include "ntop_includes.h"
+
 #include <pwd.h>
 
 #ifdef DARWIN
@@ -28,79 +29,62 @@
 
 /* **************************************************** */
 
-PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterface(name, change_user) {
-  char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+CollectorInterface::CollectorInterface(const char *name, bool change_user)
+  : NetworkInterface(name, change_user) {
 
-  if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
-				   ntop->getGlobals()->getPromiscuousMode(),
-				   500, pcap_error_buffer)) == NULL) {
-    pcap_handle = pcap_open_offline(ifname, pcap_error_buffer);
-
-    if(pcap_handle == NULL) {
-      printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
-      exit(0);
-    } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
-  } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
-
-  pcap_datalink_type = pcap_datalink(pcap_handle);
+  l = new Lua();
 
   if(change_user) dropPrivileges();
 }
 
 /* **************************************************** */
 
-PcapInterface::~PcapInterface() {
+CollectorInterface::~CollectorInterface() {
   if(polling_started) {
     void *res;
 
-    if(pcap_handle) pcap_breakloop(pcap_handle);
+    // TODO break loop
+
     pthread_join(pollLoop, &res);
   }
 
-  if(pcap_handle)
-    pcap_close(pcap_handle);
+  delete l;
 
   deleteDataStructures();
 }
 
 /* **************************************************** */
 
-static void pcap_packet_callback(u_char *args, const struct pcap_pkthdr *h, const u_char *packet) {
-  NetworkInterface *iface = (NetworkInterface *) args;
-  iface->packet_dissector(h, packet);
+void CollectorInterface::run_collector_script() {
+  char script[256];
+  const char *collector = "zmq-collector"; // TODO parameter
+
+  snprintf(script, sizeof(script), "%s/%s.lua", ntop->get_callbacks_dir(), collector);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s..", collector);
+
+  l->run_script(script);
 }
 
 /* **************************************************** */
 
 static void* packetPollLoop(void* ptr) {
-  PcapInterface *iface = (PcapInterface*)ptr;
-
-  pcap_loop(iface->get_pcap_handle(), -1, &pcap_packet_callback, (u_char*)iface);
+  CollectorInterface *iface = (CollectorInterface*)ptr;
+  iface->run_collector_script();
   return(NULL);
 }
 
 /* **************************************************** */
 
-void PcapInterface::startPacketPolling() {
+void CollectorInterface::startPacketPolling() {
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
   NetworkInterface::startPacketPolling();
 }
 
 /* **************************************************** */
 
-void PcapInterface::shutdown() {
-  pcap_breakloop(pcap_handle);
+void CollectorInterface::shutdown() {
+  // TODO break loop
 }
 
 /* **************************************************** */
-
-u_int PcapInterface::getNumDroppedPackets() {
-  struct pcap_stat pcapStat;
- 
-  if(pcap_stats(pcap_handle, &pcapStat) >= 0) {
-    return(pcapStat.ps_drop);
-  } else
-    return(0);
-}

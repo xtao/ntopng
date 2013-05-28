@@ -53,6 +53,7 @@ class Flow : public GenericHashEntry {
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };
+  inline void addStats(bool cli2srv_direction, u_int pkts, u_int bytes) { updateSeen(); if(cli2srv_direction) cli2srv_packets+=pkts, cli2srv_bytes += bytes; else srv2cli_packets+=pkts, srv2cli_bytes += bytes; };
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_src_id()                       { return(src_id);    };

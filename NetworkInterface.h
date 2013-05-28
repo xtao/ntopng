@@ -57,7 +57,7 @@ class NetworkInterface {
 		bool *src2dst_direction);
 
  public:
-  NetworkInterface(char *name, bool change_user);
+  NetworkInterface(const char *name, bool change_user);
   virtual ~NetworkInterface();
 
   virtual void startPacketPolling();
@@ -86,6 +86,11 @@ class NetworkInterface {
 			 struct ndpi_iphdr *iph,
 			 struct ndpi_ip6_hdr *ip6,
 			 u_int16_t ipsize, u_int16_t rawsize);
+  void flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
+		       u_int16_t src_port, u_int16_t dst_port,
+		       u_int16_t vlan_id,
+		       u_int8_t l4_proto,
+		       u_int pkts, u_int bytes);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();

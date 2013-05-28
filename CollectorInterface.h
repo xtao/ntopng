@@ -19,23 +19,27 @@
  *
  */
 
-#ifndef _PCAP_INTERFACE_H_
-#define _PCAP_INTERFACE_H_
+#ifndef _COLLECTOR_INTERFACE_H_
+#define _COLLECTOR_INTERFACE_H_
 
 #include "ntop_includes.h"
 
-class PcapInterface : public NetworkInterface {
+class Lua;
+
+class CollectorInterface : public NetworkInterface {
  private:
-  pcap_t *pcap_handle;
+  Lua *l;
+  char *name;
 
  public:
-  PcapInterface(const char *name, bool change_user);
-  ~PcapInterface();
+  CollectorInterface(const char *name, bool change_user);
+  ~CollectorInterface();
 
-  inline pcap_t* get_pcap_handle() { return(pcap_handle); };
+  void run_collector_script();
+
   void startPacketPolling();
   void shutdown();
-  u_int getNumDroppedPackets();
 };
 
-#endif /* _PCAP_INTERFACE_H_ */
+#endif /* _COLLECTOR_INTERFACE_H_ */
+

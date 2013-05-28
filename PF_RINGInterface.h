@@ -31,7 +31,7 @@ class PF_RINGInterface : public NetworkInterface {
   pfring *pfring_handle;
 
  public:
-  PF_RINGInterface(char *name, bool change_user);
+  PF_RINGInterface(const char *name, bool change_user);
   ~PF_RINGInterface();
 
   inline pfring* get_pfring_handle() { return(pfring_handle); };

@@ -172,15 +172,19 @@ int main(int argc, char *argv[]) {
   ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
+  if (strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0) {
+    iface = new CollectorInterface(ifName, change_user);
+  } else {
 #ifdef HAVE_PF_RING
-  try {
-    iface = new PF_RINGInterface(ifName, change_user);
-  } catch (int) {
+    try {
+      iface = new PF_RINGInterface(ifName, change_user);
+    } catch (int) {
 #endif
-  iface = new PcapInterface(ifName, change_user);
+    iface = new PcapInterface(ifName, change_user);
 #ifdef HAVE_PF_RING
+    }
+#endif
   }
-#endif
 
   ntop->registerInterface(iface);
   ntop->loadGeolocation(docsdir);

@@ -88,6 +88,7 @@ extern "C" {
 #include "GenericHashEntry.h"
 #include "GenericHash.h"
 #include "NetworkInterface.h"
+#include "CollectorInterface.h"
 #include "PcapInterface.h"
 #ifdef HAVE_PF_RING
 #include "PF_RINGInterface.h"

@@ -50,7 +50,7 @@ static void free_wrapper(void *freeable)
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(char *name, bool change_user) {
+NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
 
@@ -142,6 +142,26 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 
 /* **************************************************** */
 
+void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
+				       u_int16_t src_port, u_int16_t dst_port,
+				       u_int16_t vlan_id,
+				       u_int8_t l4_proto,
+				       u_int pkts, u_int bytes)
+{
+  u_int8_t eth_src[6] = {0}, eth_dst[6] = {0};
+  bool src2dst_direction;
+  Flow *flow;
+
+  /* Updating Flow */
+
+  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
+
+  if(flow == NULL) return; 
+  else flow->addStats(src2dst_direction, pkts, bytes);
+}
+
+/* **************************************************** */
+
 void NetworkInterface::packet_processing(const u_int64_t time,
 					 struct ndpi_ethhdr *eth,
 					 u_int16_t vlan_id,
@@ -154,7 +174,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   Flow *flow;
   u_int16_t frag_off = iph ? ntohs(iph->frag_off) : 0;
   u_int8_t *eth_src = eth->h_source, *eth_dst = eth->h_dest;
-  IpAddress *src_ip, *dst_ip;
+  IpAddress src_ip, dst_ip;
   u_int16_t src_port, dst_port;
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
@@ -202,20 +222,19 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   }
 
   if(iph != NULL) {
-    src_ip = new IpAddress(iph->saddr);
-    dst_ip = new IpAddress(iph->daddr);
+    src_ip.set_ipv4(iph->saddr);
+    dst_ip.set_ipv4(iph->daddr);
   } else {
-    src_ip = new IpAddress(&ip6->ip6_src);
-    dst_ip = new IpAddress(&ip6->ip6_dst);
+    src_ip.set_ipv6(&ip6->ip6_src);
+    dst_ip.set_ipv6(&ip6->ip6_dst);
   }
 
   /* Updating Flow */
 
-  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
+  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
 
-  delete src_ip, delete dst_ip;
-
-  if(flow == NULL) return; else flow->incStats(src2dst_direction, rawsize);
+  if(flow == NULL) return;
+  else flow->incStats(src2dst_direction, rawsize);
 
   /* Protocol Detection */
 
