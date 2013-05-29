@@ -18,9 +18,6 @@
 /* Define to 1 if you have the `GeoIP' library (-lGeoIP). */
 #undef HAVE_LIBGEOIP
 
-/* Define to 1 if you have the `zmq' library (-lzmq). */
-#undef HAVE_LIBZMQ
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 

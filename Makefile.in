@@ -4,8 +4,8 @@ CREDIS_HOME=third-party/credis-0.2.3
 CREDIS=$(CREDIS_HOME)/credis.o
 CREDIS_INC=-I$(CREDIS_HOME)
 ######
-LIBNDPI_INC=-I./nDPI/src/include
-LIBNDPI=./nDPI/src/lib/.libs/libndpi.a 
+NDPI_INC=-I./nDPI/src/include
+NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a 
 ######
 LIBPCAP=-lpcap
 ######
@@ -23,9 +23,13 @@ LIBRRDTOOL_LIB=$(LIBRRDTOOL_HOME)/src/.libs/librrd_th.a
 ######
 HTTPCLIENT_INC=third-party/http-client-c/src/
 ######
+ZEROMQ_HOME=./third-party/zeromq-3.2.3
+ZEROMQ_INC=-I$(ZEROMQ_HOME)/include
+ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a 
+######
 TARGET = ntopng
-LIBS = @LDFLAGS@ $(LIBNDPI) $(LIBPCAP) $(LIBMICROHTTPD) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ -lm -ldl -lpthread
-CPPFLAGS = -g -Wall $(CREDIS_INC) $(LIBNDPI_INC) $(LIBMICRO_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) -D SVN_RELEASE="@SVN_RELEASE@" @CPPFLAGS@ -I$(HTTPCLIENT_INC)
+LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LIBMICROHTTPD) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ -lm -ldl -lpthread
+CPPFLAGS = -g -Wall $(CREDIS_INC) $(NDPI_INC) $(LIBMICRO_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) -D SVN_RELEASE="@SVN_RELEASE@" @CPPFLAGS@ -I$(HTTPCLIENT_INC)
 
 ifeq ($(OS),Linux)
 LIBS += -lrt
@@ -37,7 +41,7 @@ endif
 
 .PHONY: default all clean
 
-default: $(LIBNDPI) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(TARGET)
+default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
@@ -54,12 +58,15 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS) $(LIBMICROHTTPD) $(LIBRRDTOOL)
 	g++ $(OBJECTS) -Wall $(LIBS) -o $@
 
-$(LIBNDPI):
+$(NDPI_LIB):
 	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 	cd nDPI; ./configure; @GMAKE@
 
 $(LUAJIT_LIB):
 	cd $(LUAJIT_HOME); @GMAKE@
+
+$(ZEROMQ_LIB):
+	cd $(ZEROMQ_HOME); ./configure --without-documentation; @GMAKE@
 
 $(LIBMICROHTTPD): 
 	cd $(LIBMICRO_HOME); ./configure; @GMAKE@

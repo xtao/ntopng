@@ -193,8 +193,6 @@ static int ntop_list_dir_files(lua_State* vm) {
   return(1);
 }
 
-#ifdef HAVE_LIBZMQ
-
 /* ****************************************** */
 
 static int ntop_zmq_connect(lua_State* vm) {
@@ -287,8 +285,6 @@ static int ntop_zmq_receive(lua_State* vm) {
   } else
     return(-1);
 }
-
-#endif /* HAVE_LIBZMQ */
 
 /* ****************************************** */
 
@@ -697,11 +693,9 @@ static const luaL_Reg ntop_reg[] = {
   { "mkdir",       ntop_mkdir_tree },
   { "exists",      ntop_get_file_dir_exists },
   { "readdir",     ntop_list_dir_files },
-#ifdef HAVE_LIBZMQ
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
-#endif
   { NULL,          NULL}
 };
 

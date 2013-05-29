@@ -59,6 +59,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <zmq.h>
 
 extern "C" {
 #include "pcap.h"
@@ -71,10 +72,6 @@ extern "C" {
 #include "pfring.h"
 #endif
 };
-
-#ifdef HAVE_LIBZMQ
-#include <zmq.h>
-#endif
 
 #include "ntop_defines.h"
 #include "patricia.h"

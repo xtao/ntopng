@@ -36,11 +36,12 @@ if test $SYSTEM = "Darwin"; then
    fi
 fi
 
-AC_CHECK_LIB([zmq], [zmq_send])
-if test "x$ac_cv_lib_zmq_zmq_send" = xyes; then :
- LDFLAGS="${LDFLAGS} -lzmq"
 AC_DEFINE_UNQUOTED(HAVE_ZMQ, 1, [ZMQ is present])
-fi
+dnl> AC_CHECK_LIB([zmq], [zmq_send])
+dnl> if test "x$ac_cv_lib_zmq_zmq_send" = xyes; then :
+dnl> LDFLAGS="${LDFLAGS} -lzmq"
+dnl> AC_DEFINE_UNQUOTED(HAVE_ZMQ, 1, [ZMQ is present])
+dnl> fi
 
 AC_MSG_CHECKING(for gnutls)
 AC_CHECK_LIB([gnutls], [gnutls_priority_set], gnutls=true)
