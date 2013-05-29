@@ -29,8 +29,10 @@
 
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(const char *name, bool change_user)
+CollectorInterface::CollectorInterface(const char *name, const char *_endpoint, bool change_user)
   : NetworkInterface(name, change_user) {
+
+  endpoint = strdup(_endpoint);
 
   l = new Lua();
 
@@ -49,6 +51,7 @@ CollectorInterface::~CollectorInterface() {
   }
 
   delete l;
+  free(endpoint);
 
   deleteDataStructures();
 }
@@ -57,11 +60,10 @@ CollectorInterface::~CollectorInterface() {
 
 void CollectorInterface::run_collector_script() {
   char script[256];
-  const char *collector = "zmq-collector"; // TODO parameter
 
-  snprintf(script, sizeof(script), "%s/%s.lua", ntop->get_callbacks_dir(), collector);
+  snprintf(script, sizeof(script), "%s/%s.lua", ntop->get_callbacks_dir(), ifname);
 
-  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s..", collector);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s..", ifname);
 
   l->run_script(script);
 }

@@ -370,6 +370,25 @@ static int ntop_get_interface_flow_by_key(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_endpoint(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *endpoint;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(false);
+  }
+
+  endpoint = ntop_interface->getEndpoint();
+
+  lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
+
+  return(true);
+}
+
+/* ****************************************** */
+
 static int ntop_process_flow(lua_State* vm) {
   NetworkInterface *ntop_interface;
   IpAddress src_ip, dst_ip;
@@ -679,6 +698,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getFlowsInfo",   ntop_get_interface_flows_info },
   { "getFlowPeers",   ntop_get_interface_flows_peers },
   { "findFlowByKey",  ntop_get_interface_flow_by_key },
+  { "getEndpoint",    ntop_get_interface_endpoint },
   { "processFlow",    ntop_process_flow },
   { NULL,             NULL}
 };

@@ -30,10 +30,13 @@ class CollectorInterface : public NetworkInterface {
  private:
   Lua *l;
   char *name;
+  char *endpoint;
 
  public:
-  CollectorInterface(const char *name, bool change_user);
+  CollectorInterface(const char *name, const char *_endpoint, bool change_user);
   ~CollectorInterface();
+
+  char *getEndpoint() { return endpoint; }
 
   void run_collector_script();
 

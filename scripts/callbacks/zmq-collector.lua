@@ -6,8 +6,6 @@ package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 local json = require ("dkjson")
 
-local endpoint = "tcp://127.0.0.1:5556"
-
 local debug_collector = 1
 local fields = {
 [1] = "IN_BYTES",
@@ -41,11 +39,24 @@ local fields = {
 [95] = "APPLICATION_ID"
 }
 
+print("1")
+
+local ids = {}
+for key,value in pairs(fields) do
+  ids[value] = key
+end
+
+print("2")
+
+interface.find("zmq-collector")
+
+print("3")
+
+local endpoint = interface.getEndpoint()
+
 ntop.zmq_connect(endpoint, "flow")
 
-print("Connected to " .. endpoint .. "\n")
-
-interface.find(endpoint)
+print("ZMQ Collector connected to " .. endpoint .. "\n")
 
 while(1) do
   flow = ntop.zmq_receive()
@@ -58,32 +69,28 @@ while(1) do
     if debug_collector then
       for key,value in pairs(obj) do
         if fields[key] ~= nil then
-	  print(fields[key] .. " === " .. value)
+	  print(fields[key] .. " = " .. value)
 	else
           print("unknown field id " .. key .. " = " .. value)
 	end
       end
+      print("---")
     end
-    print("---")
 
-    if (obj[8]) then -- IPv4
-      ips = obj[8]
-      ipd = obj[12]
-    else -- IPv6
-      ips = obj[27]
-      ipd = obj[28]
-    end
-    srcport  = obj[7]  or 0;
-    dstport  = obj[11] or 0; 
-    vlanid   = obj[58] or 0; 
-    protoid  = obj[95] or 0; 
-    l4proto  = obj[4]  or 0; 
-    inpkts   = obj[2]  or 0; 
-    inbytes  = obj[1]  or 0;
-    outpkts  = obj[24] or 0; 
-    outbytes = obj[23] or 0;
+    interface.processFlow(
+      obj[ids['IPV4_SRC_ADDR']]  or obj[ids['IPV6_SRC_ADDR']],
+      obj[ids['IPV4_DST_ADDR']]  or obj[ids['IPV6_DST_ADDR']], 
+      obj[ids['L4_SRC_PORT']]    or 0, 
+      obj[ids['L4_DST_PORT']]    or 0, 
+      obj[ids['SRC_VLAN']]       or obj[ids['DST_VLAN']] or 0, 
+      obj[ids['APPLICATION_ID']] or 0, 
+      obj[ids['PROTOCOL']]       or 0, 
+      obj[ids['IN_PKTS']]        or 0, 
+      obj[ids['IN_BYTES']]       or 0, 
+      obj[ids['OUT_PKTS']]       or 0, 
+      obj[ids['OUT_BYTES']]      or 0
+    )
 
-    interface.processFlow(ips, ipd, srcport, dstport, vlanid, protoid, l4proto, inpkts, inbytes, outpkts, outbytes);
   end
 
 end

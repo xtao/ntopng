@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
-    iface = new CollectorInterface(ifName, change_user);
+    iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, change_user);
   } else {
 #ifdef HAVE_PF_RING
     try {

@@ -63,6 +63,7 @@ class NetworkInterface {
   virtual void startPacketPolling();
   virtual void shutdown();
   virtual u_int getNumDroppedPackets() { return(0); }
+  virtual char *getEndpoint() { return NULL; }
 
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
