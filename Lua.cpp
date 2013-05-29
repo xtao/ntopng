@@ -254,17 +254,33 @@ static int ntop_zmq_disconnect(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_zmq_receive(lua_State* vm) {
+  NetworkInterface *ntop_interface;
   void *subscriber;
   int size;
   struct zmq_msg_hdr h;
   char *payload;
   int payload_len;
+  zmq_pollitem_t item;
+  int rc;
 
   lua_getglobal(vm, "zmq_subscriber");
   if((subscriber = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: NULL subscriber");
     return(0);
   }
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  item.socket = subscriber;
+  item.events = ZMQ_POLLIN;
+  do {
+    rc = zmq_poll(&item, 1, 1000);
+    if (rc < 0 || !ntop_interface->isRunning()) return(-1);
+  } while (rc == 0);
 
   size = zmq_recv(subscriber, &h, sizeof(h), 0); 
   
@@ -385,6 +401,20 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
   lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
 
   return(true);
+}
+
+/* ****************************************** */
+
+static int ntop_interface_is_running(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(false);
+  }
+
+  return(ntop_interface->isRunning());
 }
 
 /* ****************************************** */
@@ -700,6 +730,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "findFlowByKey",  ntop_get_interface_flow_by_key },
   { "getEndpoint",    ntop_get_interface_endpoint },
   { "processFlow",    ntop_process_flow },
+  { "isRunning",      ntop_interface_is_running },
   { NULL,             NULL}
 };
 

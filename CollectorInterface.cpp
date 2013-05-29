@@ -42,13 +42,7 @@ CollectorInterface::CollectorInterface(const char *name, const char *_endpoint, 
 /* **************************************************** */
 
 CollectorInterface::~CollectorInterface() {
-  if(polling_started) {
-    void *res;
-
-    // TODO break loop
-
-    pthread_join(pollLoop, &res);
-  }
+  shutdown();
 
   delete l;
   free(endpoint);
@@ -86,7 +80,12 @@ void CollectorInterface::startPacketPolling() {
 /* **************************************************** */
 
 void CollectorInterface::shutdown() {
-  // TODO break loop
+  void *res;
+  
+  if(polling_started) {
+    NetworkInterface::shutdown();
+    pthread_join(pollLoop, &res);
+  }
 }
 
 /* **************************************************** */

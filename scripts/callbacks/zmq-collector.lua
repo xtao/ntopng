@@ -39,18 +39,12 @@ local fields = {
 [95] = "APPLICATION_ID"
 }
 
-print("1")
-
 local ids = {}
 for key,value in pairs(fields) do
   ids[value] = key
 end
 
-print("2")
-
 interface.find("zmq-collector")
-
-print("3")
 
 local endpoint = interface.getEndpoint()
 
@@ -58,16 +52,16 @@ ntop.zmq_connect(endpoint, "flow")
 
 print("ZMQ Collector connected to " .. endpoint .. "\n")
 
-while(1) do
-  flow = ntop.zmq_receive()
+while(interface.isRunning) do
+  flowjson = ntop.zmq_receive()
 
-  local obj, pos, err = json.decode(flow, 1, nil)
+  local flow, pos, err = json.decode(flowjson, 1, nil)
   if err then
     print("JSON parser error: " .. err)
   else
 
     if debug_collector then
-      for key,value in pairs(obj) do
+      for key,value in pairs(flow) do
         if fields[key] ~= nil then
 	  print(fields[key] .. " = " .. value)
 	else
@@ -78,17 +72,17 @@ while(1) do
     end
 
     interface.processFlow(
-      obj[ids['IPV4_SRC_ADDR']]  or obj[ids['IPV6_SRC_ADDR']],
-      obj[ids['IPV4_DST_ADDR']]  or obj[ids['IPV6_DST_ADDR']], 
-      obj[ids['L4_SRC_PORT']]    or 0, 
-      obj[ids['L4_DST_PORT']]    or 0, 
-      obj[ids['SRC_VLAN']]       or obj[ids['DST_VLAN']] or 0, 
-      obj[ids['APPLICATION_ID']] or 0, 
-      obj[ids['PROTOCOL']]       or 0, 
-      obj[ids['IN_PKTS']]        or 0, 
-      obj[ids['IN_BYTES']]       or 0, 
-      obj[ids['OUT_PKTS']]       or 0, 
-      obj[ids['OUT_BYTES']]      or 0
+      flow[ids.IPV4_SRC_ADDR]  or flow[ids.IPV6_SRC_ADDR],
+      flow[ids.IPV4_DST_ADDR]  or flow[ids.IPV6_DST_ADDR], 
+      flow[ids.L4_SRC_PORT]    or 0, 
+      flow[ids.L4_DST_PORT]    or 0, 
+      flow[ids.SRC_VLAN]       or flow[ids.DST_VLAN] or 0, 
+      flow[ids.APPLICATION_ID] or 0, 
+      flow[ids.PROTOCOL]       or 0, 
+      flow[ids.IN_PKTS]        or 0, 
+      flow[ids.IN_BYTES]       or 0, 
+      flow[ids.OUT_PKTS]       or 0, 
+      flow[ids.OUT_BYTES]      or 0
     )
 
   end

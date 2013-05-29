@@ -74,6 +74,7 @@ class NetworkInterface {
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
+  inline int isRunning()	   { return polling_started; };
 
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 

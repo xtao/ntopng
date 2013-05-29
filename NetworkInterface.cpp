@@ -385,6 +385,7 @@ void NetworkInterface::startPacketPolling() {
 /* **************************************************** */
 
 void NetworkInterface::shutdown() {
+  polling_started = false;
 }
 
 /* **************************************************** */

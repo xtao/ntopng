@@ -48,12 +48,7 @@ PF_RINGInterface::PF_RINGInterface(const char *name, bool change_user)
 /* **************************************************** */
 
 PF_RINGInterface::~PF_RINGInterface() {
-  if(polling_started) {
-    void *res;
-
-    if(pfring_handle) pfring_breakloop(pfring_handle);
-    pthread_join(pollLoop, &res);
-  }
+  shutdown();
 
   if(pfring_handle)
     pfring_close(pfring_handle);
@@ -82,14 +77,19 @@ static void* packetPollLoop(void* ptr) {
 
 void PF_RINGInterface::startPacketPolling() {
   pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
-
   NetworkInterface::startPacketPolling();
 }
 
 /* **************************************************** */
 
 void PF_RINGInterface::shutdown() {
-  pfring_breakloop(pfring_handle);
+  void *res;
+
+  if(polling_started) { 
+    if(pfring_handle) pfring_breakloop(pfring_handle);
+    pthread_join(pollLoop, &res);
+    NetworkInterface::shutdown();
+  }
 }
 
 /* **************************************************** */

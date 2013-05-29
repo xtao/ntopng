@@ -52,12 +52,7 @@ PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterf
 /* **************************************************** */
 
 PcapInterface::~PcapInterface() {
-  if(polling_started) {
-    void *res;
-
-    if(pcap_handle) pcap_breakloop(pcap_handle);
-    pthread_join(pollLoop, &res);
-  }
+  shutdown();
 
   if(pcap_handle)
     pcap_close(pcap_handle);
@@ -91,7 +86,13 @@ void PcapInterface::startPacketPolling() {
 /* **************************************************** */
 
 void PcapInterface::shutdown() {
-  pcap_breakloop(pcap_handle);
+  void *res;
+
+  if(polling_started) {
+    if(pcap_handle) pcap_breakloop(pcap_handle);
+    pthread_join(pollLoop, &res);
+    NetworkInterface::shutdown(); 
+  }
 }
 
 /* **************************************************** */
