@@ -7,6 +7,7 @@ require "lua_utils"
 local json = require ("dkjson")
 
 local debug_collector = 1
+local NTOP_BASE_ID = 57472
 local fields = {
 [1] = "IN_BYTES",
 [2] = "IN_PKTS",
@@ -36,7 +37,9 @@ local fields = {
 [59] = "DST_VLAN",
 [60] = "IP_PROTOCOL_VERSION",
 [61] = "DIRECTION",
-[95] = "APPLICATION_ID"
+[95] = "APPLICATION_ID",
+[NTOP_BASE_ID + 118] = "L7_PROTO",
+[NTOP_BASE_ID + 119] = "L7_PROTO_NAME"
 }
 
 local ids = {}
@@ -72,17 +75,17 @@ while(interface.isRunning) do
     end
 
     interface.processFlow(
-      flow[ids.IPV4_SRC_ADDR]  or flow[ids.IPV6_SRC_ADDR],
-      flow[ids.IPV4_DST_ADDR]  or flow[ids.IPV6_DST_ADDR], 
-      flow[ids.L4_SRC_PORT]    or 0, 
-      flow[ids.L4_DST_PORT]    or 0, 
-      flow[ids.SRC_VLAN]       or flow[ids.DST_VLAN] or 0, 
-      flow[ids.APPLICATION_ID] or 0, 
-      flow[ids.PROTOCOL]       or 0, 
-      flow[ids.IN_PKTS]        or 0, 
-      flow[ids.IN_BYTES]       or 0, 
-      flow[ids.OUT_PKTS]       or 0, 
-      flow[ids.OUT_BYTES]      or 0
+      flow[ids.IPV4_SRC_ADDR] or flow[ids.IPV6_SRC_ADDR],
+      flow[ids.IPV4_DST_ADDR] or flow[ids.IPV6_DST_ADDR], 
+      flow[ids.L4_SRC_PORT]   or 0, 
+      flow[ids.L4_DST_PORT]   or 0, 
+      flow[ids.SRC_VLAN]      or flow[ids.DST_VLAN] or 0, 
+      flow[ids.L7_PROTO]      or 0, 
+      flow[ids.PROTOCOL]      or 0, 
+      flow[ids.IN_PKTS]       or 0, 
+      flow[ids.IN_BYTES]      or 0, 
+      flow[ids.OUT_PKTS]      or 0, 
+      flow[ids.OUT_BYTES]     or 0
     )
 
   end
