@@ -145,7 +145,8 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 
 /* **************************************************** */
 
-void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
+void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
+				       IpAddress *src_ip, IpAddress *dst_ip,
 				       u_int16_t src_port, u_int16_t dst_port,
 				       u_int16_t vlan_id,
 				       u_int16_t proto_id,
@@ -155,7 +156,6 @@ void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 				       u_int first_switched, u_int last_switched,
 				       char *additional_fields_json)
 {
-  u_int8_t eth_src[6] = {0}, eth_dst[6] = {0};
   bool src2dst_direction;
   Flow *flow;
 
@@ -163,7 +163,7 @@ void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 
   /* Updating Flow */
 
-  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, first_switched, last_switched);
+  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, first_switched, last_switched);
 
   if(flow == NULL) return;
 

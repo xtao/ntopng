@@ -90,7 +90,8 @@ class NetworkInterface {
 			 struct ndpi_iphdr *iph,
 			 struct ndpi_ip6_hdr *ip6,
 			 u_int16_t ipsize, u_int16_t rawsize);
-  void flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
+  void flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
+  		       IpAddress *src_ip, IpAddress *dst_ip,
 		       u_int16_t src_port, u_int16_t dst_port,
 		       u_int16_t vlan_id,
 		       u_int16_t proto_id,

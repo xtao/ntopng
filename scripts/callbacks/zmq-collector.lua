@@ -37,8 +37,10 @@ while(interface.isRunning) do
     end
 
     interface.processFlow(
-      flow[template.IPV4_SRC_ADDR]  or flow[template.IPV6_SRC_ADDR],
-      flow[template.IPV4_DST_ADDR]  or flow[template.IPV6_DST_ADDR], 
+      flow[template.IN_SRC_MAC]     or "00:00:00:00:00:00",
+      flow[template.OUT_DST_MAC]    or "00:00:00:00:00:00",
+      flow[template.IPV4_SRC_ADDR]  or flow[template.IPV6_SRC_ADDR] or "0.0.0.0",
+      flow[template.IPV4_DST_ADDR]  or flow[template.IPV6_DST_ADDR] or "0.0.0.0", 
       flow[template.L4_SRC_PORT]    or 0, 
       flow[template.L4_DST_PORT]    or 0, 
       flow[template.SRC_VLAN]       or flow[template.DST_VLAN] or 0, 
