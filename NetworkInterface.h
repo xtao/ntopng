@@ -73,7 +73,7 @@ class NetworkInterface {
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
-  inline void updateLastSeen(time_t last) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; }
+  inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return polling_started; };

@@ -159,7 +159,7 @@ void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
   bool src2dst_direction;
   Flow *flow;
 
-  updateLastSeen(last_switched);
+  addFlowStats(last_switched, in_pkts+out_pkts, in_bytes+out_bytes);
 
   /* Updating Flow */
 
