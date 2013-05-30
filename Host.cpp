@@ -63,6 +63,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   num_uses = 0, name_resolved = false, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
+  localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
 
   if(init_all) {
     char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
@@ -76,8 +77,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
     
     updateLocal();
-  } else
-    localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
+  }
 }
 
 /* *************************************** */
