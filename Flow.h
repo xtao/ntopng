@@ -48,12 +48,17 @@ class Flow : public GenericHashEntry {
        u_int16_t _vlanId, u_int8_t _protocol,
        u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
        u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port);
+  Flow(NetworkInterface *_iface,
+       u_int16_t _vlanId, u_int8_t _protocol, 
+       u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
+       u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
+       time_t _first_seen, time_t _last_seen);
   ~Flow();
 
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };
-  inline void addStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes) { updateSeen(); 
+  inline void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen) { updateSeen(last_seen); 
     if (cli2srv_direction) cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
     else cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; };
   inline bool isDetectionCompleted()  { return(detection_completed); };

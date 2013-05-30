@@ -38,10 +38,11 @@ class GenericHashEntry {
 
   inline time_t get_first_seen()     { return(first_seen); };
   inline time_t get_last_seen()      { return(last_seen); };
-  inline GenericHashEntry* next()           { return(hash_next); };
+  inline GenericHashEntry* next()    { return(hash_next); };
   inline void set_next(GenericHashEntry *n) { hash_next = n;     };
   void updateSeen();
-  bool equal(GenericHashEntry *b)           { return((this == b) ? true : false); };  
+  void updateSeen(time_t _last_seen);
+  bool equal(GenericHashEntry *b)    { return((this == b) ? true : false); };  
   virtual bool idle();
   inline u_int get_duration()        { return(1+last_seen-first_seen); };
   virtual u_int32_t key()            { return(0);         };  

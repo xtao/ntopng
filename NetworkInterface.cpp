@@ -79,6 +79,7 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
 
+  last_pkt_rcvd = 0;
   next_idle_flow_purge = next_idle_host_purge = 0;
   polling_started = false;
 }
@@ -119,7 +120,8 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
   				IpAddress *src_ip, IpAddress *dst_ip,
   				u_int16_t src_port, u_int16_t dst_port,
 				u_int8_t l4_proto,
-				bool *src2dst_direction) {
+				bool *src2dst_direction,
+				time_t first_seen, time_t last_seen) {
   Flow *ret;
 
   ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, vlan_id, l4_proto, src2dst_direction);
@@ -127,7 +129,8 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
   if(ret == NULL) {
     ret = new Flow(this, vlan_id, l4_proto,
 		   src_eth, src_ip, src_port,
-		   dst_eth, dst_ip, dst_port);
+		   dst_eth, dst_ip, dst_port,
+		   first_seen, last_seen);
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);
@@ -148,19 +151,23 @@ void NetworkInterface::flow_processing(IpAddress *src_ip, IpAddress *dst_ip,
 				       u_int16_t proto_id,
 				       u_int8_t l4_proto,
 				       u_int in_pkts, u_int in_bytes,
-				       u_int out_pkts, u_int out_bytes)
+				       u_int out_pkts, u_int out_bytes,
+				       u_int first_switched, u_int last_switched,
+				       char *additional_fields_json)
 {
   u_int8_t eth_src[6] = {0}, eth_dst[6] = {0};
   bool src2dst_direction;
   Flow *flow;
 
+  updateLastSeen(last_switched);
+
   /* Updating Flow */
 
-  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
+  flow = getFlow(eth_src, eth_dst, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, first_switched, last_switched);
 
   if(flow == NULL) return;
 
-  flow->addStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes);
+  flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
   flow->setDetectedProtocol(proto_id, l4_proto);
 }
 
@@ -235,7 +242,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
   /* Updating Flow */
 
-  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, l4_proto, &src2dst_direction);
+  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) return;
   else flow->incStats(src2dst_direction, rawsize);

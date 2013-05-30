@@ -427,6 +427,8 @@ static int ntop_process_flow(lua_State* vm) {
   u_int16_t proto_id;
   u_int8_t l4_proto;
   u_int in_pkts, in_bytes, out_pkts, out_bytes;
+  u_int first_switched, last_switched;
+  char *additional_fields_json;
   char *str;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
@@ -464,6 +466,15 @@ static int ntop_process_flow(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 11, LUA_TNUMBER)) return(0);
   out_bytes = (u_int32_t)lua_tonumber(vm, 11);
 
+  if(ntop_lua_check(vm, __FUNCTION__, 12, LUA_TNUMBER)) return(0);
+  first_switched = (u_int32_t)lua_tonumber(vm, 12);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 13, LUA_TNUMBER)) return(0);
+  last_switched = (u_int32_t)lua_tonumber(vm, 13);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 14, LUA_TSTRING)) return(-1);
+  if((additional_fields_json = (char*)lua_tostring(vm, 14)) == NULL)  return(-1);
+
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
@@ -471,7 +482,7 @@ static int ntop_process_flow(lua_State* vm) {
   }
 
   ntop_interface->flow_processing(&src_ip, &dst_ip, src_port, dst_port, vlan_id, proto_id, l4_proto,
-    in_pkts, in_bytes, out_pkts, out_bytes);
+    in_pkts, in_bytes, out_pkts, out_bytes, first_switched, last_switched, additional_fields_json);
 
   return(true);
 }

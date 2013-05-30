@@ -75,17 +75,20 @@ while(interface.isRunning) do
     end
 
     interface.processFlow(
-      flow[ids.IPV4_SRC_ADDR] or flow[ids.IPV6_SRC_ADDR],
-      flow[ids.IPV4_DST_ADDR] or flow[ids.IPV6_DST_ADDR], 
-      flow[ids.L4_SRC_PORT]   or 0, 
-      flow[ids.L4_DST_PORT]   or 0, 
-      flow[ids.SRC_VLAN]      or flow[ids.DST_VLAN] or 0, 
-      flow[ids.L7_PROTO]      or 0, 
-      flow[ids.PROTOCOL]      or 0, 
-      flow[ids.IN_PKTS]       or 0, 
-      flow[ids.IN_BYTES]      or 0, 
-      flow[ids.OUT_PKTS]      or 0, 
-      flow[ids.OUT_BYTES]     or 0
+      flow[ids.IPV4_SRC_ADDR]  or flow[ids.IPV6_SRC_ADDR],
+      flow[ids.IPV4_DST_ADDR]  or flow[ids.IPV6_DST_ADDR], 
+      flow[ids.L4_SRC_PORT]    or 0, 
+      flow[ids.L4_DST_PORT]    or 0, 
+      flow[ids.SRC_VLAN]       or flow[ids.DST_VLAN] or 0, 
+      flow[ids.L7_PROTO]       or 0, 
+      flow[ids.PROTOCOL]       or 0, 
+      flow[ids.IN_PKTS]        or 0, 
+      flow[ids.IN_BYTES]       or 0, 
+      flow[ids.OUT_PKTS]       or 0, 
+      flow[ids.OUT_BYTES]      or 0,
+      flow[ids.FIRST_SWITCHED] or 0, 
+      flow[ids.LAST_SWITCHED]  or 0,
+      ""
     )
 
   end

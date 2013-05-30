@@ -26,7 +26,8 @@
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol, 
 	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
+	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
+	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
@@ -36,8 +37,22 @@ Flow::Flow(NetworkInterface *_iface,
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) src_host->incUses();
   if(dst_host) dst_host->incUses();
-  first_seen = last_seen = iface->getTimeLastPktRcvd();
+  first_seen = _first_seen;
+  last_seen = _last_seen;
   allocFlowMemory();
+}
+
+/* *************************************** */
+
+Flow::Flow(NetworkInterface *_iface,
+	   u_int16_t _vlanId, u_int8_t _protocol, 
+	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
+	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
+  time_t last_recvd = iface->getTimeLastPktRcvd();
+  Flow(_iface, _vlanId, _protocol, 
+       src_mac, _src_ip, _src_port,
+       dst_mac, _dst_ip, _dst_port,
+       last_recvd, last_recvd);
 }
 
 /* *************************************** */

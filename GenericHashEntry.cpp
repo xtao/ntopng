@@ -35,8 +35,14 @@ GenericHashEntry::~GenericHashEntry() {
 
 /* ***************************************** */
 
+void GenericHashEntry::updateSeen(time_t _last_seen) {
+  last_seen = _last_seen;
+}
+
+/* ***************************************** */
+
 void GenericHashEntry::updateSeen() {
-  last_seen = iface->getTimeLastPktRcvd();
+  updateSeen(iface->getTimeLastPktRcvd());
 }
 
 /* ***************************************** */

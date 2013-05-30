@@ -54,7 +54,8 @@ class NetworkInterface {
   		IpAddress *src_ip, IpAddress *dst_ip,
   		u_int16_t src_port, u_int16_t dst_port,
 		u_int8_t l4_proto,
-		bool *src2dst_direction);
+		bool *src2dst_direction,
+		time_t first_seen, time_t last_seen);
 
  public:
   NetworkInterface(const char *name, bool change_user);
@@ -72,6 +73,7 @@ class NetworkInterface {
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
+  inline void updateLastSeen(time_t last) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; }
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return polling_started; };
@@ -94,7 +96,9 @@ class NetworkInterface {
 		       u_int16_t proto_id,
 		       u_int8_t l4_proto,
 		       u_int in_pkts, u_int in_bytes,
-		       u_int out_pkts, u_int out_bytes);
+		       u_int out_pkts, u_int out_bytes,
+		       u_int first_switched, u_int last_switched,
+		       char *additional_fields_json);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
