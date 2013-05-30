@@ -7,13 +7,7 @@ require "lua_utils"
 require "template"
 local json = require ("dkjson")
 
-local debug_collector = 1
-
-interface.find("zmq-collector")
-
-local endpoint = interface.getEndpoint()
-
-ntop.zmq_connect(endpoint, "flow")
+local debug_collector = 0
 
 local handled_fields = { 
 [template.IN_SRC_MAC]     = true,
@@ -39,6 +33,10 @@ local handled_fields = {
 [template.LAST_SWITCHED]  = true
 }
  
+interface.find("zmq-collector")
+local endpoint = interface.getEndpoint()
+ntop.zmq_connect(endpoint, "flow")
+
 print("ZMQ Collector connected to " .. endpoint .. "\n")
 
 while(interface.isRunning) do
@@ -60,7 +58,7 @@ while(interface.isRunning) do
         end
       end
 
-      if debug_collector then
+      if debug_collector == 1 then
         if rtemplate[key] ~= nil then
 	  print(rtemplate[key] .. " = " .. value)
         else
@@ -90,7 +88,7 @@ while(interface.isRunning) do
       unhandled_fields_json         or "{}"
     )
 
-    if debug_collector then
+    if debug_collector == 1 then
       print("unhandled fields: " .. unhandled_fields_json)
       print("---")
     end

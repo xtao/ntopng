@@ -32,14 +32,14 @@ HostHash::HostHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_h
 Host* HostHash::get(u_int16_t vlanId, IpAddress *key) {
   u_int32_t hash = (key->key() % num_hashes);
 
-  if(table[hash] == NULL)
+  if(table[hash] == NULL) {
     return(NULL);
-  else {
+  } else {
     Host *head = (Host*)table[hash];
     
     while(head 
-	  && (head->get_vlan_id() != vlanId)
-	  && (head->get_ip()->compare(key) != 0))
+	  && ((head->get_vlan_id() != vlanId) 
+	      || (head->get_ip()->compare(key) != 0)))
       head = (Host*)head->next();
     
     return(head);
