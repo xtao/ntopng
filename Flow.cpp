@@ -33,6 +33,7 @@ Flow::Flow(NetworkInterface *_iface,
   
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
+  json_info = strdup("{}");
 
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) src_host->incUses();
@@ -130,6 +131,13 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
       deleteFlowMemory();
     }
   }
+}
+
+/* *************************************** */
+
+void Flow::setJSONInfo(char *json) {
+  if (json_info != NULL) free(json_info);
+  json_info = strdup(json);
 }
 
 /* *************************************** */
@@ -313,6 +321,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "duration", get_duration());
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
+  lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
   
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index

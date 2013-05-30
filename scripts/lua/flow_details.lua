@@ -1,5 +1,6 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
+local json = require ("dkjson")
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
@@ -53,7 +54,12 @@ else
 
    print("<tr><th>Client to Server Traffic</th><td>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</td></tr>\n")
    print("<tr><th>Server to Client Traffic</th><td>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</td></tr>\n")
-   
+  
+   local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
+   for key,value in pairs(info) do
+     print("<tr><th>" .. key .. "</th><td>" .. value .. "</td></tr>\n") 
+   end
+
    print("</table>\n")
 end
 

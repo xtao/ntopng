@@ -169,6 +169,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 
   flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
   flow->setDetectedProtocol(proto_id, l4_proto);
+  flow->setJSONInfo(additional_fields_json);
 }
 
 /* **************************************************** */

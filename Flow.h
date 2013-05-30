@@ -34,6 +34,7 @@ class Flow : public GenericHashEntry {
   bool detection_completed;
   u_int16_t detected_protocol;
   void *src_id, *dst_id;
+  char *json_info;
 
   /* Stats */
   u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
@@ -57,6 +58,7 @@ class Flow : public GenericHashEntry {
 
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
+  void setJSONInfo(char *json);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };
   inline void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen) { updateSeen(last_seen); 
     if (cli2srv_direction) cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
@@ -76,6 +78,7 @@ class Flow : public GenericHashEntry {
   inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
   inline Host* get_src_host()                     { return(src_host); };
   inline Host* get_dst_host()                     { return(dst_host); };
+  inline char* get_json_info()			  { return(json_info); }
   inline bool idle()                              { return(isIdle(FLOW_MAX_IDLE)); };
   int compare(Flow *fb);
   void print();
