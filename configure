@@ -2043,7 +2043,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
-  echo "A"
       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a"
       CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib"
   else
@@ -3560,7 +3559,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   GEOIP_LIB="-lGeoIP"
-    echo "Please do not forget to download GeoIP databases doing: make geoip"
+    DOWNLOAD_GEOIP=1
 fi
 else
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Build ntop without geolocation - GeoIP (http://www.maxmind.com/)" >&5
@@ -4878,4 +4877,10 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+echo ""
 echo "You are now reaady to compile typing $GMAKE"
+
+if test $DOWNLOAD_GEOIP = "1"
+then
+  echo "Please do not forget to download GeoIP databases doing: make geoip"
+fi

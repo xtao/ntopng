@@ -21,7 +21,6 @@ PF_RING_HOME=${HOME}/PF_RING
 if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
   AC_DEFINE_UNQUOTED(HAVE_PF_RING, 1, [Native PF_RING support])
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
-  echo "A"
       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a"
       CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib"
   else  
@@ -87,7 +86,7 @@ if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
   AC_DEFINE_UNQUOTED(HAVE_GEOIP, 1, [GeoIP support is present])
   GEOIP_LIB="-lGeoIP" 
   dnl> Download databases
-  echo "Please do not forget to download GeoIP databases doing: make geoip"
+  DOWNLOAD_GEOIP=1
 fi
 else
 AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
@@ -123,4 +122,10 @@ AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT
 
+echo ""
 echo "You are now reaady to compile typing $GMAKE"
+
+if test $DOWNLOAD_GEOIP = "1"
+then
+  echo "Please do not forget to download GeoIP databases doing: make geoip"
+fi
