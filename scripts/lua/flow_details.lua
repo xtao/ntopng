@@ -1,5 +1,6 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
+require "flow_utils"
 local json = require ("dkjson")
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
@@ -57,7 +58,7 @@ else
   
    local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
    for key,value in pairs(info) do
-     print("<tr><th>" .. key .. "</th><td>" .. value .. "</td></tr>\n") 
+      print("<tr><th>" .. getFlowKey(key) .. "</th><td>" .. handleCustomFlowField(key, value) .. "</td></tr>\n") 
    end
 
    print("</table>\n")
