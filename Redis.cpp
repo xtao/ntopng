@@ -188,7 +188,8 @@ void Redis::setDefaults() {
 
 /* **************************************** */
 
-int Redis::getAddress(char *numeric_ip, char *rsp, u_int rsp_len) {
+int Redis::getAddress(char *numeric_ip, char *rsp,
+		      u_int rsp_len, bool queue_if_not_found) {
   char key[64];
   int rc;
 
@@ -196,9 +197,10 @@ int Redis::getAddress(char *numeric_ip, char *rsp, u_int rsp_len) {
   snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
   rc = get(key, rsp, rsp_len);
 
-  if(rc != 0)
-    queueHostToResolve(numeric_ip);
-  else {
+  if(rc != 0) {
+    if(queue_if_not_found)
+      queueHostToResolve(numeric_ip);
+  } else {
     /* We need to extend expire */
 
     expire(numeric_ip, 300 /* expire */);

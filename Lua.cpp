@@ -570,7 +570,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
 
-  if(redis->getAddress(key, rsp, sizeof(rsp)) == 0) {
+  if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0) {
     value = rsp;
   } else {
     value = key;

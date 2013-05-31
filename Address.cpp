@@ -193,7 +193,7 @@ Address::~Address() {
 void Address::resolveHostName(char *numeric_ip) {
   char rsp[128];
 
-  if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp)) < 0) {
+  if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp), false) < 0) {
     char hostname[NI_MAXHOST];
     struct sockaddr *sa;
     struct sockaddr_in in4;

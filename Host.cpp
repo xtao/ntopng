@@ -68,7 +68,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   if(init_all) {
     char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
-    if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp)) == 0)
+    if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
       symbolic_name = strdup(rsp);
     else
       ntop->getRedis()->queueHostToResolve(host);
@@ -202,7 +202,7 @@ char* Host::get_name(char *buf, u_int buf_len) {
       return(symbolic_name);
     
     addr = ip->print(buf, buf_len);
-    if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf)) == 0) {
+    if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), true) == 0) {
       setName(redis_buf);
       return(symbolic_name);
     } else
@@ -212,28 +212,34 @@ char* Host::get_name(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
-void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int32_t sent_packets, 
-		    u_int32_t sent_bytes, u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
+void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, 
+		    u_int32_t sent_packets, u_int32_t sent_bytes,
+		    u_int32_t rcvd_packets, u_int32_t rcvd_bytes) { 
     if(sent_packets || rcvd_packets) {
       sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
       if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
-	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
+	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, 
+			    rcvd_packets, rcvd_bytes);      
 
       switch(l4_proto) {
       case 0:
 	/* Unknown protocol */
 	break;
       case IPPROTO_UDP:
-	udp_rcvd.incStats(rcvd_packets, rcvd_bytes), udp_sent.incStats(sent_packets, sent_bytes);
+	udp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	  udp_sent.incStats(sent_packets, sent_bytes);
 	break;
       case IPPROTO_TCP:
-	tcp_rcvd.incStats(rcvd_packets, rcvd_bytes), tcp_sent.incStats(sent_packets, sent_bytes);
+	tcp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	  tcp_sent.incStats(sent_packets, sent_bytes);
 	break;
       case IPPROTO_ICMP:
-	icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), icmp_sent.incStats(sent_packets, sent_bytes);
+	icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
+	  icmp_sent.incStats(sent_packets, sent_bytes);
 	break;
       default:
-	other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes), other_ip_sent.incStats(sent_packets, sent_bytes);
+	other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	  other_ip_sent.incStats(sent_packets, sent_bytes);
 	break;
       }
       updateSeen();
@@ -252,5 +258,7 @@ int Host::compare(Host *h) {
 /* ***************************************** */
 
 bool Host::isIdle(u_int max_idleness) {
-  return(((num_uses == 0) && (iface->getTimeLastPktRcvd() > (last_seen+max_idleness))) ? true : false);
+  return(((num_uses == 0) 
+	  && (iface->getTimeLastPktRcvd() > (last_seen+max_idleness))) 
+	 ? true : false);
 }
