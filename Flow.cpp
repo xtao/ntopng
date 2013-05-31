@@ -88,7 +88,7 @@ Flow::~Flow() {
 /* *************************************** */
 
 void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
-  if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
+  if((ndpi_flow != NULL) && (proto_id != NDPI_PROTOCOL_UNKNOWN)) {
     detected_protocol = proto_id;
     
     if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
