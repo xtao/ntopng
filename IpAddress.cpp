@@ -69,6 +69,8 @@ void IpAddress::set_from_string(char *string) {
 /* ******************************************* */
 
 int IpAddress::compare(IpAddress *ip) {
+  if(ip == NULL) return(-1);
+
   if(addr.ipVersion < ip->addr.ipVersion) return(-1); else if(addr.ipVersion > ip->addr.ipVersion) return(1);
 
   if(addr.ipVersion == 4)
