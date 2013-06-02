@@ -29,7 +29,8 @@ Flow::Flow(NetworkInterface *_iface,
 	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
 	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
-  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
+  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = 
+    cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
   
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
@@ -40,6 +41,7 @@ Flow::Flow(NetworkInterface *_iface,
   if(dst_host) dst_host->incUses();
   first_seen = _first_seen;
   last_seen = _last_seen;
+  categorization.category = NULL, categorization.flow_categorized = false;
   allocFlowMemory();
 }
 
@@ -120,7 +122,8 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	     doublecol[0] = '\0';	  
 
 	  svr->setName((char*)ndpi_flow->host_server_name);
-
+	  if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, true)) != NULL)
+	    categorization.flow_categorized = true;
 	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
 					       (char*)ndpi_flow->host_server_name);
 	}
@@ -321,6 +324,8 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "duration", get_duration());
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
+  lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
+    
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
   
   if(!detailed_dump) {
@@ -334,3 +339,16 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 }
 
 /* *************************************** */
+
+char* Flow::getDomainCategory() {
+  if(!categorization.flow_categorized) {
+    if(ndpi_flow == NULL)
+      categorization.flow_categorized = true;
+    else if(ndpi_flow->host_server_name) {
+      if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, false)) != NULL)
+	categorization.flow_categorized = true;
+    }
+  }
+
+  return(categorization.category);
+}

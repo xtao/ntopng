@@ -48,6 +48,7 @@ class Lua {
 };
 
 extern void lua_push_str_table_entry(lua_State *L, const char *key, char *value);
+extern void lua_push_nil_table_entry(lua_State *L, const char *key);
 extern void lua_push_int_table_entry(lua_State *L, const char *key, u_int64_t value);
 extern void lua_push_bool_table_entry(lua_State *L, const char *key, bool value);
 extern void lua_push_float_table_entry(lua_State *L, const char *key, float value);

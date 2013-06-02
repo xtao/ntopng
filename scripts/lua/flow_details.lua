@@ -39,7 +39,10 @@ else
    end
    print("<tr><th>Client</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["src.ip"] .. "\">".. flow["src.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["src.port"].. "\">" .. flow["src.port"].. "</A></td></tr>\n")
    print("<tr><th>Server</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["dst.ip"] .. "\">".. flow["dst.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["dst.port"].. "\">" .. flow["dst.port"].. "</A></td></tr>\n")
-   print("<tr><th>Protocol</th><td>" .. flow["proto.l4"] .. "</td></tr>\n")
+
+   if(flow["category"] ~= "") then 
+      print("<tr><th>Category</th><td>" .. getCategory(flow["category"]) .. "</td></tr>\n")
+   end				
    print("<tr><th>Application Protocol</th><td>" .. flow["proto.ndpi"] .. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</td></tr>\n")

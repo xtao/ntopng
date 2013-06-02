@@ -50,26 +50,28 @@ Categorization::~Categorization() {
 
 /* ***************************************** */
 
-void Categorization::categorizeHostName(char *_url) {
-  char key[256], buf[256];
+void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
+  char key[256];
 
   snprintf(key, sizeof(key), "domain.categorized.%s", _url);
-  if(ntop->getRedis()->get(key, buf, sizeof(buf)) == 0) {
+  if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
     ntop->getRedis()->expire(key, 86400);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, buf);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
   } else {
     struct http_response *hresp;
+    char url_buf[256];
 
-    snprintf(buf, sizeof(buf), "http://cloud.ntop.org/getCategory?url=%s&apikey=%s", _url, license_key);
+    snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, license_key);
 
-    hresp = http_get(buf, "User-agent:ntopng\r\n");
+    hresp = http_get(url_buf, "User-agent:ntopng\r\n");
 
 #if 0
     printf("%d\n", hresp->status_code_int);
     printf("%s\n", hresp->body);
 #endif
 
-    if(hresp->status_code_int == 200) {
+    buf[0] = '\0';
+    if((hresp->status_code_int == 200) || (hresp->status_code_int == 0)) {
       char *doublecolumn = strrchr(hresp->body, ':');
 
       if(doublecolumn) {
@@ -83,6 +85,7 @@ void Categorization::categorizeHostName(char *_url) {
 
 	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
 	  ntop->getRedis()->set(key, doublecolumn, 86400);
+	  snprintf(buf, buf_len, "%s", doublecolumn);
 	}
       }
     }
@@ -103,7 +106,9 @@ static void* categorizeLoop(void* ptr) {
     int rc = r->popDomainToCategorize(domain_name, sizeof(domain_name));
 
     if(rc == 0) {
-      a->categorizeHostName(domain_name);
+      char buf[8];
+      
+      a->categorizeHostName(domain_name, buf, sizeof(buf));
     } else
       sleep(1);
   }

@@ -7,6 +7,9 @@ perPage         = _GET["perPage"]
 sortColumn      = _GET["sortColumn"]
 sortOrder       = _GET["sortOrder"]
 
+if(sortColumn == nil) then
+  sortColumn = "column_"
+end
 
 if(currentPage == nil) then
    currentPage = 1
@@ -34,14 +37,20 @@ total = 0
 to_skip = (currentPage-1) * perPage
 
 vals = {}
+num = 0
 for key, value in pairs(hosts_stats) do
---   print("==>"..hosts_stats[key]["bytes.sent"].."\n")
+    num = num + 1
+    postfix = string.format("0.%04u", num)
+
+   --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
    if(sortColumn == "column_ip") then
       vals[key] = key
    elseif(sortColumn == "column_name") then
    vals[hosts_stats[key]["name"]] = key
    elseif(sortColumn == "column_since") then
    vals[hosts_stats[key]["duration"]] = key
+   elseif(sortColumn == "column_category") then
+   vals[hosts_stats[key]["category"]..postfix] = key
    elseif(sortColumn == "column_asn") then
    vals[hosts_stats[key]["asn"]] = key
    elseif(sortColumn == "column_2") then
@@ -59,6 +68,7 @@ else
    funct = rev
 end
 
+num = 0
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
    value = hosts_stats[key]
@@ -75,6 +85,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print("</A>\", \"column_name\" : \"" .. value["name"] .. " ")
 	 print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
 
+	 print("\", \"column_category\" : \"".. getCategory(value["category"]))
 	 print("\", \"column_vlan\" : "..value["vlan"])
 
 	 if(value["asn"] == 0) then

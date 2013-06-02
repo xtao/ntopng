@@ -24,6 +24,8 @@
 
 #include "ntop_includes.h"
 
+#define CATEGORIZATION_URL "http://service.block.si/getRating"
+
 class Categorization {
   u_int32_t num_categorized_categorizationes, num_categorized_fails;
   char *license_key;
@@ -35,7 +37,7 @@ class Categorization {
   ~Categorization();
 
   void startCategorizeCategorizationLoop();
-  void categorizeHostName(char *numeric_ip);
+  void categorizeHostName(char *numeric_ip, char *buf, u_int buf_len);
   char* findCategory(char *url);
 };
 

@@ -57,6 +57,8 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["bytes"]+postfix
 	 elseif(sortColumn == "column_ndpi") then
 	 vkey = flows_stats[key]["proto.ndpi"]..postfix
+	 elseif(sortColumn == "column_category") then
+   	 vkey = flows_stats[key]["category"]..postfix
 	 elseif(sortColumn == "column_duration") then
 	 vkey = flows_stats[key]["duration"]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
@@ -66,7 +68,7 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["bytes"]+postfix
       end
       
-      --print("-->"..num.."="..vkey.."\n")
+      --      print("-->"..num.."="..vkey.."\n")
       vals[vkey] = key
       end
 end
@@ -125,6 +127,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
+	 print ("\", \"column_category\" : \"" .. getCategory(value["category"]))
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))

@@ -28,7 +28,7 @@ class Host : public GenericHashEntry {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
-  char *symbolic_name, *country, *city, *asname;
+  char *symbolic_name, *country, *city, *asname, category[8];
   u_int16_t num_uses, vlan_id;
   float latitude, longitude;
   IpAddress *ip;
@@ -51,17 +51,18 @@ class Host : public GenericHashEntry {
   Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip);
   ~Host();
 
-  inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4); }
+  inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4);   }
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
-  inline u_int32_t key()                       { return(ip->key());   }
-  inline IpAddress* get_ip()                   { return(ip);          }
-  inline u_int8_t*  get_mac()                  { return(mac_address); }
-  inline u_int16_t get_vlan_id()               { return(vlan_id);     }
+  inline u_int32_t key()                       { return(ip->key());     }
+  inline IpAddress* get_ip()                   { return(ip);            }
+  inline u_int8_t*  get_mac()                  { return(mac_address);   }
+  inline u_int16_t get_vlan_id()               { return(vlan_id);       }
   inline char* get_name()                      { return(symbolic_name); }
-  inline char* get_country()                   { return(country); }
-  inline char* get_city()                      { return(city); }
-  inline u_int32_t get_asn()                   { return(asn); }
-  inline bool isLocalHost()                    { return(localHost);   }
+  inline char* get_country()                   { return(country);       }
+  inline char* get_city()                      { return(city);          }
+  inline char* get_category()                  { return(category);      }
+  inline u_int32_t get_asn()                   { return(asn);           }
+  inline bool isLocalHost()                    { return(localHost);     }
   char* get_mac(char *buf, u_int buf_len);
   char*  get_name(char *buf, u_int buf_len);
 

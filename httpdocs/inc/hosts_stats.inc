@@ -37,6 +37,11 @@
 				 sortable: true,
 				 },
 			     {
+			     title: "Category",
+				 field: "column_category",
+				 sortable: true,
+				 },
+			     {
 			     title: "Breakdown",
 				 field: "column_breakdown",
 				 sortable: false,

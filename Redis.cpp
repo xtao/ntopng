@@ -138,26 +138,30 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
 /* **************************************** */
 
-int Redis::queueDomainToCategorize(char *domainname) {
+char* Redis::getFlowCategory(char *domainname, bool categorize_if_unknown) {
   if(ntop->getPrefs()->is_categorization_enabled()) {
     int rc;
     char key[128], *val;
 
     l->lock(__FILE__, __LINE__);
 
-    snprintf(key, sizeof(key), "domain.categorized.%s", domainname);
+    snprintf(key, sizeof(key), "domain.category.%s", domainname);
   
     /*
       Add only if the domain has not been categorized yet
     */
-    if(credis_get(redis, key, &val) < 0)
-      rc = credis_rpush(redis, "domain.tocategorize", domainname);
+    if(credis_get(redis, key, &val) < 0) {
+      if(categorize_if_unknown)
+	rc = credis_rpush(redis, "domain.tocategorize", domainname);
+
+      val = NULL;
+    }
 
     l->unlock(__FILE__, __LINE__);
 
-    return(rc);
+    return(val);
   } else
-    return(0);
+    return(NULL);
 }
 
 /* **************************************** */

@@ -35,6 +35,10 @@ class Flow : public GenericHashEntry {
   u_int16_t detected_protocol;
   void *src_id, *dst_id;
   char *json_info;
+  struct {
+    char *category;
+    bool flow_categorized;
+  } categorization;
 
   /* Stats */
   u_int32_t cli2srv_packets, cli2srv_bytes, srv2cli_packets, srv2cli_bytes;
@@ -56,6 +60,7 @@ class Flow : public GenericHashEntry {
        time_t _first_seen, time_t _last_seen);
   ~Flow();
 
+  char *getDomainCategory();
   void allocFlowMemory();
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   void setJSONInfo(char *json);

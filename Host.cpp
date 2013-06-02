@@ -60,6 +60,7 @@ Host::~Host() {
 void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
+  category[0] = '\0';
   num_uses = 0, name_resolved = false, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
@@ -153,6 +154,8 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
+    lua_push_str_table_entry(vm, "category", category);
+    
 
     ndpiStats->lua(iface, vm);
 
@@ -187,7 +190,7 @@ void Host::setName(char *name) {
   m->unlock(__FILE__, __LINE__);
 
   if(ntop->get_categorization())
-    ntop->get_categorization()->categorizeHostName(symbolic_name);
+    ntop->get_categorization()->categorizeHostName(symbolic_name, category, sizeof(category));
 }
 
 /* ***************************************** */

@@ -510,6 +510,14 @@ void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
 
 /* ****************************************** */
 
+void lua_push_nil_table_entry(lua_State *L, const char *key) {
+  lua_pushstring(L, key);
+  lua_pushnil(L);
+  lua_settable(L, -3);
+}
+
+/* ****************************************** */
+
 void lua_push_bool_table_entry(lua_State *L, const char *key, bool value) {
   lua_pushstring(L, key);
   lua_pushboolean(L, value ? 1 : 0);

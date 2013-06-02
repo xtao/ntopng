@@ -53,6 +53,14 @@
 			       }
 			       },
 			     {
+			     title: "Category",
+				 field: "column_category",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			       }
+			       },
+			     {
 			     title: "Breakdown",
 				 field: "column_breakdown",
 				 sortable: false,
