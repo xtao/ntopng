@@ -39,7 +39,7 @@ Host* HostHash::get(u_int16_t vlanId, IpAddress *key) {
     
     while(head 
 	  && ((head->get_vlan_id() != vlanId) 
-	      || (head->get_ip()->compare(key) != 0)))
+	      || ((head->get_ip() != NULL) && (head->get_ip()->compare(key) != 0))))
       head = (Host*)head->next();
     
     return(head);

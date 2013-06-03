@@ -84,6 +84,21 @@ char* Utils::l4proto2name(u_int8_t proto) {
     snprintf(proto_string, sizeof(proto_string), "%u", proto);
     return(proto_string);
   }
+}
 
+/* ****************************************************** */
 
+bool Utils::isIPAddress(char *ip) {
+  struct in_addr addr4;
+  struct in6_addr addr6;
+  
+  if(strchr(ip, ':') != NULL) { /* IPv6 */
+    if(inet_pton(AF_INET6, ip, &addr6) == 1)
+      return(true);
+  } else {
+    if(inet_pton(AF_INET, ip, &addr4) == 1)
+      return(true);
+  }
+
+  return(false);
 }

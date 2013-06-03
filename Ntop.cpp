@@ -76,6 +76,7 @@ Ntop::~Ntop() {
 void Ntop::start() {
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
+  if(categorization) categorization->startCategorizeCategorizationLoop();
 }
 
 /* ******************************************* */

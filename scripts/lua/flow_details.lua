@@ -37,8 +37,12 @@ else
    if(flow["vlan"] ~= 0) then
       print("<tr><th>VLAN ID</th><td>" .. flow["vlan"].. "</td></tr>\n")
    end
-   print("<tr><th>Client</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["src.ip"] .. "\">".. flow["src.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["src.port"].. "\">" .. flow["src.port"].. "</A></td></tr>\n")
-   print("<tr><th>Server</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["dst.ip"] .. "\">".. flow["dst.ip"].. "</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["dst.port"].. "\">" .. flow["dst.port"].. "</A></td></tr>\n")
+   print("<tr><th>Client</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["src.ip"] .. "\">")
+   if(flow["src.host"] ~= "") then print(flow["src.host"]) else print(flow["src.ip"]) end
+   print("</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["src.port"].. "\">" .. flow["src.port"].. "</A></td></tr>\n")
+   print("<tr><th>Server</th><td><A HREF=\"/host_details.lua?interface=" ..ifname .. "&host=" .. flow["dst.ip"] .. "\">")
+   if(flow["dst.host"] ~= "") then print(flow["dst.host"]) else print(flow["dst.ip"]) end
+   print("</A>:<A HREF=\"/port_details.lua?interface=" ..ifname .. "&port=" .. flow["dst.port"].. "\">" .. flow["dst.port"].. "</A></td></tr>\n")
 
    if(flow["category"] ~= "") then 
       print("<tr><th>Category</th><td>" .. getCategory(flow["category"]) .. "</td></tr>\n")

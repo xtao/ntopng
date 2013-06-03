@@ -146,6 +146,9 @@ char *str_replace(char *search , char *replace , char *subject)
 	char  *p = NULL , *old = NULL , *new_subject = NULL ;
 	int c = 0 , search_size;
 	search_size = strlen(search);
+
+	if((subject == NULL) || (search_size == 0)) return(strdup("")); /* ntop */
+
 	for(p = strstr(subject , search) ; p != NULL ; p = strstr(p + search_size , search))
 	{
 		c++;

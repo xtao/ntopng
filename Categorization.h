@@ -25,6 +25,11 @@
 #include "ntop_includes.h"
 
 #define CATEGORIZATION_URL "http://service.block.si/getRating"
+#define NULL_CATEGORY      "''"
+
+typedef struct {
+  u_int8_t major, minor;
+} HostCategory;
 
 class Categorization {
   u_int32_t num_categorized_categorizationes, num_categorized_fails;
@@ -32,13 +37,15 @@ class Categorization {
 
   pthread_t categorizeThreadLoop;
 
+  void categorizeHostName(char *numeric_ip, char *buf, u_int buf_len);
+
  public:
   Categorization(char *_license_key);
   ~Categorization();
 
   void startCategorizeCategorizationLoop();
-  void categorizeHostName(char *numeric_ip, char *buf, u_int buf_len);
-  char* findCategory(char *url);
+  char* findCategory(char *url, char *buf, u_int buf_len, bool add_if_needed);
+  void* categorizeLoop();
 };
 
 #endif /* _CATEGORIZATION_H_ */

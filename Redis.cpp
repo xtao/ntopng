@@ -138,10 +138,17 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
 /* **************************************** */
 
-char* Redis::getFlowCategory(char *domainname, bool categorize_if_unknown) {
+char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool categorize_if_unknown) {
+  buf[0] = 0;
+
   if(ntop->getPrefs()->is_categorization_enabled()) {
     int rc;
     char key[128], *val;
+
+    /* Check if the host is 'categorizable' */
+    if(Utils::isIPAddress(domainname)) {
+      return(buf);
+    }
 
     l->lock(__FILE__, __LINE__);
 
@@ -154,14 +161,20 @@ char* Redis::getFlowCategory(char *domainname, bool categorize_if_unknown) {
       if(categorize_if_unknown)
 	rc = credis_rpush(redis, "domain.tocategorize", domainname);
 
-      val = NULL;
+      buf[0] = 0, val = NULL;
+    } else {
+      snprintf(buf, buf_len, "%s", val);
+      free(val);
+      val = buf;
     }
 
     l->unlock(__FILE__, __LINE__);
 
     return(val);
-  } else
+  } else {
+    buf[0] = 0;
     return(NULL);
+  }
 }
 
 /* **************************************** */

@@ -31,8 +31,8 @@ Categorization::Categorization(char *_license_key) {
 
 /* ******************************************* */
 
-char* Categorization::findCategory(char *url) {
-  return(NULL);
+char* Categorization::findCategory(char *name, char *buf, u_int buf_len, bool add_if_needed) {
+  return(ntop->getRedis()->getFlowCategory(name, buf, buf_len, add_if_needed));
 }
 
 /* **************************************** */
@@ -42,7 +42,7 @@ Categorization::~Categorization() {
 
   if(license_key != NULL) {
     pthread_join(categorizeThreadLoop, &res);
-    
+
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Categorization resolution stats [%u categorized][%u failures]",
 				 num_categorized_categorizationes, num_categorized_fails);
   }
@@ -60,6 +60,12 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
   } else {
     struct http_response *hresp;
     char url_buf[256];
+    
+    /*
+      Save category into the cache so that if the categorization service is slow, we do not
+      recursively add the domain into the list of domains to solve
+    */
+    ntop->getRedis()->set(key, NULL_CATEGORY, 86400);
 
     snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, license_key);
 
@@ -77,14 +83,24 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
       if(doublecolumn) {
 	char *end;
 
-	doublecolumn++;
-	doublecolumn++;
+	doublecolumn += 2;
 
 	if((end = strchr(doublecolumn, '"')) != NULL) {
+	  int major, minor;
+
 	  end[0] = '\0';
 
 	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
-	  ntop->getRedis()->set(key, doublecolumn, 86400);
+
+	  /* The category format is XX_YY so it can very well with into a 16 bit value */
+	  if(sscanf(doublecolumn, "%d_%d", &major, &minor) != 2) {
+	    if((strcmp(doublecolumn, "error") != 0) && (doublecolumn[0] != '-' /* Negative error code */))
+	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid format for category '%s'", doublecolumn);
+
+	    doublecolumn = NULL_CATEGORY;
+	  } else	    
+	    ntop->getRedis()->set(key, doublecolumn, 86400); /* Save category into the cache */
+
 	  snprintf(buf, buf_len, "%s", doublecolumn);
 	}
       }
@@ -96,8 +112,15 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
 /* **************************************************** */
 
-static void* categorizeLoop(void* ptr) {
+static void* categorizeThreadInfiniteLoop(void* ptr) {
   Categorization *a = (Categorization*)ptr;
+
+  return(a->categorizeLoop());
+}
+
+/* **************************************************** */
+
+void* Categorization::categorizeLoop() {
   Redis *r = ntop->getRedis();
 
   while(!ntop->getGlobals()->isShutdown()) {
@@ -107,8 +130,8 @@ static void* categorizeLoop(void* ptr) {
 
     if(rc == 0) {
       char buf[8];
-      
-      a->categorizeHostName(domain_name, buf, sizeof(buf));
+
+      categorizeHostName(domain_name, buf, sizeof(buf));
     } else
       sleep(1);
   }
@@ -119,6 +142,6 @@ static void* categorizeLoop(void* ptr) {
 /* **************************************************** */
 
 void Categorization::startCategorizeCategorizationLoop() {
-  pthread_create(&categorizeThreadLoop, NULL, categorizeLoop, (void*)this);
+  pthread_create(&categorizeThreadLoop, NULL, categorizeThreadInfiniteLoop, (void*)this);
 }
 

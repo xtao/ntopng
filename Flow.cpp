@@ -122,7 +122,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	     doublecol[0] = '\0';	  
 
 	  svr->setName((char*)ndpi_flow->host_server_name);
-	  if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, true)) != NULL)
+	  if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true)) != NULL)
 	    categorization.flow_categorized = true;
 	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
 					       (char*)ndpi_flow->host_server_name);
@@ -345,7 +345,7 @@ char* Flow::getDomainCategory() {
     if(ndpi_flow == NULL)
       categorization.flow_categorized = true;
     else if(ndpi_flow->host_server_name) {
-      if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, false)) != NULL)
+      if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, categorization.category, sizeof(categorization.category), false) != NULL)
 	categorization.flow_categorized = true;
     }
   }

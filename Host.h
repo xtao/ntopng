@@ -44,6 +44,7 @@ class Host : public GenericHashEntry {
   
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
+  void refreshCategory();
 
  public:
   Host(NetworkInterface *_iface);
@@ -60,7 +61,7 @@ class Host : public GenericHashEntry {
   inline char* get_name()                      { return(symbolic_name); }
   inline char* get_country()                   { return(country);       }
   inline char* get_city()                      { return(city);          }
-  inline char* get_category()                  { return(category);      }
+  inline char* get_category()                  { refreshCategory(); return(category); }
   inline u_int32_t get_asn()                   { return(asn);           }
   inline bool isLocalHost()                    { return(localHost);     }
   char* get_mac(char *buf, u_int buf_len);

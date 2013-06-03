@@ -154,8 +154,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
-    lua_push_str_table_entry(vm, "category", category);
-    
+    lua_push_str_table_entry(vm, "category", get_category());
 
     ndpiStats->lua(iface, vm);
 
@@ -184,13 +183,27 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
   we need to lock/unlock
 */
 void Host::setName(char *name) {
+  bool to_categorize = false;
+
+  if(symbolic_name) return;
+
   m->lock(__FILE__, __LINE__);
-  if(symbolic_name) free(symbolic_name);
-  symbolic_name = strdup(name);
+  if((symbolic_name == NULL) || (symbolic_name && strcmp(symbolic_name, name))) {
+    symbolic_name = strdup(name);
+    to_categorize = true;
+  }
   m->unlock(__FILE__, __LINE__);
 
-  if(ntop->get_categorization())
-    ntop->get_categorization()->categorizeHostName(symbolic_name, category, sizeof(category));
+  if(to_categorize && ntop->get_categorization())
+    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), true);
+}
+
+/* ***************************************** */
+
+void Host::refreshCategory() {
+  if((symbolic_name != NULL) && (category[0] == '\0')) {
+    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), false);
+  }
 }
 
 /* ***************************************** */

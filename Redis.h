@@ -42,10 +42,9 @@ class Redis {
   int queueHostToResolve(char *hostname);
   int popHostToResolve(char *hostname, u_int hostname_len);
 
-  char* getFlowCategory(char *domainname, bool categorize_if_unknown);
+  char* getFlowCategory(char *domainname, char *buf, u_int buf_len, bool categorize_if_unknown);
   int popDomainToCategorize(char *domainname, u_int domainname_len);
   
-
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 };

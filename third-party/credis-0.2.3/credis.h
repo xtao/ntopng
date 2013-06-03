@@ -255,6 +255,7 @@ int credis_substr(REDIS rhnd, const char *key, int start, int end, char **substr
  */
 
 int credis_rpush(REDIS rhnd, const char *key, const char *element);
+int credis_rpushx(REDIS rhnd, const char *key, const char *element); /* ntop */
 
 int credis_lpush(REDIS rhnd, const char *key, const char *element);
 
