@@ -3547,6 +3547,7 @@ _ACEOF
 
 fi
 
+DOWNLOAD_GEOIP=0
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
 
 cat >>confdefs.h <<_ACEOF
