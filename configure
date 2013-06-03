@@ -3045,6 +3045,7 @@ echo "Please install libglib-2.0 (RRD prerequisite)"
 exit
 fi
 
+DOWNLOAD_GEOIP=0
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GeoIP_record_by_ipnum in -lGeoIP" >&5
 $as_echo_n "checking for GeoIP_record_by_ipnum in -lGeoIP... " >&6; }
 if ${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum+:} false; then :
@@ -3547,7 +3548,6 @@ _ACEOF
 
 fi
 
-DOWNLOAD_GEOIP=0
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
 
 cat >>confdefs.h <<_ACEOF

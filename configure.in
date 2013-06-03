@@ -74,13 +74,13 @@ exit
 fi
 
 dnl> Check for package install
+DOWNLOAD_GEOIP=0
 AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum])
 AC_HAVE_HEADERS(GeoIP.h)
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum}" = ".yes" &&
    test ".${ac_cv_header_GeoIP_h}" = ".yes"; then
 
 AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum_v6])
-DOWNLOAD_GEOIP=0
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
    AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP IPv6 support is present])
   dnl> LIBS="$LIBS -lGeoIP"
