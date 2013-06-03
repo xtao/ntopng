@@ -124,7 +124,7 @@ AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
 
 echo ""
-echo "You are now reaady to compile typing $GMAKE"
+echo "You are now ready to compile typing $GMAKE"
 
 if test $DOWNLOAD_GEOIP = "1"
 then
