@@ -75,6 +75,9 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
     exit(-1);
   }
 
+  if(ntop->getCustomnDPIProtos() != NULL)
+    ndpi_load_protocols_file(ndpi_struct, ntop->getCustomnDPIProtos());
+
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);

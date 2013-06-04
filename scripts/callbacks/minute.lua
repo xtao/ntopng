@@ -4,10 +4,35 @@
 
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
+require "top_talkers"
+
+when = os.time()
+
+-- Dump topTalkers every minute
+
+talkers = getTopTalkers("any")
+basedir = ntop.getDataDir() .. "/talkers/" .. os.date("%Y/%m/%d/%H", when)
+if(not(ntop.exists(basedir))) then   
+  ntop.mkdir(basedir)
+end
+filename = basedir .. os.date("/%M.json", when)
+
+-- io.write(filename)
+
+f = io.open(filename, "w")
+if(f) then
+  f:write(talkers)
+  f:close()
+end
+
+
+
+
+
 
 -- Run RRD update every 5 minutes
 -- Use 30 just to avoid rounding issues
-diff = os.time() % 300
+diff = when % 300
 
 -- io.write('Diff: '..diff..'\n')
 

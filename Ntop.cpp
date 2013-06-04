@@ -30,6 +30,7 @@ Ntop::Ntop() {
   pa = new PeriodicActivities();
   address = new Address();
   categorization = NULL;
+  custom_ndpi_protos = NULL;
   getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);  
 }
@@ -63,6 +64,7 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_c
 Ntop::~Ntop() {
   if(iface) delete iface;
   if(httpd) delete httpd;
+  if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
   delete address;
   delete pa;
@@ -83,4 +85,13 @@ void Ntop::start() {
 
 void Ntop::loadGeolocation(char *dir) {
   geo = new Geolocation(dir);
+}
+
+/* ******************************************* */
+
+void Ntop::setCustomnDPIProtos(char *path) {
+  if(path != NULL) {
+    if(custom_ndpi_protos != NULL) free(custom_ndpi_protos);
+    custom_ndpi_protos = strdup(path);
+  }  
 }

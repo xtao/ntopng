@@ -30,6 +30,7 @@ extern "C" {
 static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
 	 "Usage: ntopng -m <local nets> -d <data dir> [-n mode] [-i <iface>] [-w <http port>]\n"
+	 "              [-m <networks>] [-p <protos>]\n"
 	 "              [-d <path>] [-c <categorization key>] [-r <redis>] [-s] [-v]\n\b"
 	 "-n <mode>               | DNS address resolution mode\n"
 	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
@@ -41,6 +42,7 @@ static void help() {
 	 "                        | Please read README.categorization for more info.\n"
 	 "-w <http port>          | HTTP port\n"
 	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
+	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
 	 "-s                      | Do not change user (debug only)\n"
 	 "-v                      | Verbose tracing\n"
@@ -89,7 +91,7 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:d:v")) != '?') {
+  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:p:d:v")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -97,10 +99,12 @@ int main(int argc, char *argv[]) {
       ntop->setCategorization(new Categorization(optarg));
       prefs->enable_categorization();
       break;
+
     case 'm':
       ntop->setLocalNetworks(optarg);
       localnets = true;
       break;
+
     case 'n':
       switch(atoi(optarg)) {
       case 0:
@@ -115,6 +119,10 @@ int main(int argc, char *argv[]) {
       default:
 	help();
       }
+      break;
+
+    case 'p':
+      ntop->setCustomnDPIProtos(optarg);
       break;
 
     case 'h':

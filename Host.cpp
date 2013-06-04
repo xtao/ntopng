@@ -115,7 +115,11 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
 
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
 
-    lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
+    if(ip)
+      lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
+    else
+      lua_push_nil_table_entry(vm, "ip");
+
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "vlan", vlan_id);

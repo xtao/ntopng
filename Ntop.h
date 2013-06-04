@@ -26,7 +26,7 @@
 
 class Ntop {
  private:
-  char *data_dir, *callbacks_dir;
+  char *data_dir, *callbacks_dir, *custom_ndpi_protos;
   NetworkInterface *iface;
   HTTPserver *httpd;
   NtopGlobals *globals;
@@ -42,6 +42,9 @@ class Ntop {
   void registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
   ~Ntop();
 
+  void setCustomnDPIProtos(char *path);
+  inline char* getCustomnDPIProtos()                 { return(custom_ndpi_protos);                 };
+  
   void loadGeolocation(char *dir);
   inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
