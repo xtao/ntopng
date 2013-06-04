@@ -76,7 +76,7 @@ class Host : public GenericHashEntry {
   inline bool idle()                 { return(isIdle(HOST_MAX_IDLE)); };
   void lua(lua_State* vm, bool host_details, bool returnHost);
   void resolveHostName();
-  void setName(char *name);
+  void setName(char *name, bool update_categorization);
   int compare(Host *h);
   inline bool equal(IpAddress *_ip)  { return(ip->equal(_ip)); };
   bool isIdle(u_int max_idleness);

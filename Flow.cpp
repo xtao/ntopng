@@ -121,7 +121,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
 	     doublecol[0] = '\0';	  
 
-	  svr->setName((char*)ndpi_flow->host_server_name);
+	  svr->setName((char*)ndpi_flow->host_server_name, true);
 	  if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true)) != NULL)
 	    categorization.flow_categorized = true;
 	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),

@@ -38,7 +38,7 @@ static void help() {
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
 	 "-c <ccategorization key>| Key used to access host categorization services\n"
-	 "                        | Please read README.Categorization for more info.\n"
+	 "                        | Please read README.categorization for more info.\n"
 	 "-w <http port>          | HTTP port\n"
 	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
@@ -213,6 +213,10 @@ int main(int argc, char *argv[]) {
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
 			       "Using RRD version %s",
 			       rrd_strversion());
+
+  if(!prefs->is_categorization_enabled())
+    ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				 "Host categoriazation is not enabled. Please look at README.categorization");
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);

@@ -230,6 +230,65 @@ static int ntop_zmq_connect(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_keyval(lua_State* vm) {
+  //struct stat buf;
+  char *path, *k;
+  int rc;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((path = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((k = (char*)lua_tostring(vm, 2)) == NULL)         return(-1);
+
+#if 0
+  if(stat(path, &buf) != 0)        return(luaL_error(vm, "The specified DB %s does not exist", path));
+  if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open DB %s", path));
+  
+  key.data = k, key.len = strlen(k);  
+  if(db_get(db, &key, &value) == 1) {
+    lua_pushlstring(vm, value.data,value.len);
+    free(value.data);
+    rc = 1;
+  } else
+    rc = 0;
+  
+  db_close(db);
+#endif
+
+  return(rc);
+}
+
+/* ****************************************** */
+
+static int ntop_set_keyval(lua_State* vm) {
+  //struct stat buf;
+  char *path, *k, *v;
+  int rc;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((path = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((k = (char*)lua_tostring(vm, 2)) == NULL)         return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
+  if((v = (char*)lua_tostring(vm, 3)) == NULL)         return(-1);
+
+#if 0
+  if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open/create DB %s", path));
+  
+  key.data = k, key.len = strlen(k);  
+  rc = db_add(db, &key, &value);
+  lua_pushboolean(vm, rc);  
+  db_close(db);
+#endif
+
+  return(rc);
+}
+
+/* ****************************************** */
+
 static int ntop_zmq_disconnect(lua_State* vm) {
   void *context, *subscriber;
 
@@ -779,6 +838,8 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
+  { "getKeyVal",      ntop_get_keyval  },
+  { "setKeyVal",      ntop_set_keyval  },
   { NULL,          NULL}
 };
 
@@ -791,7 +852,7 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
 
   ntop_class_reg ntop[] = {
     { "interface", ntop_interface_reg },
-    { "ntop",     ntop_reg },
+    { "ntop",      ntop_reg },
     {NULL,    NULL}
   };
 

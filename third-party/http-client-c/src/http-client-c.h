@@ -78,6 +78,9 @@ struct http_response
 */
 struct http_response* handle_redirect_get(struct http_response* hresp, char* custom_headers)
 {
+
+  if(hresp == NULL)   return NULL; // ntop
+
   if(hresp->status_code_int > 300 && hresp->status_code_int < 399)
     {
       char *token = strtok(hresp->response_headers, "\r\n");
@@ -163,7 +166,11 @@ struct http_response* handle_redirect_post(struct http_response* hresp, char* cu
 struct http_response* http_req(char *http_headers, struct parsed_url *purl)
 {
   /* Parse url */
+#if 0
   if(purl == NULL)
+#else
+    if((purl == NULL)|| (purl->ip == NULL)) /* ntop */
+#endif
     {
       printf("Unable to parse url");
       return NULL;

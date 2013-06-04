@@ -53,7 +53,7 @@ Categorization::~Categorization() {
 void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
   char key[256];
 
-  snprintf(key, sizeof(key), "domain.categorized.%s", _url);
+  snprintf(key, sizeof(key), "domain.category.%s", _url);
   if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
     ntop->getRedis()->expire(key, 86400);
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
@@ -77,7 +77,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 #endif
 
     buf[0] = '\0';
-    if((hresp->status_code_int == 200) || (hresp->status_code_int == 0)) {
+    if(hresp && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
       char *doublecolumn = strrchr(hresp->body, ':');
 
       if(doublecolumn) {
@@ -106,7 +106,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
       }
     }
 
-    http_response_free(hresp);
+    if(hresp) http_response_free(hresp);
   }
 }
 

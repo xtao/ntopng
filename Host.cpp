@@ -182,7 +182,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
   As this method can be called from Lua, in order to avoid concurency issues
   we need to lock/unlock
 */
-void Host::setName(char *name) {
+void Host::setName(char *name, bool update_categorization) {
   bool to_categorize = false;
 
   if(symbolic_name) return;
@@ -195,7 +195,8 @@ void Host::setName(char *name) {
   m->unlock(__FILE__, __LINE__);
 
   if(to_categorize && ntop->get_categorization())
-    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), true);
+    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), 
+					     update_categorization);
 }
 
 /* ***************************************** */
@@ -219,7 +220,7 @@ char* Host::get_name(char *buf, u_int buf_len) {
     
     addr = ip->print(buf, buf_len);
     if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), true) == 0) {
-      setName(redis_buf);
+      setName(redis_buf, false);
       return(symbolic_name);
     } else
       return(addr);

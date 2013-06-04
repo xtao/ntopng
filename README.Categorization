@@ -1,6 +1,12 @@
-ntopng categorizes hosts using services provided by http://block.si
+ntopng categorizes hosts using services are provided by http://block.si
 
 In order to use these categorization services you need to mail info@block.si and
 ask for a test key to be used in ntopng.
 
-NOTES: THIS IS AN EXPERIMENTAL SERVICE WE WILL FURTHER DEVELOP IN THE NEAR FUTURE
+For test driving the service please use as key 9hoAtewwpC2tXRMJBfifrY24B
+(example ntopng -c 9hoAtewwpC2tXRMJBfifrY24B .....).
+
+
+NOTES:
+- THIS IS AN EXPERIMENTAL SERVICE WE WILL FURTHER DEVELOP IN THE NEAR FUTURE
+- NTOPNG WILL CONTACT DIRECTLY BLOCK.SI (NO TRAFFIC WILL PASS THROUGH NTOP.ORG)

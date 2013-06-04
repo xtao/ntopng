@@ -164,8 +164,6 @@ char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool ca
       buf[0] = 0, val = NULL;
     } else {
       snprintf(buf, buf_len, "%s", val);
-      free(val);
-      val = buf;
     }
 
     l->unlock(__FILE__, __LINE__);
