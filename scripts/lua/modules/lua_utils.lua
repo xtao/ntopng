@@ -429,7 +429,7 @@ categories = {
 };
 
 function getCategory(cat)
-   if(starts(cat, "error") or (cat == "''") or starts(cat, "-") or starts(cat, "Local")) then
+   if(starts(cat, "error") or (cat == "''") or (cat == "") or starts(cat, "-") or starts(cat, "Local")) then
 	 return("")
    else
 

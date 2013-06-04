@@ -128,6 +128,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
 	 print ("\", \"column_category\" : \"" .. getCategory(value["category"]))
+	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))

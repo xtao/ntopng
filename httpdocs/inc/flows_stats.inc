@@ -49,7 +49,7 @@
 				 field: "column_duration",
 				 sortable: true,
 	 	             css: { 
-			        textAlign: 'right'
+			        textAlign: 'center'
 			       }
 			       },
 			     {
@@ -57,7 +57,7 @@
 				 field: "column_category",
 				 sortable: true,
 	 	             css: { 
-			        textAlign: 'right'
+			        textAlign: 'center'
 			       }
 			       },
 			     {
@@ -73,7 +73,7 @@
 				 field: "column_bytes",
 				 sortable: true,
 	 	             css: { 
-			        textAlign: 'right'
+			        textAlign: 'center'
 			     }
 				 }
 			     ]

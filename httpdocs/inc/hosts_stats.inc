@@ -15,31 +15,54 @@
 			     title: "IP Address",
 				 field: "column_ip",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'left'
+			     }
 				 },
 			     {
 			     title: "Location",
 				 field: "column_location",
 				 sortable: false,
+	 	             css: { 
+			        textAlign: 'left'
+			     }
+
 				 },			     
 			     {
 			     title: "Symbolic Name",
 				 field: "column_name",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'left'
+			     }
+
 				 },
 			     {
 			     title: "Seen Since",
 				 field: "column_since",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
 				 },
 			     {
 			     title: "ASN",
 				 field: "column_asn",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
 				 },
 			     {
 			     title: "Category",
 				 field: "column_category",
 				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
 				 },
 			     {
 			     title: "Breakdown",
