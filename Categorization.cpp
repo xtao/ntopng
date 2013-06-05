@@ -24,9 +24,10 @@
 
 /* **************************************** */
 
-Categorization::Categorization(char *_license_key) {
-  license_key = _license_key ? strdup(_license_key) : NULL;
+Categorization::Categorization(char *_api_key) {
+  api_key = _api_key ? strdup(_api_key) : NULL;
   num_categorized_categorizationes = num_categorized_fails = 0;
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Enable host categorizazion with API key %s", api_key);
 }
 
 /* ******************************************* */
@@ -40,7 +41,7 @@ char* Categorization::findCategory(char *name, char *buf, u_int buf_len, bool ad
 Categorization::~Categorization() {
   void *res;
 
-  if(license_key != NULL) {
+  if(api_key != NULL) {
     pthread_join(categorizeThreadLoop, &res);
 
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Categorization resolution stats [%u categorized][%u failures]",
@@ -67,7 +68,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
     */
     ntop->getRedis()->set(key, NULL_CATEGORY, 86400);
 
-    snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, license_key);
+    snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
     hresp = http_get(url_buf, "User-agent:ntopng\r\n");
 

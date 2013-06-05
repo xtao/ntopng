@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
   u_int http_port = 3000;
-  bool change_user = true, localnets = false;
+  bool change_user = true, localnets = false, disable_categorization = false;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
@@ -96,8 +96,12 @@ int main(int argc, char *argv[]) {
 
     switch(c) {
     case 'c':
-      ntop->setCategorization(new Categorization(optarg));
-      prefs->enable_categorization();
+      if(strcmp(optarg, "none") == 0)
+	disable_categorization = true;
+      else {
+	ntop->setCategorization(new Categorization(optarg));
+	prefs->enable_categorization();
+      }
       break;
 
     case 'm':
@@ -222,9 +226,11 @@ int main(int argc, char *argv[]) {
 			       "Using RRD version %s",
 			       rrd_strversion());
 
-  if(!prefs->is_categorization_enabled())
-    ntop->getTrace()->traceEvent(TRACE_WARNING, 
-				 "Host categoriazation is not enabled. Please look at README.categorization");
+  if((!disable_categorization) && (!prefs->is_categorization_enabled())) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");
+    ntop->setCategorization(new Categorization(DEFAULT_CATEGORIZATION_KEY));
+    prefs->enable_categorization();    
+  }
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);

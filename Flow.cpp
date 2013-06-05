@@ -84,6 +84,8 @@ void Flow::deleteFlowMemory() {
 Flow::~Flow() {
   if(src_host) src_host->decUses();
   if(dst_host) dst_host->decUses();
+  if(categorization.category != NULL) free(categorization.category);
+
   deleteFlowMemory();
 }
 
@@ -122,8 +124,10 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	     doublecol[0] = '\0';	  
 
 	  svr->setName((char*)ndpi_flow->host_server_name, true);
-	  if((categorization.category = ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true)) != NULL)
+	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
 	    categorization.flow_categorized = true;
+	    categorization.category = strdup(buf);
+	  }
 	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
 					       (char*)ndpi_flow->host_server_name);
 	}

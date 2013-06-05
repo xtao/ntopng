@@ -428,7 +428,9 @@ categories = {
 		}}
 };
 
-function getCategory(cat)
+function getCategory(_cat)
+   cat = string.gsub(_cat, "\n", "")
+
    if(starts(cat, "error") or (cat == "''") or (cat == "") or starts(cat, "-") or starts(cat, "Local")) then
 	 return("")
    else

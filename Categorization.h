@@ -24,8 +24,9 @@
 
 #include "ntop_includes.h"
 
-#define CATEGORIZATION_URL "http://service.block.si/getRating"
-#define NULL_CATEGORY      "''"
+#define DEFAULT_CATEGORIZATION_KEY "9hoAtewwpC2tXRMJBfifrY24B"
+#define CATEGORIZATION_URL         "http://service.block.si/getRating"
+#define NULL_CATEGORY              "''"
 
 typedef struct {
   u_int8_t major, minor;
@@ -33,14 +34,14 @@ typedef struct {
 
 class Categorization {
   u_int32_t num_categorized_categorizationes, num_categorized_fails;
-  char *license_key;
+  char *api_key;
 
   pthread_t categorizeThreadLoop;
 
   void categorizeHostName(char *numeric_ip, char *buf, u_int buf_len);
 
  public:
-  Categorization(char *_license_key);
+  Categorization(char *_api_key);
   ~Categorization();
 
   void startCategorizeCategorizationLoop();
