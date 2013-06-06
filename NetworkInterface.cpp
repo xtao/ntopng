@@ -271,8 +271,8 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
 /* **************************************************** */
 
-void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
-  struct ndpi_ethhdr *ethernet;
+void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {  
+  struct ndpi_ethhdr *ethernet, dummy_ethernet;
   struct ndpi_iphdr *iph;
   u_int64_t time;
   static u_int64_t lasttime = 0;
@@ -291,6 +291,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     ip_offset = sizeof(struct ndpi_ethhdr);
     type = ntohs(ethernet->h_proto);
   } else if(pcap_datalink_type == 113 /* Linux Cooked Capture */) {
+    memset(&dummy_ethernet, 0, sizeof(dummy_ethernet));
+    ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
     type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
     incStats(h->ts.tv_sec, 0, h->caplen);
