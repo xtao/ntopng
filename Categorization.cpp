@@ -78,10 +78,13 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 #endif
 
     buf[0] = '\0';
-    if(hresp && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
-      char *doublecolumn = strrchr(hresp->body, ':');
+    if(hresp && hresp->body
+       && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
+      char body[256], *doublecolumn;
+       
+      snprintf(body, sizeof(body), "%s", hresp->body);
 
-      if(doublecolumn) {
+      if((doublecolumn = strrchr(body, ':')) != NULL) {
 	char *end;
 
 	doublecolumn += 2;

@@ -239,13 +239,16 @@ struct http_response* http_req(char *http_headers, struct parsed_url *purl)
     }
 
   /* Recieve into response*/
-  char *response = (char*)malloc(0);
+  char *response = (char*)malloc(1);
   char BUF[BUFSIZ];
   size_t recived_len = 0;
+
+  response[0] = '\0';
+
   while((recived_len = recv(sock, BUF, BUFSIZ-1, 0)) > 0)
     {
       BUF[recived_len] = '\0';
-      response = (char*)realloc(response, strlen(response) + strlen(BUF) + 1);
+      response = (char*)realloc(response, strlen(response) /* + strlen(BUF) */ + recived_len + 1);
       sprintf(response, "%s%s", response, BUF);
     }
   if (recived_len < 0)
