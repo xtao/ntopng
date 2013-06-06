@@ -37,6 +37,8 @@ static HTTPserver *httpserver;
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 
+#define DENIED "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
+
 /* ****************************************** */
 
 int page_not_found(struct MHD_Connection *connection, const char *url) {
@@ -99,17 +101,27 @@ static int handle_http_request(void *cls,
   FILE *file;
   struct stat buf;
   char path[255] = { 0 };
+  char *user, *pass = NULL;
 
   if(ntop->getGlobals()->isShutdown()) 
     return(MHD_YES);
 
   if(0 != strcmp(method, MHD_HTTP_METHOD_GET))
-    return MHD_NO;              /* unexpected method */
+    return MHD_NO;  /* unexpected method */
 
   if(&aptr != *ptr) {
     /* do never respond on first call */
     *ptr = &aptr;
     return MHD_YES;
+  }
+
+  /* require: "Aladdin" with password "open sesame" */
+  user = MHD_basic_auth_get_username_password(connection, &pass);
+
+  if(!httpserver->valid_user_pwd(user, pass)) {
+    response = MHD_create_response_from_buffer(strlen (DENIED), (void *) DENIED,
+					       MHD_RESPMEM_PERSISTENT);
+    return(MHD_queue_basic_auth_fail_response(connection, "TestRealm", response));
   }
 
   if(strstr(url, "//")
@@ -227,6 +239,15 @@ HTTPserver::~HTTPserver() {
   free(docs_dir), free(scripts_dir);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
 };
+
+/* ****************************************** */
+
+bool HTTPserver::valid_user_pwd(char *user, char *pass) {
+  if(user || pass)
+    return(true);
+  else
+    return(false);
+}
 
 /* ****************************************** */
 

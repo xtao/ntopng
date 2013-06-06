@@ -30,11 +30,11 @@ class HTTPserver {
   char *docs_dir, *scripts_dir;
   struct MHD_Daemon *httpd_v4, *httpd_v6;
 
-
  public:
   HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir);
   ~HTTPserver();
 
+  bool valid_user_pwd(char *user, char *pass);
   inline char* get_docs_dir()      { return(docs_dir);    };
   inline char* get_scripts_dir()   { return(scripts_dir); };
 };
