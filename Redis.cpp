@@ -196,9 +196,14 @@ int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
 /* **************************************** */
 
 void Redis::setDefaults() {
+  char value[32];
+
   setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
   setResolvedAddress((char*)"0.0.0.0", (char*)"No IP");
+  
+  if(get((char*)"user.admin", value, sizeof(value)) < 0)
+    set((char*)"user.admin", (char*)"admin");
 }
 
 /* **************************************** */

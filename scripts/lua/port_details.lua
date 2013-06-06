@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 ntop.dumpFile("./httpdocs/inc/menu.inc")

@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 -- Hello world
 
 print('<html><head><title>ntop</title></head><body>Hello ' .. os.date("%d.%m.%Y"))

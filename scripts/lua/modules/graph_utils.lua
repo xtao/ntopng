@@ -20,7 +20,8 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
    names =  {}
    series = {}
    vals = {
-      { "10m", "now-10m" },
+      { "5m", "now-300s" },
+      { "10m", "now-600s" },
       { "1h", "now-1h" },
       { "3h", "now-3h" },
       { "6h", "now-6h" },
@@ -75,7 +76,8 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
       step = fstep
       num = 0
       for i, n in ipairs(fnames) do
-	 names[num] = prefixLabel .. " " .. firstToUpper(n)
+	 names[num] = prefixLabel
+	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
 	 num = num + 1
       end
 
@@ -362,7 +364,7 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 		}
 
 		// Put the selected graph epoch into the legend
-		chart_legend.innerHTML = point.value.x; // Epoch
+		//chart_legend.innerHTML = point.value.x; // Epoch
 		event
 	}
 } );

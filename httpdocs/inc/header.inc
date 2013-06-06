@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Welcome to ntop</title>
+    <title>Welcome to ntopng</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <script src="/js/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>

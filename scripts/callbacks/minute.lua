@@ -10,8 +10,9 @@ when = os.time()
 
 -- Dump topTalkers every minute
 
-talkers = getTopTalkers("any")
-basedir = ntop.getDataDir() .. "/talkers/" .. os.date("%Y/%m/%d/%H", when)
+ifname = "any"
+talkers = getTopTalkers(ifname)
+basedir = ntop.getDataDir() .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", when)
 if(not(ntop.exists(basedir))) then   
   ntop.mkdir(basedir)
 end
@@ -24,11 +25,6 @@ if(f) then
   f:write(talkers)
   f:close()
 end
-
-
-
-
-
 
 -- Run RRD update every 5 minutes
 -- Use 30 just to avoid rounding issues

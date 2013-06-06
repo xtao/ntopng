@@ -447,3 +447,12 @@ function getCategory(_cat)
     return(cat)
 end
 end
+
+
+function abbreviateString(str, len) 
+  if(string.len(str) < len) then
+    return(str)
+  else
+    return(string.sub(str, 1, len).."...")
+  end
+end

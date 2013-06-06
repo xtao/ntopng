@@ -93,8 +93,16 @@ void Geolocation::getAS(IpAddress *addr, u_int32_t *asn, char **asname) {
   }
 
   if(rsp != NULL) {
+    char *space = strchr(rsp, ' ');
+
     *asn = atoi(&rsp[2]);
-    *asname = rsp;
+
+    if(space)
+      *asname = strdup(&space[1]);
+    else
+      *asname = strdup(rsp);
+
+    free(rsp);
     return;
   }
 #endif

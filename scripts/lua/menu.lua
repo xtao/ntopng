@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 print [[
       <div class="masthead">
         <ul class="nav nav-pills pull-right">

@@ -27,7 +27,6 @@ function do_pie(name, update_url, url_params, units, refresh) {
 
     var updateInterval = window.setInterval(update, refresh);
 
-
     // to run each time data is generated
 
     function update() {
@@ -36,7 +35,7 @@ function do_pie(name, update_url, url_params, units, refresh) {
 		    url: update_url,
 		    data: url_params,
 		    success: function(content) {
-		    update_pie_chart(jQuery.parseJSON(content));
+ 		      update_pie_chart(jQuery.parseJSON(content));
 		}
 	    });
     }

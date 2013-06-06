@@ -121,7 +121,7 @@ static int handle_http_request(void *cls,
   if(!httpserver->valid_user_pwd(user, pass)) {
     response = MHD_create_response_from_buffer(strlen (DENIED), (void *) DENIED,
 					       MHD_RESPMEM_PERSISTENT);
-    return(MHD_queue_basic_auth_fail_response(connection, "TestRealm", response));
+    return(MHD_queue_basic_auth_fail_response(connection, "Please enter your ntopng credentials", response));
   }
 
   if(strstr(url, "//")
@@ -243,10 +243,16 @@ HTTPserver::~HTTPserver() {
 /* ****************************************** */
 
 bool HTTPserver::valid_user_pwd(char *user, char *pass) {
-  if(user || pass)
-    return(true);
-  else
+  char key[64], val[64];
+
+  if(user == NULL) return(false);
+
+  snprintf(key, sizeof(key), "user.%s", user);
+
+  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
     return(false);
+  else
+    return((strcmp(val, pass) == 0) ? true : false);
 }
 
 /* ****************************************** */

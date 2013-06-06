@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 print [[
 	 <li><form action="/host_details.lua"><input type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead" data-items="4" data-source=[]]
 

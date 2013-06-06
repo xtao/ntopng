@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 require "os"
 
 print [[ <hr>

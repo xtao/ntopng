@@ -1,3 +1,7 @@
+--
+-- (C) 2013 - ntop.org
+--
+
 ifname = _GET["if"]
 if(ifname == nil) then
    ifname = "any"
