@@ -230,6 +230,7 @@ static int ntop_zmq_connect(lua_State* vm) {
 
 /* ****************************************** */
 
+#if 0
 static int ntop_get_keyval(lua_State* vm) {
   //struct stat buf;
   char *path, *k;
@@ -258,9 +259,11 @@ static int ntop_get_keyval(lua_State* vm) {
 
   return(rc);
 }
+#endif
 
 /* ****************************************** */
 
+#if 0
 static int ntop_set_keyval(lua_State* vm) {
   //struct stat buf;
   char *path, *k, *v;
@@ -286,6 +289,7 @@ static int ntop_set_keyval(lua_State* vm) {
 
   return(rc);
 }
+#endif
 
 /* ****************************************** */
 
@@ -840,8 +844,10 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
+#if 0
   { "getKeyVal",      ntop_get_keyval  },
   { "setKeyVal",      ntop_set_keyval  },
+#endif
   { NULL,          NULL}
 };
 

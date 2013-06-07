@@ -142,7 +142,6 @@ char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool ca
   buf[0] = 0;
 
   if(ntop->getPrefs()->is_categorization_enabled()) {
-    int rc;
     char key[128], *val;
 
     /* Check if the host is 'categorizable' */
@@ -159,7 +158,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool ca
     */
     if(credis_get(redis, key, &val) < 0) {
       if(categorize_if_unknown)
-	rc = credis_rpush(redis, "domain.tocategorize", domainname);
+	/* rc = */ credis_rpush(redis, "domain.tocategorize", domainname);
 
       buf[0] = 0, val = NULL;
     } else {

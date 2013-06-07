@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
 
   if((!disable_categorization) && (!prefs->is_categorization_enabled())) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");
-    ntop->setCategorization(new Categorization(DEFAULT_CATEGORIZATION_KEY));
+    ntop->setCategorization(new Categorization((char*)DEFAULT_CATEGORIZATION_KEY));
     prefs->enable_categorization();    
   }
 
