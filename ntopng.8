@@ -120,8 +120,6 @@ Both netmask and CIDR notation may be used, even mixed together, for instance
 "131.114.21.0/24,10.0.0.0/255.0.0.0".
 
 .It -p
- <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)
-
 This parameter is used to specify a nDPI protocol file.
 The format is <tcp|udp>:<port>,<tcp|udp>:<port>,.....@<proto> where
 <port> is a port number and <proto> is a name of a protocol supported by nDPI protocol,
@@ -129,7 +127,6 @@ or host:"<string>"@<proto> where string is part of an host name.
 As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
 
 .It -r
- <redis host[:port]>  | Redis host[:port]
 Specifies the redis database host and port. For more information about redis, please refer 
 to http://redis.io/.
 
