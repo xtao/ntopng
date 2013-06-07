@@ -1,0 +1,9 @@
+TODO
+----
+
+Below is a list of the missing features that will be added soon.
+
+- SSL support for the Web GUI
+- Multiple interfaces support (this is mostly a lack in the web GUI, the core engine already supports multiple interfaces with independent per-interface data structures)
+- Preferences web editor
+

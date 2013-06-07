@@ -7,8 +7,8 @@ require "lua_utils"
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
-dofile "./scripts/lua/host_menu.lua"
- 
+active_page = "hosts"
+dofile "./scripts/lua/menu.lua"
 
 function getTraffic(stats, host_a, host_b)
    sent_total = 0

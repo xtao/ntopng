@@ -7,6 +7,8 @@ require "lua_utils"
 require "graph_utils"
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
+
+active_page = "hosts"
 dofile("./scripts/lua/menu.lua")
 
 page = _GET["page"]

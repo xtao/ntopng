@@ -9,6 +9,7 @@ local json = require ("dkjson")
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
+active_page = "flows"
 dofile("./scripts/lua/menu.lua")
 
 print [[
