@@ -202,7 +202,7 @@ void Redis::setDefaults() {
   setResolvedAddress((char*)"0.0.0.0", (char*)"No IP");
   
   if(get((char*)"user.admin", value, sizeof(value)) < 0)
-    set((char*)"user.admin", (char*)"admin");
+    set((char*)"user.admin", (char*)"21232f297a57a5a743894a0e4a801fc3");
 }
 
 /* **************************************** */

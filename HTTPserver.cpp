@@ -30,6 +30,9 @@ extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
+
+#include "md5.h"
+#include "md5.c"
 };
 
 static HTTPserver *httpserver;
@@ -242,8 +245,19 @@ HTTPserver::~HTTPserver() {
 
 /* ****************************************** */
 
+static void hexstring_to_bytearray(char *hexstring, u_char *bytearray, u_int bytearray_len) {
+  u_int i, str_len = strlen(hexstring);
+
+  for (i = 0; i < (str_len / 2); i++)
+    sscanf(hexstring + 2 * i, "%02hhx", &bytearray[i]);
+}
+
+/* ****************************************** */
+
 bool HTTPserver::valid_user_pwd(char *user, char *pass) {
   char key[64], val[64];
+  struct MD5Context md5c;
+  unsigned char signature[16], expected_signature[16];
 
   if(user == NULL) return(false);
 
@@ -251,8 +265,15 @@ bool HTTPserver::valid_user_pwd(char *user, char *pass) {
 
   if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
     return(false);
-  else
-    return((strcmp(val, pass) == 0) ? true : false);
+  else {
+    MD5Init(&md5c);
+    MD5Update(&md5c, (unsigned char *) pass, strlen(pass));
+    MD5Final(signature, &md5c);
+    
+    hexstring_to_bytearray(val, expected_signature, sizeof(expected_signature));
+
+    return((memcmp(signature, expected_signature, sizeof(signature)) == 0) ? true : false);
+  }
 }
 
 /* ****************************************** */
