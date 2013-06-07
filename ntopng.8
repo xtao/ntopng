@@ -1,0 +1,249 @@
+.\" This file Copyright 1998-2005 Luca Deri <deri@ntop.org>
+.\"
+.
+.de It
+.TP 1.2
+.B "\\$1 "
+..
+.de It2
+.TP 1.2
+.B "\\$1 | \\$2"
+..
+.TH NTOP 8 "Jun 2013 (ntopng 0.1)"
+.SH NAME
+ntopng \- display top network users
+.SH SYNOPSIS
+.B ntopng
+.RB [ @filename ]
+.RB [ -i 
+.IR <interface> ]
+.RB [ -d
+.IR <data_directory> ]
+.RB [ -n 
+.IR <mode> ]
+.RB [ -w 
+.IR <http_port> ]
+.RB [ -c
+.IR <categorization_key> ]
+.RB [ -m
+.IR <local_subnets> ]
+.RB [ -p
+.IR <protocols> ]
+.RB [ -r
+.IR <redis_host:port> ]
+.RB [ -s ] 
+.RB [ -v ] 
+.RB [ -h ]
+
+.SH DESCRIPTION
+.B ntopng
+shows the current network usage. It displays a list of hosts that are
+currently using the network and reports information concerning the (IP and non-IP) 
+traffic generated and received by each host.
+.B ntop
+may operate as a front-end collector or as a stand-alone collector/display program. 
+A web browser is needed to access the information captured by the 
+.B ntopng
+program. 
+
+.B ntopng
+is a hybrid layer 2 / layer 3 network monitor, by default it uses the layer 2 Media
+Access Control (MAC) addresses AND the layer 3 tcp/ip addresses.
+.B ntopng
+is capable of associating the two, so that ip and non-ip traffic (e.g. arp, rarp) are combined
+for a complete picture of network activity.
+
+.PP
+.SH "COMMAND\-LINE OPTIONS"
+
+.It @filename
+The text of 
+.B filename
+is copied - ignoring line breaks and comment lines (anything following a #) - into the
+command line.
+.B ntop
+behaves as if all of the text had simply been typed directly on the command line.
+For example, if the command line is "ntopng-i eth0 @s -v" and file d contains 
+just the line '-s', then the effective command line is "ntopng -i eth0 -s -v".
+Multiple @s are permitted. Nested @s (an @ inside the file) are not permitted.
+
+Remember, most 
+.B ntopng 
+options are "sticky", that is they just set an internal flag. Invoking 
+them multiple times doesn't change the
+.B ntopng's 
+behavior. However, options that set a value, such as --trace-level, will use the LAST value
+given: -w 8000 -w 8080 will run as -w 8080.
+ 
+.It -n
+Sets the DNS address resolution mode:
+0 - Decode DNS responses and resolve numeric IPs
+1 - Decode DNS responses and don't resolve numeric IPs
+2 - Don't decode DNS responses and don't resolve numeric IPs
+
+.It -i
+Specifies the network interface or collector endpoint to be used by
+.B ntop
+for network monitoring.
+
+If a collector endpoint is specified, 
+.B ntopng
+open a connection to the specified endpoint as a subscriber. Example of valid
+collector endpoints are tcp://*:5556 or ipc://flows.ipc
+
+.It -d
+Specifies the data directory (it must be writable). Default directory is ./data
+
+.It -c
+Sets the key used to access host categorization services.
+.B ntopng 
+categorizes hosts using services provided by http://block.si
+In order to use these categorization services you need to mail info@block.si and
+ask for a test key to be used in ntopng.
+For test driving the service please use as key 9hoAtewwpC2tXRMJBfifrY24B
+(example ntopng -c 9hoAtewwpC2tXRMJBfifrY24B .....).
+If you want to disable categorization use "-c none".
+
+.It -w
+Sets the HTTP port of the embedded web server.
+
+.It -m
+.B ntopng
+determines the ip addresses and netmasks for each active interface. Any traffic on
+those networks is considered local. This parameter allows the user to define additional
+networks and subnetworks whose traffic is also considered local in
+.B ntopng
+reports. All other hosts are considered remote.
+
+Commas separate multiple network values.
+Both netmask and CIDR notation may be used, even mixed together, for instance
+"131.114.21.0/24,10.0.0.0/255.0.0.0".
+
+.It -p
+ <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)
+
+This parameter is used to specify a nDPI protocol file.
+The format is <tcp|udp>:<port>,<tcp|udp>:<port>,.....@<proto> where
+<port> is a port number and <proto> is a name of a protocol supported by nDPI protocol,
+or host:"<string>"@<proto> where string is part of an host name.
+As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
+
+.It -r
+ <redis host[:port]>  | Redis host[:port]
+Specifies the redis database host and port. For more information about redis, please refer 
+to http://redis.io/.
+
+.It -s
+Do not change user (debug only)
+
+.It -v
+Verbose tracing
+
+.It -h
+Help
+
+.SH "WEB VIEWS"
+While
+.B ntopng
+is running, multiple users can access the traffic information using their web browsers.
+.B ntopng
+makes use of JavaScript and LESS CSS.
+
+We do not expect problems with any current web browser, but our ability to test with less 
+common ones is very limited.  Testing has included Safari, Chrome, Firefox and Internet Explorer, 
+with very limited testing on other current common browsers such as Opera.
+
+.SH NOTES
+.B ntop
+requires a number of external tools and libraries to operate.
+Certain other tools are optional, but add to the program's capabilities.
+
+Required libraries include:
+
+.B libpcap
+from http://www.tcpdump.org/, version 0.7.2 or newer. 0.8.3 or newer is strongly 
+recommended.
+
+The Windows version makes use of
+.B WinPcap
+(libpcap for Windows) which may be downloaded from 
+http://winpcap.polito.it/install/default.htm.
+.
+
+.B ntopng
+requires a POSIX threads library.
+.
+
+The
+.B rrdtool
+library creates 'Round-Robin databases' which are used to store historical data 
+in a format that permits long duration retention without growing larger over time.
+The rrdtool home page is http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/
+
+The
+.B LuaJIT
+library is a Just-In-Time Compiler for Lua used to execute GUI and periodic scripts.
+
+The
+.B libmicrohttpd
+library is used to implement the HTTP server part of ntopng.
+
+.B zeromq
+is a socket library supporting the publish/subscribe pattern used to collect flows from
+.B nProbe
+.
+
+.B ntopng
+includes LuaJIT, libmicrohttpd, rrdtool and zeromq in the third-party/ directory.  Users of
+.B ntopng 
+should not need to specifically install such libraries.
+.
+
+.SH "SEE ALSO"
+.BR top (1),
+.BR tcpdump (8).
+.BR pcap (3).
+.
+.
+
+.SH PRIVACY NOTICE
+By default at startup and at periodic intervals, the 
+.B ntop
+program will retrieve current ntopng program version information.
+Retrieving this information allows this 
+.B ntop
+instance to confirm that it is running the most current version.
+
+The retrieval is done using standard http:// requests, which will create log 
+records on the hosting system. These log records do contain information which 
+identifies a specific 
+.B ntop
+site. Accordingly, you are being notified that this individually identifiable
+information is being transmitted and recorded.
+
+You may request - via the 
+.B --skip-version-check
+run-time option - that this check be eliminated.  If you use this option, no 
+individually identifiable information is transmitted or recorded, because the
+entire retrieval and check is skipped.
+
+.SH USER SUPPORT
+Please send bug reports to the ntop-dev <ntop-dev@ntop.org> mailing list. The
+ntopng <ntop@ntop.org> mailing list is used for discussing ntopng usage issues. In
+order to post messages on the lists a (free) subscription is required 
+to limit/avoid spam. Please do NOT contact the author directly unless this is
+a personal question.
+
+Commercial support is available upon request. Please see the ntopng site for further info.
+
+Please send code patches to <patch@ntop.org>.
+
+.SH AUTHOR
+ntop's author is Luca Deri (http://luca.ntop.org/) who can be reached at <deri@ntop.org>.
+
+.SH LICENCE
+ntopng is distributed under the GNU GPL licence (http://www.gnu.org/).
+
+.SH ACKNOWLEDGMENTS
+The author acknowledges the Centro Serra of the University of Pisa, Italy (http://www-serra.unipi.it/) for
+hosting the ntopng sites (both web and mailing lists).

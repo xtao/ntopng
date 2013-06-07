@@ -38,14 +38,15 @@ static void help() {
 	 "                        | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
-	 "-c <ccategorization key>| Key used to access host categorization services\n"
-	 "                        | Please read README.categorization for more info.\n"
+	 "-c <categorization key> | Key used to access host categorization services. Use -c none to\n"
+         "                        | disable categorization. Please read README.categorization for more info.\n"
 	 "-w <http port>          | HTTP port\n"
 	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
 	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
 	 "-s                      | Do not change user (debug only)\n"
 	 "-v                      | Verbose tracing\n"
+	 "-h                      | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR);
   exit(0);
 }
