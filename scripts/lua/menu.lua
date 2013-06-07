@@ -37,6 +37,13 @@ print [[
   </li>
 
    ]]
+
+if active_page == "about" then
+  print [[ <li class="active"><a href="#">About</a></li> ]]
+else
+  print [[ <li><a href="/about.lua">About</a></li> ]]
+end
+
 dofile("./scripts/lua/search_host_box.lua")
 
 print [[
