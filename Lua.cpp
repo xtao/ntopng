@@ -625,11 +625,23 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 static int ntop_get_info(lua_State* vm) {
   char rsp[256];
+  int major, minor, patch;
 
   lua_newtable(vm);
+  lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2013 - ntop.org");
+  lua_push_str_table_entry(vm, "authors", (char*)"Luca Deri and Alfredo Cardigliano");
+  lua_push_str_table_entry(vm, "license", (char*)"GNU GPLv3");
   snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_VERSION, PACKAGE_RELEASE);
   lua_push_str_table_entry(vm, "version", rsp);
   lua_push_int_table_entry(vm, "uptime", ntop->getGlobals()->getUptime());
+  lua_push_str_table_entry(vm, "version.rrd", rrd_strversion());
+  lua_push_str_table_entry(vm, "version.redis", ntop->getRedis()->getVersion(rsp, sizeof(rsp)));
+  lua_push_str_table_entry(vm, "version.libmicrohttpd", (char*)MHD_get_version());
+  lua_push_str_table_entry(vm, "version.luajit", (char*)LUAJIT_VERSION);
+
+  zmq_version(&major, &minor, &patch);
+  snprintf(rsp, sizeof(rsp), "%d.%d.%d", major, minor, patch);
+  lua_push_str_table_entry(vm, "version.zmq", rsp);
 
   return(1);
 }

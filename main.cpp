@@ -29,9 +29,10 @@ extern "C" {
 
 static void help() {
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
-	 "Usage: ntopng -m <local nets> -d <data dir> [-n mode] [-i <iface>] [-w <http port>]\n"
-	 "              [-m <networks>] [-p <protos>]\n"
-	 "              [-d <path>] [-c <categorization key>] [-r <redis>] [-s] [-v]\n\b"
+	 "Usage: ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
+	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
+	 "              [-c <categorization key>] [-r <redis>]\n"
+	 "              [-s] [-v]\n\n"
 	 "-n <mode>               | DNS address resolution mode\n"
 	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
 	 "                        | 1 - Decode DNS responses and don't resolve numeric IPs\n"
@@ -40,14 +41,14 @@ static void help() {
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
 	 "-c <categorization key> | Key used to access host categorization services. Use -c none to\n"
          "                        | disable categorization. Please read README.categorization for more info.\n"
-	 "-w <http port>          | HTTP port\n"
-	 "-m <local network list> | List of local networks (e.g. -m 192.168.0.0/24,172.16.0.0/16)\n"
+	 "-w <http port>          | HTTP port. Default: %u\n"
+	 "-m <local network list> | List of local networks (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
 	 "-s                      | Do not change user (debug only)\n"
 	 "-v                      | Verbose tracing\n"
 	 "-h                      | Help\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR);
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_NTOP_PORT);
   exit(0);
 }
 
@@ -83,7 +84,7 @@ void sigproc(int sig) {
 int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
-  u_int http_port = 3000;
+  u_int http_port = CONST_DEFAULT_NTOP_PORT;
   bool change_user = true, localnets = false, disable_categorization = false;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;

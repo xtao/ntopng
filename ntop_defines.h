@@ -31,7 +31,7 @@
 #endif
 
 #ifndef ETHERTYPE_IPV6
-#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
+v#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
 #endif
 
 #ifndef ETHERTYPE_MPLS
@@ -57,6 +57,8 @@
 
 #define HOST_PURGE_FREQUENCY     5 /* sec */
 #define HOST_MAX_IDLE           60 /* sec */
+
+#define CONST_DEFAULT_NTOP_PORT 3000
 
 #ifdef WIN32
 #define ntop_mkdir(a, b) _mkdir(a)

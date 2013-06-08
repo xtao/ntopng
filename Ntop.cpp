@@ -31,8 +31,6 @@ Ntop::Ntop() {
   address = new Address();
   categorization = NULL;
   custom_ndpi_protos = NULL;
-  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
-			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);  
 }
 
 /* ******************************************* */
@@ -76,6 +74,9 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
+  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
+			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);  
+
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();

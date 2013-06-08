@@ -236,3 +236,17 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
   snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
   return(set(key, symbolic_ip, 300));
 }
+
+/* **************************************** */
+
+char* Redis::getVersion(char *str, u_int str_len) {
+  REDIS_INFO info;
+
+  if(redis && (credis_info(redis, &info) == 0))
+    snprintf(str, str_len, "%s (%d bit)", info.redis_version, info.arch_bits);
+  else
+    str[0] = 0;
+
+  return(str);
+}
+

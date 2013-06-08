@@ -35,6 +35,8 @@ class Redis {
   Redis(char *redis_host = (char*)"127.0.0.1", int redis_port = 6379);
   ~Redis();
 
+  char* getVersion(char *str, u_int str_len);
+
   int expire(char *key, u_int expire_sec);
   int get(char *key, char *rsp, u_int rsp_len);
   int set(char *key, char *value, u_int expire_secs=0);

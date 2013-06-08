@@ -160,16 +160,10 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "duration", get_duration());
     lua_push_str_table_entry(vm, "category", get_category());
 
-    ndpiStats->lua(iface, vm);
+    if(ndpiStats) ndpiStats->lua(iface, vm);
 
-    if(returnHost) {
-      ;
-    } else {
-      if(ip != NULL)
-	lua_pushstring(vm, ip->print(buf, sizeof(buf)));
-      else
-	lua_pushstring(vm, get_mac(buf, sizeof(buf)));
-
+    if(!returnHost) {
+      lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
       lua_insert(vm, -2);
       lua_settable(vm, -3);
     }
