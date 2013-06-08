@@ -37,7 +37,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
       print ",\n"
    end
 
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key .." }")
+   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/host_details.lua?host=".. value .."\" }")
    accumulate = accumulate + key
    num = num + 1
 

@@ -51,6 +51,7 @@ function do_pie(name, update_url, url_params, units, refresh) {
 	function filterData(element, index, array) {
 	    element.name = streakerDataAdded[index].label;
 	    element.value = streakerDataAdded[index].value;
+	    element.url = streakerDataAdded[index].url;
 	    totalOctets += element.value;
 	    return (element.value > 0);
 	}
@@ -168,7 +169,8 @@ function do_pie(name, update_url, url_params, units, refresh) {
 			}
 		    }).text(function(d){
 			    return d.name;
-			});
+			})
+                .on("click", function(d) { if (d.url) window.location.href = d.url;  });
 
 	    nameLabels.enter().append("svg:text")
 		.attr("class", "units")
@@ -190,7 +192,8 @@ function do_pie(name, update_url, url_params, units, refresh) {
 			}
 		    }).text(function(d){
 			    return d.name;
-			});
+			})
+                .on("click", function(d) { if (d.url) window.location.href = d.url;  });
 
 	    nameLabels.transition().duration(tweenDuration).attrTween("transform", textTween);
 
