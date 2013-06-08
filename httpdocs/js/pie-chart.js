@@ -258,12 +258,12 @@ function do_pie(name, update_url, url_params, units, refresh) {
 }
 
 function create_pie_chart(name, units) {
-    var w = 380;
-    var h = 280;
-    var ir = 45;
+    var w = 440; //380
+    var h = 325; //280
+    var ir = 52; //45
     var textOffset = 14;
     var tweenDuration = 250;
-    var r = 100;
+    var r = 116; //100;
     var lines, valueLabels, nameLabels;
 
     //D3 helper function to populate pie slice parameters from array data
