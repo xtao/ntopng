@@ -15,7 +15,7 @@ function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
 end
 
 
-function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries)
+function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, xInfoURL)
    rrdname = ntop.getDataDir() .. "/rrd/" .. host .. "/" .. rrdFile
    names =  {}
    series = {}
@@ -168,8 +168,7 @@ font-family: Arial, Helvetica, sans-serif;
 
 </style>
 
-<div class="row">
- <div class="span1"></div>
+<div>
 ]]
 
 
@@ -217,18 +216,13 @@ end
 print [[
 </div>
 </div>
-
-<div class="row">
-&nbsp;
-</div>
-
-<div class="row">
- <div class="span1"></div>
+<br />
+<div style="margin-left: 10px">
 <div id="chart_container">
    <div id="y_axis"></div>
-   <div id="chart"></div>
+   <div id="chart" style="margin-right: 10px"></div>
 
-   <table border=0>
+   <table style="border: 0">
    <tr><td><div id="legend"></div></td><td><div id="chart_legend"></div></td></tr>
    <tr><td colspan=2>
 
@@ -326,30 +320,54 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 
 		var formattedXValue = fdate(point.value.x); // point.formattedXValue;
 		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
-
+		var infoHTML = ""; 
+]]
+if (xInfoURL) then
+  print [[
+		$.ajax({
+			type: 'GET',
+			url: ']] 
+  print(xInfoURL) 
+  print [[',
+			data: { epoch: point.value.x },
+			async: false,
+			success: function(content) {
+				var info = jQuery.parseJSON(content);
+				infoHTML += "<ul>";
+				$.each(info, function(i, n) {
+				  infoHTML += "<li>"+i+"<ol>";
+				  var items = 0;
+				  $.each(n, function(j, m) {
+				    if (items < 3)
+				      infoHTML += "<li>"+m.label+" ("+fbits(m.value)+")</li>";
+				    items++;
+				  });
+				  infoHTML += "</ol></li>";
+				});
+				infoHTML += "</ul>";
+			}
+		});
+    ]]
+end
+print [[
 		this.element.innerHTML = '';
 		this.element.style.left = graph.x(point.value.x) + 'px';
 
 		var xLabel = document.createElement('div');
-
 		xLabel.className = 'x_label';
-		xLabel.innerHTML = formattedXValue;
+		xLabel.innerHTML = formattedXValue + infoHTML;
 		this.element.appendChild(xLabel);
 
 		var item = document.createElement('div');
-
 		item.className = 'item';
 		item.innerHTML = this.formatter(point.series, point.value.x, point.value.y, formattedXValue, formattedYValue, point);
 		item.style.top = this.graph.y(point.value.y0 + point.value.y) + 'px';
-
 		this.element.appendChild(item);
 
 		var dot = document.createElement('div');
-
 		dot.className = 'dot';
 		dot.style.top = item.style.top;
 		dot.style.borderColor = point.series.color;
-
 		this.element.appendChild(dot);
 
 		if (point.active) {
