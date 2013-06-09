@@ -28,18 +28,22 @@ class HTTPserver {
  private:
   u_int16_t port;
   char *docs_dir, *scripts_dir;
-  struct MHD_Daemon *httpd_v4, *httpd_v6;
+  struct mg_context *httpd_v4, *httpd_v6;
 
  public:
   HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir);
   ~HTTPserver();
 
   bool valid_user_pwd(char *user, char *pass);
+
+  inline u_int16_t get_port()      { return(port);        };
   inline char* get_docs_dir()      { return(docs_dir);    };
   inline char* get_scripts_dir()   { return(scripts_dir); };
 };
 
-extern int page_not_found(struct MHD_Connection *connection, const char *url);
-extern int page_error(struct MHD_Connection *connection, const char *url, const char *err);
+extern int send_error(struct mg_connection *conn, int status, const char *reason, const char *fmt, ...);
+
+/* mongoose */
+extern int url_decode(const char *src, int src_len, char *dst, int dst_len, int is_form_url_encoded);
 
 #endif /* _HTTP_SERVER_H_ */

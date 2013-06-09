@@ -64,7 +64,7 @@ void PeriodicActivities::runScript(char *path) {
   if(stat(path, &statbuf) == 0) {
     Lua *l = new Lua();
 
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Running script %s", path);
+    // ntop->getTrace()->traceEvent(TRACE_INFO, "Running script %s", path);
 
     l->run_script(path);
     delete l;

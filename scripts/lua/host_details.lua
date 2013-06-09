@@ -6,10 +6,12 @@ package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
+sendHTTPHeader('text/html')
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile("./scripts/lua/menu.lua")
+dofile("./scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
@@ -38,7 +40,7 @@ print [[
 <ul class="nav">
 ]]
 
-url="/host_details.lua?host="..host_ip
+url="/lua/host_details.lua?host="..host_ip
 
 print("<li><a href=\"#\">Host: "..host_ip.." </a></li>\n")
 
@@ -136,7 +138,7 @@ if((page == "overview") or (page == nil)) then
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/host_l4_stats.lua', { if: "any", host: ]]
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { if: "any", host: ]]
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -156,7 +158,7 @@ if((page == "overview") or (page == nil)) then
 	if((sent > 0) or (rcvd > 0)) then
 	   -- if(true) then
 	    print("<tr><th>")
-	    print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	    print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    t = sent+rcvd
 	    print("</th><td>" .. bytesToSize(sent) .. "</td><td>" .. bytesToSize(rcvd) .. "</td><td>")
 	    breakdownBar(sent, "Sent", rcvd, "Rcvd")
@@ -178,7 +180,7 @@ if((page == "overview") or (page == nil)) then
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any", host: ]]
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { if: "any", host: ]]
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -208,7 +210,7 @@ if((page == "overview") or (page == nil)) then
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-	 print("<A HREF=\"/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	 print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
 	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
 
@@ -229,7 +231,7 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/get_flows_data.lua?host=" .. host_ip.."\",\n")
+				  print("url: \"/lua/get_flows_data.lua?host=" .. host_ip.."\",\n")
 
 
 print [[
@@ -293,7 +295,7 @@ print [[
    ]]
 elseif(page == "talkers") then
 print("<center>")
-dofile("./scripts/lua/sankey.lua")
+dofile("./scripts/lua/inc/sankey.lua")
 print("</center>")
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
@@ -302,9 +304,9 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/host_details.lua?host='..host_ip..'&page=historical', 1)
+drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1)
 else
    print(page)
 end
 end
-dofile "./scripts/lua/footer.inc.lua"
+dofile "./scripts/lua/inc/footer.lua"

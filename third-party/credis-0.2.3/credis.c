@@ -1229,10 +1229,12 @@ int credis_bgrewriteaof(REDIS rhnd)
  */
 void cr_parseinfo(const char *info, const char *fld, const char *format, void *storage)
 {
-  char *str = (char*)strstr(info, (char*)fld);
-  if (str) {
-    str += strlen(fld) + 1; /* also skip the ':' */
-    sscanf(str, format, storage); 
+  if(info) {
+    char *str = (char*)strstr(info, (char*)fld);
+    if (str) {
+      str += strlen(fld) + 1; /* also skip the ':' */
+      sscanf(str, format, storage); 
+    }
   }
 }
 

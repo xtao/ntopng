@@ -5,6 +5,8 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+sendHTTPHeader('text/html')
+
 ifname      = _GET["if"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
@@ -107,9 +109,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    name = value["src.ip"]
 	 end
 
-	 src_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. name .."</A>"
+	 src_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. name .."</A>"
 	 if(value["src.port"] > 0) then
-  	   src_port=":<A HREF='/port_details.lua?interface=".. ifname .. "&port=" .. value["src.port"] .. "'>"..value["src.port"].."</A>"
+  	   src_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["src.port"] .. "'>"..value["src.port"].."</A>"
          else
 	   src_port=""
          end
@@ -119,15 +121,15 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    name = value["dst.ip"]
 	 end
 
-	 dst_key="<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. name .."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. name .."</A>"
 	 if(value["dst.port"] > 0) then
-  	   dst_port=":<A HREF='/port_details.lua?interface=".. ifname .. "&port=" .. value["dst.port"] .. "'>"..value["dst.port"].."</A>"
+  	   dst_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["dst.port"] .. "'>"..value["dst.port"].."</A>"
          else
 	   dst_port=""
          end
 
 	 descr=value["src.host"]..":"..value["src.port"].." &lt;-&gt; "..value["dst.host"]..":"..value["dst.port"]
-	 print ("{ \"column_key\" : \"<A HREF='/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
+	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])

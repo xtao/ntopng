@@ -7,7 +7,7 @@
       <div id="table-hosts"></div>
 	 <script>
 	 $("#table-hosts").datatable({
-	   url: "/get_hosts_data.lua",
+	   url: "/lua/get_hosts_data.lua",
 	       showPagination: true,
 	       title: "Hosts List",
 	        columns: [

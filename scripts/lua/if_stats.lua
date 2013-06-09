@@ -6,10 +6,12 @@ package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
+sendHTTPHeader('text/html')
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 active_page = "if_stats"
-dofile("./scripts/lua/menu.lua")
+dofile("./scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
@@ -20,7 +22,7 @@ end
 
 rrdname = ntop.getDataDir() .. "/rrd/interface.any/bytes.rrd"
 
-url= '/if_stats.lua?interface=' .. ifname
+url= '/lua/if_stats.lua?interface=' .. ifname
 
 print [[
 <div class="bs-docs-example">
@@ -75,7 +77,7 @@ if((page == "overview") or (page == nil)) then
    print("</td></tr>\n")
    print("</table>\n")
 else
-   drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, "/top_talkers.lua")
+   drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, "/lua/top_talkers.lua")
 end
 
-dofile "./scripts/lua/footer.inc.lua"
+dofile "./scripts/lua/inc/footer.lua"

@@ -5,10 +5,12 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+sendHTTPHeader('text/html')
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 active_page = "about"
-dofile "./scripts/lua/menu.lua"
+dofile "./scripts/lua/inc/menu.lua"
 info = ntop.getInfo()
 
 print [[
@@ -24,11 +26,11 @@ print("<tr><th>Uptime</th><td>"..secondsToTime(info["uptime"]).."</td></tr>\n")
 print("<tr><th colspan=2 align=center>&nbsp;</th></tr>\n")
 print("<tr><th><a href=http://www.rrdtool.org/>RRDtool</A> Version</th><td>"..info["version.rrd"].."</td></tr>\n")
 print("<tr><th><a href=http://www.redis.io>Redis</A> Server Version</th><td>"..info["version.redis"].."</td></tr>\n")
-print("<tr><th><a href=http://www.gnu.org/software/libmicrohttpd/>libmicrohttpd</A> Version</th><td>"..info["version.libmicrohttpd"].."</td></tr>\n")
+print("<tr><th><a href=https://github.com/valenok/mongoose>Mongoose web server</A> Version</th><td>"..info["version.httpd"].."</td></tr>\n")
 print("<tr><th><a href=http://www.luajit.org>LuaJIT</A> Version</th><td>"..info["version.luajit"].."</td></tr>\n")
 print("<tr><th><a href=http://www.zeromq.org>ØMQ</A> Version</th><td>"..info["version.zmq"].."</td></tr>\n")
 
 
 
 print("</table>\n")
-dofile "./scripts/lua/footer.inc.lua"
+dofile "./scripts/lua/inc/footer.lua"

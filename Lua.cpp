@@ -29,6 +29,8 @@
 #define LIB_VERSION "1.4.7"
 #endif
 
+#define HTTP_CONN "http.conn"
+
 #include "third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c"
 
 #define MSG_VERSION 0
@@ -69,27 +71,31 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 /* ****************************************** */
 
 static int ntop_dump_file(lua_State* vm) {
-  char *fname, tmp[1024];
-  FILE *f;
-  int tmp_file;
+  char *fname;
+  FILE *fd;
+  struct mg_connection *conn;
 
-  lua_getglobal(vm, "tmp_file");
-  tmp_file = (int)lua_tointeger(vm, lua_gettop(vm));
+  lua_getglobal(vm, HTTP_CONN);
+  if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
+    return(0);
+  }
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((fname = (char*)lua_tostring(vm, 1)) == NULL)     return(-1);
 
-  if((f = fopen(fname, "r")) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open file %s", fname);
+  if((fd = fopen(fname, "r")) != NULL) {
+    char tmp[1024];
+
+    while((fgets(tmp, sizeof(tmp), fd)) != NULL)
+      mg_printf(conn, "%s", tmp);
+
+    fclose(fd);
     return(1);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Unable to read file %s", fname);
+    return(0);
   }
-
-  while((fgets(tmp, sizeof(tmp), f)) != NULL)
-    write(tmp_file, tmp, strlen(tmp));
-
-  fclose(f);
-
-  return(1);
 }
 
 /* ****************************************** */
@@ -636,7 +642,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_int_table_entry(vm, "uptime", ntop->getGlobals()->getUptime());
   lua_push_str_table_entry(vm, "version.rrd", rrd_strversion());
   lua_push_str_table_entry(vm, "version.redis", ntop->getRedis()->getVersion(rsp, sizeof(rsp)));
-  lua_push_str_table_entry(vm, "version.libmicrohttpd", (char*)MHD_get_version());
+  lua_push_str_table_entry(vm, "version.httpd", (char*)mg_version());
   lua_push_str_table_entry(vm, "version.luajit", (char*)LUAJIT_VERSION);
 
   zmq_version(&major, &minor, &patch);
@@ -760,17 +766,21 @@ static int ntop_set_redis(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_lua_http_print(lua_State* vm) {
-  int tmp_file, t;
+  struct mg_connection *conn;
+  int t;
 
-  lua_getglobal(vm, "tmp_file");
-  tmp_file = (int)lua_tointeger(vm, lua_gettop(vm));
+  lua_getglobal(vm, HTTP_CONN);
+  if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
+    return(1);
+  }
 
   switch(t = lua_type(vm, 1)) {
   case LUA_TSTRING:
     {
       char *str = (char*)lua_tostring(vm, 1);
       if(str && (strlen(str) > 0))
-	write(tmp_file, str, strlen(str));
+	mg_printf(conn, "%s", str);
     }
     break;
 
@@ -779,7 +789,7 @@ static int ntop_lua_http_print(lua_State* vm) {
       char str[64];
 
       snprintf(str, sizeof(str), "%f", (float)lua_tonumber(vm, 1));
-      write(tmp_file, str, strlen(str));
+      mg_printf(conn, "%s", str);
     }
     break;
 
@@ -956,16 +966,6 @@ static int post_iterator(void *cls,
 
 /* ****************************************** */
 
-int MHD_KeyValueIteratorGet(void *cls, enum MHD_ValueKind kind,
-			    const char *key, const char *value) {
-  lua_State *L = (lua_State*)cls;
-
-  lua_push_str_table_entry(L, key, (char*)value);
-  return(MHD_YES);
-}
-
-/* ****************************************** */
-
 int Lua::run_script(char *script_path) {
   luaL_openlibs(L); /* Load base libraries */   
   lua_register_classes(L, false); /* Load custom classes */
@@ -974,85 +974,53 @@ int Lua::run_script(char *script_path) {
 
 /* ****************************************** */
 
-static ssize_t file_reader (void *cls, uint64_t pos, char *buf, size_t max)
-{
-  int tmp_file = *(int*)cls;
-
-  (void) lseek (tmp_file, pos, SEEK_SET);
-  
-  return read(tmp_file, buf, max);
-}
-
-static void file_free_callback (void *cls)
-{
-  int f = *(int*)cls;
-  close(f);
-  free(cls);
-}
-
-/* ****************************************** */
-
-int Lua::handle_script_request(char *script_path,
-			       void *cls,
-			       struct MHD_Connection *connection,
-			       const char *url,
-			       const char *method,
-			       const char *version,
-			       const char *upload_data,
-			       size_t *upload_data_size, void **ptr) {
-  int ret = 0;
-  MHD_Response *tmp_response;
-  char tmp_path[256];
-  char *tmp_filename = ntop->getGlobals()->get_temp_filename(tmp_path, sizeof(tmp_path));
-  int tmp_file;
-
-  /* Register the connection in the state */
-  if((tmp_filename == NULL)
-     || ((tmp_file = open(tmp_filename, O_RDWR|O_CREAT)) < 0)) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] tmpnam(%s) error %d [%d/%s]",
-				 tmp_filename ? tmp_filename : "", tmp_file,
-				 errno, strerror(errno));
-    unlink(tmp_filename);
-    return(page_not_found(connection, url));
-  }
-
+int Lua::handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path) {
   luaL_openlibs(L); /* Load base libraries */   
   lua_register_classes(L, true); /* Load custom classes */
 
-  lua_pushinteger(L, tmp_file);
-  lua_setglobal(L, "tmp_file");
+  lua_pushlightuserdata(L, (char*)conn);
+  lua_setglobal(L, HTTP_CONN);
 
-  if(!strcmp(method, MHD_HTTP_METHOD_POST)) {
-#if 0
-    request->pp = MHD_create_post_processor (connection, 1024, &post_iterator, request);
-#endif
-  } else {
-    /* Put the GET params into the environment */
-    lua_newtable(L);
-    MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, MHD_KeyValueIteratorGet, (void*)L);
-    lua_setglobal(L, "_GET"); /* Like in php */
+  /* Put the GET params into the environment */
+  lua_newtable(L);
+  if(request_info->query_string != NULL) {
+    char *query_string = strdup(request_info->query_string);
+
+    if(query_string) {
+      char *tok, *where;
+
+      tok = strtok_r(query_string, "&", &where);
+
+      while(tok != NULL) {
+	/* key=val */
+	char *equal = strchr(tok, '=');
+
+	if(equal) {
+	  char decoded_buf[1024];
+
+	  equal[0] = '\0';
+
+
+	  url_decode(&equal[1], strlen(&equal[1]), decoded_buf, sizeof(decoded_buf), 1);
+
+	  //ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	  lua_push_str_table_entry(L, tok, decoded_buf);
+	}
+
+	tok = strtok_r(NULL, "&", &where);
+      }
+
+      free(query_string);
+    }
+  }
+  lua_setglobal(L, "_GET"); /* Like in php */
+
+  if(luaL_dofile(L, script_path) != 0) {
+    const char *err = lua_tostring(L, -1);
+
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);				 
+    return(send_error(conn, 500 /* Internal server error */, "Internal server error", PAGE_ERROR, script_path, err));
   }
 
-  if(luaL_dofile(L, script_path) == 0) {
-    off_t where;
-
-    fsync(tmp_file);
-    where = lseek(tmp_file, 0, SEEK_CUR); /* Get current position */
-    lseek(tmp_file, 0, SEEK_SET);
-    int *a = (int*)malloc(sizeof(int));
-    *a = tmp_file;
-
-    tmp_response = MHD_create_response_from_callback(where, 2048, &file_reader, (void*)a, file_free_callback);
-
-    /* Don't call fclose(tnmp_file) as the file is closed automatically by the httpd */
-    ret = MHD_queue_response(connection, MHD_HTTP_OK, tmp_response);
-    MHD_destroy_response(tmp_response);
-  } else {
-    ret = page_error(connection, url, lua_tostring(L, -1)); 
-    close(tmp_file);
-  }
-
-  unlink(tmp_filename);
-
-  return(ret);
+  return(1);
 }

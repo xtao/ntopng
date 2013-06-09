@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
 
   ntop->registerInterface(iface);
   ntop->loadGeolocation(docsdir);
-  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docsdir, "./scripts/lua"));
+  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docsdir, "./scripts"));
 
   /*
     We have created the network interface and thus changed user. Let's not check

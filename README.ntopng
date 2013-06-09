@@ -4,6 +4,15 @@ In case you want to add new protocols
 # ./configure
 # make
 
+Prerequisites
+- glib2
+- libgeoip
+- redis (redis server)
+
+On Mac OSX please install macports and do
+- port install XXX
+  Example: port install geoip
+
 --------------------------
 Luca Deri <deri@ntop.org>
 

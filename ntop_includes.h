@@ -64,7 +64,6 @@
 extern "C" {
 #include "pcap.h"
 #include "ndpi_main.h"
-#include "microhttpd.h"
 #include "luajit.h"
 #include "lauxlib.h"
 #include "lualib.h"
@@ -73,6 +72,7 @@ extern "C" {
 #endif
 };
 
+#include "mongoose.h"
 #include "ntop_defines.h"
 #include "patricia.h"
 #include "Trace.h"

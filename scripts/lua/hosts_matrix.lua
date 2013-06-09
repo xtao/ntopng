@@ -5,10 +5,12 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+sendHTTPHeader('text/html')
+
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile "./scripts/lua/menu.lua"
+dofile "./scripts/lua/inc/menu.lua"
 
 function getTraffic(stats, host_a, host_b)
    sent_total = 0
@@ -61,7 +63,7 @@ else
    print("</tr>\n")
 
    for row_key, row_value in pairs(localhosts) do
-      print("<tr><th><A HREF=/host_details.lua?interface=any&host="..localhosts[row_key]["name"]..">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
+      print("<tr><th><A HREF=/lua/host_details.lua?interface=any&host="..localhosts[row_key]["name"]..">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
       for column_key, column_value in pairs(localhosts) do	
 	 val = "&nbsp;"
 	 if(row_key ~= column_key) then
@@ -91,4 +93,4 @@ print [[
 </script>
 ]]
 
-dofile "./scripts/lua/footer.inc.lua"
+dofile "./scripts/lua/inc/footer.lua"

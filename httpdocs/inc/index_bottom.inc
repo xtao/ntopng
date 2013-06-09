@@ -37,10 +37,10 @@
 window.onload=function() {
    var refresh = 3000 /* ms */;
 
-   do_pie("#topHosts", '/iface_hosts_list.lua', { if: "any" }, "", refresh);
-   do_pie("#topApplicationProtocols", '/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
-   do_pie("#topASN", '/top_asn.lua', { if : "any" }, "", refresh);
-   do_pie("#topSenders", '/top_talkers.lua', { mode : "senders" }, "", refresh);
+   do_pie("#topHosts", '/lua/iface_hosts_list.lua', { if: "any" }, "", refresh);
+   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
+   do_pie("#topASN", '/lua/top_asn.lua', { if : "any" }, "", refresh);
+   do_pie("#topSenders", '/lua/top_talkers.lua', { mode : "senders" }, "", refresh);
 }
 
 </script>

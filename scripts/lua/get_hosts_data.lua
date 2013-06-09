@@ -5,6 +5,8 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+sendHTTPHeader('text/html')
+
 ifname          = _GET["if"]
 currentPage     = _GET["currentPage"]
 perPage         = _GET["perPage"]
@@ -85,7 +87,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 	 
-	 print ("{ \"column_ip\" : \"<A HREF='/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
+	 print ("{ \"column_ip\" : \"<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
 	 print("</A>\", \"column_name\" : \"" .. value["name"] .. " ")
 	 print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
 

@@ -37,14 +37,7 @@ class Lua {
   ~Lua();
 
   int run_script(char *script_path);
-  int handle_script_request(char *script_path,
-			    void *cls,
-			    struct MHD_Connection *connection,
-			    const char *url,
-			    const char *method,
-			    const char *version,
-			    const char *upload_data,
-			    size_t *upload_data_size, void **ptr);
+  int handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path);
 };
 
 extern void lua_push_str_table_entry(lua_State *L, const char *key, char *value);

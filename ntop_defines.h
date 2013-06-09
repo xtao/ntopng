@@ -70,4 +70,8 @@ v#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
 
 #define CONST_DEFAULT_DATA_DIR "./data"
 
+#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
+#define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
+#define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
+
 #endif /* _NTOP_DEFINES_H_ */

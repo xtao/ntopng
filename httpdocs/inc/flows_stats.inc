@@ -7,7 +7,7 @@
       <div id="table-hosts"></div>
 	 <script>
 	 $("#table-hosts").datatable({
-	   url: "/get_flows_data.lua",
+	   url: "/lua/get_flows_data.lua",
 	       showPagination: true,
 	       title: "Active Flows",
 	        columns: [

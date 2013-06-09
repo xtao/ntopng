@@ -301,11 +301,50 @@ function fdate(when) {
 }
 
 function fbits(bits) {
-		      var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
-		      if (bits == 0) return 'n/a';
-		      var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
-		      return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
+	var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
+	if (bits == 0) return 'n/a';
+	var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
+	return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
 }
+
+function capitaliseFirstLetter(string)
+{
+   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+/**
+ * Convert number of bytes into human readable format
+ *
+ * @param integer bytes     Number of bytes to convert
+ * @param integer precision Number of digits after the decimal separator
+ * @return string
+ */
+   function formatBytes(bytes, precision)
+      {
+	 var kilobyte = 1024;
+	 var megabyte = kilobyte * 1024;
+	 var gigabyte = megabyte * 1024;
+	 var terabyte = gigabyte * 1024;
+	 
+	 if ((bytes >= 0) && (bytes < kilobyte)) {
+	    return bytes + ' B';
+
+	 } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+	    return (bytes / kilobyte).toFixed(precision) + ' KB';
+
+	 } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+	    return (bytes / megabyte).toFixed(precision) + ' MB';
+
+	 } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+	    return (bytes / gigabyte).toFixed(precision) + ' GB';
+
+	 } else if (bytes >= terabyte) {
+	    return (bytes / terabyte).toFixed(precision) + ' TB';
+
+	 } else {
+	    return bytes + ' B';
+	 }
+      }
 
 var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
     graph: graph,
@@ -335,11 +374,11 @@ if (xInfoURL) then
 				var info = jQuery.parseJSON(content);
 				infoHTML += "<ul>";
 				$.each(info, function(i, n) {
-				  infoHTML += "<li>"+i+"<ol>";
+						   infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Average Host Traffic per Sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if (items < 3)
-				      infoHTML += "<li>"+m.label+" ("+fbits(m.value)+")</li>";
+				    infoHTML += "<li>"+m.label+" ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
 				  infoHTML += "</ol></li>";
@@ -354,11 +393,13 @@ print [[
 		this.element.style.left = graph.x(point.value.x) + 'px';
 
 		var xLabel = document.createElement('div');
+		xLabel.setAttribute("style", "opacity: 0.5; background-color: #EEEEEE; filter: alpha(opacity=0.5)");
 		xLabel.className = 'x_label';
 		xLabel.innerHTML = formattedXValue + infoHTML;
 		this.element.appendChild(xLabel);
 
 		var item = document.createElement('div');
+
 		item.className = 'item';
 		item.innerHTML = this.formatter(point.series, point.value.x, point.value.y, formattedXValue, formattedYValue, point);
 		item.style.top = this.graph.y(point.value.y0 + point.value.y) + 'px';

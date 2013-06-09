@@ -4,6 +4,11 @@
 
 -- Hello world
 
+package.path = "./scripts/lua/modules/?.lua;" .. package.path
+require "lua_utils"
+
+sendHTTPHeader('text/html')
+
 print('<html><head><title>ntop</title></head><body>Hello ' .. os.date("%d.%m.%Y"))
 
 -- Print _GET variable

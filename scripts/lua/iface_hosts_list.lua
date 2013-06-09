@@ -5,6 +5,8 @@
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+sendHTTPHeader('text/html')
+
 ifname = _GET["if"]
 interface.find("any")
 hosts_stats = interface.getHosts()
@@ -37,7 +39,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
       print ",\n"
    end
 
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/host_details.lua?host=".. value .."\" }")
+   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?host=".. value .."\" }")
    accumulate = accumulate + key
    num = num + 1
 

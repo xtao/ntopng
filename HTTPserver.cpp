@@ -21,210 +21,296 @@
 
 #include "ntop_includes.h"
 
-extern "C" {
-#include <microhttpd.h>
-#undef _GNU_SOURCE
-#undef _POSIX_C_SOURCE
-#undef _XOPEN_SOURCE
+#include "./third-party/mongoose/mongoose.c"
 
+extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "md5.h"
-#include "md5.c"
+  //#include "md5.h"
+  //#include "md5.c"
 };
 
 static HTTPserver *httpserver;
 
-#define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
-#define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
+/* Require user authorization */
+#define LOGIN_USERS        1
 
-#define DENIED "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
-
-/* ****************************************** */
-
-int page_not_found(struct MHD_Connection *connection, const char *url) {
-  char rsp[4096];
-  int ret;
-
-  struct MHD_Response *response = MHD_create_response_from_buffer(strlen(PAGE_NOT_FOUND), (void *)PAGE_NOT_FOUND, MHD_RESPMEM_PERSISTENT);
-
-  snprintf(rsp, sizeof(rsp), "/page_not_found.lua?url=%s", url);
-  MHD_add_response_header(response, "Location", rsp);
-
-  ret = MHD_queue_response(connection, MHD_HTTP_MOVED_PERMANENTLY, response);
-  MHD_destroy_response(response);
-
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Page not found %s", url);
-  return(ret);
-}
+#ifdef LOGIN_USERS
+#define LOGIN_URL      "/login.html"
+#define AUTHORIZE_URL  "/authorize.html"
+#endif
 
 /* ****************************************** */
 
-int page_error(struct MHD_Connection *connection, const char *url, const char *err) {
-  char rsp[4096];
+/*
+ * Send error message back to a client.
+ */
+int send_error(struct mg_connection *conn, int status, const char *reason, const char *fmt, ...) {
+  char		buf[BUFSIZ];
+  va_list		ap;
+  int		len;
 
-  snprintf(rsp, sizeof(rsp), PAGE_ERROR, url, err);
+  conn->status_code = status;
 
-  struct MHD_Response *response = MHD_create_response_from_buffer(strlen(rsp), (void *)rsp, MHD_RESPMEM_PERSISTENT);
-  int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
-  MHD_destroy_response(response);
+  (void) mg_printf(conn,
+		   "HTTP/1.1 %d %s\r\n"
+		   "Content-Type: text/html\r\n"
+		   "Connection: close\r\n"
+		   "\r\n", status, reason);
 
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Script error %s", url);
-  return(ret);
-}
-
-/* ****************************************** */
-
-static ssize_t file_reader(void *cls, uint64_t pos, char *buf, size_t max) {
-  FILE *file = (FILE*)cls;
-  (void)fseek(file, pos, SEEK_SET);
-  return(fread(buf, 1, max, file));
-}
-
-/* ****************************************** */
-
-static void http_server_free_callback(void *cls) {
-  fclose((FILE*)cls);
-}
-
-/* ****************************************** */
-
-static int handle_http_request(void *cls,
-			       struct MHD_Connection *connection,
-			       const char *url,
-			       const char *method,
-			       const char *version,
-			       const char *upload_data,
-			       size_t *upload_data_size, void **ptr) {
-  static int aptr;
-  struct MHD_Response *response;
-  int ret;
-  FILE *file;
-  struct stat buf;
-  char path[255] = { 0 };
-  char *user, *pass = NULL;
-
-  if(ntop->getGlobals()->isShutdown()) 
-    return(MHD_YES);
-
-  if(0 != strcmp(method, MHD_HTTP_METHOD_GET))
-    return MHD_NO;  /* unexpected method */
-
-  if(&aptr != *ptr) {
-    /* do never respond on first call */
-    *ptr = &aptr;
-    return MHD_YES;
+  /* Errors 1xx, 204 and 304 MUST NOT send a body */
+  if (status > 199 && status != 204 && status != 304) {
+    conn->num_bytes_sent = 0;
+    va_start(ap, fmt);
+    len = mg_vsnprintf(conn, buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    conn->num_bytes_sent += mg_write(conn, buf, len);
+    cry(conn, "%s", buf);
   }
 
-  /* require: "Aladdin" with password "open sesame" */
-  user = MHD_basic_auth_get_username_password(connection, &pass);
+  return(1);
+}
 
-  if(!httpserver->valid_user_pwd(user, pass)) {
-    response = MHD_create_response_from_buffer(strlen (DENIED), (void *) DENIED,
-					       MHD_RESPMEM_PERSISTENT);
-    return(MHD_queue_basic_auth_fail_response(connection, "Please enter your ntopng credentials", response));
+/* ****************************************** */
+
+#ifdef HAVE_SSL
+static void redirect_to_ssl(struct mg_connection *conn,
+                            const struct mg_request_info *request_info) {
+  const char *p, *host = mg_get_header(conn, "Host");
+  u_int16_t port = ntop->get_HTTPserver()->get_port();
+
+  if (host != NULL && (p = strchr(host, ':')) != NULL) {
+    mg_printf(conn, "HTTP/1.1 302 Found\r\n"
+              "Location: https://%.*s:%u/%s\r\n\r\n",
+              (int) (p - host), host, port+1, request_info->uri);
+  } else {
+    mg_printf(conn, "%s", "HTTP/1.1 500 Error\r\n\r\nHost: header is not set");
+  }
+}
+#endif
+
+/* ****************************************** */
+
+#ifdef LOGIN_USERS
+
+// Generate session ID. buf must be 33 bytes in size.
+// Note that it is easy to steal session cookies by sniffing traffic.
+// This is why all communication must be SSL-ed.
+static void generate_session_id(char *buf, const char *random, const char *user) {
+  mg_md5(buf, random, user, NULL);
+}
+
+
+// Return 1 if request is authorized, 0 otherwise.
+static int is_authorized(const struct mg_connection *conn,
+                         const struct mg_request_info *request_info) {
+  char key[64], user[32];
+  char session_id[33], username[33];
+
+  // Always authorize accesses to login page and to authorize URI
+  if (!strcmp(request_info->uri, LOGIN_URL) ||
+      !strcmp(request_info->uri, AUTHORIZE_URL)) {
+    return 1;
   }
 
-  if(strstr(url, "//")
-     || strstr(url, "&&")
-     || strstr(url, "??")
-     || strstr(url, "..")) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", url);
-    return(page_error(connection, url, "The URL specified contains invalid/dangerous characters"));
+  mg_get_cookie(conn, "session", session_id, sizeof(session_id));
+  mg_get_cookie(conn, "user", username, sizeof(username));
+  // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Received session %s/%s", session_id, username);
+
+  snprintf(key, sizeof(key), "sessions.%s", session_id);
+  if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
+     || strcmp(user, username) /* Users don't match */)
+    return(0);
+  else {
+    ntop->getRedis()->expire(key, 3600); /* Extend session */
+    return(1);
+  }
+}
+
+// Redirect user to the login form. In the cookie, store the original URL
+// we came from, so that after the authorization we could redirect back.
+static void redirect_to_login(struct mg_connection *conn,
+                              const struct mg_request_info *request_info) {
+  mg_printf(conn, "HTTP/1.1 302 Found\r\n"
+      "Set-Cookie: original_url=%s\r\n"
+      "Location: %s\r\n\r\n",
+      request_info->uri, LOGIN_URL);
+}
+
+// Return 1 if username/password is allowed, 0 otherwise.
+static int check_password(const char *user, const char *password) {
+  // In production environment we should ask an authentication system
+  // to authenticate the user.
+  // Here however we do trivial check that user and password are not empty
+  //return (user[0] && password[0]);
+  return(1);
+}
+
+static void get_qsvar(const struct mg_request_info *request_info,
+                      const char *name, char *dst, size_t dst_len) {
+  const char *qs = request_info->query_string;
+  mg_get_var(qs, strlen(qs == NULL ? "" : qs), name, dst, dst_len);
+}
+
+// A handler for the /authorize endpoint.
+// Login page form sends user name and password to this endpoint.
+static void authorize(struct mg_connection *conn,
+                      const struct mg_request_info *request_info) {
+  char user[32], password[32];
+
+  // Fetch user name and password.
+  get_qsvar(request_info, "user", user, sizeof(user));
+  get_qsvar(request_info, "password", password, sizeof(password));
+
+  if (check_password(user, password)) {
+    char key[256], session_id[64], random[64];
+
+    // Authentication success:
+    //   1. create new session
+    //   2. set session ID token in the cookie
+    //   3. remove original_url from the cookie - not needed anymore
+    //   4. redirect client back to the original URL
+    //
+    // The most secure way is to stay HTTPS all the time. However, just to
+    // show the technique, we redirect to HTTP after the successful
+    // authentication. The danger of doing this is that session cookie can
+    // be stolen and an attacker may impersonate the user.
+    // Secure application must use HTTPS all the time.
+
+    snprintf(random, sizeof(random), "%d", rand());
+    generate_session_id(session_id, random, user);
+
+    mg_printf(conn, "HTTP/1.1 302 Found\r\n"
+	      "Set-Cookie: session=%s; max-age=3600; http-only\r\n"  // Session ID
+	      "Set-Cookie: user=%s\r\n"  // Set user, needed by Javascript code
+	      "Set-Cookie: original_url=/; max-age=0\r\n"  // Delete original_url
+	      "Location: /\r\n\r\n",
+	      session_id, user);
+    
+    /* Save session in redis */
+    snprintf(key, sizeof(key), "sessions.%s", session_id);
+    ntop->getRedis()->set(key, user, 3600 /* 1h */);
+    
+    // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Sending session %s", session_id);
+  } else {
+    // Authentication failure, redirect to login.
+    redirect_to_login(conn, request_info);
+  }
+}
+#endif
+
+/* ****************************************** */
+
+static int handle_lua_request(struct mg_connection *conn) {
+  const struct mg_request_info *request_info = mg_get_request_info(conn);
+#ifdef LOGIN_USERS
+  u_int len = strlen(request_info->uri);
+#endif
+
+  if(ntop->getGlobals()->isShutdown())
+    return(send_error(conn, 410 /* Gone */, request_info->uri, "The server is shutting down"));  
+
+  if(strcmp(request_info->request_method, "GET"))
+    return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method"));
+
+#ifdef HAVE_SSL
+  if(!request_info->is_ssl)
+    redirect_to_ssl(conn, request_info);
+#endif
+
+
+#ifdef LOGIN_USERS
+  if((len > 4)
+     && ((strcmp(&request_info->uri[len-4], ".css") == 0)
+	 || (strcmp(&request_info->uri[len-3], ".js")) == 0))
+    ;
+  else if(!is_authorized(conn, request_info)) {
+    redirect_to_login(conn, request_info);
+  } else if (strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
+    authorize(conn, request_info);
+  }
+#endif
+
+  // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s", request_info->uri);
+
+  if(strstr(request_info->uri, "//")
+     || strstr(request_info->uri, "&&")
+     || strstr(request_info->uri, "??")
+     || strstr(request_info->uri, "..")) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", request_info->uri);
+    return(send_error(conn, 400 /* Bad Request */, request_info->uri, "The URL specified contains invalid/dangerous characters"));
   }
 
-  *ptr = NULL;                  /* reset when done */
+  if((strncmp(request_info->uri, "/lua/", 5) == 0)
+     || (strcmp(request_info->uri, "/") == 0)) {
+    /* Lua Script */
+    char path[255] = { 0 };
+    struct stat buf;
 
-  /* 1 - check if this is a static file */
-  snprintf(path, sizeof(path), "%s%s", httpserver->get_docs_dir(),
-	   (strlen(url) == 1) ? "/index.html" : url);
-
-  if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode)))
-    file = fopen(path, "rb");
-  else
-    file = NULL;
-
-  if(file == NULL) {
-    /* 2 - check if this a script file */
     snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(),
-	     (strlen(url) == 1) ? "/index.lua" : url);
-
+	     (strlen(request_info->uri) == 1) ? "/lua/index.lua" : request_info->uri);
+    
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       Lua *l = new Lua();
       
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", request_info->uri, path);
       
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
-	return(page_error(connection, url, "Unable to start Lua interpreter"));
+	return(send_error(conn, 500 /* Internal server error */, "Internal server error", "%s", "Unable to start Lua interpreter"));
       } else {
-	ret = l->handle_script_request(path, cls, connection, url, method, version, upload_data, upload_data_size, ptr);
+	l->handle_script_request(conn, request_info, path);
 	delete l;
+	return(1); /* Handled */
       }
-    } else {
-      ret = page_not_found(connection, url);
     }
-  } else {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", url, path);
-
-    response = MHD_create_response_from_callback(buf.st_size, 32 * 1024,     /* 32k page size */
-						 &file_reader,
-						 file,
-						 &http_server_free_callback);
-    if(response == NULL) {
-      fclose(file);
-      return MHD_NO;
-    } else {
-      u_int len = strlen(path);
-      const char *mime = NULL;
-
-      if(!strcmp(&path[len-3], ".js"))        mime = "application/x-javascript";
-      else if(!strcmp(&path[len-4], ".css"))  mime = "text/css";
-      else if(!strcmp(&path[len-4], ".html")) mime = "text/html";
-      else if(!strcmp(&path[len-4], ".png"))  mime = "image/png";
-      else if(!strcmp(&path[len-4], ".gif"))  mime = "image/gif";
-      else if(!strcmp(&path[len-4], ".jpg"))  mime = "image/jped";
-      else if(!strcmp(&path[len-4], ".ico"))  mime = "image/x-icon";
-
-      if(mime)
-	MHD_add_response_header(response, "Content-Type", mime);
-    }
-
-    ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
-    MHD_destroy_response(response);
-    /* fclose(file) is not necessary as the HTTP library does it automatically */
-  }
-
-  return ret;
+    
+    return(send_error(conn, 404, "Not Found", PAGE_NOT_FOUND, request_info->uri));
+  } else
+    return(0); /* This is a static document so let mongoose handle it */
 }
 
 /* ****************************************** */
 
 HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir) {
+  struct mg_callbacks callbacks;
+  static char ports[32];
+  
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
 
-  httpd_v4 = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG,
-			   port, NULL, NULL, &handle_http_request, (void*)PAGE_NOT_FOUND,
-			   MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)120,
-			   MHD_OPTION_END);
+#ifdef HAVE_SSL
+  snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
+#else
+  snprintf(ports, sizeof(ports), "%d", port);
+#endif
 
+  static char *http_options[] = { 
+    (char*)"listening_ports", ports, 
+    (char*)"enable_directory_listing", (char*)"no",
+    (char*)"document_root",  (char*)_docs_dir,
+    (char*)"extra_mime_types", (char*)".inc=text/html,.css=text/css,.js=application/javascript",
+    (char*)"num_threads", (char*)"5",
+#ifdef HAVE_SSL
+    (char*)"ssl_certificate", (char*)"ntop-cert.pem",
+#endif
+    NULL
+  };
+
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.begin_request = handle_lua_request;
+
+  httpd_v4 = mg_start(&callbacks, NULL, (const char**)http_options);
+  
   if(httpd_v4 == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv4) on port %d", port);
     exit(-1);
   }
 
-  /* ***************************** */
-  
-  httpd_v6 = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_IPv6,
-			      port, NULL, NULL, &handle_http_request, (void*)PAGE_NOT_FOUND,
-			      MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)120,
-			      MHD_OPTION_END);
-
-  if(httpd_v6 == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv6) on port %d", port);
-  }
+#if 1/* TODO */
+  httpd_v6 = NULL;
+#endif
 
   /* ***************************** */
 
@@ -236,8 +322,8 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 /* ****************************************** */
 
 HTTPserver::~HTTPserver() {
-  if(httpd_v4) MHD_stop_daemon(httpd_v4);
-  if(httpd_v6) MHD_stop_daemon(httpd_v6);
+  if(httpd_v4) mg_stop(httpd_v4);
+  if(httpd_v6) mg_stop(httpd_v6);
 
   free(docs_dir), free(scripts_dir);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server terminated");
