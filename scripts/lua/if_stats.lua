@@ -77,7 +77,7 @@ if((page == "overview") or (page == nil)) then
    print("</td></tr>\n")
    print("</table>\n")
 else
-   drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, "/lua/top_talkers.lua")
+   drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 dofile "./scripts/lua/inc/footer.lua"

@@ -304,7 +304,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1)
+drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1, _GET["epoch"])
 else
    print(page)
 end

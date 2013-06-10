@@ -15,37 +15,46 @@ function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
 end
 
 
-function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, xInfoURL)
+function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
    rrdname = ntop.getDataDir() .. "/rrd/" .. host .. "/" .. rrdFile
    names =  {}
    series = {}
    vals = {
-      { "5m", "now-300s" },
-      { "10m", "now-600s" },
-      { "1h", "now-1h" },
-      { "3h", "now-3h" },
-      { "6h", "now-6h" },
-      { "12h", "now-12h" },
-      { "1d", "now-1d" },
-      { "1w", "now-1w" },
-      { "2w", "now-2w" },
-      { "1m", "now-1mon" },
-      { "6m", "now-6mon" },
-      { "1y", "now-1y" }
+      { "5m",  "now-300s", 60*5 },
+      { "10m", "now-600s", 60*10 },
+      { "1h",  "now-1h",   60*60*1 },
+      { "3h",  "now-3h",   60*60*3 },
+      { "6h",  "now-6h",   60*60*6 },
+      { "12h", "now-12h",  60*60*12 },
+      { "1d",  "now-1d",   60*60*24 },
+      { "1w",  "now-1w",   60*60*24*7 },
+      { "2w",  "now-2w",   60*60*24*14 },
+      { "1m",  "now-1mon", 60*60*24*31 },
+      { "6m",  "now-6mon", 60*60*24*31*6 },
+      { "1y",  "now-1y",   60*60*24*366 }
    }
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
    end
 
+   nextZoomLevel = zoomLevel;
+   epoch = tonumber(selectedEpoch);
+
    for k,v in ipairs(vals) do
       if(vals[k][1] == zoomLevel) then
-	 start_time = vals[k][2]
+         if (k > 1) then
+           nextZoomLevel = vals[k-1][1]
+         end
+         if (epoch) then
+           start_time = epoch - vals[k][3]/2 
+           end_time = epoch + vals[k][3]/2
+         else
+	   start_time = vals[k][2]
+           end_time = "now"
+         end
       end
    end
-
-   --start_time = "now-10s"
-   end_time = "now"
 
    local maxval_bits_time = 0
    local maxval_bits = 0
@@ -180,7 +189,7 @@ if(show_timeseries == 1) then
   <ul class="dropdown-menu">
 ]]
 
-print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel ..'">'.. "Traffic" ..'</a></li>\n')
+print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
 print('<li class="divider"></li>\n')
 
 rrds = ntop.readdir(ntop.getDataDir() .. "/rrd/" .. host)
@@ -190,7 +199,7 @@ for k,v in pairsByKeys(rrds, asc) do
       
    if(proto ~= "bytes") then
       label = l4Label(proto)
-      print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel ..'">'.. label ..'</a></li>\n')
+      print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
    end
 end
 
@@ -210,7 +219,7 @@ for k,v in ipairs(vals) do
       print("active")
    end
 
-   print('" href="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. vals[k][1] ..'">'.. vals[k][1] ..'</a>\n')
+   print('" href="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. vals[k][1] .. '&epoch=' .. (selectedEpoch or '') ..'">'.. vals[k][1] ..'</a>\n')
 end
 
 print [[
@@ -374,11 +383,11 @@ if (xInfoURL) then
 				var info = jQuery.parseJSON(content);
 				infoHTML += "<ul>";
 				$.each(info, function(i, n) {
-						   infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Average Host Traffic per Sec]<ol>";
+				  infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Average Host Traffic per Sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if (items < 3)
-				    infoHTML += "<li>"+m.label+" ("+fbits((m.value*8)/60)+")</li>";
+				      infoHTML += "<li>"+m.label+" ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
 				  infoHTML += "</ol></li>";
@@ -424,6 +433,9 @@ print [[
 
 		// Put the selected graph epoch into the legend
 		//chart_legend.innerHTML = point.value.x; // Epoch
+
+		this.selected_epoch = point.value.x;
+
 		event
 	}
 } );
@@ -444,12 +456,18 @@ var yAxis = new Rickshaw.Graph.Axis.Y({
 
 yAxis.render();
 
+$("#chart").click(function() {
+  if (hover.selected_epoch)
+    window.location.href = ']]
+print(baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. nextZoomLevel .. '&epoch=')
+print[['+hover.selected_epoch;
+});
 
 </script>
 
 ]]
- else
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This archive file cannot be found</div>")
+else
+  print("<div class=\"alert alert-error\"><img src=/img/warning.png> This archive file cannot be found</div>")
 
 end
 end
