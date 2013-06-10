@@ -52,17 +52,17 @@ for key, value in pairs(hosts_stats) do
    if(sortColumn == "column_ip") then
       vals[key] = key
    elseif(sortColumn == "column_name") then
-   vals[hosts_stats[key]["name"]] = key
+   vals[hosts_stats[key]["name"]..postfix] = key
    elseif(sortColumn == "column_since") then
-   vals[hosts_stats[key]["duration"]] = key
+   vals[hosts_stats[key]["duration"]..postfix] = key
    elseif(sortColumn == "column_category") then
    vals[hosts_stats[key]["category"]..postfix] = key
    elseif(sortColumn == "column_asn") then
-   vals[hosts_stats[key]["asn"]] = key
+   vals[hosts_stats[key]["asn"]..postfix] = key
    elseif(sortColumn == "column_2") then
-   vals[hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]] = key
+   vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])..postfix] = key
 else
-   vals[hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]] = key
+   vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])..postfix] = key
    end
 end
 
