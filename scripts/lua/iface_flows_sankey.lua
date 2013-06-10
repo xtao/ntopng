@@ -24,38 +24,47 @@ for key, values in pairs(peers) do
 end
 
 -- 2. compute flow threshold under which we do not print any relation
-threshold = (total_traffic * 3) / 100
-
+if(tracked_host == nil) then
+   threshold = (total_traffic * 3) / 100
+else
+   threshold = 1
+end
 
 hosts = {}
 num = 0
 print '{"nodes":[\n'
-for key, values in pairs(peers) do
-   if((values["sent"] + values["rcvd"]) > threshold) then
 
-	 -- print("\n")
+while(num == 0) do
+   for key, values in pairs(peers) do
+      if((values["sent"] + values["rcvd"]) > threshold) then
 
-      --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
-      if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then	 
-	 --print("[" .. key .. "][" .. tracked_host .. "]\n")
+	 --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
+	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then	 
+	    --print("[" .. key .. "][" .. tracked_host .. "]\n")
 
-	 for key,word in pairs(split(key, " ")) do
-	    if(num >= max_num_hosts) then
-	       break
-	    end
-	    
-	    if(hosts[word] == nil) then
-	       hosts[word] = num
-	       
-	       if(num > 0) then
-		  print ",\n"
+	    for key,word in pairs(split(key, " ")) do
+	       if(num >= max_num_hosts) then
+		  break
 	       end
-	       -- 3. print nodes
-	       print ("\t{\"name\": \"" .. word .. "\"}")
-	       num = num + 1
+	       
+	       if(hosts[word] == nil) then
+		  hosts[word] = num
+		  
+		  if(num > 0) then
+		     print ",\n"
+		  end
+		  -- 3. print nodes
+		  print ("\t{\"name\": \"" .. word .. "\"}")
+		  num = num + 1
+	       end
 	    end
 	 end
       end
+   end
+
+   if(num == 0) then
+      -- Lower the threshold to hope finding hosts
+      threshold = threshold / 2
    end
 end
 
