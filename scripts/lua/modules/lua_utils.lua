@@ -11,7 +11,7 @@ l4_keys = {
 
 
 function sendHTTPHeader(mime)
-   print('HTTP/1.1 200 OK\r\nContent-Type: "..mime.."\r\n\r\n')
+   print('HTTP/1.1 200 OK\r\nContent-Type: '..mime..'\r\n\r\n')
 end
 
 function findString(str, tofind)

@@ -29,7 +29,22 @@ print [[</font></div>
 <script>
   // Updating charts.
 var updatingChart = $(".network-load-chart").peity("line", { width: 64 })
-var prev_bytes = 0;
+var prev_bytes   = 0;
+var prev_packets = 0;
+var prev_epoch   = 0;
+
+function addCommas(nStr)
+{
+   nStr += '';
+   x = nStr.split('.');
+   x1 = x[0];
+   x2 = x.length > 1 ? '.' + x[1] : '';
+   var rgx = /(\d+)(\d{3})/;
+   while (rgx.test(x1)) {
+      x1 = x1.replace(rgx, '$1' + ',' + '$2');
+   }
+   return x1 + x2;
+}
 
 function bytesToSize(bytes) {
       var sizes = ['Bytes', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];
@@ -51,15 +66,25 @@ setInterval(function() {
 
 					   if(prev_bytes > 0) {
 					   var values = updatingChart.text().split(",")
-					   var diff = rsp.bytes-prev_bytes;
+   					   var bytes_diff = rsp.bytes-prev_bytes;
+   					   var packets_diff = rsp.packets-prev_packets;
+					   var epoch_diff = rsp.epoch - prev_epoch;
+
+					   if(epoch_diff == 0) {
+					      epoch_diff = 1;
+					   }
 
 					   values.shift()
-					   values.push(diff)
+					   values.push(bytes_diff)
 
 					   updatingChart.text(values.join(",")).change()
-					   $('#network-load').text(bytesToSize(diff*8)+" ["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
+					   pps = packets_diff / epoch_diff;
+
+					   $('#network-load').text(bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps ]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
    					}
 					   prev_bytes = rsp.bytes;
+					   prev_packets  = rsp.packets;
+					   prev_epoch = rsp.epoch;
 					}
 				     });
 			 }, 1000)

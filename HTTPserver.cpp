@@ -217,10 +217,8 @@ static int handle_lua_request(struct mg_connection *conn) {
   u_int len = strlen(request_info->uri);
 #endif
 
-  if(ntop->getGlobals()->isShutdown())
-    return(send_error(conn, 410 /* Gone */, request_info->uri, "The server is shutting down"));  
-
-  if(strcmp(request_info->request_method, "GET"))
+  if((ntop->getGlobals()->isShutdown())
+     || (strcmp(request_info->request_method, "GET")))
     return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method"));
 
 #ifdef HAVE_SSL
