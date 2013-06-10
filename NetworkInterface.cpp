@@ -295,9 +295,9 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
     type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-    incStats(h->ts.tv_sec, 0, h->caplen);
+    incStats(h->ts.tv_sec, 0, h->len);
   } else {
-    incStats(h->ts.tv_sec, 0, h->caplen);
+    incStats(h->ts.tv_sec, 0, h->len);
     return;
   }
 
@@ -309,7 +309,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     ip_offset += 4;
   }
 
-  incStats(h->ts.tv_sec, type, h->caplen);
+  incStats(h->ts.tv_sec, type, h->len);
 
   // just work on Ethernet packets that contain IPv4
   switch(type) {

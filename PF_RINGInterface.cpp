@@ -37,10 +37,18 @@ PF_RINGInterface::PF_RINGInterface(const char *name, bool change_user)
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),
 				  ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {
     throw 1;
-  } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+  } else {
+    u_int32_t version;
+
+    pfring_version(pfring_handle, &version);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from PF_RING v.%d.%d.%d interface %s...",
+				 (version & 0xFFFF0000) >> 16, (version & 0x0000FF00) >> 8, version & 0x000000FF,
+				 ifname);
+  }
 
   pcap_datalink_type = DLT_EN10MB;
+
+  pfring_set_application_name(pfring_handle, (char*)"ntopng");
 
   if(change_user) dropPrivileges();
 }

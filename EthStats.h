@@ -26,7 +26,7 @@
 
 class EthStats {
  private:
-  ProtoStats eth_IPv4, eth_IPv6, eth_ARP, eth_MPLS, eth_other;
+  ProtoStats raw, eth_IPv4, eth_IPv6, eth_ARP, eth_MPLS, eth_other;
 
  public:
   EthStats();
@@ -39,8 +39,8 @@ class EthStats {
 
   void lua(lua_State *vm);
   void incStats(u_int16_t proto, u_int32_t num_pkts, u_int32_t num_bytes);
-  inline u_int64_t getNumPackets() { return(eth_IPv4.getPkts()+eth_IPv6.getPkts()+eth_ARP.getPkts()+eth_MPLS.getPkts()+eth_other.getPkts());       };
-  inline u_int64_t getNumBytes()   { return(eth_IPv4.getBytes()+eth_IPv6.getBytes()+eth_ARP.getBytes()+eth_MPLS.getBytes()+eth_other.getBytes());  };
+  inline u_int64_t getNumPackets() { return(raw.getPkts());  };
+  inline u_int64_t getNumBytes()   { return(raw.getBytes()); };
 
   void print();
 };
