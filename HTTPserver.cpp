@@ -27,9 +27,6 @@ extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
-
-  //#include "md5.h"
-  //#include "md5.c"
 };
 
 static HTTPserver *httpserver;
@@ -143,9 +140,20 @@ static void redirect_to_login(struct mg_connection *conn,
 static int check_password(const char *user, const char *password) {
   // In production environment we should ask an authentication system
   // to authenticate the user.
-  // Here however we do trivial check that user and password are not empty
-  //return (user[0] && password[0]);
-  return(1);
+  char key[64], val[64];
+  char password_hash[33];
+  
+  if(user == NULL) return(false);
+
+  snprintf(key, sizeof(key), "user.%s", user);
+
+  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
+    return(false);
+  else {
+    // FIX add a seed when users management will be available on the web gui
+    mg_md5(password_hash, password, NULL);
+    return(strcmp(password_hash, val) == 0);
+  }
 }
 
 static void get_qsvar(const struct mg_request_info *request_info,
@@ -331,6 +339,9 @@ HTTPserver::~HTTPserver() {
 
 /* ****************************************** */
 
+#if 0
+// user/password check using md5.c
+
 static void hexstring_to_bytearray(char *hexstring, u_char *bytearray, u_int bytearray_len) {
   u_int i, str_len = strlen(hexstring);
 
@@ -338,13 +349,11 @@ static void hexstring_to_bytearray(char *hexstring, u_char *bytearray, u_int byt
     sscanf(hexstring + 2 * i, "%02hhx", &bytearray[i]);
 }
 
-/* ****************************************** */
-
 bool HTTPserver::valid_user_pwd(char *user, char *pass) {
   char key[64], val[64];
   struct MD5Context md5c;
   unsigned char signature[16], expected_signature[16];
-
+  
   if(user == NULL) return(false);
 
   snprintf(key, sizeof(key), "user.%s", user);
@@ -361,7 +370,5 @@ bool HTTPserver::valid_user_pwd(char *user, char *pass) {
     return((memcmp(signature, expected_signature, sizeof(signature)) == 0) ? true : false);
   }
 }
-
-/* ****************************************** */
-
+#endif
 
