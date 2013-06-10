@@ -92,12 +92,10 @@ Flow::~Flow() {
 /* *************************************** */
 
 void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
-  if((ndpi_flow != NULL) && (proto_id != NDPI_PROTOCOL_UNKNOWN)) {
-    detected_protocol = proto_id;
+  if(ndpi_flow != NULL) {
+    if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
+      detected_protocol = proto_id;
     
-    if((detected_protocol != NDPI_PROTOCOL_UNKNOWN)
-       || (l4_proto == IPPROTO_UDP)
-       || ((l4_proto == IPPROTO_TCP) && ((cli2srv_packets+srv2cli_packets) > 10))) {
       switch(detected_protocol) {
       case NDPI_PROTOCOL_DNS:
 	if(ntop->getPrefs()->decode_dns_responses()) {
@@ -121,7 +119,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
 	  /* if <host>:<port> We need to remove ':' */
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
-	     doublecol[0] = '\0';	  
+	    doublecol[0] = '\0';	  
 
 	  svr->setName((char*)ndpi_flow->host_server_name, true);
 	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
@@ -132,11 +130,13 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 					       (char*)ndpi_flow->host_server_name);
 	}
 	break;
-      }
-
+      } /* switch */
       detection_completed = true;
-      deleteFlowMemory();
+    } else if((cli2srv_packets+srv2cli_packets) > 10) {
+      detection_completed = true; /* We give up */
     }
+
+    if(detection_completed) deleteFlowMemory();
   }
 }
 

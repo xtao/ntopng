@@ -38,7 +38,6 @@ class Host : public GenericHashEntry {
   TrafficStats udp_sent, udp_rcvd;
   TrafficStats icmp_sent, icmp_rcvd;
   TrafficStats other_ip_sent, other_ip_rcvd;
-  bool name_resolved;
   Mutex *m;
   bool localHost;
   

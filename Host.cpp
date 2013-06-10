@@ -61,7 +61,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
   category[0] = '\0';
-  num_uses = 0, name_resolved = false, symbolic_name = NULL, vlan_id = _vlanId;
+  num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
   localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
@@ -212,16 +212,21 @@ char* Host::get_name(char *buf, u_int buf_len) {
     return(get_mac(buf, buf_len));
   } else {
     char *addr, redis_buf[64];
-    
+    int rc;
+
     if(symbolic_name != NULL)
       return(symbolic_name);
-    
+
     addr = ip->print(buf, buf_len);
-    if(ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), true) == 0) {
+    rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), true);
+
+    if(rc == 0) {
       setName(redis_buf, false);
       return(symbolic_name);
-    } else
+    } else {
+      symbolic_name = strdup(addr);
       return(addr);
+    }
   }
 }
 
