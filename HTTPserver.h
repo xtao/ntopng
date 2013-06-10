@@ -24,6 +24,9 @@
 
 #include "ntop_includes.h"
 
+/* Global used for enabling/disabling user authentication */
+extern bool enable_users_login;
+
 class HTTPserver {
  private:
   u_int16_t port;

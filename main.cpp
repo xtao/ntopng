@@ -32,7 +32,7 @@ static void help() {
 	 "Usage: ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-s] [-v]\n\n"
+	 "              [-l] [-s] [-v]\n\n"
 	 "-n <mode>               | DNS address resolution mode\n"
 	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
 	 "                        | 1 - Decode DNS responses and don't resolve numeric IPs\n"
@@ -46,6 +46,7 @@ static void help() {
 	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
 	 "-s                      | Do not change user (debug only)\n"
+	 "-l                      | Disable user login authentication\n"
 	 "-v                      | Verbose tracing\n"
 	 "-h                      | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_NTOP_PORT);
@@ -93,7 +94,7 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:p:d:v")) != '?') {
+  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:p:d:lv")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -172,6 +173,10 @@ int main(int argc, char *argv[]) {
     case 'd':
       free(data_dir);
       data_dir = strdup(optarg);
+      break;
+
+    case 'l':
+      enable_users_login = false;
       break;
 
     case 'v':

@@ -31,13 +31,10 @@ extern "C" {
 
 static HTTPserver *httpserver;
 
-/* Require user authorization */
-#define LOGIN_USERS        1
-
-#ifdef LOGIN_USERS
 #define LOGIN_URL      "/login.html"
 #define AUTHORIZE_URL  "/authorize.html"
-#endif
+
+bool enable_users_login = true;
 
 /* ****************************************** */
 
@@ -89,8 +86,6 @@ static void redirect_to_ssl(struct mg_connection *conn,
 #endif
 
 /* ****************************************** */
-
-#ifdef LOGIN_USERS
 
 // Generate session ID. buf must be 33 bytes in size.
 // Note that it is easy to steal session cookies by sniffing traffic.
@@ -207,15 +202,12 @@ static void authorize(struct mg_connection *conn,
     redirect_to_login(conn, request_info);
   }
 }
-#endif
 
 /* ****************************************** */
 
 static int handle_lua_request(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-#ifdef LOGIN_USERS
   u_int len = strlen(request_info->uri);
-#endif
 
   if((ntop->getGlobals()->isShutdown())
      || (strcmp(request_info->request_method, "GET")))
@@ -226,18 +218,18 @@ static int handle_lua_request(struct mg_connection *conn) {
     redirect_to_ssl(conn, request_info);
 #endif
 
-
-#ifdef LOGIN_USERS
-  if((len > 4)
-     && ((strcmp(&request_info->uri[len-4], ".css") == 0)
-	 || (strcmp(&request_info->uri[len-3], ".js")) == 0))
-    ;
-  else if(!is_authorized(conn, request_info)) {
-    redirect_to_login(conn, request_info);
-  } else if (strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
-    authorize(conn, request_info);
+  if(enable_users_login) {
+    if((len > 4)
+       && ((strcmp(&request_info->uri[len-4], ".css") == 0)
+	   || (strcmp(&request_info->uri[len-3], ".js")) == 0))
+      ;
+    else if(!is_authorized(conn, request_info)) {
+      redirect_to_login(conn, request_info);
+    } else if (strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
+      authorize(conn, request_info);
+      return(1);
+    }
   }
-#endif
 
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s", request_info->uri);
 

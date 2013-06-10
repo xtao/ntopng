@@ -32,6 +32,7 @@ ntopng \- display top network users
 .RB [ -r
 .IR <redis_host:port> ]
 .RB [ -s ] 
+.RB [ -l ] 
 .RB [ -v ] 
 .RB [ -h ]
 
@@ -132,6 +133,9 @@ to http://redis.io/.
 
 .It -s
 Do not change user (debug only)
+
+.It -l
+Disable user login. This is useful for debug purposes or if you want to let everyone access the web gui.
 
 .It -v
 Verbose tracing
