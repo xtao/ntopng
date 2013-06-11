@@ -39,17 +39,17 @@ while(num == 0) do
       if((values["sent"] + values["rcvd"]) > threshold) then
 
 	 --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
-	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then	 
+	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
 	    --print("[" .. key .. "][" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
 	       if(num >= max_num_hosts) then
 		  break
 	       end
-	       
+
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
-		  
+
 		  if(num > 0) then
 		     print ",\n"
 		  end
@@ -65,6 +65,10 @@ while(num == 0) do
    if(num == 0) then
       -- Lower the threshold to hope finding hosts
       threshold = threshold / 2
+   end
+
+   if(threshold <= 1) then
+      break
    end
 end
 
