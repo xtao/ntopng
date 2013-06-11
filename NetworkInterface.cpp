@@ -371,8 +371,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     break;
 
   default: /* No IPv4 nor IPv6 */
-    Host *srcHost = findHostByMac((const u_int8_t*)ethernet->h_source, true);
-    Host *dstHost = findHostByMac((const u_int8_t*)ethernet->h_dest, true);
+    Host *srcHost = findHostByMac(ethernet->h_source, vlan_id, true);
+    Host *dstHost = findHostByMac(ethernet->h_dest, vlan_id, true);
 
     if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
     if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
@@ -437,9 +437,9 @@ void NetworkInterface::findFlowHosts(u_int16_t vlanId,
 /* **************************************************** */
 
 static void hosts_node_sum_protos(GenericHashEntry *h, void *user_data) {
-  NdpiStats *stats = (NdpiStats*)user_data;
+  NdpiStats *stats = (NdpiStats*)user_data, *s = ((Host*)h)->get_ndpi_stats();
 
-  ((Host*)h)->get_ndpi_stats()->sumStats(stats);
+  if(s) s->sumStats(stats);
 }
 
 /* **************************************************** */
@@ -693,15 +693,16 @@ void NetworkInterface::runHousekeepingTasks() {
 
 /* **************************************************** */
 
-Host* NetworkInterface::findHostByMac(const u_int8_t mac[6], bool createIfNotPresent) {
-  static u_int8_t printed = 0;
+Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
+				      bool createIfNotPresent) {
+  Host *ret = hosts_hash->get(vlanId, mac);
 
-  if(!printed) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() NOT IMPLEMENTED", __FUNCTION__);
-    printed = 1;
+  if((ret == NULL) && createIfNotPresent) {
+    if((ret = new Host(this, mac, vlanId)) != NULL)
+      hosts_hash->add(ret);
   }
-
-  return(NULL);
+  
+  return(ret);
 }
 
 /* **************************************************** */

@@ -37,10 +37,39 @@ Host* HostHash::get(u_int16_t vlanId, IpAddress *key) {
   } else {
     Host *head = (Host*)table[hash];
     
-    while(head 
-	  && ((head->get_vlan_id() != vlanId) 
-	      || ((head->get_ip() != NULL) && (head->get_ip()->compare(key) != 0))))
-      head = (Host*)head->next();
+    while(head != NULL) {      
+      if((head->get_vlan_id() == vlanId)
+	 && (head->get_ip() != NULL)
+	 && (head->get_ip()->compare(key) == 0))
+	break;
+      else
+	head = (Host*)head->next();
+    }
+    
+    return(head);
+  }
+}
+
+/* ************************************ */
+
+Host* HostHash::get(u_int16_t vlanId, const u_int8_t mac[6]) {
+  u_int32_t hash = 0;
+
+  for(int i=0; i<6; i++) hash += mac[i] << (i+1);
+
+  if(table[hash] == NULL) {
+    return(NULL);
+  } else {
+    Host *head = (Host*)table[hash];
+    
+    while(head != NULL) {
+      if((head->get_ip() == NULL /* This is not a L2 host */)
+	 && (head->get_vlan_id() == vlanId)
+	 && (memcmp(mac, head->get_mac(), 6) == 0))
+	break;
+      else
+	head = (Host*)head->next();
+    }
     
     return(head);
   }

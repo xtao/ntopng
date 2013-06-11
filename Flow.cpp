@@ -344,12 +344,25 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
 /* *************************************** */
 
+u_int32_t Flow::key() {
+  u_int32_t k = src_port+dst_port+vlanId+protocol;
+  
+  if(src_host) k += src_host->key();
+  if(dst_host) k += dst_host->key();
+
+  return(k);
+}
+
+/* *************************************** */
+
 char* Flow::getDomainCategory() {
   if(!categorization.flow_categorized) {
     if(ndpi_flow == NULL)
       categorization.flow_categorized = true;
     else if(ndpi_flow->host_server_name) {
-      if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, categorization.category, sizeof(categorization.category), false) != NULL)
+      if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
+					   categorization.category, sizeof(categorization.category), 
+					   false) != NULL)
 	categorization.flow_categorized = true;
     }
   }

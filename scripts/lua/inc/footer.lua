@@ -63,7 +63,7 @@ setInterval(function() {
 			    data: { if: "any" },
 			    success: function(content) {
 					   var rsp = jQuery.parseJSON(content);
-
+					   
 					   if(prev_bytes > 0) {
 					   var values = updatingChart.text().split(",")
    					   var bytes_diff = rsp.bytes-prev_bytes;
@@ -74,13 +74,16 @@ setInterval(function() {
 					      epoch_diff = 1;
 					   }
 
-					   values.shift()
-					   values.push(bytes_diff)
+					   if(bytes_diff > 0) {
+					      values.shift()
+					      values.push(bytes_diff)
+					      
+					      updatingChart.text(values.join(",")).change()
+					   }
 
-					   updatingChart.text(values.join(",")).change()
 					   pps = packets_diff / epoch_diff;
 
-					   $('#network-load').text(bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps ]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
+					   $('#network-load').text(bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
    					}
 					   prev_bytes = rsp.bytes;
 					   prev_packets  = rsp.packets;

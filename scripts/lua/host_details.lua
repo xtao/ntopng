@@ -20,19 +20,25 @@ if(ifname == nil) then
    ifname = "any"
 end
 
-
 host_ip = _GET["host"]
+
+if(host_ip == nil) then
+   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
+   return
+end
 
 interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
 if(host == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
+   return
 else
-   host_ip = host["ip"]
+   if(host["ip"] ~= nil) then
+      host_ip = host["ip"]
+   end
 
-rrdname = ntop.getDataDir() .. "/rrd/" .. host_ip .. "/bytes.rrd"
-
+   rrdname = ntop.getDataDir() .. "/rrd/" .. host_ip .. "/bytes.rrd"
 print [[
 <div class="bs-docs-example">
             <div class="navbar">
@@ -51,27 +57,35 @@ else
 end
 
 if(page == "traffic") then
-  print("<li class=\"active\"><a href=\"#\">Traffic</a></li>\n")
+   print("<li class=\"active\"><a href=\"#\">Traffic</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=traffic\">Traffic</a></li>")
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=traffic\">Traffic</a></li>")
+   end
 end
 
 if(page == "ndpi") then
   print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
+   end
 end
 
 if(page == "flows") then
   print("<li class=\"active\"><a href=\"#\">Active Flows</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=flows\">Active Flows</a></li>")
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=flows\">Active Flows</a></li>")
+   end
 end
 
 if(page == "talkers") then
   print("<li class=\"active\"><a href=\"#\">Talkers</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=talkers\">Talkers</a></li>")
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=talkers\">Talkers</a></li>")
+   end
 end
 
 if(ntop.exists(rrdname)) then
@@ -91,9 +105,16 @@ print [[
 
 if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
-   print("<tr><th>IP Address</th><td>" .. host["ip"])
-   
+
+
+   if(host["ip"] ~= nil) then
+      -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?interface=" .. ifname .. "&host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
+      print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+      print("<tr><th>IP Address</th><td>" .. host["ip"])
+   else
+      print("<tr><th>MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+   end
+
    if((host["city"] ~= "") or (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
@@ -104,9 +125,13 @@ if((page == "overview") or (page == nil)) then
    if(host["asn"] > 0) then print("<tr><th>ASN</th><td>"..host["asn"].." [ " .. host.asname .. " ] </td></tr>\n") end
 
    if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
-   print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
+
+   if(host["ip"] ~= nil) then
+      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
+
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
    print("</td></tr>\n")
+end
 
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")

@@ -39,7 +39,7 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddre
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHashEntry(_iface) {
-  ip = NULL;
+  ip = NULL, ndpiStats = NULL;
   initialize(mac, _vlanId, true);
 }
 
@@ -67,17 +67,28 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
 
   if(init_all) {
-    char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
+    if(ip) {
+      char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
+      
+      if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
+	symbolic_name = strdup(rsp);
+      else
+	ntop->getRedis()->queueHostToResolve(host);
+      
+      ntop->getGeolocation()->getAS(ip, &asn, &asname);
+      ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
+      
+      updateLocal();
+    } else {
+      char buf[32];
 
-    if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
-      symbolic_name = strdup(rsp);
-    else
-      ntop->getRedis()->queueHostToResolve(host);
-
-    ntop->getGeolocation()->getAS(ip, &asn, &asname);
-    ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
-    
-    updateLocal();
+      snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+	       mac_address[0], mac_address[1], mac_address[2], 
+	       mac_address[3], mac_address[4], mac_address[5]);
+      
+      symbolic_name = strdup(buf);
+      localHost = false;
+    }
   }
 }
 
@@ -281,4 +292,18 @@ bool Host::isIdle(u_int max_idleness) {
   return(((num_uses == 0) 
 	  && (iface->getTimeLastPktRcvd() > (last_seen+max_idleness))) 
 	 ? true : false);
+}
+
+/* ***************************************** */
+
+u_int32_t Host::key() { 
+  if(ip)
+    return(ip->key());    
+  else {
+    u_int32_t hash = 0;
+    
+    for(int i=0; i<6; i++) hash += mac_address[i] << (i+1);
+    
+    return(hash);
+  }
 }

@@ -53,7 +53,7 @@ class Host : public GenericHashEntry {
 
   inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4);   }
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
-  inline u_int32_t key()                       { return(ip->key());     }
+  u_int32_t key();
   inline IpAddress* get_ip()                   { return(ip);            }
   inline u_int8_t*  get_mac()                  { return(mac_address);   }
   inline u_int16_t get_vlan_id()               { return(vlan_id);       }

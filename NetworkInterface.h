@@ -117,7 +117,8 @@ class NetworkInterface {
   inline u_int getNumBytes()   { return(ethStats.getNumBytes());    };
 
   void runHousekeepingTasks();
-  Host* findHostByMac(const u_int8_t mac[6], bool createIfNotPresent);
+  Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
+		      bool createIfNotPresent);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
 };
 

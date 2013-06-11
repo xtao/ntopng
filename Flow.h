@@ -89,7 +89,7 @@ class Flow : public GenericHashEntry {
   void print();
   void update_hosts_stats();
   void print_peers(lua_State* vm);
-  inline u_int32_t key()                          { return(src_host->key()+dst_host->key()+src_port+dst_port+vlanId+protocol); }
+  u_int32_t key();
   void lua(lua_State* vm, bool detailed_dump);
   bool equal(IpAddress *_src_ip, IpAddress *_dst_ip,
 	     u_int16_t _src_port, u_int16_t _dst_port,
