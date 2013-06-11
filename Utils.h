@@ -34,6 +34,7 @@ class Utils {
   static char* formatPackets(float numPkts, char *buf);
   static char* l4proto2name(u_int8_t proto);
   static bool  isIPAddress(char *name);
+  static void  setThreadAffinity(pthread_t thread, int core_id); 
 };
 
 

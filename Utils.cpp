@@ -102,3 +102,20 @@ bool Utils::isIPAddress(char *ip) {
 
   return(false);
 }
+
+/* ****************************************************** */
+
+void Utils::setThreadAffinity(pthread_t thread, int core_id) {
+#ifdef linux
+  u_int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+  u_long core = core_id % num_cores;
+  cpu_set_t cpu_set;
+
+  if (num_cores > 1) {
+    CPU_ZERO(&cpu_set);
+    CPU_SET(core, &cpu_set);
+    pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpu_set);
+  }
+#endif
+}
+

@@ -40,6 +40,7 @@ class NetworkInterface {
   EthStats ethStats;
   int pcap_datalink_type;
   pthread_t pollLoop;
+  int cpu_affinity;
 
   FlowHash *flows_hash;
   /* Hosts */
@@ -77,6 +78,7 @@ class NetworkInterface {
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return polling_started; };
+  inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (polling_started) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
 
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 

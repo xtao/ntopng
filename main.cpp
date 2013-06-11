@@ -45,6 +45,7 @@ static void help() {
 	 "-m <local network list> | List of local networks (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
 	 "-r <redis host[:port]>  | Redis host[:port]\n"
+	 "-g <cpu core id>        | Bind the capture/processing thread to a specific CPU Core\n"
 	 "-s                      | Do not change user (debug only)\n"
 	 "-l                      | Disable user login authentication\n"
 	 "-v                      | Verbose tracing\n"
@@ -87,6 +88,7 @@ int main(int argc, char *argv[]) {
   char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
   u_int http_port = CONST_DEFAULT_NTOP_PORT;
   bool change_user = true, localnets = false, disable_categorization = false;
+  int cpu_affinity = -1;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "c:hi:w:r:sm:n:p:d:lv")) != '?') {
+  while((c = getopt(argc, argv, "c:g:hi:w:r:sm:n:p:d:lv")) != '?') {
     if(c == 255) break;
 
     switch(c) {
@@ -105,6 +107,10 @@ int main(int argc, char *argv[]) {
 	ntop->setCategorization(new Categorization(optarg));
 	prefs->enable_categorization();
       }
+      break;
+
+    case 'g':
+      cpu_affinity = atoi(optarg);
       break;
 
     case 'm':
@@ -205,6 +211,9 @@ int main(int argc, char *argv[]) {
     }
 #endif
   }
+
+  if (cpu_affinity >= 0)
+    iface->set_cpu_affinity(cpu_affinity);
 
   ntop->registerInterface(iface);
   ntop->loadGeolocation(docsdir);
