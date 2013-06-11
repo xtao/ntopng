@@ -13,12 +13,19 @@ hosts_stats = interface.getHosts()
 
 tot = 0
 _hosts_stats = {}
+top_key = nil
+top_value = 0
+num = 0
 for key, value in pairs(hosts_stats) do
    if(key == "255.255.255.255") then
       key = "Broadcast"
    end
    _hosts_stats[value] = key -- ntop.getResolvedAddress(key)
-   tot = tot +value
+   if((top_value < value) or (top_key == nil)) then
+     top_key = key
+     top_value = value
+   end
+   tot = tot + value
 end
 
 -- Print up to this number of entries
@@ -46,6 +53,11 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
    if(num == max_num_entries) then
       break
    end
+end
+
+if(num == 0) then
+   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?host=".. top_key .."\" }")
+   accumulate = accumulate + top_value
 end
 
 -- In case there is some leftover do print it as "Other"
