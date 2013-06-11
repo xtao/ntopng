@@ -121,13 +121,15 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
 	    doublecol[0] = '\0';	  
 
-	  svr->setName((char*)ndpi_flow->host_server_name, true);
-	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
-	    categorization.flow_categorized = true;
-	    categorization.category = strdup(buf);
+	  if(svr) {
+	    svr->setName((char*)ndpi_flow->host_server_name, true);
+	    if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
+	      categorization.flow_categorized = true;
+	      categorization.category = strdup(buf);
+	    }
+	    ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
+						 (char*)ndpi_flow->host_server_name);
 	  }
-	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
-					       (char*)ndpi_flow->host_server_name);
 	}
 	break;
       } /* switch */
@@ -296,10 +298,12 @@ bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port,
 		 bool *src2dst_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(src_host->equal(_src_ip) && dst_host->equal(_dst_ip) && (_src_port == src_port) && (_dst_port == dst_port)) {
+  if(src_host && src_host->equal(_src_ip) && dst_host && dst_host->equal(_dst_ip) 
+     && (_src_port == src_port) && (_dst_port == dst_port)) {
     *src2dst_direction = true;
     return(true);
-  } else if(dst_host->equal(_src_ip) && src_host->equal(_dst_ip) && (_dst_port == src_port) && (_src_port == dst_port)) {
+  } else if(dst_host && dst_host->equal(_src_ip) && src_host && src_host->equal(_dst_ip) 
+	    && (_dst_port == src_port) && (_src_port == dst_port)) {
     *src2dst_direction = false;
     return(true);
   } else
@@ -312,12 +316,25 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
   lua_newtable(vm);
-  
-  lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf)));
-  lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
+
+  if(get_src_host()) {
+    lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf)));
+    lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
+  } else {
+    lua_push_nil_table_entry(vm, "src.host");
+    lua_push_nil_table_entry(vm, "src.ip");
+  }
+
   lua_push_int_table_entry(vm, "src.port", ntohs(get_src_port()));
-  lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf)));
-  lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
+
+  if(get_dst_host()) {
+    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf))); 
+    lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
+  } else {
+    lua_push_nil_table_entry(vm, "dst.host");
+    lua_push_nil_table_entry(vm, "dst.ip");    
+  }
+
   lua_push_int_table_entry(vm, "dst.port", ntohs(get_dst_port()));
   lua_push_int_table_entry(vm, "vlan", get_vlan_id());
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());

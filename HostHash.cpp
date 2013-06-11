@@ -56,6 +56,7 @@ Host* HostHash::get(u_int16_t vlanId, const u_int8_t mac[6]) {
   u_int32_t hash = 0;
 
   for(int i=0; i<6; i++) hash += mac[i] << (i+1);
+  hash %= num_hashes;
 
   if(table[hash] == NULL) {
     return(NULL);

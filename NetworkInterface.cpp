@@ -269,7 +269,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 			      l4_proto);
   } else {
     // FIX - only handle unfragmented packets
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
   }
 }
 
