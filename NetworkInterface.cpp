@@ -204,7 +204,11 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
     if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
        || (iph->frag_off & htons(0x1FFF /* IP_OFFSET */)) != 0) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "IPv4 fragments are not handled yet");
+      static bool shown = false;
+
+      if(!shown)
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "IPv4 fragments are not handled yet"), shown = true;
+
       return;
     }
 
