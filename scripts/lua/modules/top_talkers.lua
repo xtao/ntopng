@@ -56,29 +56,37 @@ function getActualTopTalkers(ifname, mode, epoch)
    for _key, value in pairs(hosts_stats) do
       key = abbreviateString(hosts_stats[_key]["src.host"], 15)
       if(key == nil) then key = hosts_stats[_key]["src.ip"] end
+      if(key ~= nil) then
       old = _sent[key]
       if(old == nil) then old = 0 end
       _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
+      end
 
       key = hosts_stats[_key]["dst.host"]
       if(key == nil) then key = hosts_stats[_key]["dst.ip"] end
+      if(key ~= nil) then
       old = _rcvd[key]
       if(old == nil) then old = 0 end
       _rcvd[key] = old + hosts_stats[_key]["cli2srv.bytes"]
+      end
 
       -- ###########################
 
       key = abbreviateString(hosts_stats[_key]["dst.host"], 15)
       if(key == nil) then key = hosts_stats[_key]["dst.ip"] end
-      old = _sent[key]
+      if(key ~= nil) then
+      old = _sent[key]	
       if(old == nil) then old = 0 end
       _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
 
       key = hosts_stats[_key]["src.host"]
       if(key == nil) then key = hosts_stats[_key]["src.ip"] end
+      if(key ~= nil) then
       old = _rcvd[key]
       if(old == nil) then old = 0 end
       _rcvd[key] = old + hosts_stats[_key]["srv2cli.bytes"]
+      end
+      end
    end
 
    for key, value in pairs(_sent) do

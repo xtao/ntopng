@@ -454,9 +454,13 @@ end
 
 
 function abbreviateString(str, len) 
+  if(str == nil) then
+     return("")
+  else 
   if(string.len(str) < len) then
     return(str)
   else
     return(string.sub(str, 1, len).."...")
   end
+end
 end
