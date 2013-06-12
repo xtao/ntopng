@@ -90,7 +90,7 @@ setInterval(function() {
 					   prev_epoch = rsp.epoch;
 					}
 				     });
-			 }, 10000000)
+			 }, 1000)
 
 </script>
 
