@@ -235,7 +235,18 @@ struct pollfd {
 #define ERRNO errno
 #define INVALID_SOCKET (-1)
 
-#define INT64_FMT "lld" /* ntop */
+/* ntop */
+#if ((ULONG_MAX) == (UINT_MAX))
+#define IS32BIT
+#else
+#define IS64BIT
+#endif
+
+#ifdef IS64BIT
+#define INT64_FMT "ld"
+#else
+#define INT64_FMT "lld"
+#endif
 #ifndef INT64_MAX /* ntop */
 #define INT64_MAX 0x7fffffffffffffffLL
 #endif
