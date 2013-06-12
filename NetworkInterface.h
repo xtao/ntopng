@@ -116,7 +116,7 @@ class NetworkInterface {
   u_int getNumFlows();
   u_int getNumHosts();
   inline u_int getNumPackets() { return(ethStats.getNumPackets());  };
-  inline u_int getNumBytes()   { return(ethStats.getNumBytes());    };
+  inline u_int64_t getNumBytes() { return(ethStats.getNumBytes());    };
 
   void runHousekeepingTasks();
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
