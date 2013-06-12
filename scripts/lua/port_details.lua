@@ -9,7 +9,7 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile("./httpdocs/inc/header.inc")
 
-ntop.dumpFile("./httpdocs/inc/menu.inc")
+dofile("./scripts/lua/inc/menu.lua")
 
 print [[
 

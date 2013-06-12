@@ -73,7 +73,7 @@
 				 field: "column_bytes",
 				 sortable: true,
 	 	             css: { 
-			        textAlign: 'center'
+			        textAlign: 'right'
 			     }
 				 }
 			     ]
