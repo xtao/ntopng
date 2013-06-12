@@ -123,7 +123,7 @@ typedef long off_t;
 #define EWOULDBLOCK  WSAEWOULDBLOCK
 #endif // !EWOULDBLOCK
 #define _POSIX_
-#define INT64_FMT  "I64d"
+#define INT64_FMT "I64d"
 
 #define WINCDECL __cdecl
 #define SHUT_WR 1
@@ -235,7 +235,7 @@ struct pollfd {
 #define ERRNO errno
 #define INVALID_SOCKET (-1)
 
-#define INT64_FMT "ld" /* ntop */
+#define INT64_FMT "lld" /* ntop */
 #ifndef INT64_MAX /* ntop */
 #define INT64_MAX 0x7fffffffffffffffLL
 #endif
@@ -1469,6 +1469,10 @@ static int64_t push(FILE *fp, SOCKET sock, SSL *ssl, const char *buf,
     } else {
       n = send(sock, buf + sent, (size_t) k, MSG_NOSIGNAL);
     }
+
+#ifdef DEBUG /* ntop */
+    printf("[MONGOOSE][DEBUG] %s sent = %d bytes\n", __FUNCTION__, n);
+#endif
 
     if (n <= 0)
       break;
@@ -2704,6 +2708,11 @@ static void send_file_data(struct mg_connection *conn, struct file *filep,
   char buf[MG_BUF_LEN];
   int to_read, num_read, num_written;
 
+#ifdef DEBUG /* ntop */
+  printf("[MONGOOSE][DEBUG] %s offset = %" INT64_FMT " len = %" INT64_FMT " \n", 
+         __FUNCTION__, offset, len);
+#endif
+
   if (len > 0 && filep->membuf != NULL && filep->size > 0) {
     if (len > filep->size - offset) {
       len = filep->size - offset;
@@ -2811,6 +2820,23 @@ static void handle_file_request(struct mg_connection *conn, const char *path,
       "%s\r\n",
       conn->status_code, msg, date, lm, etag, (int) mime_vec.len,
       mime_vec.ptr, cl, suggest_connection_header(conn), range);
+
+#ifdef DEBUG /* ntop */
+  printf(
+      "[MONGOOSE][DEBUG] %s\n"
+      "HTTP/1.1 %d %s\n"
+      "Date: %s\n"
+      "Last-Modified: %s\n"
+      "Etag: %s\n"
+      "Content-Type: %.*s\n"
+      "Content-Length: %" INT64_FMT "\n"
+      "Connection: %s\n"
+      "Accept-Ranges: bytes\n"
+      "%s\n",
+      __FUNCTION__,
+      conn->status_code, msg, date, lm, etag, (int) mime_vec.len,
+      mime_vec.ptr, cl, suggest_connection_header(conn), range);
+#endif
 
   if (strcmp(conn->request_info.request_method, "HEAD") != 0) {
     send_file_data(conn, filep, r1, cl);
