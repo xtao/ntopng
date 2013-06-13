@@ -41,10 +41,10 @@ void NdpiStats::sumStats(NdpiStats *stats) {
 void NdpiStats::print(NetworkInterface *iface) {
   for(int i=0; i<MAX_NDPI_PROTOS; i++) {
     if(packets[i].sent || packets[i].rcvd)
-      printf("[%s] [pkts: %u/%u][bytes: %u/%u]\n", 
+      printf("[%s] [pkts: %llu/%llu][bytes: %llu/%llu]\n", 
 	     iface->get_ndpi_proto_name(i),
-	     packets[i].sent, packets[i].rcvd,
-	     bytes[i].sent, bytes[i].rcvd);
+	     (long long unsigned) packets[i].sent, (long long unsigned) packets[i].rcvd,
+	     (long long unsigned) bytes[i].sent,   (long long unsigned)bytes[i].rcvd);
   }
 }
 

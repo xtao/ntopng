@@ -31,7 +31,7 @@ class TrafficStats {
  public:
   TrafficStats();
   
-  inline void incStats(u_int32_t num_pkts, u_int32_t num_bytes) { numPkts += num_pkts, numBytes += num_bytes; };  
+  inline void incStats(u_int32_t num_pkts, u_int64_t num_bytes) { numPkts += num_pkts, numBytes += num_bytes; };  
   inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  
   inline u_int64_t getNumPkts()       { return(numPkts);                };
   inline u_int64_t getNumBytes()      { return(numBytes);               };
