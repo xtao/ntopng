@@ -257,14 +257,14 @@ void Flow::print_peers(lua_State* vm) {
 void Flow::print() {
   char buf1[32], buf2[32];
 
-  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%u/%u bytes]\n",
+  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
 	 ipProto2Name(protocol),
 	 src_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(src_port),
 	 dst_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(dst_port),
 	 detected_protocol,
 	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
 	 cli2srv_packets, srv2cli_packets,
-	 cli2srv_bytes, srv2cli_bytes);
+	 (long long unsigned) cli2srv_bytes, (long long unsigned) srv2cli_bytes);
 }
 
 /* *************************************** */
