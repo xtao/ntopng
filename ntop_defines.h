@@ -31,7 +31,7 @@
 #endif
 
 #ifndef ETHERTYPE_IPV6
-v#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
+#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
 #endif
 
 #ifndef ETHERTYPE_MPLS
