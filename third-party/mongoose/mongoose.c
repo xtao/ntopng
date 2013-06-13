@@ -243,7 +243,11 @@ struct pollfd {
 #endif
 
 #ifdef IS64BIT
+#ifdef __MACH__
+#define INT64_FMT "lld"
+#else
 #define INT64_FMT "ld"
+#endif
 #else
 #define INT64_FMT "lld"
 #endif
