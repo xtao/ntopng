@@ -589,7 +589,6 @@ int ptr_compare(const void *a, const void *b) {
 }
 
 /* **************************************************** */
-/* **************************************************** */
 
 u_int NetworkInterface::purgeIdleFlows() {
   if(next_idle_flow_purge == 0) {

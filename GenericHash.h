@@ -30,6 +30,7 @@ class GenericHash {
   u_int num_hashes, current_size, max_hash_size;
   Mutex **locks;
   NetworkInterface *iface;
+  u_int last_purged_hash;
 
  public:
   GenericHash(u_int _num_hashes, u_int _max_hash_size);

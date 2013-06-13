@@ -52,11 +52,13 @@ v#define	ETHERTYPE_IPV6		0x86DD	/* IPv6 protocol */
 #define GTP_U_V1_PORT              2152
 #define MAX_NUM_INTERFACE_HOSTS   65536
 
-#define FLOW_PURGE_FREQUENCY     5 /* sec */
+#define FLOW_PURGE_FREQUENCY     1 /* sec */
 #define FLOW_MAX_IDLE           30 /* sec */
 
-#define HOST_PURGE_FREQUENCY     5 /* sec */
+#define HOST_PURGE_FREQUENCY     1 /* sec */
 #define HOST_MAX_IDLE           60 /* sec */
+
+#define PURGE_FRACTION          32 /* check 1/32 of hashes per iteration */
 
 #define CONST_DEFAULT_NTOP_PORT 3000
 

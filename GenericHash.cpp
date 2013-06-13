@@ -32,6 +32,8 @@ GenericHash::GenericHash(u_int _num_hashes, u_int _max_hash_size) {
 
   locks = new Mutex*[num_hashes];
   for(u_int i = 0; i < num_hashes; i++) locks[i] = new Mutex();
+
+  last_purged_hash = _num_hashes - 1;
 }
 
 /* ************************************ */
@@ -136,11 +138,15 @@ void GenericHash::walk(void (*walker)(GenericHashEntry *h, void *user_data), voi
 /* ************************************ */
 
 u_int GenericHash::purgeIdle() {
-  u_int num_purged = 0;
+  u_int i, num_purged = 0;
 
   if(ntop->getGlobals()->isShutdown()) return(0);
 
-  for(u_int i = 0; i < num_hashes; i++) {
+  for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {
+  
+    if (++last_purged_hash == num_hashes) last_purged_hash = 0;
+    i = last_purged_hash;
+
     if(table[i] != NULL) {
       GenericHashEntry *head, *prev = NULL;
 
