@@ -56,7 +56,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
   snprintf(key, sizeof(key), "domain.category.%s", _url);
   if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
-    ntop->getRedis()->expire(key, 86400);
+    ntop->getRedis()->expire(key, 3600);
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
   } else {
     struct http_response *hresp;
@@ -66,7 +66,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
       Save category into the cache so that if the categorization service is slow, we do not
       recursively add the domain into the list of domains to solve
     */
-    ntop->getRedis()->set(key, NULL_CATEGORY, 86400);
+    ntop->getRedis()->set(key, NULL_CATEGORY, 3600);
 
     snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
@@ -103,7 +103,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
 	    doublecolumn = NULL_CATEGORY;
 	  } else	    
-	    ntop->getRedis()->set(key, doublecolumn, 86400); /* Save category into the cache */
+	    ntop->getRedis()->set(key, doublecolumn, 3600); /* Save category into the cache */
 
 	  snprintf(buf, buf_len, "%s", doublecolumn);
 	}
