@@ -29,8 +29,8 @@ Flow::Flow(NetworkInterface *_iface,
 	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
 	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
-  cli2srv_packets = cli2srv_bytes = srv2cli_packets = srv2cli_bytes = cli2srv_last_packets = 
-    cli2srv_last_bytes = srv2cli_last_packets = srv2cli_last_bytes = 0;
+  cli2srv_packets = 0, cli2srv_bytes = 0, srv2cli_packets = 0, srv2cli_bytes = 0, cli2srv_last_packets = 0,
+    cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
   
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
@@ -272,8 +272,8 @@ void Flow::print() {
 
 void Flow::update_hosts_stats() {
   /* if(detection_completed) */ {
-    u_int32_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
-    u_int32_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
+    u_int64_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
+    u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
     
     sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
     diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;

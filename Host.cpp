@@ -20,7 +20,6 @@
  */
 
 #include "ntop_includes.h"
-#include <netdb.h>
 
 /* *************************************** */
 
@@ -182,7 +181,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     }
   } else {
     lua_pushstring(vm,  get_name(buf, sizeof(buf), false));
-    lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
+    lua_pushinteger(vm, (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
     lua_settable(vm, -3);
   }
 }
@@ -247,13 +246,12 @@ char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_foun
 /* *************************************** */
 
 void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, 
-		    u_int32_t sent_packets, u_int64_t sent_bytes,
-		    u_int32_t rcvd_packets, u_int64_t rcvd_bytes) { 
+		    u_int64_t sent_packets, u_int64_t sent_bytes,
+		    u_int64_t rcvd_packets, u_int64_t rcvd_bytes) { 
     if(sent_packets || rcvd_packets) {
       sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
       if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
-	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, 
-			    rcvd_packets, rcvd_bytes);      
+	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
 
       switch(l4_proto) {
       case 0:

@@ -34,8 +34,8 @@ void ProtoStats::print(const char *prefix) {
   
   ntop->getTrace()->traceEvent(TRACE_NORMAL, 
 			       "%s %s/%s Packets", prefix,
-			       Utils::formatTraffic(numBytes, false, bytes_buf),
-			       Utils::formatPackets(numPkts, packets_buf));
+			       Utils::formatTraffic((float)numBytes, false, bytes_buf),
+			       Utils::formatPackets((float)numPkts, packets_buf));
 }
 
 /* *************************************** */

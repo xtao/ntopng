@@ -69,7 +69,7 @@ class Host : public GenericHashEntry {
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
   
-  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int32_t sent_packets, u_int64_t sent_bytes, u_int32_t rcvd_packets, u_int64_t rcvd_bytes);
+  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   inline bool idle()                 { return(isIdle(HOST_MAX_IDLE)); };

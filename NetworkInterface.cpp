@@ -20,7 +20,7 @@
  */
 
 #include "ntop_includes.h"
-#include <pwd.h>
+// #include <pwd.h>
 
 #ifdef DARWIN
 #include <uuid/uuid.h>
@@ -266,7 +266,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
-							    ip, ipsize, time, src, dst),
+							    ip, ipsize, (u_int32_t)time, src, dst),
 			      l4_proto);
   } else {
     // FIX - only handle unfragmented packets

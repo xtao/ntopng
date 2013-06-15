@@ -46,14 +46,18 @@ void Trace::set_trace_level(u_int8_t id) {
 void Trace::traceEvent(int eventTraceLevel, const char* file,
 		       const int line, const char * format, ...) {
   va_list va_ap;
+#ifndef WIN32
   struct tm result;
+#endif
 
   if(eventTraceLevel <= traceLevel) {
     char buf[8192], out_buf[8192];
     char theDate[32];
     const char *extra_msg = "";
     time_t theTime = time(NULL);
+#ifndef WIN32
     char *syslogMsg;
+#endif
 
     va_start (va_ap, format);
 
@@ -93,11 +97,13 @@ void Trace::traceEvent(int eventTraceLevel, const char* file,
 
     // trace_mutex.unlock();
 
+#ifndef WIN32
     syslogMsg = &out_buf[strlen(theDate)+1];
     if(eventTraceLevel == 0 /* TRACE_ERROR */)
       syslog(LOG_ERR, "%s", syslogMsg);
     else if(eventTraceLevel == 1 /* TRACE_WARNING */)
       syslog(LOG_WARNING, "%s", syslogMsg);
+#endif
 
     va_end(va_ap);
   }

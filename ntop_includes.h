@@ -26,18 +26,15 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+
+#ifdef WIN32
+#include "ntop_win32.h"
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <time.h>
-#include <string.h>
 #include <pthread.h>
 #include <sys/wait.h>
-
-#ifdef linux
-#define __FAVOR_BSD
-#endif
-
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>
@@ -47,18 +44,27 @@
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <syslog.h>
+#include <netdb.h>
+#include <dirent.h>
+#endif
+
+
+#ifdef linux
+#define __FAVOR_BSD
+#endif
+
+
 #include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
 #include <ctype.h>
-#include <netdb.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <getopt.h>
 #include <string.h>
-#include <dirent.h>
 #include <sys/stat.h>
 #include <zmq.h>
 

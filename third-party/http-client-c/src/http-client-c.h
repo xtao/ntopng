@@ -25,7 +25,10 @@
   http://www.ietf.org/rfc/rfc2616.txt
 */
 
+#ifndef WIN32
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

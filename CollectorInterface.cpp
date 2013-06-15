@@ -21,7 +21,7 @@
 
 #include "ntop_includes.h"
 
-#include <pwd.h>
+//#include <pwd.h>
 
 #ifdef DARWIN
 #include <uuid/uuid.h>

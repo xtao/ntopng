@@ -46,8 +46,8 @@ class NdpiStats {
   void sumStats(NdpiStats *stats);
 
   inline void incStats(u_int proto_id,
-		       u_int32_t sent_packets, u_int64_t sent_bytes,
-		       u_int32_t rcvd_packets, u_int64_t rcvd_bytes) {
+		       u_int64_t sent_packets, u_int64_t sent_bytes,
+		       u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
     if(proto_id < (MAX_NDPI_PROTOS)) {
       packets[proto_id].sent += sent_packets, bytes[proto_id].sent += sent_bytes;
       packets[proto_id].rcvd += rcvd_packets, bytes[proto_id].rcvd += rcvd_bytes;

@@ -39,11 +39,11 @@ class NtopGlobals {
   NtopGlobals();
   ~NtopGlobals();
 
-  inline u_int getUptime()             { return(time(NULL)-start_time+1); };
-  inline u_int getIfMTU()              { return(ifMTU);           };
-  inline u_int8_t getPromiscuousMode() { return(promiscuousMode); };
-  inline u_int getSnaplen()            { return(snaplen);         };
-  inline Trace *getTrace()             { return(trace);           };
+  inline u_int getUptime()             { return((u_int)(time(NULL)-start_time+1)); };
+  inline u_int getIfMTU()              { return(ifMTU);             };
+  inline u_int8_t getPromiscuousMode() { return(promiscuousMode);   };
+  inline u_int getSnaplen()            { return(snaplen);           };
+  inline Trace *getTrace()             { return(trace);             };
   inline bool  isShutdown()            { return(is_shutdown);       };
   inline bool  decode_tunnels()        { return(do_decode_tunnels); };
   inline void  shutdown()              { is_shutdown = true;        };

@@ -19,7 +19,9 @@
 // THE SOFTWARE.
 
 #if defined(_WIN32)
+#if 0 /* ntop */
 #define _CRT_SECURE_NO_WARNINGS // Disable deprecation warning in VS2005
+#endif
 #else
 #ifndef _XOPEN_SOURCE /* ntop */
 #ifdef __linux__
@@ -72,7 +74,9 @@
 #include <stdio.h>
 
 #if defined(_WIN32) && !defined(__SYMBIAN32__) // Windows specific
+#ifndef _WIN32_WINNT /* ntop */
 #define _WIN32_WINNT 0x0400 // To make it link in VS2005
+#endif
 #include <windows.h>
 
 #ifndef PATH_MAX
@@ -150,10 +154,12 @@ typedef long off_t;
 #define fileno(x) _fileno(x)
 #endif // !fileno MINGW #defines fileno
 
+#if 0 /* NTOP */
 typedef HANDLE pthread_mutex_t;
 typedef struct {HANDLE signal, broadcast;} pthread_cond_t;
 typedef DWORD pthread_t;
 #define pid_t HANDLE // MINGW typedefs pid_t to int. Using #define here.
+#endif
 
 static int pthread_mutex_lock(pthread_mutex_t *);
 static int pthread_mutex_unlock(pthread_mutex_t *);
@@ -168,10 +174,13 @@ typedef unsigned int  uint32_t;
 typedef unsigned short  uint16_t;
 typedef unsigned __int64 uint64_t;
 typedef __int64   int64_t;
+#ifndef INT64_MAX /* ntop */
 #define INT64_MAX  9223372036854775807
+#endif
 #endif // HAVE_STDINT
 
 // POSIX dirent interface
+#if 0 /* ntop */
 struct dirent {
   char d_name[PATH_MAX];
 };
@@ -181,6 +190,7 @@ typedef struct DIR {
   WIN32_FIND_DATAW info;
   struct dirent  result;
 } DIR;
+#endif
 
 #ifndef HAS_POLL
 struct pollfd {
@@ -961,49 +971,49 @@ static void send_http_error(struct mg_connection *conn, int status,
 }
 
 #if defined(_WIN32) && !defined(__SYMBIAN32__)
-static int pthread_mutex_init(pthread_mutex_t *mutex, void *unused) {
+/* static */int pthread_mutex_init(pthread_mutex_t *mutex, void *unused) {
   unused = NULL;
   *mutex = CreateMutex(NULL, FALSE, NULL);
   return *mutex == NULL ? -1 : 0;
 }
 
-static int pthread_mutex_destroy(pthread_mutex_t *mutex) {
+/* static */int pthread_mutex_destroy(pthread_mutex_t *mutex) {
   return CloseHandle(*mutex) == 0 ? -1 : 0;
 }
 
-static int pthread_mutex_lock(pthread_mutex_t *mutex) {
+/* static */int pthread_mutex_lock(pthread_mutex_t *mutex) {
   return WaitForSingleObject(*mutex, INFINITE) == WAIT_OBJECT_0? 0 : -1;
 }
 
-static int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+/* static */int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   return ReleaseMutex(*mutex) == 0 ? -1 : 0;
 }
 
-static int pthread_cond_init(pthread_cond_t *cv, const void *unused) {
+/* static */int pthread_cond_init(pthread_cond_t *cv, const void *unused) {
   unused = NULL;
   cv->signal = CreateEvent(NULL, FALSE, FALSE, NULL);
   cv->broadcast = CreateEvent(NULL, TRUE, FALSE, NULL);
   return cv->signal != NULL && cv->broadcast != NULL ? 0 : -1;
 }
 
-static int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *mutex) {
+/* static */int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *mutex) {
   HANDLE handles[] = {cv->signal, cv->broadcast};
   ReleaseMutex(*mutex);
   WaitForMultipleObjects(2, handles, FALSE, INFINITE);
   return WaitForSingleObject(*mutex, INFINITE) == WAIT_OBJECT_0? 0 : -1;
 }
 
-static int pthread_cond_signal(pthread_cond_t *cv) {
+/* static */int pthread_cond_signal(pthread_cond_t *cv) {
   return SetEvent(cv->signal) == 0 ? -1 : 0;
 }
 
-static int pthread_cond_broadcast(pthread_cond_t *cv) {
+/* static */int pthread_cond_broadcast(pthread_cond_t *cv) {
   // Implementation with PulseEvent() has race condition, see
   // http://www.cs.wustl.edu/~schmidt/win32-cv-1.html
   return PulseEvent(cv->broadcast) == 0 ? -1 : 0;
 }
 
-static int pthread_cond_destroy(pthread_cond_t *cv) {
+/* static */int pthread_cond_destroy(pthread_cond_t *cv) {
   return CloseHandle(cv->signal) && CloseHandle(cv->broadcast) ? 0 : -1;
 }
 
@@ -1165,7 +1175,7 @@ static int mg_mkdir(const char *path, int mode) {
 }
 
 // Implementation of POSIX opendir/closedir/readdir for Windows.
-static DIR * opendir(const char *name) {
+/*static*/ DIR * opendir(const char *name) {
   DIR *dir = NULL;
   wchar_t wpath[PATH_MAX];
   DWORD attrs;
@@ -1191,7 +1201,7 @@ static DIR * opendir(const char *name) {
   return dir;
 }
 
-static int closedir(DIR *dir) {
+/*static*/ int closedir(DIR *dir) {
   int result = 0;
 
   if (dir != NULL) {
@@ -1207,7 +1217,7 @@ static int closedir(DIR *dir) {
   return result;
 }
 
-static struct dirent *readdir(DIR *dir) {
+/*static*/ struct dirent *readdir(DIR *dir) {
   struct dirent *result = 0;
 
   if (dir) {
@@ -4389,7 +4399,12 @@ static int set_ports_option(struct mg_context *ctx) {
                // On Windows, SO_REUSEADDR is recommended only for
                // broadcast UDP sockets
                setsockopt(so.sock, SOL_SOCKET, SO_REUSEADDR,
-                          (void *) &on, sizeof(on)) != 0 ||
+#ifdef WIN32
+				(const char*)
+#else
+                          (void *) 
+#endif					  
+						  &on, sizeof(on)) != 0 ||
                bind(so.sock, &so.lsa.sa, sizeof(so.lsa)) != 0 ||
                listen(so.sock, SOMAXCONN) != 0) {
       cry(fc(ctx), "%s: cannot bind to %.*s: %s", __func__,
@@ -5003,8 +5018,20 @@ static int set_sock_timeout(SOCKET sock, int milliseconds) {
   t.tv_sec = milliseconds / 1000;
   t.tv_usec = (milliseconds * 1000) % 1000000;
 #endif
-  return setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (void *) &t, sizeof(t)) ||
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (void *) &t, sizeof(t));
+  return setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, 
+	  #ifdef WIN32
+				(const char*)
+#else
+                          (void *) 
+#endif	
+						  &t, sizeof(t)) ||
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, 
+	#ifdef WIN32
+				(const char*)
+#else
+                          (void *) 
+#endif	
+						  &t, sizeof(t));
 }
 
 static void accept_new_connection(const struct socket *listener,
@@ -5031,7 +5058,13 @@ static void accept_new_connection(const struct socket *listener,
     // keep-alive, next keep-alive handshake will figure out that the client
     // is down and will close the server end.
     // Thanks to Igor Klopov who suggested the patch.
-    setsockopt(so.sock, SOL_SOCKET, SO_KEEPALIVE, (void *) &on, sizeof(on));
+    setsockopt(so.sock, SOL_SOCKET, SO_KEEPALIVE, 
+		#ifdef WIN32
+				(const char*)
+#else
+                          (void *) 
+#endif	
+						  &on, sizeof(on));
     set_sock_timeout(so.sock, atoi(ctx->config[REQUEST_TIMEOUT]));
     produce_socket(ctx, &so);
   }

@@ -45,7 +45,7 @@ class Flow : public GenericHashEntry {
   u_int64_t cli2srv_bytes, srv2cli_bytes;
 
   /* Counter values at last host update */
-  u_int32_t cli2srv_last_packets, srv2cli_last_packets;
+  u_int64_t cli2srv_last_packets, srv2cli_last_packets;
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes;
 
   void deleteFlowMemory();
