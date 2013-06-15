@@ -85,6 +85,7 @@ Flow::~Flow() {
   if(src_host) src_host->decUses();
   if(dst_host) dst_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
+  if(json_info) free(json_info);
 
   deleteFlowMemory();
 }
