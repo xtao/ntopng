@@ -43,6 +43,11 @@
 #define ftruncate _chsize
 
 #include "dirent.h"
-#endif
 
+#define pthread_t              HANDLE
+#define pthread_mutex_t        HANDLE
+#define pthread_rwlock_t       HANDLE
+
+
+#endif /* WIN32 */
 #endif /* _NTOP_WIN32_H_ */

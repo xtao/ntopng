@@ -19,3 +19,84 @@
  *
  */
 
+#include "ntop_includes.h"
+
+/* **************************************
+
+   WIN32 MULTITHREAD STUFF
+   
+   ************************************** */
+
+pthread_t pthread_self(void) { return(0); }
+
+int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_routine) (void *), char* userParm) {
+  DWORD dwThreadId, dwThrdParam = 1;
+  
+  (*threadId) = CreateThread(NULL, /* no security attributes */
+			     0,            /* use default stack size */
+			     (LPTHREAD_START_ROUTINE)__start_routine, /* thread function */
+			     userParm,     /* argument to thread function */
+			     0,            /* use default creation flags */
+			     &dwThreadId); /* returns the thread identifier */
+
+  if(*threadId != NULL)
+    return(1);
+  else
+    return(0);
+}
+
+/* ************************************ */
+
+void pthread_detach(pthread_t *threadId) {
+  CloseHandle((HANDLE)*threadId);
+}
+
+/* ************************************ */
+
+int pthread_join (pthread_t threadId, void **_value_ptr) {
+  int rc = WaitForSingleObject(threadId, INFINITE);
+  CloseHandle(threadId);
+  return(rc);
+}
+
+/* ************************************ */
+
+int pthread_mutex_init(pthread_mutex_t *mutex, char* notused) {
+  (*mutex) = CreateMutex(NULL, FALSE, NULL);
+  return(0);
+}
+
+/* ************************************ */
+
+void pthread_mutex_destroy(pthread_mutex_t *mutex) {
+  ReleaseMutex(*mutex);
+  CloseHandle(*mutex);
+}
+
+/* ************************************ */
+
+int pthread_mutex_lock(pthread_mutex_t *mutex) {
+
+  if(*mutex == NULL)
+    printf("Error\n");
+  WaitForSingleObject(*mutex, INFINITE);
+  return(0);
+}
+
+/* ************************************ */
+
+int pthread_mutex_trylock(pthread_mutex_t *mutex) {
+  if(WaitForSingleObject(*mutex, 0) == WAIT_FAILED)
+    return(1);
+  else
+    return(0);
+}
+
+/* ************************************ */
+
+int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+  if(*mutex == NULL)
+    printf("Error\n");
+  return(!ReleaseMutex(*mutex));
+}
+
