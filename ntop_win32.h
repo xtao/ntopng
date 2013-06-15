@@ -21,9 +21,8 @@
 
 #ifndef _NTOP_WIN32_H_
 #define _NTOP_WIN32_H_
-
-
 #ifdef WIN32
+
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <process.h>
 #include <io.h>

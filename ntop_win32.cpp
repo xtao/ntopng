@@ -19,6 +19,8 @@
  *
  */
 
+#ifdef WIN32
+
 #include "ntop_includes.h"
 
 /* **************************************
@@ -100,3 +102,4 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   return(!ReleaseMutex(*mutex));
 }
 
+#endif /* WIN32 */
