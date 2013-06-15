@@ -725,14 +725,18 @@ REDIS credis_connect(const char *host, int port, int timeout)
 
   /* connect with user specified timeout */
 
+#ifndef WIN32
   flags = fcntl(fd, F_GETFL);
   if ((rc = fcntl(fd, F_SETFL, flags | O_NONBLOCK)) < 0) {
     DEBUG("Setting socket non-blocking failed with: %d\n", rc);
   }
+#endif
 
   if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0) {
-    if (errno != EINPROGRESS)
+#ifndef WIN32
+	  if (errno != EINPROGRESS)
       goto error;
+#endif
 
     if (cr_selectwritable(fd, timeout) > 0) {
       int err;
