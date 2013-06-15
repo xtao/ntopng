@@ -9,3 +9,5 @@ https://github.com/valenok/mongoose
 
 LuaJIT on Windows
 See "Building with MSVC" at http://luajit.org/install.html
+- cd src
+- msvcbuild

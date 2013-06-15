@@ -31,7 +31,7 @@
 
 pthread_t pthread_self(void) { return(0); }
 
-int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_routine) (void *), char* userParm) {
+int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_routine) (void *), void* userParm) {
   DWORD dwThreadId, dwThrdParam = 1;
   
   (*threadId) = CreateThread(NULL, /* no security attributes */
@@ -62,44 +62,5 @@ int pthread_join (pthread_t threadId, void **_value_ptr) {
 }
 
 /* ************************************ */
-
-int pthread_mutex_init(pthread_mutex_t *mutex, char* notused) {
-  (*mutex) = CreateMutex(NULL, FALSE, NULL);
-  return(0);
-}
-
-/* ************************************ */
-
-void pthread_mutex_destroy(pthread_mutex_t *mutex) {
-  ReleaseMutex(*mutex);
-  CloseHandle(*mutex);
-}
-
-/* ************************************ */
-
-int pthread_mutex_lock(pthread_mutex_t *mutex) {
-
-  if(*mutex == NULL)
-    printf("Error\n");
-  WaitForSingleObject(*mutex, INFINITE);
-  return(0);
-}
-
-/* ************************************ */
-
-int pthread_mutex_trylock(pthread_mutex_t *mutex) {
-  if(WaitForSingleObject(*mutex, 0) == WAIT_FAILED)
-    return(1);
-  else
-    return(0);
-}
-
-/* ************************************ */
-
-int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-  if(*mutex == NULL)
-    printf("Error\n");
-  return(!ReleaseMutex(*mutex));
-}
 
 #endif /* WIN32 */

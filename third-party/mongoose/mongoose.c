@@ -288,8 +288,9 @@ typedef int SOCKET;
 
 #ifdef _WIN32
 static CRITICAL_SECTION global_log_file_lock;
+
 static pthread_t pthread_self(void) {
-  return GetCurrentThreadId();
+  return (pthread_t)GetCurrentThreadId();
 }
 #endif // _WIN32
 
