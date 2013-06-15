@@ -50,6 +50,7 @@
 #include <syslog.h>
 #include <netdb.h>
 #include <dirent.h>
+#include <pwd.h>
 #endif
 
 

@@ -23,8 +23,6 @@
 
 #ifdef HAVE_PF_RING
 
-#include <pwd.h>
-
 #ifdef DARWIN
 #include <uuid/uuid.h>
 #endif
