@@ -73,7 +73,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
    end
 
    if(ntop.exists(rrdname)) then
-      local fstart, fstep, fnames, fdata = rrd.fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
       local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
       local sample_rate = round(num_points_found / max_num_points)

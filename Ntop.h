@@ -36,6 +36,7 @@ class Ntop {
   Prefs *prefs;
   Geolocation *geo;
   Categorization *categorization;
+  Mutex *rrd_lock;
 
  public:
   Ntop();
@@ -63,6 +64,9 @@ class Ntop {
   inline Trace*            getTrace()             { return(globals->getTrace()); };
   inline Redis*            getRedis()             { return(redis);               };
   inline Prefs*            getPrefs()             { return(prefs);               };
+
+  inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
+  inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
 };
 
 extern Ntop *ntop;

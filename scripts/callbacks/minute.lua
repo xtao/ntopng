@@ -58,7 +58,7 @@ for key, value in pairs(hosts_stats) do
       name = basedir .. "/bytes.rrd"
       if(not(ntop.exists(name))) then
 	 if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
-	 rrd.create(
+	 ntop.rrd_create(
 	    name,
 	    '--start', 'now',
 	    '--step', '300',
@@ -70,7 +70,7 @@ for key, value in pairs(hosts_stats) do
 	    'RRA:HWPREDICT:1440:0.1:0.0035:20')
 	 
       end
-      rrd.update(name, "N:"..hosts_stats[key]["bytes.sent"] .. ":" .. hosts_stats[key]["bytes.rcvd"])
+      ntop.rrd_update(name, "N:"..hosts_stats[key]["bytes.sent"] .. ":" .. hosts_stats[key]["bytes.rcvd"])
       if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
 
       -- L4 Protocols
@@ -84,7 +84,7 @@ for key, value in pairs(hosts_stats) do
 	    name = basedir .. "/".. k .. ".rrd"
 	    if(not(ntop.exists(name))) then
 	       if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
-	       rrd.create(
+	       ntop.rrd_create(
 		  name,
 		  '--start', 'now',
 		  '--step', '300',
@@ -96,7 +96,7 @@ for key, value in pairs(hosts_stats) do
 		  'RRA:HWPREDICT:1440:0.1:0.0035:20')
 	    end
 
-	    rrd.update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
+	    ntop.rrd_update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
 	    if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
 	 end
       end
@@ -108,7 +108,7 @@ for key, value in pairs(hosts_stats) do
 	    name = basedir .. "/".. k .. ".rrd"
 	    if(not(ntop.exists(name))) then
 	       if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
-	       rrd.create(
+	       ntop.rrd_create(
 		  name,
 		  '--start', 'now',
 		  '--step', '300',
@@ -120,7 +120,7 @@ for key, value in pairs(hosts_stats) do
 		  'RRA:HWPREDICT:1440:0.1:0.0035:20')
 	    end
 
-	    rrd.update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
+	    ntop.rrd_update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
 	    if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
 	 end
       end

@@ -31,6 +31,7 @@ Ntop::Ntop() {
   address = new Address();
   categorization = NULL;
   custom_ndpi_protos = NULL;
+  rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
 }
 
 /* ******************************************* */
@@ -64,6 +65,7 @@ Ntop::~Ntop() {
   if(httpd) delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
+  delete rrd_lock;
   delete address;
   delete pa;
   delete geo;

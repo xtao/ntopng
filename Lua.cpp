@@ -31,14 +31,16 @@
 
 #define HTTP_CONN "http.conn"
 
-#include "third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c"
-
 #define MSG_VERSION 0
 
 struct zmq_msg_hdr {
   char url[32];
   u_int32_t version;
   u_int32_t size;
+};
+
+extern "C" {
+#include "rrd.h"
 };
 
 /* ******************************* */
@@ -488,6 +490,119 @@ static int ntop_interface_is_running(lua_State* vm) {
 
 /* ****************************************** */
 
+/* Code taken from third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c */
+
+typedef int (*RRD_FUNCTION)(int, char **);
+
+static void reset_rrd_state(void)
+{
+    optind = 0;
+    opterr = 0;
+    rrd_clear_error();
+}
+
+static char **make_argv(const char *cmd, lua_State * L)
+{
+  char **argv;
+  int i;
+  int argc = lua_gettop(L) + 1;
+
+  if (!(argv = (char**)calloc(argc, sizeof (char *)))) 
+    /* raise an error and never return */
+    luaL_error(L, "Can't allocate memory for arguments array", cmd);
+
+  /* fprintf(stderr, "Args:\n"); */
+  argv[0] = (char *) cmd; /* Dummy arg. Cast to (char *) because rrd */
+                          /* functions don't expect (const * char)   */
+  /* fprintf(stderr, "%s\n", argv[0]); */
+  for (i=1; i<argc; i++) {
+    /* accepts string or number */
+    if (lua_isstring(L, i) || lua_isnumber(L, i)) {
+      if (!(argv[i] = (char*)lua_tostring (L, i))) {
+        /* raise an error and never return */
+        luaL_error(L, "%s - error duplicating string area for arg #%d",
+                   cmd, i);
+      }
+    } else {
+      /* raise an error and never return */
+      luaL_error(L, "Invalid arg #%d to %s: args must be strings or numbers",
+                 i, cmd);
+    }
+    /* fprintf(stderr, "%s\n", argv[i]); */
+  }
+
+  return argv;
+}
+
+static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_function)
+{
+  char **argv;
+  int argc = lua_gettop(L) + 1;
+
+  ntop->rrdLock(__FUNCTION__, __LINE__);
+  argv = make_argv(cmd, L);
+  reset_rrd_state();
+  rrd_function(argc, argv);
+  free(argv);
+  if (rrd_test_error()) luaL_error(L, rrd_get_error());
+  ntop->rrdUnlock(__FUNCTION__, __LINE__);
+
+  return 0;
+}
+
+static int ntop_rrd_create(lua_State* L) { return(rrd_common_call(L, "create", rrd_create)); }
+static int ntop_rrd_update(lua_State* L) { return(rrd_common_call(L, "update", rrd_update)); }
+
+static int ntop_rrd_fetch(lua_State* L)  {
+  int argc = lua_gettop(L) + 1;
+  char **argv = make_argv("fetch", L);
+  unsigned long i, j, step, ds_cnt;
+  rrd_value_t *data, *p;
+  char    **names;
+  time_t  t, start, end;
+
+  ntop->rrdLock(__FUNCTION__, __LINE__);
+  reset_rrd_state();
+  rrd_fetch(argc, argv, &start, &end, &step, &ds_cnt, &names, &data);
+  free(argv);
+  if (rrd_test_error()) luaL_error(L, rrd_get_error());
+
+  lua_pushnumber(L, (lua_Number) start);
+  lua_pushnumber(L, (lua_Number) step);
+  /* fprintf(stderr, "%lu, %lu, %lu, %lu\n", start, end, step, num_points); */
+
+  /* create the ds names array */
+  lua_newtable(L);
+  for (i=0; i<ds_cnt; i++) {
+    lua_pushstring(L, names[i]);
+    lua_rawseti(L, -2, i+1);
+    rrd_freemem(names[i]);
+  }
+  rrd_freemem(names);
+
+  /* create the data points array */
+  lua_newtable(L);
+  p = data;
+  for (t=start, i=0; t<end; t+=step, i++) {
+    lua_newtable(L);
+    for (j=0; j<ds_cnt; j++) {
+      /*fprintf(stderr, "Point #%lu\n", j+1); */
+      lua_pushnumber(L, (lua_Number) *p++);
+      lua_rawseti(L, -2, j+1);
+    }
+    lua_rawseti(L, -2, i+1);
+  }
+  rrd_freemem(data);
+  ntop->rrdUnlock(__FUNCTION__, __LINE__);
+
+  /* return the end as the last value */
+  lua_pushnumber(L, (lua_Number) end);
+
+  return 5;
+}
+
+/* ****************************************** */
+
 static int ntop_process_flow(lua_State* vm) {
   NetworkInterface *ntop_interface;
   IpAddress src_ip, dst_ip;
@@ -870,6 +985,12 @@ static const luaL_Reg ntop_reg[] = {
   { "getKeyVal",      ntop_get_keyval  },
   { "setKeyVal",      ntop_set_keyval  },
 #endif
+
+  /* RRD */
+  { "rrd_create",     ntop_rrd_create },
+  { "rrd_update",     ntop_rrd_update },
+  { "rrd_fetch",      ntop_rrd_fetch },
+
   { NULL,          NULL}
 };
 
@@ -911,15 +1032,11 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
     lua_setglobal(L, ntop[i].class_name);
   }
 
-
   if(http_mode) {
     /* Overload the standard Lua print() with ntop_lua_http_print that dumps data on HTTP server */
     lua_register(L, "print", ntop_lua_http_print);
   } else
     lua_register(L, "print", ntop_lua_cli_print);
-
-  /* Register RRD bindings */
-  luaopen_rrd(L);
 }
 
 /* ****************************************** */

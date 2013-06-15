@@ -58,6 +58,7 @@
 #include <syslog.h>
 #include <getopt.h>
 #include <string.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <zmq.h>
 
