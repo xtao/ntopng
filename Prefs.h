@@ -26,18 +26,20 @@
 
 class Prefs {
  private:
-  bool enable_dns_resolution, sniff_dns_responses, categorization_enabled;
+  bool enable_dns_resolution, sniff_dns_responses, categorization_enabled, resolve_all_host_ip;
 
  public:
   Prefs();
   ~Prefs();
 
-  inline void disable_dns_resolution()            { enable_dns_resolution = false;  };
-  inline bool is_dns_resolution_enabled()         { return(enable_dns_resolution);  };
-  inline void disable_dns_responses_decoding()    { sniff_dns_responses = false;    };
-  inline bool decode_dns_responses()              { return(sniff_dns_responses);    };
-  inline void enable_categorization()             { categorization_enabled = true;  };
-  inline bool is_categorization_enabled()         { return(categorization_enabled); };
+  inline void disable_dns_resolution()                  { enable_dns_resolution = false;  };
+  inline void resolve_all_hosts()                       { resolve_all_host_ip = true;     };
+  inline bool is_dns_resolution_enabled_for_all_hosts() { return(resolve_all_host_ip);    };
+  inline bool is_dns_resolution_enabled()               { return(enable_dns_resolution);  };
+  inline void disable_dns_responses_decoding()          { sniff_dns_responses = false;    };
+  inline bool decode_dns_responses()                    { return(sniff_dns_responses);    };
+  inline void enable_categorization()                   { categorization_enabled = true;  };
+  inline bool is_categorization_enabled()               { return(categorization_enabled); };
 };
 
 #endif /* _PREFS_H_ */

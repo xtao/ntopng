@@ -78,9 +78,10 @@ given: -w 8000 -w 8080 will run as -w 8080.
  
 .It -n
 Sets the DNS address resolution mode:
-0 - Decode DNS responses and resolve numeric IPs
-1 - Decode DNS responses and don't resolve numeric IPs
-2 - Don't decode DNS responses and don't resolve numeric IPs
+0 - Decode DNS responses and resolve only local (-m) numeric IPs
+1 - Decode DNS responses and resolve all numeric IPs
+2 - Decode DNS responses and don't resolve numeric IPs
+3 - Don't decode DNS responses and don't resolve numeric IPs
 
 .It -i
 Specifies the network interface or collector endpoint to be used by

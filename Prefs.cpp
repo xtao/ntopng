@@ -25,7 +25,7 @@
 
 Prefs::Prefs() {
   enable_dns_resolution = sniff_dns_responses = true;
-  categorization_enabled = false;
+  categorization_enabled = false, resolve_all_host_ip = false;
 }
 
 /* ******************************************* */

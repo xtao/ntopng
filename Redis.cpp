@@ -97,19 +97,42 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 
 /* **************************************** */
 
-int Redis::queueHostToResolve(char *hostname) {
+int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
   if(ntop->getPrefs()->is_dns_resolution_enabled()) {
     int rc;
     char key[128], *val;
+    bool found;
+    
+    snprintf(key, sizeof(key), "dns.cache.%s", hostname);
 
     l->lock(__FILE__, __LINE__);
 
-    snprintf(key, sizeof(key), "dns.cache.%s", hostname);
-    /*
-      Add only if the address has not been resolved yet
-    */
-    if(credis_get(redis, key, &val) < 0)
+    if(dont_check_for_existance)
+      found = false;
+    else {
+      /*
+	Add only if the address has not been resolved yet
+      */
+      if(credis_get(redis, key, &val) < 0)
+	found = false;
+      else
+	found = true;
+    }
+    
+    if(!found) {
+#if 0
+      credis_set(redis, key, hostname); /* Avoid recursive add */
+      credis_expire(redis, key, 60);    /* Avoid entries to live forever */
+#endif
+
       rc = credis_rpush(redis, "dns.toresolve", hostname);
+      /*
+	We make sure that no more than 1000 entries are in queue 
+	This is important in order to avoid the cache to grow too much
+       */
+      credis_ltrim(redis, "dns.toresolve", 0, 1000); 
+    } else
+      rc = 0;
 
     l->unlock(__FILE__, __LINE__);
 
@@ -218,7 +241,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 
   if(rc != 0) {
     if(queue_if_not_found)
-      queueHostToResolve(numeric_ip);
+      queueHostToResolve(numeric_ip, true);
   } else {
     /* We need to extend expire */
 

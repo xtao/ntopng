@@ -70,15 +70,17 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
       
-      if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
-	symbolic_name = strdup(rsp);
-      else
-	ntop->getRedis()->queueHostToResolve(host);
-      
-      ntop->getGeolocation()->getAS(ip, &asn, &asname);
-      ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
-      
       updateLocal();
+
+      if(localHost || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
+	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
+	  symbolic_name = strdup(rsp);
+	else
+	  ntop->getRedis()->queueHostToResolve(host, false);
+      }
+
+      ntop->getGeolocation()->getAS(ip, &asn, &asname);
+      ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);      
     } else {
       char buf[32];
 
@@ -132,7 +134,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
       lua_push_nil_table_entry(vm, "ip");
 
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
-    lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf)));
+    lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "asn", asn);
     lua_push_str_table_entry(vm, "asname", asname);
@@ -179,7 +181,7 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
       lua_settable(vm, -3);
     }
   } else {
-    lua_pushstring(vm,  get_name(buf, sizeof(buf)));
+    lua_pushstring(vm,  get_name(buf, sizeof(buf), false));
     lua_pushinteger(vm, sent.getNumBytes()+rcvd.getNumBytes());
     lua_settable(vm, -3);
   }
@@ -218,7 +220,7 @@ void Host::refreshCategory() {
 
 /* ***************************************** */
 
-char* Host::get_name(char *buf, u_int buf_len) {
+char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_found) {
   if(ip == NULL) {
     return(get_mac(buf, buf_len));
   } else {
@@ -229,7 +231,8 @@ char* Host::get_name(char *buf, u_int buf_len) {
       return(symbolic_name);
 
     addr = ip->print(buf, buf_len);
-    rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), true);
+    rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), 
+				      force_resolution_if_not_found);
 
     if(rc == 0) {
       setName(redis_buf, false);

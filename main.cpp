@@ -34,9 +34,10 @@ static void help() {
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-s] [-v]\n\n"
 	 "-n <mode>               | DNS address resolution mode\n"
-	 "                        | 0 - Decode DNS responses and resolve numeric IPs\n"
-	 "                        | 1 - Decode DNS responses and don't resolve numeric IPs\n"
-	 "                        | 2 - Don't decode DNS responses and don't resolve numeric IPs\n"
+	 "                        | 0 - Decode DNS responses and resolve local numeric IPs only (default)\n"
+	 "                        | 1 - Decode DNS responses and resolve all numeric IPs\n"
+	 "                        | 2 - Decode DNS responses and don't resolve numeric IPs\n"
+	 "                        | 3 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
 	 "-c <categorization key> | Key used to access host categorization services. Use -c none to\n"
@@ -120,12 +121,15 @@ int main(int argc, char *argv[]) {
 
     case 'n':
       switch(atoi(optarg)) {
-      case 0:
+      case 0:	
 	break;
       case 1:
-	prefs->disable_dns_resolution();
+	prefs->resolve_all_hosts();
 	break;
       case 2:
+	prefs->disable_dns_resolution();
+	break;
+      case 3:
 	prefs->disable_dns_resolution();
 	prefs->disable_dns_responses_decoding();
 	break;

@@ -240,8 +240,8 @@ void Flow::print_peers(lua_State* vm) {
     
   // Key
   snprintf(buf, sizeof(buf), "%s %s", 
-	   src->Host::get_name(buf1, sizeof(buf1)),
-	   dst->Host::get_name(buf2, sizeof(buf2)));
+	   src->Host::get_name(buf1, sizeof(buf1), false),
+	   dst->Host::get_name(buf2, sizeof(buf2), false));
 
   /*
   snprintf(buf, sizeof(buf), "%s %s",
@@ -319,7 +319,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_newtable(vm);
 
   if(get_src_host()) {
-    lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf)));
+    lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
     lua_push_nil_table_entry(vm, "src.host");
@@ -329,7 +329,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "src.port", ntohs(get_src_port()));
 
   if(get_dst_host()) {
-    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf))); 
+    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf), false)); 
     lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
     lua_push_nil_table_entry(vm, "dst.host");
