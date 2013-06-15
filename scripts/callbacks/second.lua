@@ -8,7 +8,7 @@ local enable_second_debug = 0
 function create_rrd(name, ds)
    if(not(ntop.exists(name))) then
       if(enable_second_debug == 1) then io.write('Creating RRD ', name, '\n') end
-      rrd.create(
+      ntop.rrd_create(
 	 name,
 	 '--start', 'now',
 	 '--step', '1',
@@ -34,10 +34,10 @@ end
 -- Traffic stats
 name =  basedir .. "/" .. "bytes.rrd"
 create_rrd(name,"bytes")
-rrd.update(name, "N:".. ifstats.stats_bytes)
+ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
 if(enable_second_debug == 1) then io.write('Updating RRD '.. name .. " " .. ifstats.stats_bytes ..'\n') end
 
 name =  basedir .. "/" .. "packets.rrd"
 create_rrd(name,"packets")
-rrd.update(name, "N:".. ifstats.stats_packets)
+ntop.rrd_update(name, "N:".. ifstats.stats_packets)
 if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end
