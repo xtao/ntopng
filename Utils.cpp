@@ -60,7 +60,7 @@ char* Utils::formatPackets(float numPkts, char *buf) {
   if(numPkts < 1000) {
     snprintf(buf, 32, "%.2f", numPkts);
   } else if(numPkts < 1000000) {
-    snprintf(buf, 32, "%.2f K", numPkts/1000);
+    snprintf(buf, 32, "%.2f K", numPkts/(float)1000);
   } else {
     numPkts /= 1000000;
     snprintf(buf, 32, "%.2f M", numPkts);

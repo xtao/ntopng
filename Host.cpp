@@ -47,10 +47,10 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : Gener
 
 Host::~Host() {
   if(symbolic_name) free(symbolic_name);
-  if(ndpiStats) delete ndpiStats;
-  if(country) free(country);
-  if(city)    free(city);
-  if(asname)  free(asname);
+  if(ndpiStats)     delete ndpiStats;
+  if(country)       free(country);
+  if(city)          free(city);
+  if(asname)        free(asname);
   delete ip;
   delete m;
 }
