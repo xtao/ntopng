@@ -52,7 +52,8 @@ static void free_wrapper(void *freeable)
 NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
-
+  u_int32_t num_hashes;
+  
   if(name == NULL) {
     name = pcap_lookupdev(pcap_error_buffer);
 
@@ -64,7 +65,11 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
 
   ifname = strdup(name);
 
-  flows_hash = new FlowHash(4096, 32768), hosts_hash = new HostHash(4096, 32768);
+  num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
+  flows_hash = new FlowHash(num_hashes, ntop->getPrefs()->get_max_num_flows());
+
+  num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
+  hosts_hash = new HostHash(num_hashes, ntop->getPrefs()->get_max_num_hosts());
 
   // init global detection structure
   ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),

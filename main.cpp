@@ -88,7 +88,8 @@ int main(int argc, char *argv[]) {
   u_char c;
   char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
   u_int http_port = CONST_DEFAULT_NTOP_PORT;
-  bool change_user = true, localnets = false, disable_categorization = false;
+  bool change_user = true, localnets = false;
+  char *categorization_key = NULL;
   int cpu_affinity = -1;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
@@ -102,12 +103,7 @@ int main(int argc, char *argv[]) {
 
     switch(c) {
     case 'c':
-      if(strcmp(optarg, "none") == 0)
-	disable_categorization = true;
-      else {
-	ntop->setCategorization(new Categorization(optarg));
-	prefs->enable_categorization();
-      }
+      categorization_key = optarg;
       break;
 
     case 'g':
@@ -121,7 +117,7 @@ int main(int argc, char *argv[]) {
 
     case 'n':
       switch(atoi(optarg)) {
-      case 0:	
+      case 0:
 	break;
       case 1:
 	prefs->resolve_all_hosts();
@@ -246,10 +242,10 @@ int main(int argc, char *argv[]) {
 			       "Using RRD version %s",
 			       rrd_strversion());
 
-  if((!disable_categorization) && (!prefs->is_categorization_enabled())) {
+  if(categorization_key != NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");
-    ntop->setCategorization(new Categorization((char*)DEFAULT_CATEGORIZATION_KEY));
-    prefs->enable_categorization();    
+    ntop->setCategorization(new Categorization(categorization_key));
+    prefs->enable_categorization();
   }
 
   signal(SIGINT, sigproc);

@@ -53,12 +53,14 @@
 #define MAX_NUM_INTERFACE_HOSTS   65536
 
 #define FLOW_PURGE_FREQUENCY     1 /* sec */
-#define FLOW_MAX_IDLE           30 /* sec */
-
 #define HOST_PURGE_FREQUENCY     1 /* sec */
-#define HOST_MAX_IDLE           60 /* sec */
 
 #define PURGE_FRACTION          32 /* check 1/32 of hashes per iteration */
+
+#define DOMAIN_CATEGORY      "domain.category"
+#define DOMAIN_TO_CATEGORIZE "domain.tocategorize"
+#define DNS_CACHE            "dns.cache"
+#define DNS_TO_RESOLVE       "dns.toresolve"
 
 #define CONST_DEFAULT_NTOP_PORT 3000
 
@@ -75,5 +77,14 @@
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
+
+
+#ifndef min_val
+#define min_val(a,b) ((a < b) ? a : b)
+#endif
+
+#ifndef max_val
+#define max_val(a,b) ((a > b) ? a : b)
+#endif
 
 #endif /* _NTOP_DEFINES_H_ */

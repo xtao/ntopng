@@ -27,6 +27,8 @@
 class Prefs {
  private:
   bool enable_dns_resolution, sniff_dns_responses, categorization_enabled, resolve_all_host_ip;
+  u_int16_t host_max_idle, flow_max_idle;
+  u_int32_t max_num_hosts, max_num_flows;
 
  public:
   Prefs();
@@ -40,6 +42,11 @@ class Prefs {
   inline bool decode_dns_responses()                    { return(sniff_dns_responses);    };
   inline void enable_categorization()                   { categorization_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
+
+  inline u_int16_t get_host_max_idle()                  { return(host_max_idle);          };
+  inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);          };
+  inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);          };
+  inline u_int32_t get_max_num_flows()                  { return(max_num_flows);          };
 };
 
 #endif /* _PREFS_H_ */

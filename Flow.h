@@ -88,7 +88,7 @@ class Flow : public GenericHashEntry {
   inline Host* get_src_host()                     { return(src_host); };
   inline Host* get_dst_host()                     { return(dst_host); };
   inline char* get_json_info()			  { return(json_info); }
-  inline bool idle()                              { return(isIdle(FLOW_MAX_IDLE)); };
+  bool idle();
   int compare(Flow *fb);
   void print();
   void update_hosts_stats();

@@ -72,7 +72,7 @@ class Host : public GenericHashEntry {
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
-  inline bool idle()                 { return(isIdle(HOST_MAX_IDLE)); };
+  bool idle();
   void lua(lua_State* vm, bool host_details, bool returnHost);
   void resolveHostName();
   void setName(char *name, bool update_categorization);

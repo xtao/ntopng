@@ -373,6 +373,12 @@ u_int32_t Flow::key() {
 
 /* *************************************** */
 
+bool Flow::idle() {
+  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
+};
+
+/* *************************************** */
+
 char* Flow::getDomainCategory() {
   if(!categorization.flow_categorized) {
     if(ndpi_flow == NULL)

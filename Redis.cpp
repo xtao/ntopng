@@ -98,47 +98,48 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 /* **************************************** */
 
 int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
-  if(ntop->getPrefs()->is_dns_resolution_enabled()) {
-    int rc;
-    char key[128], *val;
-    bool found;
-    
-    snprintf(key, sizeof(key), "dns.cache.%s", hostname);
+  int rc;
+  char key[128], *val;
+  bool found;
+  
+  if(!ntop->getPrefs()->is_dns_resolution_enabled()) return(0);
+  
+  snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, hostname);
 
-    l->lock(__FILE__, __LINE__);
+  l->lock(__FILE__, __LINE__);
 
-    if(dont_check_for_existance)
+  if(dont_check_for_existance)
+    found = false;
+  else {
+    /*
+      Add only if the address has not been resolved yet
+    */
+    if(credis_get(redis, key, &val) < 0)
       found = false;
-    else {
-      /*
-	Add only if the address has not been resolved yet
-      */
-      if(credis_get(redis, key, &val) < 0)
-	found = false;
-      else
-	found = true;
-    }
+    else
+      found = true;
+  }
     
-    if(!found) {
+  if(!found) {
 #if 0
-      credis_set(redis, key, hostname); /* Avoid recursive add */
-      credis_expire(redis, key, 60);    /* Avoid entries to live forever */
+    credis_set(redis, key, hostname); /* Avoid recursive add */
+    credis_expire(redis, key, 60);    /* Avoid entries to live forever */
 #endif
 
-      rc = credis_rpush(redis, "dns.toresolve", hostname);
-      /*
-	We make sure that no more than 1000 entries are in queue 
-	This is important in order to avoid the cache to grow too much
-       */
-      credis_ltrim(redis, "dns.toresolve", 0, 1000); 
-    } else
-      rc = 0;
+    /* Add to the list of addresses to resolve */
+    rc = credis_rpush(redis, DNS_TO_RESOLVE, hostname);
 
-    l->unlock(__FILE__, __LINE__);
-
-    return(rc);
+    /*
+      We make sure that no more than 1000 entries are in queue 
+      This is important in order to avoid the cache to grow too much
+    */
+    credis_ltrim(redis, DNS_TO_RESOLVE, 0, 1000); 
   } else
-    return(0);
+    rc = 0;
+
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
 }
 
 /* **************************************** */
@@ -148,7 +149,7 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
   int rc;
 
   l->lock(__FILE__, __LINE__);
-  rc = credis_lpop(redis, (char*)"dns.toresolve", &val);
+  rc = credis_lpop(redis, (char*)DNS_TO_RESOLVE, &val);
   l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
@@ -162,39 +163,35 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 /* **************************************** */
 
 char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool categorize_if_unknown) {
+  char key[128], *val;
+
   buf[0] = 0;
 
-  if(ntop->getPrefs()->is_categorization_enabled()) {
-    char key[128], *val;
+  if(!ntop->getPrefs()->is_categorization_enabled())  return(NULL);
 
-    /* Check if the host is 'categorizable' */
-    if(Utils::isIPAddress(domainname)) {
-      return(buf);
-    }
-
-    l->lock(__FILE__, __LINE__);
-
-    snprintf(key, sizeof(key), "domain.category.%s", domainname);
-  
-    /*
-      Add only if the domain has not been categorized yet
-    */
-    if(credis_get(redis, key, &val) < 0) {
-      if(categorize_if_unknown)
-	/* rc = */ credis_rpush(redis, "domain.tocategorize", domainname);
-
-      buf[0] = 0, val = NULL;
-    } else {
-      snprintf(buf, buf_len, "%s", val);
-    }
-
-    l->unlock(__FILE__, __LINE__);
-
-    return(val);
-  } else {
-    buf[0] = 0;
-    return(NULL);
+  /* Check if the host is 'categorizable' */
+  if(Utils::isIPAddress(domainname)) {
+    return(buf);
   }
+
+  l->lock(__FILE__, __LINE__);
+
+  snprintf(key, sizeof(key), "%s.%s", DOMAIN_CATEGORY, domainname);
+  
+  /*
+    Add only if the domain has not been categorized yet
+  */
+  if(credis_get(redis, key, &val) < 0) {
+    if(categorize_if_unknown)
+      /* rc = */ credis_rpush(redis, DOMAIN_TO_CATEGORIZE, domainname);
+
+    buf[0] = 0, val = NULL;
+  } else
+    snprintf(buf, buf_len, "%s", val);  
+
+  l->unlock(__FILE__, __LINE__);
+
+  return(val);
 }
 
 /* **************************************** */
@@ -204,7 +201,7 @@ int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
   int rc;
 
   l->lock(__FILE__, __LINE__);
-  rc = credis_lpop(redis, (char*)"domain.tocategorize", &val);
+  rc = credis_lpop(redis, (char*)DOMAIN_TO_CATEGORIZE, &val);
   l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
@@ -236,8 +233,9 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
   int rc;
 
   rsp[0] = '\0';
-  snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
-  rc = get(key, rsp, rsp_len);
+  snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, numeric_ip);
+ 
+ rc = get(key, rsp, rsp_len);
 
   if(rc != 0) {
     if(queue_if_not_found)
@@ -256,7 +254,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
   char key[64];
 
-  snprintf(key, sizeof(key), "dns.cache.%s", numeric_ip);
+  snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, numeric_ip);
   return(set(key, symbolic_ip, 300));
 }
 
@@ -265,10 +263,12 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
 char* Redis::getVersion(char *str, u_int str_len) {
   REDIS_INFO info;
 
+  l->lock(__FILE__, __LINE__);
   if(redis && (credis_info(redis, &info) == 0))
     snprintf(str, str_len, "%s (%d bit)", info.redis_version, info.arch_bits);
   else
     str[0] = 0;
+  l->unlock(__FILE__, __LINE__);
 
   return(str);
 }

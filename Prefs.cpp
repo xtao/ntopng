@@ -26,6 +26,8 @@
 Prefs::Prefs() {
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
+  host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
+  max_num_hosts = 32768, max_num_flows = 65536;
 }
 
 /* ******************************************* */

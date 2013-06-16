@@ -44,7 +44,8 @@ Categorization::~Categorization() {
   if(api_key != NULL) {
     pthread_join(categorizeThreadLoop, &res);
 
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Categorization resolution stats [%u categorized][%u failures]",
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+				 "Categorization resolution stats [%u categorized][%u failures]",
 				 num_categorized_categorizationes, num_categorized_fails);
   }
 }
