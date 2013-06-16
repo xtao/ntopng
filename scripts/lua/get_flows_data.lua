@@ -109,7 +109,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    name = value["src.ip"]
 	 end
 
-	 src_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. name .."</A>"
+	 src_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
 	 if(value["src.port"] > 0) then
   	   src_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["src.port"] .. "'>"..value["src.port"].."</A>"
          else
@@ -121,7 +121,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    name = value["dst.ip"]
 	 end
 
-	 dst_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. name .."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
 	 if(value["dst.port"] > 0) then
   	   dst_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["dst.port"] .. "'>"..value["dst.port"].."</A>"
          else

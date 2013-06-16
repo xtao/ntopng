@@ -19,8 +19,9 @@ info = ntop.getInfo()
 
 print (info["version"])
 print [[</font></div>
-  <div class="span1 offset3"> <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
-  <div class="span4"><div id="network-load"></div></div></div>
+  <div class="span1"> <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
+  <div class="span6"><div id="network-load"></div></div></div>
+
 
 </div> <!-- /row --> 
 </div><!-- /footer --> 
@@ -83,7 +84,7 @@ setInterval(function() {
 
 					   pps = packets_diff / epoch_diff;
 
-					   $('#network-load').text(bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows]");
+					   $('#network-load').html(""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows][uptime "+rsp.uptime+"]");
    					}
 					   prev_bytes = rsp.bytes;
 					   prev_packets  = rsp.packets;
