@@ -40,8 +40,8 @@ static void help() {
 	 "                        | 3 - Don't decode DNS responses and don't resolve numeric IPs\n"
 	 "-i <interface>          | Input interface name\n"
 	 "-d <path>               | Data directory (must be writable). Default: %s\n"
-	 "-c <categorization key> | Key used to access host categorization services. Use -c none to\n"
-         "                        | disable categorization. Please read README.categorization for more info.\n"
+	 "-c <categorization key> | Key used to access host categorization services (default: disabled). \n"
+         "                        | Please read README.categorization for more info.\n"
 	 "-w <http port>          | HTTP port. Default: %u\n"
 	 "-m <local network list> | List of local networks (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "-p <file>.protos        | Specify a nDPI protocol file (eg. protos.txt)\n"
@@ -237,10 +237,7 @@ int main(int argc, char *argv[]) {
       fclose(fd); /* All right */
   }
 
-
-  ntop->getTrace()->traceEvent(TRACE_NORMAL,
-			       "Using RRD version %s",
-			       rrd_strversion());
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
 
   if(categorization_key != NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");

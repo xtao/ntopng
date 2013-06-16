@@ -33,7 +33,12 @@ Categorization::Categorization(char *_api_key) {
 /* ******************************************* */
 
 char* Categorization::findCategory(char *name, char *buf, u_int buf_len, bool add_if_needed) {
-  return(ntop->getRedis()->getFlowCategory(name, buf, buf_len, add_if_needed));
+  if(ntop->getPrefs()->is_categorization_enabled()) {
+    return(ntop->getRedis()->getFlowCategory(name, buf, buf_len, add_if_needed));
+  } else {
+    buf[0] = '\0';
+    return(buf);
+  }
 }
 
 /* **************************************** */
@@ -53,66 +58,69 @@ Categorization::~Categorization() {
 /* ***************************************** */
 
 void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
-  char key[256];
+  if(ntop->getPrefs()->is_categorization_enabled()) {
+    char key[256];
 
-  snprintf(key, sizeof(key), "domain.category.%s", _url);
-  if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
-    ntop->getRedis()->expire(key, 3600);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
-  } else {
-    struct http_response *hresp;
-    char url_buf[256];
+    snprintf(key, sizeof(key), "domain.category.%s", _url);
+    if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
+      ntop->getRedis()->expire(key, 3600);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
+    } else {
+      struct http_response *hresp;
+      char url_buf[256];
     
-    /*
-      Save category into the cache so that if the categorization service is slow, we do not
-      recursively add the domain into the list of domains to solve
-    */
-    ntop->getRedis()->set(key, NULL_CATEGORY, 3600);
+      /*
+	Save category into the cache so that if the categorization service is slow, we do not
+	recursively add the domain into the list of domains to solve
+      */
+      ntop->getRedis()->set(key, NULL_CATEGORY, 3600);
 
-    snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
+      snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
-    hresp = http_get(url_buf, "User-agent:ntopng\r\n");
+      hresp = http_get(url_buf, "User-agent:ntopng\r\n");
 
 #if 0
-    printf("%d\n", hresp->status_code_int);
-    printf("%s\n", hresp->body);
+      printf("%d\n", hresp->status_code_int);
+      printf("%s\n", hresp->body);
 #endif
 
-    buf[0] = '\0';
-    if(hresp && hresp->body
-       && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
-      char body[256], *doublecolumn;
+      buf[0] = '\0';
+      if(hresp && hresp->body
+	 && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
+	char body[256], *doublecolumn;
        
-      snprintf(body, sizeof(body), "%s", hresp->body);
+	snprintf(body, sizeof(body), "%s", hresp->body);
 
-      if((doublecolumn = strrchr(body, ':')) != NULL) {
-	char *end;
+	if((doublecolumn = strrchr(body, ':')) != NULL) {
+	  char *end;
 
-	doublecolumn += 2;
+	  doublecolumn += 2;
 
-	if((end = strchr(doublecolumn, '"')) != NULL) {
-	  int major, minor;
+	  if((end = strchr(doublecolumn, '"')) != NULL) {
+	    int major, minor;
 
-	  end[0] = '\0';
+	    end[0] = '\0';
 
-	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
+	    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
 
-	  /* The category format is XX_YY so it can very well with into a 16 bit value */
-	  if(sscanf(doublecolumn, "%d_%d", &major, &minor) != 2) {
-	    if((strcmp(doublecolumn, "error") != 0) && (doublecolumn[0] != '-' /* Negative error code */))
-	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid format for category '%s'", doublecolumn);
+	    /* The category format is XX_YY so it can very well with into a 16 bit value */
+	    if(sscanf(doublecolumn, "%d_%d", &major, &minor) != 2) {
+	      if((strcmp(doublecolumn, "error") != 0) && (doublecolumn[0] != '-' /* Negative error code */))
+		ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid format for category '%s'", doublecolumn);
 
-	    doublecolumn = NULL_CATEGORY;
-	  } else	    
-	    ntop->getRedis()->set(key, doublecolumn, 3600); /* Save category into the cache */
+	      doublecolumn = NULL_CATEGORY;
+	    } else	    
+	      ntop->getRedis()->set(key, doublecolumn, 3600); /* Save category into the cache */
 
-	  snprintf(buf, buf_len, "%s", doublecolumn);
+	    snprintf(buf, buf_len, "%s", doublecolumn);
+	  }
 	}
       }
-    }
 
-    if(hresp) http_response_free(hresp);
-  }
+      if(hresp) http_response_free(hresp);
+    }
+  } else 
+    buf[0] = '\0';
 }
 
 /* **************************************************** */
@@ -147,6 +155,7 @@ void* Categorization::categorizeLoop() {
 /* **************************************************** */
 
 void Categorization::startCategorizeCategorizationLoop() {
-  pthread_create(&categorizeThreadLoop, NULL, categorizeThreadInfiniteLoop, (void*)this);
+  if(ntop->getPrefs()->is_categorization_enabled())
+    pthread_create(&categorizeThreadLoop, NULL, categorizeThreadInfiniteLoop, (void*)this);
 }
 
