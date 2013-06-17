@@ -21,7 +21,9 @@
 
 #include "ntop_includes.h"
 
+#define USE_LUA
 #include "./third-party/mongoose/mongoose.c"
+#undef USE_LUA
 
 extern "C" {
 #include "lua.h"

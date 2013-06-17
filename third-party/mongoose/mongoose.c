@@ -276,6 +276,12 @@ typedef int SOCKET;
 #ifdef USE_LUA
 #include <lua.h>
 #include <lauxlib.h>
+
+#if 1 /* ntop */
+#ifndef LUA_OK
+#define LUA_OK          0
+#endif
+#endif
 #endif
 
 #define MONGOOSE_VERSION "3.7"
@@ -4003,7 +4009,7 @@ static int lsp_mg_print(lua_State *L) {
   int i, num_args;
   const char *str;
   size_t size;
-  struct mg_connection *conn = lua_touserdata(L, lua_upvalueindex(1));
+  struct mg_connection *conn = (struct mg_connection*) /* ntop */lua_touserdata(L, lua_upvalueindex(1));
 
   num_args = lua_gettop(L);
   for (i = 1; i <= num_args; i++) {
@@ -4017,7 +4023,7 @@ static int lsp_mg_print(lua_State *L) {
 }
 
 static int lsp_mg_read(lua_State *L) {
-  struct mg_connection *conn = lua_touserdata(L, lua_upvalueindex(1));
+  struct mg_connection *conn = (struct mg_connection*) /* ntop */lua_touserdata(L, lua_upvalueindex(1));
   char buf[1024];
   int len = mg_read(conn, buf, sizeof(buf));
 
@@ -4097,7 +4103,7 @@ static void handle_lsp_request(struct mg_connection *conn, const char *path,
     if (conn->ctx->callbacks.init_lua != NULL) {
       conn->ctx->callbacks.init_lua(conn, L);
     }
-    lsp(conn, filep->membuf == NULL ? p : filep->membuf, filep->size, L);
+    lsp(conn, (const char*)/* ntop */(filep->membuf == NULL ? p : filep->membuf), filep->size, L);
   }
 
   if (L) lua_close(L);
