@@ -131,26 +131,6 @@ static void redirect_to_login(struct mg_connection *conn,
       request_info->uri, LOGIN_URL);
 }
 
-// Return 1 if username/password is allowed, 0 otherwise.
-static int check_password(const char *user, const char *password) {
-  // In production environment we should ask an authentication system
-  // to authenticate the user.
-  char key[64], val[64];
-  char password_hash[33];
-  
-  if(user == NULL) return(false);
-
-  snprintf(key, sizeof(key), "user.%s", user);
-
-  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
-    return(false);
-  else {
-    // FIX add a seed when users management will be available on the web gui
-    mg_md5(password_hash, password, NULL);
-    return(strcmp(password_hash, val) == 0);
-  }
-}
-
 static void get_qsvar(const struct mg_request_info *request_info,
                       const char *name, char *dst, size_t dst_len) {
   const char *qs = request_info->query_string;
@@ -167,7 +147,7 @@ static void authorize(struct mg_connection *conn,
   get_qsvar(request_info, "user", user, sizeof(user));
   get_qsvar(request_info, "password", password, sizeof(password));
 
-  if (check_password(user, password)) {
+  if (ntop->checkUserPassword(user, password)) {
     char key[256], session_id[64], random[64];
 
     // Authentication success:
@@ -328,37 +308,4 @@ HTTPserver::~HTTPserver() {
 };
 
 /* ****************************************** */
-
-#if 0
-// user/password check using md5.c
-
-static void hexstring_to_bytearray(char *hexstring, u_char *bytearray, u_int bytearray_len) {
-  u_int i, str_len = strlen(hexstring);
-
-  for (i = 0; i < (str_len / 2); i++)
-    sscanf(hexstring + 2 * i, "%02hhx", &bytearray[i]);
-}
-
-bool HTTPserver::valid_user_pwd(char *user, char *pass) {
-  char key[64], val[64];
-  struct MD5Context md5c;
-  unsigned char signature[16], expected_signature[16];
-  
-  if(user == NULL) return(false);
-
-  snprintf(key, sizeof(key), "user.%s", user);
-
-  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
-    return(false);
-  else {
-    MD5Init(&md5c);
-    MD5Update(&md5c, (unsigned char *) pass, strlen(pass));
-    MD5Final(signature, &md5c);
-    
-    hexstring_to_bytearray(val, expected_signature, sizeof(expected_signature));
-
-    return((memcmp(signature, expected_signature, sizeof(signature)) == 0) ? true : false);
-  }
-}
-#endif
 

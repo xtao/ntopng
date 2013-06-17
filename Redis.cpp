@@ -273,3 +273,5 @@ char* Redis::getVersion(char *str, u_int str_len) {
   return(str);
 }
 
+/* **************************************** */
+

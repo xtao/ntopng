@@ -98,3 +98,66 @@ void Ntop::setCustomnDPIProtos(char *path) {
     custom_ndpi_protos = strdup(path);
   }  
 }
+
+/* ******************************************* */
+
+void Ntop::getUsers(lua_State* vm) {
+
+  lua_newtable(vm);
+
+  /* TODO */
+
+  lua_newtable(vm);
+  lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
+  lua_push_str_table_entry(vm, "group",     (char*) "administrator");
+  lua_pushstring(vm, "admin");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+}
+
+/* ******************************************* */
+
+// Return 1 if username/password is allowed, 0 otherwise.
+int Ntop::checkUserPassword(const char *user, const char *password) {
+  // In production environment we should ask an authentication system
+  // to authenticate the user.
+  char key[64], val[64];
+  char password_hash[33];
+  
+  if(user == NULL) return(false);
+
+  snprintf(key, sizeof(key), "user.%s", user);
+
+  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0)
+    return(false);
+  else {
+    // FIX add a seed when users management will be available on the web gui
+    mg_md5(password_hash, password, NULL);
+    return(strcmp(password_hash, val) == 0);
+  }
+}
+
+
+/* ******************************************* */
+
+int Ntop::resetUserPassword(char *username, char *old_password, char *new_password) {
+  char key[64];
+  char password_hash[33]; 
+
+  if (!checkUserPassword(username, old_password))
+    return(false);
+  
+  snprintf(key, sizeof(key), "user.%s", username);
+
+  // FIX add a seed when users management will be available on the web gui
+  mg_md5(password_hash, new_password, NULL);
+
+  if(ntop->getRedis()->set(key, password_hash, sizeof(password_hash)) < 0) 
+    return(false); 
+
+  return(true);
+}
+
+/* ******************************************* */
+

@@ -686,6 +686,32 @@ static int ntop_process_flow(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_users(lua_State* vm) {
+
+  ntop->getUsers(vm);
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_reset_user_password(lua_State* vm) {
+  char *username, *old_password, *new_password;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((old_password = (char*)lua_tostring(vm, 2)) == NULL) return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
+  if((new_password = (char*)lua_tostring(vm, 3)) == NULL) return(-1);
+
+  return(ntop->resetUserPassword(username, old_password, new_password));
+}
+
+/* ****************************************** */
+
 void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -969,15 +995,15 @@ static const luaL_Reg ntop_interface_reg[] = {
 };
 
 static const luaL_Reg ntop_reg[] = {
-  { "getInfo",     ntop_get_info },
-  { "dumpFile",    ntop_dump_file },
-  { "getDataDir",  ntop_get_datadir },
-  { "getCache",    ntop_get_redis },
-  { "setCache",    ntop_set_redis },
-  { "getResolvedAddress",    ntop_get_resolved_address },
-  { "mkdir",       ntop_mkdir_tree },
-  { "exists",      ntop_get_file_dir_exists },
-  { "readdir",     ntop_list_dir_files },
+  { "getInfo",        ntop_get_info },
+  { "dumpFile",       ntop_dump_file },
+  { "getDataDir",     ntop_get_datadir },
+  { "getCache",       ntop_get_redis },
+  { "setCache",       ntop_set_redis },
+  { "getResolvedAddress", ntop_get_resolved_address },
+  { "mkdir",          ntop_mkdir_tree },
+  { "exists",         ntop_get_file_dir_exists },
+  { "readdir",        ntop_list_dir_files },
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
@@ -990,6 +1016,10 @@ static const luaL_Reg ntop_reg[] = {
   { "rrd_create",     ntop_rrd_create },
   { "rrd_update",     ntop_rrd_update },
   { "rrd_fetch",      ntop_rrd_fetch },
+
+  /* Admin */
+  { "getUsers",       ntop_get_users },
+  { "resetUserPassword", ntop_reset_user_password },
 
   { NULL,          NULL}
 };

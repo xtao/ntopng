@@ -37,6 +37,24 @@ print [[
 
    ]]
 
+if active_page == "admin" then
+  print [[ <li class="dropdown active"> ]]
+else
+  print [[ <li class="dropdown"> ]]
+end
+
+print [[
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        Admin <b class="caret"></b>
+      </a>
+    <ul class="dropdown-menu">
+      <li><a href="/lua/admin/users.lua">Users</a></li>
+      <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
+    </ul>
+  </li>
+
+   ]]
+
 if active_page == "about" then
   print [[ <li class="active"><a href="#">About</a></li> ]]
 else

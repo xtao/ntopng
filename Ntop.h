@@ -67,6 +67,10 @@ class Ntop {
 
   inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
   inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
+
+  void getUsers(lua_State* vm);
+  int  checkUserPassword(const char *user, const char *password);
+  int  resetUserPassword(char *username, char *old_password, char *new_password);
 };
 
 extern Ntop *ntop;
