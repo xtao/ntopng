@@ -553,7 +553,7 @@ static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_func
 static int ntop_rrd_create(lua_State* L) { return(rrd_common_call(L, "create", rrd_create)); }
 static int ntop_rrd_update(lua_State* L) { return(rrd_common_call(L, "update", rrd_update)); }
 
-static int ntop_rrd_fetch(lua_State* L)  {
+static int ntop_rrd_fetch(lua_State* L) {
   int argc = lua_gettop(L) + 1;
   char **argv = make_argv("fetch", L);
   unsigned long i, j, step, ds_cnt;
@@ -599,6 +599,21 @@ static int ntop_rrd_fetch(lua_State* L)  {
   lua_pushnumber(L, (lua_Number) end);
 
   return 5;
+}
+
+/* ****************************************** */
+
+static int ntop_get_prefs(lua_State* vm) {
+  lua_newtable(vm);
+  lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts());
+  lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", ntop->getPrefs()->is_dns_resolution_enabled());
+  lua_push_bool_table_entry(vm, "is_categorization_enabled", ntop->getPrefs()->is_categorization_enabled());
+  lua_push_int_table_entry(vm, "host_max_idle", ntop->getPrefs()->get_host_max_idle());
+  lua_push_int_table_entry(vm, "flow_max_idle", ntop->getPrefs()->get_flow_max_idle());
+  lua_push_int_table_entry(vm, "max_num_hosts", ntop->getPrefs()->get_max_num_hosts());
+  lua_push_int_table_entry(vm, "max_num_flows", ntop->getPrefs()->get_max_num_flows());
+
+  return(1);
 }
 
 /* ****************************************** */
@@ -1015,7 +1030,10 @@ static const luaL_Reg ntop_reg[] = {
   /* RRD */
   { "rrd_create",     ntop_rrd_create },
   { "rrd_update",     ntop_rrd_update },
-  { "rrd_fetch",      ntop_rrd_fetch },
+  { "rrd_fetch",      ntop_rrd_fetch  },
+
+  /* Prefs */
+  { "getPrefs",       ntop_get_prefs },
 
   /* Admin */
   { "getUsers",       ntop_get_users },
