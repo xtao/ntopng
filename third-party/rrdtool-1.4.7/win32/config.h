@@ -26,8 +26,8 @@
 #define HAVE_VSNPRINTF 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_SYS_STAT_H 1
-#define HAVE_RRD_GRAPH 1
-
+//#define HAVE_RRD_GRAPH 1 // ntop
+ 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 

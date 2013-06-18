@@ -384,11 +384,12 @@ rrd_file_t *rrd_open(
 
     {
       unsigned long row_cnt = 0;
+	  unsigned long correct_len; /* ntop */
 
       for (ui=0; ui<rrd->stat_head->rra_cnt; ui++)
         row_cnt += rrd->rra_def[ui].row_cnt;
 
-      size_t  correct_len = rrd_file->header_len +
+     /* size_t */ correct_len = rrd_file->header_len +
         sizeof(rrd_value_t) * row_cnt * rrd->stat_head->ds_cnt;
 
       if (correct_len > rrd_file->file_len)
@@ -584,9 +585,10 @@ void rrd_dontneed(
 int rrd_close(
     rrd_file_t *rrd_file)
 {
-    rrd_simple_file_t *rrd_simple_file;
-    rrd_simple_file = (rrd_simple_file_t *)rrd_file->pvt;
     int       ret;
+	rrd_simple_file_t *rrd_simple_file;
+    rrd_simple_file = (rrd_simple_file_t *)rrd_file->pvt;
+
 
 #ifdef HAVE_MMAP
     ret = msync(rrd_simple_file->file_start, rrd_file->file_len, MS_ASYNC);

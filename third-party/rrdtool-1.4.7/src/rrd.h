@@ -63,7 +63,7 @@ extern    "C" {
 #endif
 	#define strtoll _strtoi64 
 #endif
-	typedef size_t ssize_t;
+	typedef unsigned int ssize_t;
 	typedef long off_t;
 #endif 
 

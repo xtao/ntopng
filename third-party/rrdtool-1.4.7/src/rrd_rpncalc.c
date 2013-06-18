@@ -803,30 +803,33 @@ short rpn_calc(
 		int   locstepsize = rpnstack->s[--stptr];
 		/* the number of shifts and range-checking*/
 		int     shifts = rpnstack->s[--stptr];
-                stackunderflow(shifts);
+				/* the real calculation */
+		double val=DNAN;
+		/* the info on the datasource */
+		time_t  dsstep = (time_t) rpnp[rpi - 1].step;
+		int    dscount = rpnp[rpi - 1].ds_cnt;
+		int   locstep = (int)ceil((float)locstepsize/(float)dsstep);
+		/* the sums */
+                double    sum = 0;
+		double    sum2 = 0;
+                int       count = 0, loop;
+		/* now loop for each position */
+		int doshifts=shifts;
+
+		
+		
+		stackunderflow(shifts);
 		// handle negative shifts special
 		if (shifts<0) {
 		    stptr--;
 		} else {
 		    stptr-=shifts;
 		}
-		/* the real calculation */
-		double val=DNAN;
-		/* the info on the datasource */
-		time_t  dsstep = (time_t) rpnp[rpi - 1].step;
-		int    dscount = rpnp[rpi - 1].ds_cnt;
-		int   locstep = (int)ceil((float)locstepsize/(float)dsstep);
 
-		/* the sums */
-                double    sum = 0;
-		double    sum2 = 0;
-                int       count = 0;
-		/* now loop for each position */
-		int doshifts=shifts;
 		if (shifts<0) { doshifts=-shifts; }
-		for(int loop=0;loop<doshifts;loop++) {
+		for( loop=0;loop<doshifts;loop++) {
 		    /* calculate shift step */
-		    int shiftstep=1;
+		    int shiftstep=1, i;
 		    if (shifts<0) {
 			shiftstep = loop*rpnstack->s[stptr];
 		    } else { 
@@ -838,7 +841,7 @@ short rpn_calc(
 		    }
 		    shiftstep=(int)ceil((float)shiftstep/(float)dsstep);
 		    /* loop all local shifts */
-		    for(int i=0;i<=locstep;i++) {
+		    for( i=0;i<=locstep;i++) {
 			/* now calculate offset into data-array - relative to output_idx*/
 			int offset=shiftstep+i;
 			/* and process if we have index 0 of above */

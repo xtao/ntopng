@@ -15,12 +15,14 @@
 #endif
 #endif
 
+#ifdef HAVE_RRD_GRAPH
 #include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
 #include <cairo-ps.h>
 
 #include <pango/pangocairo.h>
+#endif
 
 
 #include "rrd_tool.h"
