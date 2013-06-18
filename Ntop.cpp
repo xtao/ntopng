@@ -191,7 +191,7 @@ int Ntop::addUser(char *username, char *full_name, char *password) {
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
 
-  snprintf(key, sizeof(key), "user.%s.fullname", username);
+  snprintf(key, sizeof(key), "user.%s.full_name", username);
   ntop->getRedis()->set(key, full_name, 0);
 
   snprintf(key, sizeof(key), "user.%s.group", username);
@@ -206,7 +206,7 @@ int Ntop::addUser(char *username, char *full_name, char *password) {
 int Ntop::deleteUser(char *username) {
   char key[64];
 
-  snprintf(key, sizeof(key), "user.%s.fullname", username);
+  snprintf(key, sizeof(key), "user.%s.full_name", username);
   ntop->getRedis()->del(key);
 
   snprintf(key, sizeof(key), "user.%s.group", username);
