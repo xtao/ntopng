@@ -1024,6 +1024,7 @@ static void send_http_error(struct mg_connection *conn, int status,
   return CloseHandle(cv->signal) && CloseHandle(cv->broadcast) ? 0 : -1;
 }
 
+
 // For Windows, change all slashes to backslashes in path names.
 static void change_slashes_to_backslashes(char *path) {
   int i;

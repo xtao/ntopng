@@ -27,7 +27,11 @@
 #include <ws2tcpip.h>
 #include <process.h>
 #include <io.h>
+
+extern "C" {
 #include <getopt.h> /* getopt from: http://www.pwilson.net/sample.html. */
+}
+
 #include <process.h> /* for getpid() and the exec..() family */
 #include <direct.h>  /* mkdir */
 
@@ -59,13 +63,11 @@ extern int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_ro
 extern void pthread_detach(pthread_t *threadId);
 extern int pthread_join(pthread_t thread, void **value_ptr);
 
-extern "C" {
 extern int pthread_mutex_init(pthread_mutex_t *mutex, void* notused);
 extern int pthread_mutex_destroy(pthread_mutex_t *mutex);
 extern int pthread_mutex_lock(pthread_mutex_t *mutex);
 extern int pthread_mutex_trylock(pthread_mutex_t *mutex);
 extern int pthread_mutex_unlock(pthread_mutex_t *mutex);
-}
 
 extern char *strtok_r(char *s, const char *delim, char **save_ptr);
 
