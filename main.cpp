@@ -25,6 +25,24 @@ extern "C" {
   extern char* rrd_strversion(void);
 };
 
+static const struct option long_options[] = {
+  { "dns-mode",                          required_argument, NULL, 'n' },
+  { "interface",                         required_argument, NULL, 'i' },
+  { "data-dir",                          required_argument, NULL, 'd' },
+  { "categorization-key",                required_argument, NULL, 'c' },
+  { "http-port",                         required_argument, NULL, 'w' },
+  { "local-networks",                    required_argument, NULL, 'm' },
+  { "ndpi-protocols",                    required_argument, NULL, 'p' },
+  { "redis",                             required_argument, NULL, 'r' },
+  { "core-affinity",                     required_argument, NULL, 'g' },
+  { "dont-change-user",                  no_argument,       NULL, 's' },
+  { "disable-login",                     no_argument,       NULL, 'l' },
+  { "verbose",                           no_argument,       NULL, 'v' },
+  { "help",                              no_argument,       NULL, 'h' },
+  /* End of options */
+  { NULL,                                no_argument,       NULL,  0 }  
+};
+
 /* ******************************************* */
 
 static void help() {
@@ -98,7 +116,8 @@ int main(int argc, char *argv[]) {
 
   if((ntop = new Ntop()) == NULL) exit(0);
 
-  while((c = getopt(argc, argv, "c:g:hi:w:r:sm:n:p:d:lv")) != '?') {
+  while((c = getopt_long(argc, argv, "c:g:hi:w:r:sm:n:p:d:lv",
+			 long_options, NULL)) != '?') {
     if(c == 255) break;
 
     switch(c) {
