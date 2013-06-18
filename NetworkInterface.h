@@ -47,7 +47,7 @@ class NetworkInterface {
   HostHash *hosts_hash;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
-  bool polling_started;
+  bool running;
 
   void dropPrivileges();
   void deleteDataStructures();
@@ -77,8 +77,8 @@ class NetworkInterface {
   inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
-  inline int isRunning()	   { return polling_started; };
-  inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (polling_started) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
+  inline int isRunning()	   { return running; };
+  inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
 
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 

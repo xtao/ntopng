@@ -91,7 +91,7 @@ void PF_RINGInterface::startPacketPolling() {
 void PF_RINGInterface::shutdown() {
   void *res;
 
-  if(polling_started) { 
+  if(running) { 
     if(pfring_handle) pfring_breakloop(pfring_handle);
     pthread_join(pollLoop, &res);
     NetworkInterface::shutdown();

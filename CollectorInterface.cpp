@@ -80,7 +80,7 @@ void CollectorInterface::startPacketPolling() {
 void CollectorInterface::shutdown() {
   void *res;
   
-  if(polling_started) {
+  if(running) {
     NetworkInterface::shutdown();
     pthread_join(pollLoop, &res);
   }

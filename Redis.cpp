@@ -97,6 +97,37 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 
 /* **************************************** */
 
+int Redis::keys(const char *pattern, char ***keys_p) {
+  char **keys;
+  int rc, i;
+  
+  l->lock(__FILE__, __LINE__);
+  rc = credis_keys(redis, pattern, &keys);
+  if(rc > 0) {
+    (*keys_p) = (char**) malloc(rc * sizeof(char*));
+    if ((*keys_p) == NULL) rc = -1;
+    else for (i = 0; i < rc; i++)
+      (*keys_p)[i] = strdup(keys[i]);
+  }
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::del(char *key) {
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_del(redis, key);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
   int rc;
   char key[128], *val;
@@ -221,8 +252,8 @@ void Redis::setDefaults() {
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
   setResolvedAddress((char*)"0.0.0.0", (char*)"No IP");
   
-  if(get((char*)"user.admin", value, sizeof(value)) < 0)
-    set((char*)"user.admin", (char*)"21232f297a57a5a743894a0e4a801fc3");
+  if(get((char*)"user.admin.password", value, sizeof(value)) < 0)
+    set((char*)"user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");
 }
 
 /* **************************************** */

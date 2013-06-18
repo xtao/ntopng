@@ -96,6 +96,9 @@ void sigproc(int sig) {
     iface->shutdown();
   }
 
+  if (ntop->getPrefs()->save(NULL) < 0)
+     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
+
   delete ntop;
   exit(0);
 }
@@ -217,6 +220,8 @@ int main(int argc, char *argv[]) {
   ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
+  prefs->load(NULL);
+
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
     iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, change_user);
   } else {
@@ -271,7 +276,7 @@ int main(int argc, char *argv[]) {
   ntop->start();
   iface->startPacketPolling();
 
-  while(1) {
+  while(iface->isRunning()) {
     sleep(2);
     /* TODO - Do all this for all registered interfaces */
     iface->runHousekeepingTasks();

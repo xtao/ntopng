@@ -47,6 +47,9 @@ class Prefs {
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);          };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);          };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);          };
+
+  int load(const char *path);
+  int save(const char *path);
 };
 
 #endif /* _PREFS_H_ */

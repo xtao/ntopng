@@ -988,6 +988,31 @@ int credis_type(REDIS rhnd, const char *key)
   return rc;
 }
 
+#if 1
+int credis_keys(REDIS rhnd, const char *pattern, char ***keyv) 
+{
+  int rc;
+
+  /* with Redis 2.0.0 keys-command returns a multibulk instead of bulk */
+  if (rhnd->version.major >= 2) {
+    rc = cr_sendfandreceive(rhnd, CR_MULTIBULK, "KEYS %s\r\n", pattern);
+  }
+  else {
+    if ((rc = cr_sendfandreceive(rhnd, CR_BULK, "KEYS %s\r\n", pattern)) == 0) {
+      /* server returns keys as space-separated strings, use multi-bulk
+       * storage to store keys */
+      rc = cr_splitstrtromultibulk(rhnd, rhnd->reply.bulk, ' ');
+    }
+  }
+
+  if (rc == 0) {
+    *keyv = rhnd->reply.multibulk.bulks;
+    rc = rhnd->reply.multibulk.len;
+  }
+
+  return rc;
+}
+#else
 int credis_keys(REDIS rhnd, const char *pattern, char ***keyv)
 {
   int rc = cr_sendfandreceive(rhnd, CR_BULK, "KEYS %s\r\n", pattern);
@@ -1003,6 +1028,7 @@ int credis_keys(REDIS rhnd, const char *pattern, char ***keyv)
 
   return rc;
 }
+#endif
 
 int credis_randomkey(REDIS rhnd, char **key)
 {

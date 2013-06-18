@@ -87,7 +87,7 @@ void PcapInterface::startPacketPolling() {
 void PcapInterface::shutdown() {
   void *res;
 
-  if(polling_started) {
+  if(running) {
     if(pcap_handle) pcap_breakloop(pcap_handle);
     pthread_join(pollLoop, &res);
     NetworkInterface::shutdown(); 

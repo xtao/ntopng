@@ -89,7 +89,7 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   last_pkt_rcvd = 0;
   next_idle_flow_purge = next_idle_host_purge = 0;
   cpu_affinity = -1;
-  polling_started = false;
+  running = false;
 }
 
 /* **************************************************** */
@@ -402,13 +402,13 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 void NetworkInterface::startPacketPolling() {
   if (cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);  
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
-  polling_started = true;
+  running = true;
 }
 
 /* **************************************************** */
 
 void NetworkInterface::shutdown() {
-  polling_started = false;
+  running = false;
 }
 
 /* **************************************************** */

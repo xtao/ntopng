@@ -40,6 +40,8 @@ class Redis {
   int expire(char *key, u_int expire_sec);
   int get(char *key, char *rsp, u_int rsp_len);
   int set(char *key, char *value, u_int expire_secs=0);
+  int keys(const char *pattern, char ***keys_p);
+  int del(char *key); 
 
   int queueHostToResolve(char *hostname, bool dont_check_for_existance);
   int popHostToResolve(char *hostname, u_int hostname_len);
