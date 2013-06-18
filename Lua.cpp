@@ -722,7 +722,35 @@ static int ntop_reset_user_password(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
   if((new_password = (char*)lua_tostring(vm, 3)) == NULL) return(-1);
 
-  return(ntop->resetUserPassword(username, old_password, new_password));
+  return ntop->resetUserPassword(username, old_password, new_password);
+}
+
+/* ****************************************** */
+
+static int ntop_add_user(lua_State* vm) {
+  char *username, *full_name, *password;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
+  if((full_name = (char*)lua_tostring(vm, 2)) == NULL) return(-1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
+  if((password = (char*)lua_tostring(vm, 3)) == NULL) return(-1);
+
+  return ntop->addUser(username, full_name, password);
+}
+
+/* ****************************************** */
+
+static int ntop_delete_user(lua_State* vm) {
+  char *username;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(-1);
+
+  return ntop->deleteUser(username);
 }
 
 /* ****************************************** */
@@ -1038,6 +1066,8 @@ static const luaL_Reg ntop_reg[] = {
   /* Admin */
   { "getUsers",       ntop_get_users },
   { "resetUserPassword", ntop_reset_user_password },
+  { "addUser",        ntop_add_user },
+  { "deleteUser",     ntop_delete_user },
 
   { NULL,          NULL}
 };

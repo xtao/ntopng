@@ -8,13 +8,13 @@
 
 <div class="modal-body">
 
-  <div id="alert_placeholder"></div>
+  <div id="password_alert_placeholder"></div>
 
 <script>
-  bootstrap_alert = function() {}
-  bootstrap_alert.error =   function(message) { $('#alert_placeholder').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>');
+  password_alert = function() {}
+  password_alert.error =   function(message) { $('#password_alert_placeholder').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>');
  }
-  bootstrap_alert.success = function(message) { $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>'); }
+  password_alert.success = function(message) { $('#password_alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>'); }
 </script>
 
   <form id="form_password_reset" class="form-horizontal" method="get" action="password_reset.lua">
@@ -44,18 +44,18 @@
   </form>
 
 <script>
-  var frm = $('#form_password_reset');
-  frm.submit(function () {
+  var frmpassreset = $('#form_password_reset');
+  frmpassreset.submit(function () {
     $.ajax({
-      type: frm.attr('method'),
-      url: frm.attr('action'),
-      data: frm.serialize(),
+      type: frmpassreset.attr('method'),
+      url: frmpassreset.attr('action'),
+      data: frmpassreset.serialize(),
       success: function (data) {
         var response = jQuery.parseJSON(data);
         if (response.result == 0)
-          bootstrap_alert.success(response.message); 
+          password_alert.success(response.message); 
         else
-          bootstrap_alert.error(response.message);
+          password_alert.error(response.message);
         $("old_password_input").text("");
         $("new_password_input").text("");
         $("confirm_new_password_input").text("");

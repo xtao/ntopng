@@ -2,14 +2,16 @@
 
       <hr>
 
-
       <div id="table-users"></div>
 	 <script>
 	 $("#table-users").datatable({
-	   url: "/lua/admin/get_users.lua",
-	       showPagination: true,
-	       title: "Users",
-	        columns: [
+	 	url: "/lua/admin/get_users.lua",
+	 	showPagination: true,
+	 	title: "Users",
+		buttons: [
+			"<a href='#add_user_dialog' role='button' class='add-on btn' data-toggle='modal' ><i class='icon-plus'></i></a>"
+		],
+	 	columns: [
 			{
 				title: "Username",
 				field: "column_username",

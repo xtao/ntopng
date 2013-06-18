@@ -71,6 +71,8 @@ class Ntop {
   void getUsers(lua_State* vm);
   int  checkUserPassword(const char *user, const char *password);
   int  resetUserPassword(char *username, char *old_password, char *new_password);
+  int  addUser(char *username, char *full_name, char *password);
+  int  deleteUser(char *username);
 };
 
 extern Ntop *ntop;

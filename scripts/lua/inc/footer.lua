@@ -64,7 +64,6 @@ setInterval(function() {
 			    data: { if: "any" },
 			    success: function(content) {
 					   var rsp = jQuery.parseJSON(content);
-					   
 					   if(prev_bytes > 0) {
 					   var values = updatingChart.text().split(",")
    					   var bytes_diff = rsp.bytes-prev_bytes;

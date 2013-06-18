@@ -831,7 +831,7 @@
 
     // create the button
     $overflow
-      .addClass("btn")
+      .addClass("btn add-on")
       .attr("href", "#")
       .html("<i class=\"icon-resize-full\"></i>")
       .click(function() {

@@ -105,7 +105,7 @@ void Ntop::getUsers(lua_State* vm) {
 
   lua_newtable(vm);
 
-  /* TODO */
+  /* TODO persistent db */
 
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
@@ -138,7 +138,6 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
   }
 }
 
-
 /* ******************************************* */
 
 int Ntop::resetUserPassword(char *username, char *old_password, char *new_password) {
@@ -153,10 +152,28 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
   // FIX add a seed when users management will be available on the web gui
   mg_md5(password_hash, new_password, NULL);
 
-  if(ntop->getRedis()->set(key, password_hash, sizeof(password_hash)) < 0) 
+  if(ntop->getRedis()->set(key, password_hash, 0) < 0) 
     return(false); 
 
   return(true);
+}
+
+/* ******************************************* */
+
+int Ntop::addUser(char *username, char *full_name, char *password) {
+
+  /* TODO persistent db */
+
+  return(false);
+}
+
+/* ******************************************* */
+
+int Ntop::deleteUser(char *username) {
+
+  /* TODO persistent db */
+
+  return(false);
 }
 
 /* ******************************************* */
