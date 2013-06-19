@@ -17,7 +17,8 @@ print [[ - <A HREF="http://www.ntop.org">ntop.org</A> <br><font color=lightgray>
 
 info = ntop.getInfo()
 
-print (info["version"])
+print ("v."..info["version"].." for user ")
+print(_SESSION["user"])
 print [[</font></div>
   <div class="span1"> <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
   <div class="span6"><div id="network-load"></div></div></div>

@@ -76,14 +76,14 @@ them multiple times doesn't change the
 behavior. However, options that set a value, such as --trace-level, will use the LAST value
 given: -w 8000 -w 8080 will run as -w 8080.
  
-.It -n
+.It -n|--dns-mode
 Sets the DNS address resolution mode:
 0 - Decode DNS responses and resolve only local (-m) numeric IPs
 1 - Decode DNS responses and resolve all numeric IPs
 2 - Decode DNS responses and don't resolve numeric IPs
 3 - Don't decode DNS responses and don't resolve numeric IPs
 
-.It -i
+.It -i|--interface
 Specifies the network interface or collector endpoint to be used by
 .B ntop
 for network monitoring.
@@ -93,10 +93,10 @@ If a collector endpoint is specified,
 open a connection to the specified endpoint as a subscriber. Example of valid
 collector endpoints are tcp://*:5556 or ipc://flows.ipc
 
-.It -d
+.It -d|--data-dir
 Specifies the data directory (it must be writable). Default directory is ./data
 
-.It -c
+.It -c|--categorization-key
 Sets the key used to access host categorization services.
 .B ntopng 
 categorizes hosts using services provided by http://block.si
@@ -105,10 +105,10 @@ ask for a test key to be used in ntopng.
 For test driving the service please use as key 9hoAtewwpC2tXRMJBfifrY24B
 (example ntopng -c 9hoAtewwpC2tXRMJBfifrY24B .....).
 
-.It -w
+.It -w|--http-port
 Sets the HTTP port of the embedded web server.
 
-.It -m
+.It -m|--local-networks
 .B ntopng
 determines the ip addresses and netmasks for each active interface. Any traffic on
 those networks is considered local. This parameter allows the user to define additional
@@ -120,27 +120,27 @@ Commas separate multiple network values.
 Both netmask and CIDR notation may be used, even mixed together, for instance
 "131.114.21.0/24,10.0.0.0/255.0.0.0".
 
-.It -p
+.It -p|--ndpi-protocols
 This parameter is used to specify a nDPI protocol file.
 The format is <tcp|udp>:<port>,<tcp|udp>:<port>,.....@<proto> where
 <port> is a port number and <proto> is a name of a protocol supported by nDPI protocol,
 or host:"<string>"@<proto> where string is part of an host name.
 As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
 
-.It -r
+.It -r|--redis
 Specifies the redis database host and port. For more information about redis, please refer 
 to http://redis.io/.
 
-.It -s
+.It -s|--dont-change-user
 Do not change user (debug only)
 
-.It -l
+.It -l|--disable-login
 Disable user login. This is useful for debug purposes or if you want to let everyone access the web gui.
 
-.It -v
+.It -v|--verbose
 Verbose tracing
 
-.It -h
+.It -h|--help
 Help
 
 .SH "WEB VIEWS"

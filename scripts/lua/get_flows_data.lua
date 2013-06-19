@@ -13,6 +13,7 @@ perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 host        = _GET["host"]
+port        = _GET["port"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -29,6 +30,8 @@ end
 if(ifname == nil) then	  
   ifname = "any"
 end
+
+if(port ~= nil) then port = tonumber(port) end
 
 interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
@@ -47,6 +50,11 @@ for key, value in pairs(flows_stats) do
    process = 1
    if(host ~= nil) then
       if((flows_stats[key]["src.ip"] ~= host) and (flows_stats[key]["dst.ip"] ~= host)) then
+	 process = 0
+      end
+   end	
+   if(port ~= nil) then
+      if((flows_stats[key]["src.port"] ~= port) and (flows_stats[key]["dst.port"] ~= port)) then
 	 process = 0
       end
    end

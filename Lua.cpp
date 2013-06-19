@@ -238,6 +238,17 @@ static int ntop_zmq_connect(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_delete_redis_key(lua_State* vm) {
+  char *key;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+  ntop->getRedis()->del(key);
+  return(1);
+}
+
+/* ****************************************** */
+
 #if 0
 static int ntop_get_keyval(lua_State* vm) {
   //struct stat buf;
@@ -1050,6 +1061,7 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
+  { "deleteKey",      ntop_delete_redis_key },
 #if 0
   { "getKeyVal",      ntop_get_keyval  },
   { "setKeyVal",      ntop_set_keyval  },
@@ -1170,6 +1182,8 @@ int Lua::run_script(char *script_path) {
 /* ****************************************** */
 
 int Lua::handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path) {
+  char buf[64];
+
   luaL_openlibs(L); /* Load base libraries */   
   lua_register_classes(L, true); /* Load custom classes */
 
@@ -1209,6 +1223,12 @@ int Lua::handle_script_request(struct mg_connection *conn, const struct mg_reque
     }
   }
   lua_setglobal(L, "_GET"); /* Like in php */
+
+  /* Put the _SESSION params into the environment */
+  lua_newtable(L);  
+  mg_get_cookie(conn, "user", buf, sizeof(buf)); lua_push_str_table_entry(L, "user", buf);
+  mg_get_cookie(conn, "session", buf, sizeof(buf)); lua_push_str_table_entry(L, "session", buf);
+  lua_setglobal(L, "_SESSION"); /* Like in php */
 
   if(luaL_dofile(L, script_path) != 0) {
     const char *err = lua_tostring(L, -1);

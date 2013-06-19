@@ -7,11 +7,25 @@ print [[
         <ul class="nav nav-pills pull-right">
    ]]
 
-if active_page == "home" then
-  print [[ <li class="active"><a href="#">Home</a></li> ]]
+if active_page == "home" or active_page == "about" then
+  print [[ <li class="dropdown active"> ]]
 else
-  print [[ <li><a href="/">Home</a></li> ]]
+  print [[ <li class="dropdown"> ]]
 end
+
+print [[
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        Home <b class="caret"></b>
+      </a>
+    <ul class="dropdown-menu">
+      <li><a href="/">Dashboard</a></li>
+      <li><a href="/lua/about.lua">About ntopng</a></li>
+      <li class="divider"></li>
+      <li><a href="/lua/logout.lua">Logout</a></li>
+    </ul>
+  </li></a>
+
+   ]]
 
 if active_page == "flows" then
   print [[ <li class="active"><a href="#">Flows</a></li> ]]
@@ -33,7 +47,7 @@ print [[
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
       <li><a href="/lua/hosts_matrix.lua">Local Matrix</a></li>
     </ul>
-  </li>
+  </li></a>
 
    ]]
 
@@ -48,18 +62,12 @@ print [[
         Admin <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/admin/users.lua">Users</a></li>
+      <li><a href="/lua/admin/users.lua">Manage Users</a></li>
       <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
     </ul>
   </li>
 
    ]]
-
-if active_page == "about" then
-  print [[ <li class="active"><a href="#">About</a></li> ]]
-else
-  print [[ <li><a href="/lua/about.lua">About</a></li> ]]
-end
 
 dofile("./scripts/lua/inc/search_host_box.lua")
 
