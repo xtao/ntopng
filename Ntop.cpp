@@ -28,7 +28,7 @@ Ntop *ntop;
 Ntop::Ntop() {
   globals = new NtopGlobals();
   pa = new PeriodicActivities();
-  address = new Address();
+  address = new AddressResolution();
   categorization = NULL;
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */

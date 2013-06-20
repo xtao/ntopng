@@ -32,7 +32,7 @@ class Ntop {
   NtopGlobals *globals;
   Redis *redis;
   PeriodicActivities *pa;
-  Address *address;
+  AddressResolution *address;
   Prefs *prefs;
   Geolocation *geo;
   Categorization *categorization;

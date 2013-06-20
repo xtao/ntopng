@@ -23,7 +23,7 @@
 
 /* **************************************** */
 
-Address::Address() {
+AddressResolution::AddressResolution() {
   num_resolved_addresses = num_resolved_fails = 0;
   ptree = New_Patricia(128);
 }
@@ -155,7 +155,7 @@ static void ptree_add_rule(patricia_tree_t *ptree, char *line) {
 /* ******************************************* */
 
 /* Format: 131.114.21.0/24,10.0.0.0/255.0.0.0 */
-void Address::setLocalNetworks(char *rule) {
+void AddressResolution::setLocalNetworks(char *rule) {
   char *net = strtok(rule, ",");
 
   while(net != NULL) {
@@ -167,7 +167,7 @@ void Address::setLocalNetworks(char *rule) {
 
 /* ******************************************* */
 
-bool Address::findAddress(int family, void *addr) {
+bool AddressResolution::findAddress(int family, void *addr) {
   return((ptree_match(ptree, family, addr, (family == AF_INET) ? 32 : 128) != NULL) ? true /* found */ : false /* not found */);
 }
 
@@ -177,7 +177,7 @@ static void free_ptree_data(void *data) { ; }
 
 /* **************************************** */
 
-Address::~Address() {
+AddressResolution::~AddressResolution() {
   void *res;
 
   pthread_join(resolveThreadLoop, &res);
@@ -190,7 +190,7 @@ Address::~Address() {
 
 /* ***************************************** */
 
-void Address::resolveHostName(char *numeric_ip) {
+void AddressResolution::resolveHostName(char *numeric_ip) {
   char rsp[128];
 
   if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp), false) < 0) {
@@ -225,7 +225,7 @@ void Address::resolveHostName(char *numeric_ip) {
 /* **************************************************** */
 
 static void* resolveLoop(void* ptr) {
-  Address *a = (Address*)ptr;
+  AddressResolution *a = (AddressResolution*)ptr;
   Redis *r = ntop->getRedis();
 
   while(!ntop->getGlobals()->isShutdown()) {
@@ -243,7 +243,7 @@ static void* resolveLoop(void* ptr) {
 
 /* **************************************************** */
 
-void Address::startResolveAddressLoop() {
+void AddressResolution::startResolveAddressLoop() {
   pthread_create(&resolveThreadLoop, NULL, resolveLoop, (void*)this);
 }
 

@@ -19,19 +19,19 @@
  *
  */
 
-#ifndef _ADDRESS_H_
-#define _ADDRESS_H_
+#ifndef _ADDRESS_RESOLUTION_H_
+#define _ADDRESS_RESOLUTION_H_
 
 #include "ntop_includes.h"
 
-class Address {
+class AddressResolution {
   u_int32_t num_resolved_addresses, num_resolved_fails;
   pthread_t resolveThreadLoop;
   patricia_tree_t *ptree;
 
  public:
-  Address();
-  ~Address();
+  AddressResolution();
+  ~AddressResolution();
 
   void startResolveAddressLoop();
   void resolveHostName(char *numeric_ip);
@@ -40,4 +40,4 @@ class Address {
   bool findAddress(int family, void *addr);
 };
 
-#endif /* _ADDRESS_H_ */
+#endif /* _ADDRESS_RESOLUTION_H_ */

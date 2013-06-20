@@ -109,7 +109,7 @@ extern "C" {
 #include "HostHash.h"
 #include "PeriodicActivities.h"
 #include "Lua.h"
-#include "Address.h"
+#include "AddressResolution.h"
 #include "Categorization.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
