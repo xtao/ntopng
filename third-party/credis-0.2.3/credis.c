@@ -1094,8 +1094,13 @@ int credis_ttl(REDIS rhnd, const char *key)
 
 static int cr_push(REDIS rhnd, int left, const char *key, const char *val)
 {
+#ifdef ORIGINAL
   return cr_sendfandreceive(rhnd, CR_INLINE, "%s %s %s\r\n%zu\r\n", 
                             left==1?"LPUSH":"RPUSH", key, val, strlen(val));
+#else
+  return cr_sendfandreceive(rhnd, CR_INLINE, "%s %s %s\r\n",
+                            left==1?"LPUSH":"RPUSH", key, val);
+#endif
 }
 
 static int cr_rpushx(REDIS rhnd, const char *key, const char *val)
