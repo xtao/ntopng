@@ -801,9 +801,14 @@ int credis_set(REDIS rhnd, const char *key, const char *val)
   return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %zu\r\n%zs\r\n", 
                             key, strlen(val), val);
 #else
+#if 0
   /* L.Deri */
-  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %s\r\n%zu\r\n", 
-                            key, val, strlen(val));
+  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %s\r\n", 
+                            key, strlen(val));
+#else
+  return cr_sendfandreceive(rhnd, CR_INLINE, "*3\r\n$3\r\nSET\r\n$%zu\r\n%s\r\n$%zu\r\n%s\r\n", 
+                            strlen(key), key, strlen(val), val);
+#endif
 #endif
 }
 
@@ -988,7 +993,23 @@ int credis_type(REDIS rhnd, const char *key)
   return rc;
 }
 
-#if 1
+#if ORIGINAL
+int credis_keys(REDIS rhnd, const char *pattern, char ***keyv)
+{
+  int rc = cr_sendfandreceive(rhnd, CR_BULK, "KEYS %s\r\n", pattern);
+
+  if (rc == 0) {
+    /* server returns keys as space-separated strings, use multi-bulk 
+     * storage to store keys */
+    if ((rc = cr_splitstrtromultibulk(rhnd, rhnd->reply.bulk, ' ')) == 0) {
+      *keyv = rhnd->reply.multibulk.bulks;
+      rc = rhnd->reply.multibulk.len;
+    }
+  }
+
+  return rc;
+}
+#else
 int credis_keys(REDIS rhnd, const char *pattern, char ***keyv) 
 {
   int rc;
@@ -1008,22 +1029,6 @@ int credis_keys(REDIS rhnd, const char *pattern, char ***keyv)
   if (rc == 0) {
     *keyv = rhnd->reply.multibulk.bulks;
     rc = rhnd->reply.multibulk.len;
-  }
-
-  return rc;
-}
-#else
-int credis_keys(REDIS rhnd, const char *pattern, char ***keyv)
-{
-  int rc = cr_sendfandreceive(rhnd, CR_BULK, "KEYS %s\r\n", pattern);
-
-  if (rc == 0) {
-    /* server returns keys as space-separated strings, use multi-bulk 
-     * storage to store keys */
-    if ((rc = cr_splitstrtromultibulk(rhnd, rhnd->reply.bulk, ' ')) == 0) {
-      *keyv = rhnd->reply.multibulk.bulks;
-      rc = rhnd->reply.multibulk.len;
-    }
   }
 
   return rc;
