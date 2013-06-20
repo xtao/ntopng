@@ -40,22 +40,23 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_c
   struct stat statbuf;
 
   prefs = _prefs, redis = _redis;
-
-  if(stat(_data_dir, &statbuf)
-     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
-     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", _data_dir);
-    exit(-1);
-  }
-
-  if(stat(_callbacks_dir, &statbuf)
-     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
-     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", _callbacks_dir);
-    exit(-1);
-  }
-
   data_dir = strdup(_data_dir), callbacks_dir = strdup(_callbacks_dir);
+  fixPath(data_dir), fixPath(callbacks_dir);
+
+  if(stat(data_dir, &statbuf)
+     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
+     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", data_dir);
+    exit(-1);
+  }
+
+  if(stat(callbacks_dir, &statbuf)
+     || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
+     || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", callbacks_dir);
+    exit(-1);
+  }
+
 }
 
 /* ******************************************* */
@@ -218,3 +219,9 @@ int Ntop::deleteUser(char *username) {
 
 /* ******************************************* */
 
+void Ntop::fixPath(char *str) {
+#ifdef WIN32
+  for(int i=0; str[i] != '\0'; i++)
+   if(str[i] == '/') str[i] = '\\';                                                                                                 
+#endif
+}

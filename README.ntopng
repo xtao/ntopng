@@ -13,6 +13,9 @@ On Mac OSX please install macports and do
 - port install XXX
   Example: port install geoip
 
+On Windows you can download the redis server from
+- https://github.com/rgl/redis/downloads
+  
 --------------------------
 Luca Deri <deri@ntop.org>
 

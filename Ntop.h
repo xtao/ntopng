@@ -73,6 +73,7 @@ class Ntop {
   int  resetUserPassword(char *username, char *old_password, char *new_password);
   int  addUser(char *username, char *full_name, char *password);
   int  deleteUser(char *username);
+  void fixPath(char *str);
 };
 
 extern Ntop *ntop;
