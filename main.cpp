@@ -119,7 +119,10 @@ void sigproc(int sig) {
 
 int main(int argc, char *argv[]) {
   u_char c;
-  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), *docsdir =  (char*)"./httpdocs";
+  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), 
+    *docs_dir =  (char*)"httpdocs",
+    *scripts_dir = (char*)"scripts",
+    *callbacks_dir = (char*)"scripts/callbacks";
   u_int http_port = CONST_DEFAULT_NTOP_PORT;
   bool change_user = true, localnets = false;
   char *categorization_key = NULL;
@@ -229,9 +232,17 @@ int main(int argc, char *argv[]) {
 
   if(redis == NULL) redis = new Redis();
 
-  ntop->registerPrefs(prefs, redis, data_dir,
-		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
+  data_dir       = ntop->getValidPath(data_dir);
+  docs_dir       = ntop->getValidPath(docs_dir);
+  scripts_dir    = ntop->getValidPath(scripts_dir);
+  callbacks_dir  = ntop->getValidPath(callbacks_dir);
+  
+  if(!data_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir"); return(-1);      }
+  if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir"); return(-1);      }
+  if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir"); return(-1);   }
+  if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
 
+  ntop->registerPrefs(prefs, redis, data_dir, callbacks_dir);
   // prefs->load(NULL);
 
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
@@ -252,8 +263,8 @@ int main(int argc, char *argv[]) {
     iface->set_cpu_affinity(cpu_affinity);
 
   ntop->registerInterface(iface);
-  ntop->loadGeolocation(docsdir);
-  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docsdir, "./scripts"));
+  ntop->loadGeolocation(docs_dir);
+  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docs_dir, scripts_dir));
 
   /*
     We have created the network interface and thus changed user. Let's not check

@@ -46,6 +46,7 @@ class Ntop {
   void setCustomnDPIProtos(char *path);
   inline char* getCustomnDPIProtos()                 { return(custom_ndpi_protos);                 };
   
+  char* getValidPath(char *path);
   void loadGeolocation(char *dir);
   inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };

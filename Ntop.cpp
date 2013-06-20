@@ -224,4 +224,30 @@ void Ntop::fixPath(char *str) {
   for(int i=0; str[i] != '\0'; i++)
    if(str[i] == '/') str[i] = '\\';                                                                                                 
 #endif
+}  
+
+/* ******************************************* */
+
+char* Ntop::getValidPath(char *_path) {
+  const char* dirs[] = {
+    ".",
+#ifndef WIN32
+    "/usr/local/ntopng",
+#endif
+    NULL
+  };  
+
+  for(int i=0; dirs[i] != NULL; i++) {
+    char path[256];
+    struct stat buf;
+
+    snprintf(path, sizeof(path), "%s/%s", dirs[i], _path);
+    fixPath(path);
+    
+    if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
+      return(strdup(path));  
+    }
+  }
+ 
+  return(NULL);
 }
