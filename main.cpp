@@ -40,7 +40,7 @@ static const struct option long_options[] = {
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
   /* End of options */
-  { NULL,                                no_argument,       NULL,  0 }  
+  { NULL,                                no_argument,       NULL,  0 }
 };
 
 /* ******************************************* */
@@ -62,11 +62,11 @@ static void help() {
 	 "                                    |     resolve numeric IPs\n"
 	 "[--interface|-i] <interface>        | Input interface name\n"
 	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
-     "                                    | Default: %s\n"
+	 "                                    | Default: %s\n"
 	 "[--categorization-key|-c] <key>     | Key used to access host categorization\n"
 	 "                                    | services (default: disabled). \n"
-     "                                    | Please read README.categorization for\n"
-     "                                    | more info.\n"
+	 "                                    | Please read README.categorization for\n"
+	 "                                    | more info.\n"
 	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
 	 "[--local-networks|-m] <local nets>  | List of local networks\n"
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
@@ -79,7 +79,8 @@ static void help() {
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_NTOP_PORT);
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, 
+	 CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_NTOP_PORT);
   exit(0);
 }
 
@@ -106,9 +107,10 @@ void sigproc(int sig) {
     iface->shutdown();
   }
 
+#if 0
   if (ntop->getPrefs()->save(NULL) < 0)
-     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
-
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
+#endif
   delete ntop;
   exit(0);
 }
@@ -230,7 +232,7 @@ int main(int argc, char *argv[]) {
   ntop->registerPrefs(prefs, redis, data_dir,
 		      (char*)"./scripts/callbacks" /* Callbacks to call when specific events occour */);
 
-  prefs->load(NULL);
+  // prefs->load(NULL);
 
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
     iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, change_user);
@@ -240,7 +242,7 @@ int main(int argc, char *argv[]) {
       iface = new PF_RINGInterface(ifName, change_user);
     } catch (int) {
 #endif
-    iface = new PcapInterface(ifName, change_user);
+      iface = new PcapInterface(ifName, change_user);
 #ifdef HAVE_PF_RING
     }
 #endif
