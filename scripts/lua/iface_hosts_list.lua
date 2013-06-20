@@ -55,7 +55,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
    end
 end
 
-if(num == 0) then
+if((num == 0) and (top_key ~= nil)) then
    print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?host=".. top_key .."\" }")
    accumulate = accumulate + top_value
 end
