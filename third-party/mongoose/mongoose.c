@@ -154,15 +154,16 @@ typedef long off_t;
 #define fileno(x) _fileno(x)
 #endif // !fileno MINGW #defines fileno
 
+typedef struct {HANDLE signal, broadcast;} pthread_cond_t;
+
 #if 0 /* NTOP */
 typedef HANDLE pthread_mutex_t;
-typedef struct {HANDLE signal, broadcast;} pthread_cond_t;
 typedef DWORD pthread_t;
 #define pid_t HANDLE // MINGW typedefs pid_t to int. Using #define here.
-#endif
 
 static int pthread_mutex_lock(pthread_mutex_t *);
 static int pthread_mutex_unlock(pthread_mutex_t *);
+#endif
 static void to_unicode(const char *path, wchar_t *wbuf, size_t wbuf_len);
 struct file;
 static char *mg_fgets(char *buf, size_t size, struct file *filep, char **p);
@@ -978,6 +979,8 @@ static void send_http_error(struct mg_connection *conn, int status,
 }
 
 #if defined(_WIN32) && !defined(__SYMBIAN32__)
+
+#if 0
 /* static */int pthread_mutex_init(pthread_mutex_t *mutex, void *unused) {
   unused = NULL;
   *mutex = CreateMutex(NULL, FALSE, NULL);
@@ -995,6 +998,7 @@ static void send_http_error(struct mg_connection *conn, int status,
 /* static */int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   return ReleaseMutex(*mutex) == 0 ? -1 : 0;
 }
+#endif
 
 /* static */int pthread_cond_init(pthread_cond_t *cv, const void *unused) {
   unused = NULL;
@@ -1023,7 +1027,6 @@ static void send_http_error(struct mg_connection *conn, int status,
 /* static */int pthread_cond_destroy(pthread_cond_t *cv) {
   return CloseHandle(cv->signal) && CloseHandle(cv->broadcast) ? 0 : -1;
 }
-
 
 // For Windows, change all slashes to backslashes in path names.
 static void change_slashes_to_backslashes(char *path) {

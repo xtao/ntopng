@@ -77,7 +77,7 @@ void Mutex::unlock(const char *filename, const int line) {
 }
 
 /* ******************************* */
-
+/*
 #ifdef WIN32
 static int pthread_mutex_lock(pthread_mutex_t *mutex) {
   return WaitForSingleObject(*mutex, INFINITE) == WAIT_OBJECT_0? 0 : -1;
@@ -87,3 +87,4 @@ static int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   return ReleaseMutex(*mutex) == 0 ? -1 : 0;
 }
 #endif
+*/

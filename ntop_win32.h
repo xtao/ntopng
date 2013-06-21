@@ -46,28 +46,12 @@ extern "C" {
 #define access _access
 #define ftruncate _chsize
 
-#if 0
-#define pthread_t              DWORD
-#define pthread_mutex_t        HANDLE
-#define pthread_rwlock_t       HANDLE
-#define pthread_rwlock_init                     pthread_mutex_init
-#define pthread_rwlock_wrlock                   pthread_mutex_lock
-#define pthread_rwlock_unlock                   pthread_mutex_unlock
-#endif
-
 typedef HANDLE pthread_mutex_t;
-typedef struct {HANDLE signal, broadcast;} pthread_cond_t;
 typedef HANDLE pthread_t;
 
 extern int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_routine) (void *), void* userParm);
 extern void pthread_detach(pthread_t *threadId);
 extern int pthread_join(pthread_t thread, void **value_ptr);
-
-extern int pthread_mutex_init(pthread_mutex_t *mutex, void* notused);
-extern int pthread_mutex_destroy(pthread_mutex_t *mutex);
-extern int pthread_mutex_lock(pthread_mutex_t *mutex);
-extern int pthread_mutex_trylock(pthread_mutex_t *mutex);
-extern int pthread_mutex_unlock(pthread_mutex_t *mutex);
 
 extern char *strtok_r(char *s, const char *delim, char **save_ptr);
 
