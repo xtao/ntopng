@@ -263,6 +263,8 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
     setOption(c, optarg);
   }
 
+  if(!localnets) help();
+
   return(checkOptions());
 }
 
