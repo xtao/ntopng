@@ -621,13 +621,16 @@ static int cr_sendandreceive(REDIS rhnd, char recvtype)
 static int cr_sendfandreceive(REDIS rhnd, char recvtype, const char *format, ...)
 {
   int rc;
-  va_list ap = NULL;
+  va_list ap;
   cr_buffer *buf = &(rhnd->buf);
+
+#ifdef WIN32
+  ap = NULL;
+#endif
 
   va_start(ap, format);
 
-#ifdef WIN32
-  
+#ifdef WIN32 
   memset(buf->data, 0, buf->size);
   rc = _vsnprintf(buf->data, buf->size, format, ap);
 #else
