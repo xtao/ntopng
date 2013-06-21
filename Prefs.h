@@ -33,13 +33,14 @@ class Prefs {
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
-  char *ifName;
+  char *ifName, *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
-  char *users_file_path, *config_file_path;
+  char *users_file_path, *config_file_path, *ndpi_proto_path;
   char *redis_host;
   int redis_port;
   int cpu_affinity;
+  int dns_mode;
 
   void help();
   int setOption(int optkey, char *optarg);

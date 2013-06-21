@@ -25,7 +25,7 @@
 
 Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop;
-  ifName = NULL;
+  ifName = local_networks = NULL;
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
@@ -35,7 +35,7 @@ Prefs::Prefs(Ntop *_ntop) {
   scripts_dir = strdup(CONST_DEFAULT_SCRIPTS_DIR);
   callbacks_dir = strdup(CONST_DEFAULT_CALLBACKS_DIR);
   users_file_path = strdup(CONST_DEFAULT_USERS_FILE);
-  config_file_path = NULL;
+  config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
   change_user = true;
   localnets = false;
@@ -43,6 +43,7 @@ Prefs::Prefs(Ntop *_ntop) {
   cpu_affinity = -1;
   redis_host = NULL;
   redis_port = 6379;
+  dns_mode = 0;
 }
 
 /* ******************************************* */
@@ -138,12 +139,14 @@ int Prefs::setOption(int optkey, char *optarg) {
       break;
 
     case 'm':
-      ntop->setLocalNetworks(optarg);
+      local_networks = strdup(optarg);
+      ntop->setLocalNetworks(local_networks);
       localnets = true;
       break;
 
     case 'n':
-      switch(atoi(optarg)) {
+      dns_mode = atoi(optarg);
+      switch(dns_mode) {
       case 0:
 	break;
       case 1:
@@ -162,7 +165,8 @@ int Prefs::setOption(int optkey, char *optarg) {
       break;
 
     case 'p':
-      ntop->setCustomnDPIProtos(optarg);
+      ndpi_proto_path = strdup(optarg);
+      ntop->setCustomnDPIProtos(ndpi_proto_path);
       break;
 
     case 'h':
@@ -217,6 +221,11 @@ int Prefs::setOption(int optkey, char *optarg) {
       enable_users_login = false;
       break;
 
+    case 'u':
+      free(users_file_path);
+      users_file_path = strdup(optarg);
+      break;
+
     case 'v':
       ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
       break;
@@ -263,14 +272,13 @@ int Prefs::loadFromFile(const char *path) {
   char buffer[512], *line, *key, *value;
   FILE *fd;
   const struct option *opt;
-  int i;
 
   config_file_path = strdup(path);
 
   fd = fopen(config_file_path, "r");
 
   if(fd == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Config file %s not found (it will be created)", config_file_path);
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Config file %s not found", config_file_path);
     return(-1);
   }
 
@@ -278,19 +286,18 @@ int Prefs::loadFromFile(const char *path) {
     if(!(line = fgets(buffer, sizeof(buffer), fd)))
       break;
 
-    if(((i = strlen(line)) <= 1) || (line[0] == '#'))
+    line = Utils::trim(line);
+
+    if(strlen(line) < 1 || line[0] == '#')
       continue;
-    else
-      line[i-1] = '\0';
 
     key = line;
     key = Utils::trim(key);
 
     value = strrchr(line, '=');
-    if(value == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid line '%s'", line);
-      continue;
-    } else
+    if(value == NULL)
+      value = &line[strlen(line)]; /* empty */
+    else
       value[0] = 0, value = &value[1];
     value = Utils::trim(value);
 
@@ -315,16 +322,13 @@ int Prefs::loadFromFile(const char *path) {
 /* ******************************************* */
 
 int Prefs::save() {
-#if 0
   FILE *fd;
-#endif
 
   saveUsersToFile();
 
   if (config_file_path == NULL)
     return(-1);
 
-#if 0 //TODO
   fd = fopen(config_file_path, "w");
 
   if(fd == NULL) {
@@ -332,11 +336,24 @@ int Prefs::save() {
     return(-1);
   }
 
-  /* TODO write preferences */
-  fprintf(fd, "%s=%s\n", key, val); 
+  if(dns_mode != 0)       fprintf(fd, "dns-mode=%d\n", dns_mode);
+  if(ifName)              fprintf(fd, "interface=%s\n", ifName);
+  if(data_dir)            fprintf(fd, "data-dir=%s\n", data_dir);
+  if(categorization_key)  fprintf(fd, "categorization-key=%s\n", categorization_key);
+  if(local_networks)      fprintf(fd, "local-networks=%s\n", local_networks);
+  if(ndpi_proto_path)     fprintf(fd, "ndpi-protocols=%s\n", ndpi_proto_path);
+  if(redis_host)          fprintf(fd, "redis=%s:%d\n", redis_host, redis_port);
+  if(cpu_affinity >= 0)   fprintf(fd, "core-affinity=%d\n", cpu_affinity);
+  if(!change_user)        fprintf(fd, "dont-change-user\n");
+  if(!enable_users_login) fprintf(fd, "disable-login\n");
+  if(users_file_path)     fprintf(fd, "users-file=%s\n", users_file_path);
+  if(docs_dir)            fprintf(fd, "httpdocs-dir=%s\n", docs_dir);
+  if(scripts_dir)         fprintf(fd, "scripts-dir=%s\n", scripts_dir);
+  if(callbacks_dir)       fprintf(fd, "callbacks-dir=%s\n", callbacks_dir);
+  if(http_port != CONST_DEFAULT_NTOP_PORT) fprintf(fd, "http-port=%d\n", http_port);
+  if(ntop->getTrace()->get_trace_level() != TRACE_LEVEL_NORMAL) fprintf(fd, "verbose\n");
 
   fclose(fd);
-#endif
 
   return(0);
 }

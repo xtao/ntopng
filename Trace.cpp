@@ -25,7 +25,7 @@
 
 Trace::Trace(char *log_path) {
   log_file_path = log_path ? strdup(log_path) : NULL;
-  traceLevel = 2;
+  traceLevel = TRACE_LEVEL_NORMAL;
 };
 
 /* ******************************* */

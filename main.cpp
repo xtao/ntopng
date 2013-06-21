@@ -63,14 +63,16 @@ int main(int argc, char *argv[]) {
   Redis *redis = NULL;
   Prefs *prefs = NULL;
   char *ifName;
-  
+  int rc;
+
   if((ntop = new Ntop()) == NULL) exit(0);
   if((prefs = new Prefs(ntop)) == NULL) exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
-    prefs->loadFromFile(argv[1]);
+    rc = prefs->loadFromFile(argv[1]);
   else
-    prefs->loadFromCLI(argc, argv);
+    rc = prefs->loadFromCLI(argc, argv);
+  if(rc < 0) return(-1);
 
   if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
   if(redis == NULL) redis = new Redis();
