@@ -33,6 +33,8 @@ ntopng \- display top network users
 .IR <redis_host:port> ]
 .RB [ -s ] 
 .RB [ -l ] 
+.RB [ -u
+.IR <users file> ]
 .RB [ -v ] 
 .RB [ -h ]
 
@@ -139,6 +141,19 @@ Disable user login. This is useful for debug purposes or if you want to let ever
 
 .It -v|--verbose
 Verbose tracing
+
+.It -u|--users-file
+Specifies the file containing users credentials, using the following format:
+
+user.utente.password=5f4dcc3b5aa765d61d8327deb882cf99 
+
+user.utente.full_name=Nuovo Utente 
+
+user.utente.group=administrator 
+
+The md5 sum of the password has to be provided.
+This file can be used to overwrite the default "admin" password.
+Users can be added/deleted also from the web gui. Changes are written back to the users file, if any.
 
 .It -h|--help
 Help
