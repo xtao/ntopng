@@ -55,11 +55,17 @@ Prefs::~Prefs() {
 /* ******************************************* */
 
 void Prefs::help() {
+  NetworkInterface n;
+
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
-	 "Usage: ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
+	 "Usage:\n"
+	 "  ntopng <configuration file>\n"
+	 "  or\n"
+	 "  ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-s] [-v]\n\n"
+	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
 	 "                                    | 0 - Decode DNS responses and resolve\n"
 	 "                                    |     local numeric IPs only (default)\n"
@@ -69,7 +75,7 @@ void Prefs::help() {
 	 "                                    |     resolve numeric IPs\n"
 	 "                                    | 3 - Don't decode DNS responses and don't\n"
 	 "                                    |     resolve numeric IPs\n"
-	 "[--interface|-i] <interface>        | Input interface name\n"
+	 "[--interface|-i] <interface>        | Input interface name (numeric or symbolic)\n"
 	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
 	 "                                    | Default: %s\n"
 	 "[--httpdocs-dir|-1] <path>          | Http documents root directory.\n"
@@ -92,13 +98,17 @@ void Prefs::help() {
 	 "                                    | specific CPU Core\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
-	 "[--users-file|-u]                   | Users configuration file path\n"
+	 "[--users-file|-u] <path>            | Users configuration file path\n"
 	 "                                    | Default: %s\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, 
 	 CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, CONST_DEFAULT_USERS_FILE);
+
+  printf("\n");
+  n.printAvailableInterfaces(true, 0, NULL, 0);
+
   exit(0);
 }
 

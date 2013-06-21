@@ -59,8 +59,9 @@ class Prefs {
   inline bool decode_dns_responses()                    { return(sniff_dns_responses);    };
   inline void enable_categorization()                   { categorization_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
-  inline bool do_change_user()                          { return change_user; }
-  inline char* get_if_name()                            { return(ifName); }
+  inline bool do_change_user()                          { return change_user; };
+  inline void set_if_name(char *name)                   { if(ifName) free(ifName); ifName = strdup(name); };
+  inline char* get_if_name()                            { return(ifName);   };
   inline char* get_data_dir()                           { return(data_dir); };
   inline char* get_docs_dir()                           { return(docs_dir); };
   inline char* get_scripts_dir()                        { return(scripts_dir); };

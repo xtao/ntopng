@@ -48,8 +48,12 @@ void sigproc(int sig) {
     iface->shutdown();
   }
 
+#if 0
+  /* For the time being preferences are not saved. In the future this might change */
+  
   if (ntop->getPrefs()->save() < 0)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
+#endif
 
   delete ntop;
   exit(0);
@@ -82,6 +86,8 @@ int main(int argc, char *argv[]) {
   prefs->loadUsersFromFile();
 
   ifName = ntop->get_if_name();
+  
+
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
     iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, prefs->do_change_user());
   } else {

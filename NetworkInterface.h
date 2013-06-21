@@ -57,8 +57,11 @@ class NetworkInterface {
 		u_int8_t l4_proto,
 		bool *src2dst_direction,
 		time_t first_seen, time_t last_seen);
+  bool isNumber(const char *str);
+  bool validInterface(char *name);
 
  public:
+  NetworkInterface();
   NetworkInterface(const char *name, bool change_user);
   virtual ~NetworkInterface();
 
@@ -79,6 +82,7 @@ class NetworkInterface {
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return running; };
   inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
+  void printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
 
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 

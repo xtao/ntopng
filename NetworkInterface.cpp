@@ -49,17 +49,42 @@ static void free_wrapper(void *freeable)
 
 /* **************************************************** */
 
+NetworkInterface::NetworkInterface() {
+  ifname = NULL, flows_hash = NULL, hosts_hash = NULL, ndpi_struct = NULL;
+}
+
+/* **************************************************** */
+
 NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
   u_int32_t num_hashes;
-  
+  char _ifname[64];
+
   if(name == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
+    printAvailableInterfaces(false, 0, NULL, 0);
+
     name = pcap_lookupdev(pcap_error_buffer);
 
     if(name == NULL) {
-      printf("ERROR: Unable to locate default interface (%s)\n", pcap_error_buffer);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate default interface (%s)\n", pcap_error_buffer);
       exit(0);
+    }
+  } else {
+    if(isNumber(name)) {
+      /* We need to convert this numeric index into an interface name */
+      int id = atoi(name);
+
+      _ifname[0] = '\0';
+      printAvailableInterfaces(false, id, _ifname, sizeof(_ifname));
+
+      if(_ifname[0] == '\0') {
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate interface Id %d", id);
+	printAvailableInterfaces(false, 0, NULL, 0);
+	exit(0);
+      }
+      name = _ifname;
     }
   }
 
@@ -280,7 +305,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
 /* **************************************************** */
 
-void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {  
+void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
   struct ndpi_ethhdr *ethernet, dummy_ethernet;
   struct ndpi_iphdr *iph;
   u_int64_t time;
@@ -400,7 +425,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {
-  if (cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);  
+  if (cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
   running = true;
 }
@@ -710,7 +735,7 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
     if((ret = new Host(this, mac, vlanId)) != NULL)
       hosts_hash->add(ret);
   }
-  
+
   return(ret);
 }
 
@@ -718,4 +743,81 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 
 Flow* NetworkInterface::findFlowByKey(u_int32_t key) {
   return((Flow*)(flows_hash->findByKey(key)));
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::validInterface(char *name) {
+  if(name &&
+     (strstr(name, "PPP")         /* Avoid to use the PPP interface              */
+      || strstr(name, "dialup")   /* Avoid to use the dialup interface           */
+      || strstr(name, "ICSHARE")  /* Avoid to use the internet sharing interface */
+      || strstr(name, "NdisWan"))) { /* Avoid to use the internet sharing interface */
+    return(false);
+  }
+
+  return(true);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len) {
+  char ebuf[256];
+  int i, numInterfaces = 0;
+  pcap_if_t *devpointer;
+
+  ebuf[0] = '\0';
+
+  if(ifname == NULL) {
+    if(printHelp)
+      printf("Available interfaces (-i <interface index>):\n");
+    else
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
+  }
+
+  if(pcap_findalldevs(&devpointer, ebuf) < 0) {
+    ;
+  } else {
+    for(i = 0; devpointer != 0; i++) {
+      if(validInterface(devpointer->description)) {
+	numInterfaces++;
+
+	if(ifname == NULL) {
+	  if(printHelp)
+	    printf("   %d. %s (%s)\n", numInterfaces,
+		   devpointer->description ? devpointer->description : "",
+		   devpointer->name);
+	  else
+	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",
+					 numInterfaces,
+					 devpointer->description ? devpointer->description : "",
+					 devpointer->name);
+	} else if(numInterfaces == idx) {
+	  snprintf(ifname, ifname_len, "%s", devpointer->name);
+	  break;
+	}
+      }
+
+      devpointer = devpointer->next;
+    } /* for */
+  } /* else */
+
+  if(numInterfaces == 0) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "No interfaces available! This application cannot work");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "         Make sure that winpcap is installed properly");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "         and that you have network interfaces installed.");
+  }
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::isNumber(const char *str) {
+  while(*str) {
+    if(!isdigit(*str))
+      return(false);
+
+      str++;
+    }
+
+  return(true);
 }
