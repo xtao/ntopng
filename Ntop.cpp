@@ -66,24 +66,22 @@ Ntop::Ntop() {
 
 /* ******************************************* */
 
-void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir) {
+void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   struct stat statbuf;
 
   prefs = _prefs, redis = _redis;
-  data_dir = strdup(_data_dir), callbacks_dir = strdup(_callbacks_dir);
-  fixPath(data_dir), fixPath(callbacks_dir);
 
-  if(stat(data_dir, &statbuf)
+  if(stat(prefs->get_data_dir(), &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
      || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", data_dir);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_data_dir());
     exit(-1);
   }
 
-  if(stat(callbacks_dir, &statbuf)
+  if(stat(prefs->get_callbacks_dir(), &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
      || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", callbacks_dir);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_callbacks_dir());
     exit(-1);
   }
 
@@ -260,19 +258,27 @@ void Ntop::fixPath(char *str) {
 
 
 char* Ntop::getValidPath(char *_path) {
+  struct stat buf;
   const char* dirs[] = {
 #ifndef WIN32
-	  ".",
-      "/usr/local/ntopng",
+    ".",
+    "/usr/local/ntopng",
 #else
-      (const char*)_wdir,
+    (const char*)_wdir,
 #endif
     NULL
   };  
 
+#ifndef WIN32
+  /* absolute paths */
+  if(stat(_path, &buf) == 0) {
+    return(strdup(_path));
+  }
+
+  /* relative paths */
+#endif
   for(int i=0; dirs[i] != NULL; i++) {
     char path[256];
-    struct stat buf;
 
     snprintf(path, sizeof(path), "%s/%s", dirs[i], _path);
     fixPath(path);
@@ -284,3 +290,4 @@ char* Ntop::getValidPath(char *_path) {
  
   return(NULL);
 }
+

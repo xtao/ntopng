@@ -29,7 +29,7 @@ class Ntop {
 #ifdef WIN32
   char _wdir[256];
 #endif
-  char *data_dir, *callbacks_dir, *custom_ndpi_protos;
+  char *custom_ndpi_protos;
   NetworkInterface *iface;
   HTTPserver *httpd;
   NtopGlobals *globals;
@@ -43,7 +43,7 @@ class Ntop {
 
  public:
   Ntop();
-  void registerPrefs(Prefs *_prefs, Redis *_redis, char *_data_dir, char *_callbacks_dir);
+  void registerPrefs(Prefs *_prefs, Redis *_redis);
   ~Ntop();
 
   void setCustomnDPIProtos(char *path);
@@ -55,8 +55,9 @@ class Ntop {
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   void start();
   inline Geolocation* getGeolocation()               { return(geo);            }
-  inline char* get_data_dir()                        { return(data_dir);       };
-  inline char* get_callbacks_dir()                   { return(callbacks_dir);  };
+  inline char* get_if_name()                         { return(prefs->get_if_name()); }
+  inline char* get_data_dir()                        { return(prefs->get_data_dir()); };
+  inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   inline Categorization* get_categorization()        { return(categorization); };
  inline void registerInterface(NetworkInterface *i)  { iface = i;              };
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };

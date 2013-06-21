@@ -25,65 +25,6 @@ extern "C" {
   extern char* rrd_strversion(void);
 };
 
-static const struct option long_options[] = {
-  { "dns-mode",                          required_argument, NULL, 'n' },
-  { "interface",                         required_argument, NULL, 'i' },
-  { "data-dir",                          required_argument, NULL, 'd' },
-  { "categorization-key",                required_argument, NULL, 'c' },
-  { "http-port",                         required_argument, NULL, 'w' },
-  { "local-networks",                    required_argument, NULL, 'm' },
-  { "ndpi-protocols",                    required_argument, NULL, 'p' },
-  { "redis",                             required_argument, NULL, 'r' },
-  { "core-affinity",                     required_argument, NULL, 'g' },
-  { "dont-change-user",                  no_argument,       NULL, 's' },
-  { "disable-login",                     no_argument,       NULL, 'l' },
-  { "verbose",                           no_argument,       NULL, 'v' },
-  { "help",                              no_argument,       NULL, 'h' },
-  /* End of options */
-  { NULL,                                no_argument,       NULL,  0 }
-};
-
-/* ******************************************* */
-
-static void help() {
-  printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
-	 "Usage: ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
-	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
-	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-s] [-v]\n\n"
-	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
-	 "                                    | 0 - Decode DNS responses and resolve\n"
-	 "                                    |     local numeric IPs only (default)\n"
-	 "                                    | 1 - Decode DNS responses and resolve all\n"
-	 "                                    |     numeric IPs\n"
-	 "                                    | 2 - Decode DNS responses and don't\n"
-	 "                                    |     resolve numeric IPs\n"
-	 "                                    | 3 - Don't decode DNS responses and don't\n"
-	 "                                    |     resolve numeric IPs\n"
-	 "[--interface|-i] <interface>        | Input interface name\n"
-	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
-	 "                                    | Default: %s\n"
-	 "[--categorization-key|-c] <key>     | Key used to access host categorization\n"
-	 "                                    | services (default: disabled). \n"
-	 "                                    | Please read README.categorization for\n"
-	 "                                    | more info.\n"
-	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
-	 "[--local-networks|-m] <local nets>  | List of local networks\n"
-	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
-	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
-	 "                                    | (eg. protos.txt)\n"
-	 "[--redis|-r] <redis host[:port]>    | Redis host[:port]\n"
-	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
-	 "                                    | specific CPU Core\n"
-	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
-	 "[--disable-login|-l]                | Disable user login authentication\n"
-	 "[--verbose|-v]                      | Verbose tracing\n"
-	 "[--help|-h]                         | Help\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, 
-	 CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_NTOP_PORT);
-  exit(0);
-}
-
 /* ******************************** */
 
 void sigproc(int sig) {
@@ -107,10 +48,9 @@ void sigproc(int sig) {
     iface->shutdown();
   }
 
-#if 0
-  if (ntop->getPrefs()->save(NULL) < 0)
+  if (ntop->getPrefs()->save() < 0)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
-#endif
+
   delete ntop;
   exit(0);
 }
@@ -118,153 +58,48 @@ void sigproc(int sig) {
 /* ******************************************* */
 
 int main(int argc, char *argv[]) {
-  u_char c;
-  char *ifName = NULL, *data_dir = strdup(CONST_DEFAULT_DATA_DIR), 
-    *docs_dir =  (char*)"httpdocs",
-    *scripts_dir = (char*)"scripts",
-    *callbacks_dir = (char*)"scripts/callbacks";
-  u_int http_port = CONST_DEFAULT_NTOP_PORT;
-  bool change_user = true, localnets = false;
-  char *categorization_key = NULL;
-  int cpu_affinity = -1;
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
-  Prefs *prefs = new Prefs();
-
-  if((ntop = new Ntop()) == NULL) exit(0);
-
-  while((c = getopt_long(argc, argv, "c:g:hi:w:r:sm:n:p:d:lv",
-			 long_options, NULL)) != '?') {
-    if(c == 255) break;
-
-    switch(c) {
-    case 'c':
-      categorization_key = optarg;
-      break;
-
-    case 'g':
-      cpu_affinity = atoi(optarg);
-      break;
-
-    case 'm':
-      ntop->setLocalNetworks(optarg);
-      localnets = true;
-      break;
-
-    case 'n':
-      switch(atoi(optarg)) {
-      case 0:
-	break;
-      case 1:
-	prefs->resolve_all_hosts();
-	break;
-      case 2:
-	prefs->disable_dns_resolution();
-	break;
-      case 3:
-	prefs->disable_dns_resolution();
-	prefs->disable_dns_responses_decoding();
-	break;
-      default:
-	help();
-      }
-      break;
-
-    case 'p':
-      ntop->setCustomnDPIProtos(optarg);
-      break;
-
-    case 'h':
-      help();
-      break;
-
-    case 'i':
-      ifName = optarg;
-      break;
-
-    case 'w':
-      http_port = atoi(optarg);
-      break;
-
-    case 'r':
-      {
-	char *host;
-	int port;
-	char buf[64];
-
-	snprintf(buf, sizeof(buf), "%s", optarg);
-	host = strtok(buf, ":");
-
-	if(host) {
-	  char *c = strtok(NULL, ":");
-
-	  if(c)
-	    port = atoi(c);
-	  else
-	    port = 6379;
-	}
-
-	redis = new Redis(host, port);
-      }
-      break;
-
-    case 's':
-      change_user = false;
-      break;
-
-    case 'd':
-      free(data_dir);
-      data_dir = strdup(optarg);
-      break;
-
-    case 'l':
-      enable_users_login = false;
-      break;
-
-    case 'v':
-      ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
-      break;
-    }
-  }
-
-  if(!localnets) help();
-
-  if(redis == NULL) redis = new Redis();
-
-  data_dir       = ntop->getValidPath(data_dir);
-  docs_dir       = ntop->getValidPath(docs_dir);
-  scripts_dir    = ntop->getValidPath(scripts_dir);
-  callbacks_dir  = ntop->getValidPath(callbacks_dir);
+  Prefs *prefs = NULL;
+  char *ifName;
   
-  if(!data_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir"); return(-1);      }
-  if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir"); return(-1);      }
-  if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir"); return(-1);   }
-  if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
+  if((ntop = new Ntop()) == NULL) exit(0);
+  if((prefs = new Prefs(ntop)) == NULL) exit(0);
 
-  ntop->registerPrefs(prefs, redis, data_dir, callbacks_dir);
-  // prefs->load(NULL);
+  if((argc == 2) && (argv[1][0] != '-'))
+    prefs->loadFromFile(argv[1]);
+  else
+    prefs->loadFromCLI(argc, argv);
 
+  if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
+  if(redis == NULL) redis = new Redis();
+  
+  ntop->registerPrefs(prefs, redis);
+
+  prefs->loadUsersFromFile();
+
+  ifName = ntop->get_if_name();
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
-    iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, change_user);
+    iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, prefs->do_change_user());
   } else {
 #ifdef HAVE_PF_RING
     try {
-      iface = new PF_RINGInterface(ifName, change_user);
+      iface = new PF_RINGInterface(ifName, prefs->do_change_user());
     } catch (int) {
 #endif
-      iface = new PcapInterface(ifName, change_user);
+      iface = new PcapInterface(ifName, prefs->do_change_user());
 #ifdef HAVE_PF_RING
     }
 #endif
   }
 
-  if (cpu_affinity >= 0)
-    iface->set_cpu_affinity(cpu_affinity);
+  if (prefs->get_cpu_affinity() >= 0)
+    iface->set_cpu_affinity(prefs->get_cpu_affinity());
 
   ntop->registerInterface(iface);
-  ntop->loadGeolocation(docs_dir);
-  ntop->registerHTTPserver(httpd = new HTTPserver(http_port, docs_dir, scripts_dir));
+  ntop->loadGeolocation(prefs->get_docs_dir());
+  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(), prefs->get_docs_dir(), prefs->get_scripts_dir()));
 
   /*
     We have created the network interface and thus changed user. Let's not check
@@ -286,9 +121,9 @@ int main(int argc, char *argv[]) {
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
 
-  if(categorization_key != NULL) {
+  if(prefs->get_categorization_key() != NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");
-    ntop->setCategorization(new Categorization(categorization_key));
+    ntop->setCategorization(new Categorization(prefs->get_categorization_key()));
     prefs->enable_categorization();
   }
 
@@ -310,3 +145,4 @@ int main(int argc, char *argv[]) {
 
   return(0);
 }
+
