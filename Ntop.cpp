@@ -26,7 +26,37 @@ Ntop *ntop;
 /* ******************************************* */
 
 Ntop::Ntop() {
-  globals = new NtopGlobals();
+#ifdef WIN32
+  WORD wVersionRequested;
+  WSADATA wsaData;
+  int err;
+  wchar_t wdir[256];
+
+  wVersionRequested = MAKEWORD(2, 0);
+  err = WSAStartup( wVersionRequested, &wsaData );
+  if( err != 0 ) {
+    /* Tell the user that we could not find a usable */
+    /* WinSock DLL.                                  */
+    printf("Fatal error: Unable to initialise Winsock 2.x.");
+    exit(-1);
+  }
+
+    // Get the full path and filename of this program                                                                                                                                               
+    if(GetModuleFileName( NULL, wdir, sizeof(_wdir) ) == 0 ) {
+      _wdir[0] = '\0';
+    } else {
+	  wcstombs( _wdir, wdir, sizeof(_wdir));
+
+		for(int i=strlen(_wdir)-1; i>0; i--)
+        if(_wdir[i] == '\\') {
+          _wdir[i] = '\0';
+          break;
+        }
+	}
+
+#endif
+
+ globals = new NtopGlobals();
   pa = new PeriodicActivities();
   address = new AddressResolution();
   categorization = NULL;
@@ -228,11 +258,14 @@ void Ntop::fixPath(char *str) {
 
 /* ******************************************* */
 
+
 char* Ntop::getValidPath(char *_path) {
   const char* dirs[] = {
-    ".",
 #ifndef WIN32
-    "/usr/local/ntopng",
+	  ".",
+      "/usr/local/ntopng",
+#else
+      (const char*)_wdir,
 #endif
     NULL
   };  
@@ -244,7 +277,7 @@ char* Ntop::getValidPath(char *_path) {
     snprintf(path, sizeof(path), "%s/%s", dirs[i], _path);
     fixPath(path);
     
-    if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
+    if(stat(path, &buf) == 0) {
       return(strdup(path));  
     }
   }

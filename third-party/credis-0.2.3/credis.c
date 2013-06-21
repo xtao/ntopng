@@ -29,8 +29,12 @@
  */
 
 #ifdef WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
+#ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #else 
@@ -613,15 +617,23 @@ static int cr_sendandreceive(REDIS rhnd, char recvtype)
 }
 
 /* Prepare message buffer for sending using a printf()-style formatting. */
-__attribute__ ((format(printf,3,4)))
+//__attribute__ ((format(printf,3,4)))
 static int cr_sendfandreceive(REDIS rhnd, char recvtype, const char *format, ...)
 {
   int rc;
-  va_list ap;
+  va_list ap = NULL;
   cr_buffer *buf = &(rhnd->buf);
 
   va_start(ap, format);
+
+#ifdef WIN32
+  
+  memset(buf->data, 0, buf->size);
+  rc = _vsnprintf(buf->data, buf->size, format, ap);
+#else
+
   rc = vsnprintf(buf->data, buf->size, format, ap);
+#endif
   va_end(ap);
 
   if (rc < 0)
@@ -803,11 +815,11 @@ int credis_set(REDIS rhnd, const char *key, const char *val)
 #else
 #if 0
   /* L.Deri */
-  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %s\r\n", 
+  return cr_sendfandreceive(rhnd, CR_INLINE, "SET %s %d\r\n", 
                             key, strlen(val));
 #else
-  return cr_sendfandreceive(rhnd, CR_INLINE, "*3\r\n$3\r\nSET\r\n$%zu\r\n%s\r\n$%zu\r\n%s\r\n", 
-                            strlen(key), key, strlen(val), val);
+   //return cr_sendfandreceive(rhnd, CR_INLINE, "*3\r\n$3\r\nSET\r\n$%zu\r\n%s\r\n$%zu\r\n%s\r\n", strlen(key), key, strlen(val), val);
+	return cr_sendfandreceive(rhnd, CR_INLINE, "*3\r\n$3\r\nSET\r\n$%u\r\n%s\r\n$%u\r\n%s\r\n", strlen(key), key, strlen(val), val);
 #endif
 #endif
 }

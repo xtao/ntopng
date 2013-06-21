@@ -26,6 +26,9 @@
 
 class Ntop {
  private:
+#ifdef WIN32
+  char _wdir[256];
+#endif
   char *data_dir, *callbacks_dir, *custom_ndpi_protos;
   NetworkInterface *iface;
   HTTPserver *httpd;

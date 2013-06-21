@@ -72,7 +72,7 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
-#define CONST_DEFAULT_DATA_DIR "./data"
+#define CONST_DEFAULT_DATA_DIR "data"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
