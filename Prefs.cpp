@@ -250,6 +250,8 @@ int Prefs::checkOptions() {
   if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir"); return(-1);   }
   if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
 
+  if(!localnets) help();
+
   return(0);
 }
 
@@ -262,8 +264,6 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
     if(c == 255) break;
     setOption(c, optarg);
   }
-
-  if(!localnets) help();
 
   return(checkOptions());
 }
@@ -315,8 +315,6 @@ int Prefs::loadFromFile(const char *path) {
   }
 
   fclose(fd);
-
-  if(!localnets) help();
 
   return(checkOptions());
 }
