@@ -129,8 +129,10 @@ int main(int argc, char *argv[])
 				   "Unable to write on %s: please specify a different directory (-d)",
 				   ntop->get_data_dir());
       exit(0);
-    } else
+    } else {
       fclose(fd); /* All right */
+      unlink(path);
+    }
   }
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
