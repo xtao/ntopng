@@ -48,6 +48,10 @@ class Trace {
   char *log_file_path;
   u_int8_t traceLevel;
 
+#ifdef WIN32
+  VOID AddToMessageLog(LPTSTR lpszMsg);
+#endif
+
  public:
   Trace(char *log_path = NULL);
   ~Trace();

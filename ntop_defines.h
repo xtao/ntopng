@@ -72,16 +72,48 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
-#define CONST_DEFAULT_DATA_DIR      "./data"
-#define CONST_DEFAULT_DOCS_DIR      "./httpdocs"
-#define CONST_DEFAULT_SCRIPTS_DIR   "./scripts"
-#define CONST_DEFAULT_CALLBACKS_DIR "./scripts/callbacks"
-#define CONST_DEFAULT_USERS_FILE    "./data/ntopng-users.conf"
+#define CONST_DEFAULT_DATA_DIR      "data"
+#define CONST_DEFAULT_DOCS_DIR      "httpdocs"
+#define CONST_DEFAULT_SCRIPTS_DIR   "scripts"
+#define CONST_DEFAULT_CALLBACKS_DIR "scripts/callbacks"
+#define CONST_DEFAULT_USERS_FILE    "ntopng-users.conf"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
 
+#ifdef WIN32
+ // internal name of the service
+#define SZSERVICENAME        "ntopng"
+
+  // displayed name of the service
+#define SZSERVICEDISPLAYNAME "ntopng Win32"
+
+  // Service TYPE Permissable values:
+  //		SERVICE_AUTO_START
+  //		SERVICE_DEMAND_START
+  //		SERVICE_DISABLED
+#define SERVICESTARTTYPE SERVICE_AUTO_START
+//                                                                                                                                                                                                                                  
+// MessageId: EVENT_GENERIC_INFORMATION                                                                                                                                                                                             
+//                                                                                                                                                                                                                                  
+// MessageText:                                                                                                                                                                                                                     
+//                                                                                                                                                                                                                                  
+//  %1                                                                                                                                                                                                                              
+//                                                                                                                                                                                                                                  
+#define EVENT_GENERIC_INFORMATION        0x40000001L
+
+  // =========================================================
+  // You should not need any changes below this line
+  // =========================================================
+
+  // Value name for app parameters
+#define SZAPPPARAMS "AppParameters"
+
+  // list of service dependencies - "dep1\0dep2\0\0"
+  // If none, use ""
+#define SZDEPENDENCIES ""
+#endif
 
 #ifndef min_val
 #define min_val(a,b) ((a < b) ? a : b)

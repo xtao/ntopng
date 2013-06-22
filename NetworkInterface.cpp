@@ -61,7 +61,11 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   u_int32_t num_hashes;
   char _ifname[64];
 
-  if(name == NULL) {
+#ifdef WIN32
+ if(name == NULL) name = "1"; /* First available interface */
+#endif
+
+ if(name == NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
     printAvailableInterfaces(false, 0, NULL, 0);
 

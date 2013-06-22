@@ -55,9 +55,7 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
     char theDate[32], *file = (char*)_file;
     const char *extra_msg = "";
     time_t theTime = time(NULL);
-#ifndef WIN32
     char *syslogMsg;
-#endif
 
 #ifdef WIN32
 	char filebuf[256];
@@ -68,7 +66,6 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
 		file = (char*)filebuf;
 	} 
 #endif
-
 
     va_start (va_ap, format);
 
@@ -108,15 +105,68 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
 
     // trace_mutex.unlock();
 
-#ifndef WIN32
     syslogMsg = &out_buf[strlen(theDate)+1];
+#ifndef WIN32
     if(eventTraceLevel == 0 /* TRACE_ERROR */)
       syslog(LOG_ERR, "%s", syslogMsg);
     else if(eventTraceLevel == 1 /* TRACE_WARNING */)
       syslog(LOG_WARNING, "%s", syslogMsg);
+#else
+	AddToMessageLog(syslogMsg);
 #endif
 
     va_end(va_ap);
   }
 }
 
+#ifdef WIN32
+
+ /* service_win32.cpp */
+extern "C" {
+	extern short isWinNT();
+	extern BOOL  bConsole;
+};
+
+VOID Trace::AddToMessageLog(LPTSTR lpszMsg)
+{
+  HANDLE  hEventSource;
+  TCHAR	szMsg[4096];
+
+#ifdef UNICODE
+  LPCWSTR  lpszStrings[1];
+#else
+  LPCSTR   lpszStrings[1];
+#endif
+
+  if(!isWinNT()) {
+    char *msg = (char*)lpszMsg;
+    printf("%s", msg);
+    if(msg[strlen(msg)-1] != '\n')
+      printf("\n");
+    return;
+  }
+
+  if (!szMsg)
+    {
+      hEventSource = RegisterEventSource(NULL, TEXT(SZSERVICENAME));
+
+      snprintf(szMsg, sizeof(szMsg), TEXT("%s: %s"), SZSERVICENAME, lpszMsg);
+
+      lpszStrings[0] = szMsg;
+
+      if (hEventSource != NULL) {
+	ReportEvent(hEventSource,
+		    EVENTLOG_INFORMATION_TYPE,
+		    0,
+		    EVENT_GENERIC_INFORMATION,
+		    NULL,
+		    1,
+		    0,
+		    lpszStrings,
+		    NULL);
+
+	DeregisterEventSource(hEventSource);
+      }
+    } 
+}
+#endif

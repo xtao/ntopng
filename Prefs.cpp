@@ -368,17 +368,21 @@ int Prefs::save() {
 /* ******************************************* */
 
 int Prefs::loadUsersFromFile() {
-  char buffer[512], *line, *key, *value;
+  char buffer[512], *line, *key, *value, path[256];
   FILE *fd;
   int i;
 
   if (users_file_path == NULL)
     return(-1);
 
-  fd = fopen(users_file_path, "r");
+  snprintf(path, sizeof(path), "%s/%s", data_dir, users_file_path);
+  ntop->fixPath(path);
+
+  fd = fopen(path, "r");
 
   if(fd == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Config file %s not found (it will be created)", users_file_path);
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
+			"Config file %s not found (it will be created)", path);
     return(-1);
   }
 
@@ -418,17 +422,20 @@ int Prefs::loadUsersFromFile() {
 
 int Prefs::saveUsersToFile() {
   char **keys;
-  char val[64];
+  char val[64], path[256];
   int rc, i;
   FILE *fd;
 
   if (users_file_path == NULL)
     return(-1);
 
-  fd = fopen(users_file_path, "w");
+  snprintf(path, sizeof(path), "%s/%s", data_dir, users_file_path);
+  ntop->fixPath(path);
+
+  fd = fopen(path, "w");
 
   if(fd == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open file %s [%s]", users_file_path, strerror(errno));
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open file %s [%s]", path, strerror(errno));
     return(-1);
   }
 

@@ -27,7 +27,7 @@
 class Ntop {
  private:
 #ifdef WIN32
-  char _wdir[256];
+  TCHAR _wdir[256];
 #endif
   char *custom_ndpi_protos;
   NetworkInterface *iface;

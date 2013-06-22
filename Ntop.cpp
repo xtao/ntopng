@@ -30,7 +30,6 @@ Ntop::Ntop() {
   WORD wVersionRequested;
   WSADATA wsaData;
   int err;
-  wchar_t wdir[256];
 
   wVersionRequested = MAKEWORD(2, 0);
   err = WSAStartup( wVersionRequested, &wsaData );
@@ -42,10 +41,10 @@ Ntop::Ntop() {
   }
 
     // Get the full path and filename of this program                                                                                                                                               
-    if(GetModuleFileName( NULL, wdir, sizeof(_wdir) ) == 0 ) {
+    if(GetModuleFileName(NULL, _wdir, sizeof(_wdir)) == 0) {
       _wdir[0] = '\0';
     } else {
-	  wcstombs( _wdir, wdir, sizeof(_wdir));
+	  // wcstombs( _wdir, wdir, sizeof(_wdir));
 
 		for(int i=strlen(_wdir)-1; i>0; i--)
         if(_wdir[i] == '\\') {
@@ -53,10 +52,9 @@ Ntop::Ntop() {
           break;
         }
 	}
-
 #endif
 
- globals = new NtopGlobals();
+  globals = new NtopGlobals();
   pa = new PeriodicActivities();
   address = new AddressResolution();
   categorization = NULL;

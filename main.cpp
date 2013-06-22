@@ -61,13 +61,7 @@ void sigproc(int sig) {
 
 /* ******************************************* */
 
-#ifdef WIN32
-extern "C" {
-int ntop_main(int argc, char *argv[])
-#else
-int main(int argc, char *argv[])
-#endif
-{
+int ntop_main_program(int argc, char *argv[]) {
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
@@ -124,6 +118,7 @@ int main(int argc, char *argv[])
     FILE *fd;
 
     snprintf(path, sizeof(path), "%s/.test", ntop->get_data_dir());
+	ntop->fixPath(path);
     if((fd = fopen(path, "w")) == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR,
 				   "Unable to write on %s: please specify a different directory (-d)",
@@ -131,7 +126,7 @@ int main(int argc, char *argv[])
       exit(0);
     } else {
       fclose(fd); /* All right */
-      unlink(path);
+      _unlink(path);
     }
   }
 
@@ -162,6 +157,13 @@ int main(int argc, char *argv[])
   return(0);
 }
 
+
+/* ******************************************* */
+
 #ifdef WIN32
+extern "C" {
+int ntop_main(int argc, char *argv[]) {
+	return(ntop_main_program(argc, argv));
+}
 }
 #endif

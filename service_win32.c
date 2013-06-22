@@ -1,19 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
-#undef UNICODE
-/*
-#include <winsock2.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <time.h>
-#include <stdarg.h>
-*/
 #include <tchar.h>
+#include "ntop_defines.h"
 
 extern int ntop_main(int argc, char *argv[]);
 extern void usage();
@@ -28,67 +16,6 @@ HANDLE  hServerStopEvent = NULL;
 u_char isNtopAservice;
 
 void usage() { printf("Usage\n"); }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  // internal name of the service
-#define SZSERVICENAME        "ntopng"
-
-  // displayed name of the service
-#define SZSERVICEDISPLAYNAME "ntopng Win32"
-
-  // Service TYPE Permissable values:
-  //		SERVICE_AUTO_START
-  //		SERVICE_DEMAND_START
-  //		SERVICE_DISABLED
-#define SERVICESTARTTYPE SERVICE_AUTO_START
-
-
-  // =========================================================
-  // You should not need any changes below this line
-  // =========================================================
-
-  // Value name for app parameters
-#define SZAPPPARAMS "AppParameters"
-
-  // list of service dependencies - "dep1\0dep2\0\0"
-  // If none, use ""
-#define SZDEPENDENCIES ""
-
-  //
-  //  FUNCTION: getConsoleMode()
-  //
-  //  PURPOSE: Is the app running as a service or a console app.
-  //
-  //  RETURN VALUE:
-  //    TRUE  - if running as a console application
-  //    FALSE - if running as a service
-  //
-  BOOL getConsoleMode();
-
-
-  //
-  //  FUNCTION: AddToMessageLog(LPTSTR lpszMsg)
-  //
-  //  PURPOSE: Allows any thread to log an error message
-  //
-  //  PARAMETERS:
-  //    lpszMsg - text for message
-  //
-  //  RETURN VALUE:
-  //    none
-  //
-  void AddToMessageLog(LPTSTR lpszMsg);
-
-  VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv);
-  VOID ServiceStop();
-
-#ifdef __cplusplus
-}
-#endif
-
 
 //
 //  Values are 32 bit values layed out as follows:
@@ -319,17 +246,14 @@ void installService(int argc, char **argv)
 {
   SC_HANDLE   schService;
   SC_HANDLE   schSCManager;
-
   TCHAR szPath[512], szDescr[256];
-
   TCHAR szAppParameters[8192];
-
   char szParamKey[1025], szParamKey2[1025];
 
   sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
 
   // Get the full path and filename of this program
-  if ( GetModuleFileName( NULL, szPath, 512 ) == 0 ){
+  if (GetModuleFileName(NULL, szPath, 512 ) == 0 ){
     _tprintf(TEXT("Unable to install %s - %s\n"), TEXT(SZSERVICEDISPLAYNAME),
 	     GetLastErrorText(szErr, 256));
     return;
@@ -362,14 +286,14 @@ void installService(int argc, char **argv)
 
       /* ****************************************** */
       // Set the service name. Courtesy of Yuri Francalacci <yuri@ntop.org>
-      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s",SZSERVICENAME);
+      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s", SZSERVICENAME);
       sprintf((char*)szDescr, "ntopng - Web-based network traffic monitor. http://www.ntop.org/");
 
       // Set the file value (where the message resources are located.... in this case, our runfile.)
       if(0 != setStringValue((const unsigned char *)szDescr,
 			     strlen((char*)szDescr) + 1,HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey2,TEXT("Description")))
 	{
-	  _tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
+	  _tprintf(TEXT("The Message File value could not be assigned.\n"));
 	}
       /* ********************************************** */
 
@@ -495,8 +419,6 @@ void removeService()
 
     // Finally, close the handle to the service control manager's database
     CloseServiceHandle(schSCManager);
-
-
   }
   else{
     _tprintf(TEXT(SZSCMGRFAILURE), GetLastErrorText(szErr,256));
@@ -582,7 +504,7 @@ void* invokeNtop(void* _szAppParameters) {
 // This method is called from ServiceMain() when NT starts the service
 // or by runService() if run from the console.
 
-VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv)
+VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv)
 {
   HANDLE ntopThread;
   TCHAR szAppParameters[8192];
@@ -594,7 +516,6 @@ VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv)
 		    3000))
     //goto cleanup;
     return;
-
 
   // Create a Stop Event
   hServerStopEvent = CreateEvent(
@@ -665,7 +586,7 @@ void runService(int argc, char ** argv)
 
 /* ************************************************** */
 
-static short isWinNT() {
+short isWinNT() {
   DWORD dwVersion;
   DWORD dwWindowsMajorVersion;
 
@@ -904,13 +825,12 @@ void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 {
   TCHAR szAppParameters[8192];
   LONG lLen = 8192;
-
   LPTSTR *lpszNewArgv = NULL;
   DWORD dwNewArgc;
-
   u_int i;
-
   char szParamKey[1025];
+
+  AddToMessageLog(TEXT("Starting ntopng"));
 
   sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
 
@@ -927,7 +847,6 @@ void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
   // the ReportStatus function.
   ssStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
   ssStatus.dwServiceSpecificExitCode = 0;
-
 
   // If we could guarantee that all initialization would occur in less than one
   // second, we would not have to report our status to the service control manager.
@@ -990,6 +909,20 @@ void main(int argc, char **argv)
     };
 
   TCHAR szAppParameters[8192];
+  WORD wVersionRequested;
+  WSADATA wsaData;
+  int err;
+
+  wVersionRequested = MAKEWORD(2, 0);
+  err = WSAStartup( wVersionRequested, &wsaData );
+  if( err != 0 ) {
+    /* Tell the user that we could not find a usable */
+    /* WinSock DLL.                                  */
+    AddToMessageLog(TEXT("Unable to initialise Winsock 2.x."));
+    exit(-1);
+  }
+
+  AddToMessageLog(TEXT("Starting ntopng..."));
 
   if(!isWinNT()) {
     convertArgListToArgString(szAppParameters,0, argc, (LPTSTR*)argv);
@@ -1006,7 +939,7 @@ void main(int argc, char **argv)
   // /c, or /?, followed by actual program arguments. These arguments
   // indicate if the program is to be installed, removed, run as a
   // console application, or to display a usage message.
-  if(argc > 1){
+  if(argc > 1) {
     if(!stricmp(argv[1],"/i")){
       installService(argc,argv);
       printf("NOTE: the default password for the 'admin' user has been set to 'admin'.");
