@@ -31,7 +31,7 @@ extern void usage();
 class Prefs {
  private:
   Ntop *ntop;
-  bool enable_dns_resolution, sniff_dns_responses, categorization_enabled, resolve_all_host_ip, change_user, localnets;
+  bool enable_dns_resolution, sniff_dns_responses, categorization_enabled, resolve_all_host_ip, change_user;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
@@ -44,7 +44,7 @@ class Prefs {
   int cpu_affinity;
   int dns_mode;
 
-  inline void help() { usage();                };
+  inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
   int checkOptions();
   int saveUsersToFile();

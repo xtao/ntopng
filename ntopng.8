@@ -118,7 +118,8 @@ determines the ip addresses and netmasks for each active interface. Any traffic 
 those networks is considered local. This parameter allows the user to define additional
 networks and subnetworks whose traffic is also considered local in
 .B ntopng
-reports. All other hosts are considered remote.
+reports. All other hosts are considered remote. If not specified the default is
+set to 192.168.1.0/24.
 
 Commas separate multiple network values.
 Both netmask and CIDR notation may be used, even mixed together, for instance

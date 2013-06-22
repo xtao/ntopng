@@ -25,7 +25,7 @@
 
 Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop;
-  ifName = local_networks = NULL;
+  ifName = NULL, local_networks = strdup("192.168.1.0/24");
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
@@ -38,7 +38,6 @@ Prefs::Prefs(Ntop *_ntop) {
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
   change_user = true;
-  localnets = false;
   categorization_key = NULL;
   cpu_affinity = -1;
   redis_host = NULL;
@@ -61,7 +60,7 @@ void usage() {
 	 "Usage:\n"
 	 "  ntopng <configuration file>\n"
 	 "  or\n"
-	 "  ntopng -m <local nets> [-d <data dir>] [-n mode] [-i <iface>]\n"
+	 "  ntopng [-m <local nets>] [-d <data dir>] [-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-s] [-v]\n\n"
@@ -89,7 +88,7 @@ void usage() {
 	 "                                    | Please read README.categorization for\n"
 	 "                                    | more info.\n"
 	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
-	 "[--local-networks|-m] <local nets>  | List of local networks\n"
+	 "[--local-networks|-m] <local nets>  | List of local nets (default: 192.168.1.0/24)\n"
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
 	 "                                    | (eg. protos.txt)\n"
@@ -149,9 +148,7 @@ int Prefs::setOption(int optkey, char *optarg) {
       break;
 
     case 'm':
-      local_networks = strdup(optarg);
-      ntop->setLocalNetworks(local_networks);
-      localnets = true;
+      free(local_networks);
       break;
 
     case 'n':
@@ -244,6 +241,8 @@ int Prefs::setOption(int optkey, char *optarg) {
       return(-1);
   }
 
+  ntop->setLocalNetworks(local_networks);
+
   return(0);
 }
 
@@ -259,8 +258,6 @@ int Prefs::checkOptions() {
   if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir"); return(-1);      }
   if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir"); return(-1);   }
   if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
-
-  if(!localnets) help();
 
   return(0);
 }
