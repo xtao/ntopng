@@ -26,6 +26,8 @@
 
 class Ntop;
 
+extern void usage();
+
 class Prefs {
  private:
   Ntop *ntop;
@@ -42,7 +44,7 @@ class Prefs {
   int cpu_affinity;
   int dns_mode;
 
-  void help();
+  inline void help() { usage();                };
   int setOption(int optkey, char *optarg);
   int checkOptions();
   int saveUsersToFile();
@@ -72,10 +74,10 @@ class Prefs {
   inline char* get_redis_host()                         { return(redis_host); }
   inline u_int get_redis_port()                         { return(redis_port); };
 
-  inline u_int16_t get_host_max_idle()                  { return(host_max_idle);          };
-  inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);          };
-  inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);          };
-  inline u_int32_t get_max_num_flows()                  { return(max_num_flows);          };
+  inline u_int16_t get_host_max_idle()                  { return(host_max_idle);  };
+  inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
+  inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
+  inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
 
   int loadUsersFromFile();
   int loadFromCLI(int argc, char *argv[]);

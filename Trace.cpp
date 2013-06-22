@@ -43,7 +43,7 @@ void Trace::set_trace_level(u_int8_t id) {
 
 /* ******************************* */
 
-void Trace::traceEvent(int eventTraceLevel, const char* file,
+void Trace::traceEvent(int eventTraceLevel, const char* _file,
 		       const int line, const char * format, ...) {
   va_list va_ap;
 #ifndef WIN32
@@ -52,12 +52,23 @@ void Trace::traceEvent(int eventTraceLevel, const char* file,
 
   if(eventTraceLevel <= traceLevel) {
     char buf[8192], out_buf[8192];
-    char theDate[32];
+    char theDate[32], *file = (char*)_file;
     const char *extra_msg = "";
     time_t theTime = time(NULL);
 #ifndef WIN32
     char *syslogMsg;
 #endif
+
+#ifdef WIN32
+	char filebuf[256];
+	const char *backslash = strrchr(_file, '\\');
+
+	if(backslash != NULL) {
+		snprintf(filebuf, sizeof(filebuf), "%s", &backslash[1]);
+		file = (char*)filebuf;
+	} 
+#endif
+
 
     va_start (va_ap, format);
 

@@ -54,7 +54,7 @@ Prefs::~Prefs() {
 
 /* ******************************************* */
 
-void Prefs::help() {
+void usage() {
   NetworkInterface n;
 
   printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"

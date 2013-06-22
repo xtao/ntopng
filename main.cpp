@@ -61,7 +61,13 @@ void sigproc(int sig) {
 
 /* ******************************************* */
 
-int main(int argc, char *argv[]) {
+#ifdef WIN32
+extern "C" {
+int ntop_main(int argc, char *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
+{
   NetworkInterface *iface = NULL;
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
@@ -154,3 +160,6 @@ int main(int argc, char *argv[]) {
   return(0);
 }
 
+#ifdef WIN32
+}
+#endif

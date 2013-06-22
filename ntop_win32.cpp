@@ -23,6 +23,11 @@
 
 #include "ntop_includes.h"
 
+extern "C" {
+
+;
+};
+
 /* **************************************
 
    WIN32 MULTITHREAD STUFF
@@ -426,5 +431,6 @@ int win_inet_pton(int af, const char *src, void *dst)
 }
 
 }
+
 
 #endif /* WIN32 */
