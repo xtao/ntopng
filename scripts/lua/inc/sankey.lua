@@ -42,9 +42,16 @@ var margin = {top: 1, right: 1, bottom: 6, left: 1},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
+function b2s(bytes) {
+      var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      if (bytes == 0) return 'n/a';
+      var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+      return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+   };
+
 function sankey() {
   var formatNumber = d3.format(",.0f"),
-    format = function(sent, rcvd) { return "[sent: "+formatNumber(sent)+", rcvd: "+formatNumber(rcvd)+"]"; },
+    format = function(sent, rcvd) { return "[sent: "+b2s(sent)+", rcvd: "+b2s(rcvd)+"]"; },
     color = d3.scale.category20();
 
 ]]    
