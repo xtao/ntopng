@@ -60,6 +60,7 @@ Ntop::Ntop() {
   categorization = NULL;
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
+  prefs = NULL;
 }
 
 /* ******************************************* */
@@ -82,8 +83,17 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_callbacks_dir());
     exit(-1);
   }
-
 }
+
+/* ******************************************* */
+
+ char* Ntop::getWorkingDir() {
+#ifdef WIN32
+	 return((char*)_wdir);
+#else
+	 return(".");
+#endif
+ }
 
 /* ******************************************* */
 

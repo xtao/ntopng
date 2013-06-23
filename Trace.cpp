@@ -23,8 +23,7 @@
 
 /* ******************************* */
 
-Trace::Trace(char *log_path) {
-  log_file_path = log_path ? strdup(log_path) : NULL;
+Trace::Trace() {
   traceLevel = TRACE_LEVEL_NORMAL;
 };
 
@@ -90,17 +89,12 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
     // trace_mutex.lock();
     snprintf(out_buf, sizeof(out_buf), "%s [%s:%d] %s%s", theDate, file, line, extra_msg, buf);
 
-    if(log_file_path != NULL) {
-      FILE *fd = fopen(log_file_path, "a");
+	if(ntop && ntop->getPrefs() && ntop->getPrefs()->get_log_fd()) {
+		fprintf(ntop->getPrefs()->get_log_fd(), "%s\n", out_buf);
+		fflush(ntop->getPrefs()->get_log_fd());
+	}
 
-      if(fd) {
-	fprintf(fd, "%s\n", out_buf);
-	fclose(fd);
-      } else
 	printf("%s\n", out_buf);
-    } else
-      printf("%s\n", out_buf);
-
     fflush(stdout);
 
     // trace_mutex.unlock();
@@ -111,13 +105,13 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
       syslog(LOG_ERR, "%s", syslogMsg);
     else if(eventTraceLevel == 1 /* TRACE_WARNING */)
       syslog(LOG_WARNING, "%s", syslogMsg);
-#else
-	AddToMessageLog(syslogMsg);
 #endif
 
     va_end(va_ap);
   }
 }
+
+/* ******************************* */
 
 #ifdef WIN32
 
@@ -126,6 +120,8 @@ extern "C" {
 	extern short isWinNT();
 	extern BOOL  bConsole;
 };
+
+/* ******************************* */
 
 VOID Trace::AddToMessageLog(LPTSTR lpszMsg)
 {

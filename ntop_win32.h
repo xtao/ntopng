@@ -79,6 +79,7 @@ extern struct dirent *readdir(DIR *dir);
 extern int closedir(DIR *dir);
 extern DIR * opendir(const char *name);
 
+extern void get_serial(unsigned long *driveSerial);
 
 /* getopt.h */
 #define __GNU_LIBRARY__ 1

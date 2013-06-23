@@ -43,6 +43,7 @@ class Prefs {
   int redis_port;
   int cpu_affinity;
   int dns_mode;
+  FILE *logFd;
 
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
@@ -53,6 +54,7 @@ class Prefs {
   Prefs(Ntop *_ntop);
   ~Prefs();
 
+  inline FILE* get_log_fd()                             { return(logFd);                  };
   inline void disable_dns_resolution()                  { enable_dns_resolution = false;  };
   inline void resolve_all_hosts()                       { resolve_all_host_ip = true;     };
   inline bool is_dns_resolution_enabled_for_all_hosts() { return(resolve_all_host_ip);    };

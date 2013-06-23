@@ -43,12 +43,13 @@ Prefs::Prefs(Ntop *_ntop) {
   redis_host = NULL;
   redis_port = 6379;
   dns_mode = 0;
+  logFd = NULL;
 }
 
 /* ******************************************* */
 
 Prefs::~Prefs() {
-  ;
+  if(logFd) fclose(logFd);
 }
 
 /* ******************************************* */
@@ -61,7 +62,11 @@ void usage() {
 	 "Usage:\n"
 	 "  ntopng <configuration file>\n"
 	 "  or\n"
-	 "  ntopng [-m <local nets>] [-d <data dir>] [-n mode] [-i <iface>]\n"
+	 "  ntopng [-m <local nets>] "
+#ifndef WIN32
+	 "[-d <data dir>] "
+#endif
+	 "[-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-s] [-v]\n\n"
@@ -75,9 +80,11 @@ void usage() {
 	 "                                    |     resolve numeric IPs\n"
 	 "                                    | 3 - Don't decode DNS responses and don't\n"
 	 "                                    |     resolve numeric IPs\n"
-	 "[--interface|-i] <interface>        | Input interface name (numeric or symbolic)\n"
+	 "[--interface|-i] <interface>        | Input interface name (numeric/symbolic)\n"
+#ifndef WIN32
 	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
 	 "                                    | Default: %s\n"
+#endif
 	 "[--httpdocs-dir|-1] <path>          | Http documents root directory.\n"
 	 "                                    | Default: %s\n"
 	 "[--scripts-dir|-2] <path>           | Scripts directory.\n"
@@ -89,7 +96,7 @@ void usage() {
 	 "                                    | Please read README.categorization for\n"
 	 "                                    | more info.\n"
 	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
-	 "[--local-networks|-m] <local nets>  | List of local nets (default: 192.168.1.0/24)\n"
+	 "[--local-networks|-m] <local nets>  | Local nets list (default: 192.168.1.0/24)\n"
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
 	 "                                    | (eg. protos.txt)\n"
@@ -103,7 +110,10 @@ void usage() {
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, 
-	 CONST_DEFAULT_DATA_DIR, CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
+#ifndef WIN32
+	 CONST_DEFAULT_DATA_DIR, 
+#endif
+	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, CONST_DEFAULT_USERS_FILE);
 
   printf("\n");
@@ -117,7 +127,9 @@ void usage() {
 static const struct option long_options[] = {
   { "dns-mode",                          required_argument, NULL, 'n' },
   { "interface",                         required_argument, NULL, 'i' },
+#ifndef WIN32
   { "data-dir",                          required_argument, NULL, 'd' },
+#endif
   { "categorization-key",                required_argument, NULL, 'c' },
   { "http-port",                         required_argument, NULL, 'w' },
   { "local-networks",                    required_argument, NULL, 'm' },
@@ -205,11 +217,12 @@ int Prefs::setOption(int optkey, char *optarg) {
       change_user = false;
       break;
 
+#ifndef WIN32
     case 'd':
       free(data_dir);
       data_dir = strdup(optarg);
       break;
-
+#endif
     case '1':
       free(docs_dir);
       docs_dir = strdup(optarg);
@@ -250,14 +263,32 @@ int Prefs::setOption(int optkey, char *optarg) {
 /* ******************************************* */
 
 int Prefs::checkOptions() {
+#ifndef WIN32
   data_dir       = ntop->getValidPath(data_dir);
+#else
+  char path[256];
+  unsigned long driveSerial;
+
+  get_serial(&driveSerial);
+
+  snprintf(path, sizeof(path), "%s/%u", ntop->getWorkingDir(), driveSerial);
+  ntop->fixPath(path);
+  data_dir = strdup(path);
+
+  ntop_mkdir(data_dir, NULL);
+
+  // ntop->getTrace()->traceEvent(TRACE_ERROR, "--> %s", data_dir);
+
+  snprintf(path, sizeof(path), "%s/%u/ntopng.log", ntop->getWorkingDir(), driveSerial);
+  logFd = fopen(path, "w");
+#endif
   docs_dir       = ntop->getValidPath(docs_dir);
   scripts_dir    = ntop->getValidPath(scripts_dir);
   callbacks_dir  = ntop->getValidPath(callbacks_dir);
 
-  if(!data_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir"); return(-1);      }
-  if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir"); return(-1);      }
-  if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir"); return(-1);   }
+  if(!data_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir");      return(-1); }
+  if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir");      return(-1); }
+  if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir");   return(-1); }
   if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
 
   return(0);

@@ -32,18 +32,7 @@ extern char* intoa(struct in_addr addr);
 
 extern char domainName[];
 char *buildDate;
-char _wdir[256];
 u_char isNtopAservice;
-
-
-/*
-  extern char* myGlobals.device;
-  extern int datalink;
-  extern unsigned int localnet, netmask;
-*/
-
-
-char* getNwBoardMacAddress(char *deviceName); /* forward */
 
 #define NTOP_SERVICE_STOPPED 1
 #define NTOP_SHUTDOWN 2
@@ -82,31 +71,7 @@ void initWinsock32() {
     /* WinSock DLL.                                  */
     printf("ERROR: Unable to initialise Winsock 2.x.");
     exit(-1);
-  }
-
-  if(!isWinNT()) {
-    //osName = "Win95/98/ME";
-    strcpy(_wdir, ".");
-  } else {
-    //osName = "WinNT/2K/XP/Vista/Win7";
-
-    // Get the full path and filename of this program
-    if(GetModuleFileName( NULL, _wdir, sizeof(_wdir) ) == 0 ) {
-      _wdir[0] = '\0';
-    } else {
-      int i;
-
-      for(i=strlen(_wdir)-1; i>0; i--)
-	if(_wdir[i] == '\\') {
-	  _wdir[i] = '\0';
-	  break;
-	}
-    }
-
-    /* traceEvent(CONST_TRACE_ERROR, "Wdir=%s", _wdir); */
-  }
-
-    
+  } 
 
 #ifdef WIN32_DEMO
   printf("");
@@ -124,7 +89,6 @@ void initWinsock32() {
 
 void termWinsock32() {
   WSACleanup( );
-  //terminateSniffer();
 }
 
 /* **************************************

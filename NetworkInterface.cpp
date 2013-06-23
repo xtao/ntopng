@@ -787,11 +787,16 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
 	numInterfaces++;
 
 	if(ifname == NULL) {
-	  if(printHelp)
-	    printf("   %d. %s (%s)\n", numInterfaces,
+	  if(printHelp) {
+#ifdef WIN32
+	    printf("   %d. %s\n"
+			   "\t%s\n", numInterfaces,
 		   devpointer->description ? devpointer->description : "",
 		   devpointer->name);
-	  else
+#else
+		printf("   %d. %s (%s)\n", numInterfaces, devpointer->name);
+#endif
+	  } else
 	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",
 					 numInterfaces,
 					 devpointer->description ? devpointer->description : "",

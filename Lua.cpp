@@ -86,6 +86,7 @@ static int ntop_dump_file(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((fname = (char*)lua_tostring(vm, 1)) == NULL)     return(-1);
 
+  ntop->fixPath(fname);
   if((fd = fopen(fname, "r")) != NULL) {
     char tmp[1024];
 
@@ -187,6 +188,7 @@ static int ntop_list_dir_files(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   path = (char*)lua_tostring(vm, 1);
+  ntop->fixPath(path);
 
   lua_newtable(vm);
 
@@ -824,6 +826,16 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_dirs(lua_State* vm) {
+	lua_newtable(vm);
+	lua_push_str_table_entry(vm, "datadir",   ntop->getPrefs()->get_data_dir());
+	lua_push_str_table_entry(vm, "workingdir", ntop->getWorkingDir());
+
+	return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_info(lua_State* vm) {
   char rsp[256];
   int major, minor, patch;
@@ -867,25 +879,6 @@ static int ntop_get_resolved_address(lua_State* vm) {
   return(1);
 }
 
-/* ******************************************* */
-
-static void revertSlashIfWIN32(char *str, int mode) {
-#ifdef WIN32
-  int i;
-
-  for(i=0; str[i] != '\0'; i++)
-    switch(mode) {
-    case 0:
-      if(str[i] == '/') str[i] = '\\';
-      //else if(str[i] == ' ') str[i] = '_';
-      break;
-    case 1:
-      if(str[i] == '\\') str[i] = '/';
-      break;
-    }
-#endif
-}
-
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
@@ -897,8 +890,7 @@ static int ntop_mkdir_tree(lua_State* vm) {
   if(dir[0] == '\0')                                   return(1); /* Nothing to do */
 
   snprintf(path, sizeof(path), "%s", dir);
-	   
-  revertSlashIfWIN32(path, 0);
+  ntop->fixPath(path);
 
   /* Start at 1 to skip the root */
   for(i=1; path[i] != '\0'; i++)
@@ -1049,6 +1041,7 @@ static const luaL_Reg ntop_interface_reg[] = {
 };
 
 static const luaL_Reg ntop_reg[] = {
+  { "getDirs",        ntop_get_dirs },
   { "getInfo",        ntop_get_info },
   { "dumpFile",       ntop_dump_file },
   { "getDataDir",     ntop_get_datadir },
