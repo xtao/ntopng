@@ -23,10 +23,6 @@
 
 #include "ntop_includes.h"
 
-extern "C" {
-
-;
-};
 
 /* **************************************
 
@@ -432,5 +428,23 @@ int win_inet_pton(int af, const char *src, void *dst)
 
 }
 
+/* ******************************* */
+
+static int get_drive_serial(char *drive, unsigned long *driveSerial) {
+  return(GetVolumeInformation(drive, NULL, 0, driveSerial, NULL, NULL, NULL, 0 ));
+}
+
+/* ******************************* */
+
+/* Use the HDD serial number to identify a PC. This is necesary as ntop can
+   run from a mobile device hence it is necessary not to mix prefs and data
+   coming from different PCs
+*/
+void get_serial(unsigned long *driveSerial) {
+  *driveSerial = 0;
+
+  if(!get_drive_serial("C:\\", driveSerial))
+    get_drive_serial("D:\\", driveSerial);
+}
 
 #endif /* WIN32 */

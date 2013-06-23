@@ -53,6 +53,7 @@ Prefs::~Prefs() {
 
 /* ******************************************* */
 
+/* C-binding needed by Win32 service call */
 void usage() {
   NetworkInterface n;
 

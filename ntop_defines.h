@@ -82,6 +82,12 @@
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
 
+#ifdef __cplusplus
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+
 #ifdef WIN32
  // internal name of the service
 #define SZSERVICENAME        "ntopng"

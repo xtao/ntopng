@@ -1,21 +1,400 @@
-#include <windows.h>
+/*
+ *  Copyright (C) 1998-2013 Luca Deri <deri@ntop.org>
+ *
+ *  			    http://www.ntop.org/
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 #include <stdio.h>
+#include <string.h>
+#include <winsock2.h>
+#include <process.h>
 #include <tchar.h>
+#include <winioctl.h>
+#include "ntddndis.h"        // This defines the IOCTL constants.
+
 #include "ntop_defines.h"
 
-extern int ntop_main(int argc, char *argv[]);
-extern void usage();
+extern char* intoa(struct in_addr addr);
 
-LPTSTR *convertArgStringToArgList(LPTSTR *lpszArgs, PDWORD pdwLen, LPTSTR lpszArgstring);
-BOOL ReportStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode,  DWORD dwWaitHint);
-static void convertArgListToArgString(TCHAR* _lpszTarget, DWORD dwStart, DWORD dwArgc, LPTSTR *lpszArgv);
-
-DWORD _dwArgc;
-LPTSTR *_lpszArgv;
-HANDLE  hServerStopEvent = NULL;
+extern char domainName[];
+char *buildDate;
+char _wdir[256];
 u_char isNtopAservice;
 
-void usage() { printf("Usage\n"); }
+
+/*
+  extern char* myGlobals.device;
+  extern int datalink;
+  extern unsigned int localnet, netmask;
+*/
+
+
+char* getNwBoardMacAddress(char *deviceName); /* forward */
+
+#define NTOP_SERVICE_STOPPED 1
+#define NTOP_SHUTDOWN 2
+#define NTOP_CLOSE 3
+#define NTOP_LOGOFF 4
+
+void usage() {
+	printf("Usage....\n");
+}
+
+/* ************************************************** */
+
+short isWinNT() {
+  DWORD dwVersion;
+  DWORD dwWindowsMajorVersion;
+
+  dwVersion=GetVersion();
+  dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
+  if(!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4))
+    return 1;
+  else
+    return 0;
+}
+
+/* ************************************************** */
+
+void initWinsock32() {
+  WORD wVersionRequested;
+  WSADATA wsaData;
+  int err;
+
+  wVersionRequested = MAKEWORD(2, 0);
+  err = WSAStartup( wVersionRequested, &wsaData );
+  if( err != 0 ) {
+    /* Tell the user that we could not find a usable */
+    /* WinSock DLL.                                  */
+    printf("ERROR: Unable to initialise Winsock 2.x.");
+    exit(-1);
+  }
+
+  if(!isWinNT()) {
+    //osName = "Win95/98/ME";
+    strcpy(_wdir, ".");
+  } else {
+    //osName = "WinNT/2K/XP/Vista/Win7";
+
+    // Get the full path and filename of this program
+    if(GetModuleFileName( NULL, _wdir, sizeof(_wdir) ) == 0 ) {
+      _wdir[0] = '\0';
+    } else {
+      int i;
+
+      for(i=strlen(_wdir)-1; i>0; i--)
+	if(_wdir[i] == '\\') {
+	  _wdir[i] = '\0';
+	  break;
+	}
+    }
+
+    /* traceEvent(CONST_TRACE_ERROR, "Wdir=%s", _wdir); */
+  }
+
+    
+
+#ifdef WIN32_DEMO
+  printf("");
+  printf("-----------------------------------------------------------");
+  printf("WARNING: this application is a limited ntop version able to");
+  printf("capture up to %d packets. If you are interested", MAX_NUM_PACKETS);
+  printf("in the full version please have a look at the ntop");
+  printf("home page http://www.ntop.org/.");
+  printf("-----------------------------------------------------------");
+  printf("");
+#endif
+}
+
+/* ************************************************** */
+
+void termWinsock32() {
+  WSACleanup( );
+  //terminateSniffer();
+}
+
+/* **************************************
+
+   WIN32 MULTITHREAD STUFF
+
+   http://www-128.ibm.com/developerworks/eserver/articles/es-MigratingWin32toLinux.html
+
+   ************************************** */
+
+static int createWinThread(HANDLE *threadId,
+		 void *(*__start_routine) (void *), char* userParm) {
+  DWORD dwThreadId, dwThrdParam = 1;
+
+  (*threadId) = CreateThread(NULL, /* no security attributes */
+			     0,            /* use default stack size */
+			     (LPTHREAD_START_ROUTINE)__start_routine, /* thread function */
+			     userParm,     /* argument to thread function */
+			     0,            /* use default creation flags */
+			     &dwThreadId); /* returns the thread identifier */
+
+  if(*threadId != NULL)
+    return(1);
+  else
+    return(0);
+}
+
+/* ************************************ */
+
+static int killWinThread(HANDLE *threadId) {
+  CloseHandle((HANDLE)*threadId);
+  return(0);
+}
+
+/* ************************************ */
+
+static int joinWinThread(HANDLE *threadId) {
+  WaitForSingleObject((HANDLE)*threadId, INFINITE);
+  return(0);
+}
+
+/* ************************************ */
+
+#define CONST_WIN32_PATH_NETWORKS	"networks"
+
+#define	MAX_WIN32_NET_ALIASES 35
+
+static FILE *netf = NULL;
+static char line[BUFSIZ+1];
+static struct netent net;
+static char *net_aliases[MAX_WIN32_NET_ALIASES];
+static char *any(char *, char *);
+
+int _net_stayopen;
+
+
+/* ************************************************************* */
+
+/* Code borrowed from http://www.cvsnt.org/ */
+
+#define DEF_INPMODE  (ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT)
+#define HID_INPMODE  (ENABLE_LINE_INPUT|ENABLE_PROCESSED_INPUT)
+
+char* getpass(const char *prompt) {
+  static char pwd_buf[128];
+  size_t i;
+  DWORD br;
+  HANDLE hInput;
+  DWORD dwMode;
+
+  if(isWinNT()) {
+    return("admin"); // Default password
+  }
+
+  hInput=GetStdHandle(STD_INPUT_HANDLE);
+  fputs(prompt, stderr);
+  fflush(stderr);
+  fflush(stdout);
+  FlushConsoleInputBuffer(hInput);
+  GetConsoleMode(hInput,&dwMode);
+  SetConsoleMode(hInput, ENABLE_PROCESSED_INPUT);
+
+  for(i = 0; i < sizeof (pwd_buf) - 1; ++i) {
+    ReadFile(GetStdHandle(STD_INPUT_HANDLE),pwd_buf+i,1,&br,NULL);
+    if (pwd_buf[i] == '\r')
+      break;
+    fputc('*',stdout);
+    fflush (stderr);
+    fflush (stdout);
+  }
+
+  SetConsoleMode(hInput,dwMode);
+  pwd_buf[i] = '\0';
+  fputs ("\n", stderr);
+  return pwd_buf;
+}
+
+/* *************************************************************
+
+   Windown NT/2K Service Registration Routines
+
+   Copyright 2001 by Bill Giel/KC Multimedia and Design Group, Inc.
+
+   ************************************************************* */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+  //
+  //  FUNCTION: convertArgStringToArgList()
+  //
+  //  PURPOSE: Return an array of strings containing all arguments that
+  //           are parsed from a tab-delimited argument string.
+  //
+  //  PARAMETERS:
+  //    args  - The string array address to be allocated and receive the data
+  //    len - pointer to an int that will contain the returned array length
+  //    argstring - string containing arguments to be parsed.
+  //
+  //  RETURN VALUE:
+  //    String array address containing the filtered arguments
+  //    NULL on failure
+  //
+  LPTSTR* convertArgStringToArgList(LPTSTR *args, PDWORD pdwLen, LPTSTR lpszArgstring);
+
+  //
+  //  FUNCTION: convertArgListToArgString()
+  //
+  //  PURPOSE: Create a single tab-delimited string of arguments from
+  //           an argument list
+  //
+  //  PARAMETERS:
+  //    target - pointer to the string to be allocated and created
+  //    start  - zero-based offest into the list to the first arg value used to
+  //             build the list.
+  //    argc - length of the argument list
+  //    argv - array of strings, the argument list.
+  //
+  //  RETURN VALUE:
+  //    Character pointer to the target string.
+  //    NULL on failure
+  //
+  LPTSTR convertArgListToArgString(LPTSTR lpszTarget, DWORD dwStart, DWORD dwArgc, LPTSTR *lpszArgv);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  //
+  //  FUNCTION: getStringValue()
+  //
+  //  PURPOSE: Fetches a REG_SZ or REG_EXPAND_SZ string value
+  //           from a specified registry key
+  //
+  //  PARAMETERS:
+  //    lpVal - a string buffer for the desired value
+  //    lpcbLen  - pointer to LONG value with buffer length
+  //    hkRoot - the primary root key, e.g. HKEY_LOCAL_MACHINE
+  //    lpszPath - the registry path to the subkey containing th desired value
+  //    lpszValue - the name of the desired value
+  //
+  //  RETURN VALUE:
+  //    0 on success, 1 on failure
+  //
+  int getStringValue(LPBYTE lpVal, LPDWORD lpcbLen, HKEY hkRoot, LPCTSTR lpszPath, LPTSTR lpszValue);
+
+  //
+  //  FUNCTION: setStringValue()
+  //
+  //  PURPOSE: Assigns a REG_SZ value to a
+  //           specified registry key
+  //
+  //  PARAMETERS:
+  //    lpVal - Constant byte array containing the value
+  //    cbLen  - data length
+  //    hkRoot - the primary root key, e.g. HKEY_LOCAL_MACHINE
+  //    lpszPath - the registry path to the subkey containing th desired value
+  //    lpszValue - the name of the desired value
+  //
+  //  RETURN VALUE:
+  //    0 on success, 1 on failure
+  //
+  int setStringValue(CONST BYTE *lpVal, DWORD cbLen, HKEY hkRoot, LPCTSTR lpszPath, LPCTSTR lpszValue);
+
+
+  //
+  //  FUNCTION: makeNewKey()
+  //
+  //  PURPOSE: Creates a new key at the specified path
+  //
+  //  PARAMETERS:
+  //    hkRoot - the primary root key, e.g. HKEY_LOCAL_MACHINE
+  //    lpszPath - the registry path to the new subkey
+  //
+  //  RETURN VALUE:
+  //    0 on success, 1 on failure
+  //
+  int makeNewKey(HKEY hkRoot, LPCTSTR lpszPath);
+
+  int setDwordValue(DWORD data, HKEY hkRoot, LPCTSTR lpszPath, LPCTSTR lpszValue);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+  //
+  //  FUNCTION: getConsoleMode()
+  //
+  //  PURPOSE: Is the app running as a service or a console app.
+  //
+  //  RETURN VALUE:
+  //    TRUE  - if running as a console application
+  //    FALSE - if running as a service
+  //
+  BOOL getConsoleMode();
+
+  //
+  //  FUNCTION: ReportStatusToSCMgr()
+  //
+  //  PURPOSE: Sets the current status of the service and
+  //           reports it to the Service Control Manager
+  //
+  //  PARAMETERS:
+  //    dwCurrentState - the state of the service
+  //    dwWin32ExitCode - error code to report
+  //    dwWaitHint - worst case estimate to next checkpoint
+  //
+  //  RETURN VALUE:
+  //    TRUE  - success
+  //    FALSE - failure
+  //
+  BOOL ReportStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwWaitHint);
+
+
+  //
+  //  FUNCTION: AddToMessageLog(LPTSTR lpszMsg)
+  //
+  //  PURPOSE: Allows any thread to log an error message
+  //
+  //  PARAMETERS:
+  //    lpszMsg - text for message
+  //
+  //  RETURN VALUE:
+  //    none
+  //
+  void AddToMessageLog(LPTSTR lpszMsg);
+
+  VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv);
+  VOID ServiceStop();
+
+#ifdef __cplusplus
+}
+#endif
 
 //
 //  Values are 32 bit values layed out as follows:
@@ -152,7 +531,7 @@ int makeNewKey(HKEY hkRoot, LPCTSTR lpszPath)
 			  hkRoot,
 			  lpszPath,
 			  (DWORD)0,
-			  (LPWSTR)classname,
+			  classname,
 			  REG_OPTION_NON_VOLATILE,
 			  KEY_ALL_ACCESS,
 			  NULL,
@@ -237,7 +616,6 @@ LPTSTR GetLastErrorText( LPTSTR lpszBuf, DWORD dwSize )
 }
 
 
-
 // We'll try to install the service with this function, and save any
 // runtime args for the service itself as a REG_SZ value in a registry
 // subkey
@@ -246,14 +624,17 @@ void installService(int argc, char **argv)
 {
   SC_HANDLE   schService;
   SC_HANDLE   schSCManager;
+
   TCHAR szPath[512], szDescr[256];
+
   TCHAR szAppParameters[8192];
+
   char szParamKey[1025], szParamKey2[1025];
 
   sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
 
   // Get the full path and filename of this program
-  if (GetModuleFileName(NULL, szPath, 512 ) == 0 ){
+  if ( GetModuleFileName( NULL, szPath, 512 ) == 0 ){
     _tprintf(TEXT("Unable to install %s - %s\n"), TEXT(SZSERVICEDISPLAYNAME),
 	     GetLastErrorText(szErr, 256));
     return;
@@ -286,45 +667,45 @@ void installService(int argc, char **argv)
 
       /* ****************************************** */
       // Set the service name. Courtesy of Yuri Francalacci <yuri@ntop.org>
-      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s", SZSERVICENAME);
-      sprintf((char*)szDescr, "ntopng - Web-based network traffic monitor. http://www.ntop.org/");
+      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s",SZSERVICENAME);
+      strcpy(szDescr, "ntopng: Web-based network traffic monitor");
 
       // Set the file value (where the message resources are located.... in this case, our runfile.)
       if(0 != setStringValue((const unsigned char *)szDescr,
-			     strlen((char*)szDescr) + 1,HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey2,TEXT("Description")))
+			     strlen(szDescr) + 1,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("Description")))
 	{
-	  _tprintf(TEXT("The Message File value could not be assigned.\n"));
+	  _tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
 	}
       /* ********************************************** */
 
 
       //Make a registry key to support logging messages using the service name.
       sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",SZSERVICENAME);
-      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey2)){
+      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey2)){
 	_tprintf(TEXT("The EventLog subkey could not be created.\n"));
       }
 
       // Set the file value (where the message resources are located.... in this case, our runfile.)
       if(0 != setStringValue((const unsigned char *) szPath,
-			     strlen((const char*)szPath) + 1,HKEY_LOCAL_MACHINE,
-			     (LPCTSTR)szParamKey2,TEXT("EventMessageFile")))
+			     strlen(szPath) + 1,HKEY_LOCAL_MACHINE,
+			     szParamKey2,TEXT("EventMessageFile")))
 	{
 	  _tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
 	}
 
       // Set the supported types flags.
-      if(0 != setDwordValue(EVENTLOG_INFORMATION_TYPE,HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey2,TEXT("TypesSupported"))){
+      if(0 != setDwordValue(EVENTLOG_INFORMATION_TYPE,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("TypesSupported"))){
 	_tprintf(TEXT("The Types Supported value could\nnot be assigned.\n"));
       }
 
       // Try to create a subkey to hold the runtime args for the JavaVM and
       // Java application
-      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey)){
+      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey)){
 	_tprintf(TEXT("Could not create Parameters subkey.\n"));
       } else {
 	//Create an argument string from the argument list
 	// J. R. Duarte: modified it to store the full command line
-	convertArgListToArgString(szAppParameters,0, argc, (LPTSTR*)argv);
+	convertArgListToArgString((LPTSTR) szAppParameters,0, argc, argv);
 	if(NULL == szAppParameters){
 	  _tprintf(TEXT("Could not create AppParameters string.\n"));
 	}
@@ -332,8 +713,8 @@ void installService(int argc, char **argv)
 	else{
 
 	  // Try to save the argument string under the new subkey
-	  if(0 != setStringValue((const BYTE*)szAppParameters, strlen((const char*)szAppParameters)+1,
-				 HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey,(LPCTSTR) SZAPPPARAMS)){
+	  if(0 != setStringValue(szAppParameters, strlen(szAppParameters)+1,
+				 HKEY_LOCAL_MACHINE, szParamKey, SZAPPPARAMS)){
 	    _tprintf(TEXT("Could not save AppParameters value.\n"));
 	  }
 
@@ -405,7 +786,7 @@ void removeService()
 
 	// Delete our eventlog registry key
 	sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",SZSERVICENAME);
-	RegDeleteKey(HKEY_LOCAL_MACHINE, (LPCWSTR)szParamKey2);
+	RegDeleteKey(HKEY_LOCAL_MACHINE,szParamKey2);
       }else{
 	_tprintf(TEXT("DeleteService failed - %s\n"), GetLastErrorText(szErr,256));
       }
@@ -419,6 +800,8 @@ void removeService()
 
     // Finally, close the handle to the service control manager's database
     CloseServiceHandle(schSCManager);
+
+
   }
   else{
     _tprintf(TEXT(SZSCMGRFAILURE), GetLastErrorText(szErr,256));
@@ -427,53 +810,18 @@ void removeService()
 
 /* ********************************************* */
 
+extern int ntop_main(int argc, char *argv[]);
+extern void usage();
 
-/* **************************************
+DWORD _dwArgc;
+LPTSTR *_lpszArgv;
+HANDLE  hServerStopEvent = NULL;
 
-   WIN32 MULTITHREAD STUFF
 
-   http://www-128.ibm.com/developerworks/eserver/articles/es-MigratingWin32toLinux.html
-
-   ************************************** */
-
-int createThread(HANDLE *threadId,
-		 void *(*__start_routine) (void *), char* userParm) {
-  DWORD dwThreadId, dwThrdParam = 1;
-
-  (*threadId) = CreateThread(NULL, /* no security attributes */
-			     0,            /* use default stack size */
-			     (LPTHREAD_START_ROUTINE)__start_routine, /* thread function */
-			     userParm,     /* argument to thread function */
-			     0,            /* use default creation flags */
-			     &dwThreadId); /* returns the thread identifier */
-
-  if(*threadId != NULL)
-    return(1);
-  else
-    return(0);
-}
-
-/* ************************************ */
-
-int _killThread(HANDLE *threadId) {
-  CloseHandle((HANDLE)*threadId);
-  return(0);
-}
-
-/* ************************************ */
-
-int _joinThread(HANDLE *threadId) {
-  WaitForSingleObject((HANDLE)*threadId, INFINITE);
-  return(0);
-}
-
-/* ************************************ */
-
-void* invokeNtop(void* _szAppParameters) {
+void* invokeNtop(LPTSTR szAppParameters) {
   DWORD dwNewArgc, i;
   LPTSTR *lpszNewArgv=NULL;
   LPTSTR *lpszTmpArgv;
-  LPTSTR szAppParameters = (LPTSTR)_szAppParameters;
 
   // SetConsoleCtrlHandler(logoffHandler, TRUE);
 
@@ -482,7 +830,7 @@ void* invokeNtop(void* _szAppParameters) {
 
   // J. R. Duarte: to handle removing the Windows-specific command
   // line option when running from the command line or as a service
-  if (!stricmp((const char*)(lpszNewArgv[1]),"/c") || !stricmp((const char*)(lpszNewArgv[1]),"/i"))
+  if (!stricmp(lpszNewArgv[1],"/c") || !stricmp(lpszNewArgv[1],"/i"))
     {
       lpszTmpArgv = lpszNewArgv;		// make a copy of argv
 
@@ -496,7 +844,7 @@ void* invokeNtop(void* _szAppParameters) {
       dwNewArgc--;
     }
 
-  ntop_main(dwNewArgc, (char **)lpszNewArgv);
+  ntop_main(dwNewArgc, lpszNewArgv);
   SetEvent(hServerStopEvent); // Signal main thread that we're leaving
   return(NULL);
 }
@@ -504,7 +852,7 @@ void* invokeNtop(void* _szAppParameters) {
 // This method is called from ServiceMain() when NT starts the service
 // or by runService() if run from the console.
 
-VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv)
+VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv)
 {
   HANDLE ntopThread;
   TCHAR szAppParameters[8192];
@@ -516,6 +864,7 @@ VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv)
 		    3000))
     //goto cleanup;
     return;
+
 
   // Create a Stop Event
   hServerStopEvent = CreateEvent(
@@ -532,20 +881,19 @@ VOID ServiceStart(DWORD dwArgc, LPTSTR *lpszArgv)
     _dwArgc = dwArgc, _lpszArgv = lpszArgv;
   else {
     char *progName = SZSERVICENAME;
-    _dwArgc = 1, _lpszArgv = (LPTSTR*)&progName;
+    _dwArgc = 1, _lpszArgv = &progName;
   }
 
   if (!ReportStatus(SERVICE_RUNNING,NO_ERROR,0)){
     goto cleanup;
   }
 
-  // createThread(&ntopThread, invokeNtop, NULL);
   // J. R. Duarte: Create an argument string from the argument list
-  convertArgListToArgString(szAppParameters, 0, dwArgc, lpszArgv);
+  convertArgListToArgString((LPTSTR) szAppParameters,0, dwArgc, lpszArgv);
   if(NULL == szAppParameters){
     _tprintf(TEXT("Could not create AppParameters string.\n"));
   }
-  createThread(&ntopThread, invokeNtop, (char*)szAppParameters);
+  createWinThread(&ntopThread, invokeNtop, szAppParameters);
 
   // Wait for the stop event to be signalled.
   WaitForSingleObject(hServerStopEvent,INFINITE);
@@ -573,7 +921,7 @@ void runService(int argc, char ** argv)
   LPTSTR *lpszArgv;
 
 #ifdef UNICODE
-  lpszArgv = CommandLineToArgvW(GetCommandLineW(), (int*)(&dwArgc) );
+  lpszArgv = CommandLineToArgvW(GetCommandLineW(), &(dwArgc) );
 #else
   dwArgc   = (DWORD) argc;
   lpszArgv = argv;
@@ -584,21 +932,7 @@ void runService(int argc, char ** argv)
   ServiceStart( dwArgc, lpszArgv);
 }
 
-/* ************************************************** */
-
-short isWinNT() {
-  DWORD dwVersion;
-  DWORD dwWindowsMajorVersion;
-
-  dwVersion=GetVersion();
-  dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-  if(!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4))
-    return 1;
-  else
-    return 0;
-}
-
-/* ************************************************** */
+/* ************************************ */
 
 // If running as a service, use event logging to post a message
 // If not, display the message on the console.
@@ -708,6 +1042,7 @@ VOID WINAPI controlHandler(DWORD dwCtrlCode)
       ServiceStop();
       return;
 
+
     case SERVICE_CONTROL_INTERROGATE:
       // This case MUST be processed, even though we are not
       // obligated to do anything substantial in the process.
@@ -727,110 +1062,18 @@ VOID WINAPI controlHandler(DWORD dwCtrlCode)
 
 /* ************************************ */
 
-
-LPTSTR *convertArgStringToArgList(LPTSTR *lpszArgs, PDWORD pdwLen,
-				  LPTSTR lpszArgstring)
-{
-  u_int uCount;
-  LPTSTR lpszArg, lpszToken;
-
-
-  if(strlen((const char*)lpszArgstring) == 0){
-    *pdwLen = 0;
-    //lpszArgs = NULL;
-    return NULL;
-  }
-
-  if(NULL == (lpszArg = (LPTSTR)GlobalAlloc(GMEM_FIXED,strlen((const char*)lpszArgstring)+1))){
-    *pdwLen = 0;
-    //lpszArgs = NULL;
-    return NULL;
-  }
-
-  strcpy((char*)lpszArg, (const char*)lpszArgstring);
-
-  lpszToken = (LPTSTR)strtok((char*)lpszArg, "\t" );
-  uCount = 0;
-  while( lpszToken != NULL ){
-    uCount++;
-    lpszToken = (LPTSTR)strtok( NULL, "\t");
-  }
-
-  GlobalFree((HGLOBAL)lpszArg);
-
-  lpszArgs = (LPTSTR *)GlobalAlloc(GMEM_FIXED,uCount * sizeof(LPTSTR));
-  *pdwLen = uCount;
-
-
-  lpszToken = (LPTSTR)strtok((char*)lpszArgstring,"\t");
-  uCount = 0;
-  while(lpszToken != NULL){
-    lpszArgs[uCount] = (LPTSTR)GlobalAlloc(GMEM_FIXED,strlen((const char*)lpszToken)+1);
-    strcpy((char*)(lpszArgs[uCount]), (const char*)lpszToken);
-    uCount++;
-    lpszToken = (LPTSTR)strtok( NULL, "\t");
-  }
-
-
-  return lpszArgs;
-
-}
-
-/* ************************************ */
-
-static void convertArgListToArgString(TCHAR *_lpszTarget, DWORD dwStart, DWORD dwArgc, LPTSTR *lpszArgv)
-{
-  u_int i;
-  char *lpszTarget = (char*)_lpszTarget;
-
-  lpszTarget[0] = 0;
-
-  if(dwStart >= dwArgc)
-    return;
-
-  for(i=dwStart; i<dwArgc; i++) {
-	LPTSTR argument = lpszArgv[i];
-	char *arg = (char*)argument;
-
-    if(i != dwStart) strcat(lpszTarget,"\t");
-    strcat(lpszTarget, arg);
-  }
-}
-
-/* ********************************* */
-
-int spawnProcess(char* theProcess)
-{
-  STARTUPINFO startupInfo;
-  PROCESS_INFORMATION procInfo;
-  BOOL success;
-
-  GetStartupInfo(&startupInfo);
-  success = CreateProcess(NULL,
-			  (LPWSTR)theProcess,
-			  NULL, NULL, FALSE,
-			  CREATE_NEW_CONSOLE,
-			  NULL, NULL, &startupInfo, &procInfo);
-
-  if(!success)
-    return(-1);
-  else
-    return(0);
-}
-
-/* *********************************************************** */
-
 // The ServiceMain function is the entry point for the service.
 void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 {
   TCHAR szAppParameters[8192];
   LONG lLen = 8192;
+
   LPTSTR *lpszNewArgv = NULL;
   DWORD dwNewArgc;
-  u_int i;
-  char szParamKey[1025];
 
-  AddToMessageLog(TEXT("Starting ntopng"));
+  u_int i;
+
+  char szParamKey[1025];
 
   sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
 
@@ -848,6 +1091,7 @@ void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
   ssStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
   ssStatus.dwServiceSpecificExitCode = 0;
 
+
   // If we could guarantee that all initialization would occur in less than one
   // second, we would not have to report our status to the service control manager.
   // For good measure, we will assign SERVICE_START_PENDING to the current service
@@ -858,7 +1102,7 @@ void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
   // When we installed this service, we probably saved a list of runtime args
   // in the registry as a subkey of the key for this service. We'll try to get
   // it here...
-  if(0 != getStringValue((LPBYTE)szAppParameters,(LPDWORD)&lLen, HKEY_LOCAL_MACHINE, (LPCTSTR)szParamKey, (LPTSTR)SZAPPPARAMS)) {
+  if(0 != getStringValue((LPBYTE)szAppParameters,(LPDWORD)&lLen, HKEY_LOCAL_MACHINE, szParamKey, SZAPPPARAMS)){
     dwNewArgc = 0;
     lpszNewArgv = NULL;
   } else {
@@ -887,12 +1131,7 @@ void WINAPI serviceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     (VOID)ReportStatus( SERVICE_STOPPED, dwErr, 0);
 }
 
-#define NTOP_SERVICE_STOPPED 1
-#define NTOP_SHUTDOWN 2
-#define NTOP_CLOSE 3
-#define NTOP_LOGOFF 4
-
-/* ************************************************** */
+/* ************************************ */
 
 void main(int argc, char **argv)
 {
@@ -909,23 +1148,9 @@ void main(int argc, char **argv)
     };
 
   TCHAR szAppParameters[8192];
-  WORD wVersionRequested;
-  WSADATA wsaData;
-  int err;
-
-  wVersionRequested = MAKEWORD(2, 0);
-  err = WSAStartup( wVersionRequested, &wsaData );
-  if( err != 0 ) {
-    /* Tell the user that we could not find a usable */
-    /* WinSock DLL.                                  */
-    AddToMessageLog(TEXT("Unable to initialise Winsock 2.x."));
-    exit(-1);
-  }
-
-  AddToMessageLog(TEXT("Starting ntopng..."));
 
   if(!isWinNT()) {
-    convertArgListToArgString(szAppParameters,0, argc, (LPTSTR*)argv);
+    convertArgListToArgString((LPTSTR) szAppParameters,0, argc, argv);
     if(NULL == szAppParameters){
       _tprintf(TEXT("Could not create AppParameters string.\n"));
     }
@@ -939,7 +1164,7 @@ void main(int argc, char **argv)
   // /c, or /?, followed by actual program arguments. These arguments
   // indicate if the program is to be installed, removed, run as a
   // console application, or to display a usage message.
-  if(argc > 1) {
+  if(argc > 1){
     if(!stricmp(argv[1],"/i")){
       installService(argc,argv);
       printf("NOTE: the default password for the 'admin' user has been set to 'admin'.");
@@ -955,9 +1180,10 @@ void main(int argc, char **argv)
       printf("\nUnrecognized option: %s\n", argv[1]);
       printf("Available options:\n");
       printf("/i [ntopng options] - Install ntopng as service\n");
-      printf("/c                  - Run ntop on a console\n");
+      printf("/c                  - Run ntopng on a console\n");
       printf("/r                  - Deinstall the service\n");
       printf("/h                  - Prints this help\n\n");
+
       usage();
     }
 
@@ -968,7 +1194,7 @@ void main(int argc, char **argv)
   // service control manager, in which case StartServiceCtrlDispatcher
   // must be called here. A message will be printed just in case this
   // happens from the console.
-  printf("\nNOTE:\nUnder your version of Windows, ntop is started as a service.\n");
+  printf("\nNOTE:\nUnder your version of Windows, ntopng is started as a service.\n");
   printf("Please open the services control panel to start/stop ntop,\n");
   printf("or type ntop /h to see all the available options.\n");
 
@@ -978,3 +1204,101 @@ void main(int argc, char **argv)
     AddToMessageLog(TEXT(SZFAILURE));
   }
 }
+
+/* ************************************ */
+
+LPTSTR *convertArgStringToArgList(LPTSTR *lpszArgs, PDWORD pdwLen,
+				  LPTSTR lpszArgstring)
+{
+  u_int uCount;
+  LPTSTR lpszArg, lpszToken;
+
+
+  if(strlen(lpszArgstring) == 0){
+    *pdwLen = 0;
+    //lpszArgs = NULL;
+    return NULL;
+  }
+
+  if(NULL == (lpszArg = (LPTSTR)GlobalAlloc(GMEM_FIXED,strlen(lpszArgstring)+1))){
+    *pdwLen = 0;
+    //lpszArgs = NULL;
+    return NULL;
+  }
+
+  strcpy(lpszArg, lpszArgstring);
+
+  lpszToken = strtok( lpszArg, "\t" );
+  uCount = 0;
+  while( lpszToken != NULL ){
+    uCount++;
+    lpszToken = strtok( NULL, "\t");
+  }
+
+  GlobalFree((HGLOBAL)lpszArg);
+
+  lpszArgs = (LPTSTR *)GlobalAlloc(GMEM_FIXED,uCount * sizeof(LPTSTR));
+  *pdwLen = uCount;
+
+
+  lpszToken = strtok(lpszArgstring,"\t");
+  uCount = 0;
+  while(lpszToken != NULL){
+    lpszArgs[uCount] = (LPTSTR)GlobalAlloc(GMEM_FIXED,strlen(lpszToken)+1);
+    strcpy(lpszArgs[uCount],lpszToken);
+    uCount++;
+    lpszToken = strtok( NULL, "\t");
+  }
+
+
+  return lpszArgs;
+
+}
+
+/* ************************************ */
+
+LPTSTR convertArgListToArgString(LPTSTR lpszTarget,
+				 DWORD dwStart, DWORD dwArgc,
+				 LPTSTR *lpszArgv)
+{
+  u_int i;
+
+  if(dwStart >= dwArgc){
+    return NULL;
+  }
+
+  *lpszTarget = 0;
+
+  for(i=dwStart; i<dwArgc; i++){
+
+    if(i != dwStart){
+      strcat(lpszTarget,"\t");
+    }
+    strcat(lpszTarget,lpszArgv[i]);
+  }
+
+  return lpszTarget;
+}
+
+/* ********************************* */
+
+int spawnProcess(char* theProcess)
+{
+  STARTUPINFO startupInfo;
+  PROCESS_INFORMATION procInfo;
+  BOOL success;
+
+  GetStartupInfo(&startupInfo);
+  success = CreateProcess(NULL,
+			  theProcess,
+			  NULL, NULL, FALSE,
+			  CREATE_NEW_CONSOLE,
+			  NULL, NULL, &startupInfo, &procInfo);
+
+  if(!success)
+    return(-1);
+  else
+    return(0);
+}
+
+
