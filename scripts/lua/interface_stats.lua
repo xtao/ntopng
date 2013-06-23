@@ -9,6 +9,6 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/interface_stats.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/interface_stats.inc")
 dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

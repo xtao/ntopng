@@ -10,7 +10,7 @@ require "graph_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "if_stats"
 dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")

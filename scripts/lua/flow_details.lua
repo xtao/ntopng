@@ -11,7 +11,7 @@ local json = require ("dkjson")
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "flows"
 dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")

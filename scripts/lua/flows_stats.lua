@@ -8,12 +8,12 @@ package.path = dirs.workingdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "flows"
 dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
 
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/flows_stats_top.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/flows_stats_top.inc")
 
 prefs = ntop.getPrefs()
 
@@ -31,5 +31,5 @@ print [[
 		       ]]
 end
 
-ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/flows_stats_bottom.inc")
+ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/flows_stats_bottom.inc")
 dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
