@@ -9,9 +9,9 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
-dofile("./scripts/lua/inc/menu.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 print [[
 
@@ -92,4 +92,4 @@ print [[
    ]]
 
 
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

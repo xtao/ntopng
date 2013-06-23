@@ -10,10 +10,10 @@ require "graph_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile("./scripts/lua/inc/menu.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
@@ -322,7 +322,7 @@ print [[
    ]]
 elseif(page == "talkers") then
 print("<center>")
-dofile("./scripts/lua/inc/sankey.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/sankey.lua")
 print("</center>")
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
@@ -336,4 +336,4 @@ else
    print(page)
 end
 end
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

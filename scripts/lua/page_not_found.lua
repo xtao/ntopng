@@ -9,8 +9,8 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
-ntop.dumpFile("./httpdocs/inc/menu.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/menu.inc")
 
 print('<div class="alert alert-error"><img src=/img/warning.png> Page not found</div>')
 
@@ -20,6 +20,6 @@ print(_GET["url"])
 
 print("</i></center></H4>\n")
 
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
 
 

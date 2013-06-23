@@ -11,10 +11,10 @@ local json = require ("dkjson")
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "flows"
-dofile("./scripts/lua/inc/menu.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 print [[
 
@@ -88,4 +88,4 @@ print [[
 </script>
  ]]
 
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

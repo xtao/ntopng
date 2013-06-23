@@ -69,7 +69,7 @@ print [[
 
    ]]
 
-dofile("./scripts/lua/inc/search_host_box.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/search_host_box.lua")
 
 print [[
   </ul>

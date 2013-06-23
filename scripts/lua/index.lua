@@ -9,12 +9,12 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "home"
-dofile "./scripts/lua/inc/menu.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
 
-ntop.dumpFile("./httpdocs/inc/index_top.inc")
-dofile("./scripts/lua/inc/sankey.lua")
-ntop.dumpFile("./httpdocs/inc/index_bottom.inc")
-dofile("./scripts/lua/inc/footer.lua")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/index_top.inc")
+dofile(dirs.workingdir .. "/scripts/lua/inc/sankey.lua")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/index_bottom.inc")
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

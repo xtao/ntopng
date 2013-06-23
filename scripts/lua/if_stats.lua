@@ -10,10 +10,10 @@ require "graph_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "if_stats"
-dofile("./scripts/lua/inc/menu.lua")
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
@@ -82,4 +82,4 @@ else
    drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

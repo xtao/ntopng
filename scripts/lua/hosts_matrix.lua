@@ -9,10 +9,10 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile "./scripts/lua/inc/menu.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
 
 function getTraffic(stats, host_a, host_b)
    sent_total = 0
@@ -95,4 +95,4 @@ print [[
 </script>
 ]]
 
-dofile "./scripts/lua/inc/footer.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"

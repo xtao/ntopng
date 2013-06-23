@@ -9,12 +9,12 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile("./httpdocs/inc/header.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile "./scripts/lua/inc/menu.lua"
+dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
 
-ntop.dumpFile("./httpdocs/inc/hosts_stats_top.inc")
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/hosts_stats_top.inc")
 
 prefs = ntop.getPrefs()
 
@@ -32,5 +32,5 @@ print [[
 		       ]]
 end
 
-ntop.dumpFile("./httpdocs/inc/hosts_stats_bottom.inc")
-dofile "./scripts/lua/inc/footer.lua"
+ntop.dumpFile(dir.workingdir .. "/httpdocs/inc/hosts_stats_bottom.inc")
+dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
