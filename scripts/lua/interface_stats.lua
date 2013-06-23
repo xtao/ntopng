@@ -11,4 +11,4 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/interface_stats.inc")
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

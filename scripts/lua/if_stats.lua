@@ -82,4 +82,4 @@ else
    drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

@@ -11,11 +11,11 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "admin"
-dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/users.inc")
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/password_dialog.inc")
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/add_user_dialog.inc")
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/delete_user_dialog.inc")
 
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

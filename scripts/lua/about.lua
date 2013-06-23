@@ -11,7 +11,7 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "about"
-dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 info = ntop.getInfo()
 
 print [[
@@ -38,4 +38,4 @@ print("<tr><th><a href=http://www.zeromq.org>ØMQ</A> Version</th><td>"..info["ve
 print("</table>\n")
 
 
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

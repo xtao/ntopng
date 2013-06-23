@@ -11,7 +11,7 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "flows"
-dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/flows_stats_top.inc")
 
@@ -32,4 +32,4 @@ print [[
 end
 
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/flows_stats_bottom.inc")
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")

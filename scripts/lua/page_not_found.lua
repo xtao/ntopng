@@ -20,6 +20,6 @@ print(_GET["url"])
 
 print("</i></center></H4>\n")
 
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")
 
 

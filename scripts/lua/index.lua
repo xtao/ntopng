@@ -12,7 +12,7 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
 
 active_page = "home"
-dofile dirs.workingdir .. "/scripts/lua/inc/menu.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
 
 ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/index_top.inc")
 dofile(dirs.workingdir .. "/scripts/lua/inc/sankey.lua")

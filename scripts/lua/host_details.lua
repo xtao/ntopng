@@ -336,4 +336,4 @@ else
    print(page)
 end
 end
-dofile dirs.workingdir .. "/scripts/lua/inc/footer.lua"
+dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")
