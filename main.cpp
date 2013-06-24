@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   char *ifName;
   int rc;
 
-  if((ntop = new Ntop()) == NULL) exit(0);
+  if((ntop = new Ntop(argv[0])) == NULL) exit(0);
   if((prefs = new Prefs(ntop)) == NULL) exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
@@ -106,6 +106,9 @@ int main(int argc, char *argv[])
     }
 #endif
   }
+
+  if(prefs->daemonize_ntopng())
+    ntop->daemonize();
 
   if (prefs->get_cpu_affinity() >= 0)
     iface->set_cpu_affinity(prefs->get_cpu_affinity());
@@ -156,8 +159,6 @@ int main(int argc, char *argv[])
 
   ntop->start();
   iface->startPacketPolling();
-
-  ntop->daemonize();
 
   while(iface->isRunning()) {
     sleep(2);

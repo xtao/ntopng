@@ -29,7 +29,7 @@ Ntop *ntop;
 
 /* ******************************************* */
 
-Ntop::Ntop() {
+Ntop::Ntop(char *appName) {
   globals = new NtopGlobals();
   pa = new PeriodicActivities();
   address = new AddressResolution();
@@ -37,6 +37,14 @@ Ntop::Ntop() {
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
+  
+  snprintf(startup_dir, sizeof(startup_dir), "%s", appName);
+  for(int i=strlen(startup_dir)-1; i>0; i--) {
+    if((startup_dir[i] == '/') || (startup_dir[i] == '\\')) {
+      startup_dir[i] = '\0';
+      break;
+    }
+  }
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
@@ -44,14 +52,14 @@ Ntop::Ntop() {
   }
 
   // Get the full path and filename of this program
-  if(GetModuleFileName(NULL, install_dir, sizeof(install_dir)) == 0) {
-    install_dir[0] = '\0';
+  if(GetModuleFileName(NULL, startup_dir, sizeof(startup_dir)) == 0) {
+    startup_dir[0] = '\0';
   } else {
     // wcstombs( _wdir, wdir, sizeof(_wdir));
 
-    for(int i=strlen(install_dir)-1; i>0; i--)
-      if(install_dir[i] == '\\') {
-	install_dir[i] = '\0';
+    for(int i=strlen(startup_dir)-1; i>0; i--)
+      if(startup_dir[i] == '\\') {
+	startup_dir[i] = '\0';
 	break;
       }
   }
@@ -104,7 +112,6 @@ void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION);
 
-  if(prefs->daemonize_ntopng()) daemonize();
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
@@ -259,6 +266,7 @@ char* Ntop::getValidPath(char *_path) {
   const char *install_dir = (const char *)get_install_dir();
 #endif
   const char* dirs[] = {
+    startup_dir,
 #ifndef WIN32
     ".",
     "/usr/local/ntopng",
@@ -269,10 +277,12 @@ char* Ntop::getValidPath(char *_path) {
   };
 
 #ifndef WIN32
+#if 0
   /* absolute paths */
   if(stat(_path, &buf) == 0) {
     return(strdup(_path));
   }
+#endif
 
   /* relative paths */
 #endif

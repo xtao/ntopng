@@ -26,7 +26,7 @@
 
 class Ntop {
  private:
-  char working_dir[MAX_PATH], install_dir[MAX_PATH];
+  char working_dir[MAX_PATH], install_dir[MAX_PATH], startup_dir[MAX_PATH];
   char *custom_ndpi_protos;
   NetworkInterface *iface;
   HTTPserver *httpd;
@@ -40,7 +40,7 @@ class Ntop {
   Mutex *rrd_lock;
 
  public:
-  Ntop();
+  Ntop(char *appName);
   void registerPrefs(Prefs *_prefs, Redis *_redis);
   ~Ntop();
 

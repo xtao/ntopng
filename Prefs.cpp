@@ -44,6 +44,10 @@ Prefs::Prefs(Ntop *_ntop) {
   redis_port = 6379;
   dns_mode = 0;
   logFd = NULL;
+
+#ifdef WIN32
+  daemonize = true;
+#endif
 }
 
 /* ******************************************* */
@@ -274,16 +278,16 @@ int Prefs::setOption(int optkey, char *optarg) {
 /* ******************************************* */
 
 int Prefs::checkOptions() {
-#ifdef WIN32
-  char path[256];
-
-  ntop_mkdir(data_dir, NULL);
-  // ntop->getTrace()->traceEvent(TRACE_ERROR, "--> %s", data_dir);
-
-  snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
-  ntop->fixPath(path);
-  logFd = fopen(path, "w");
-#endif
+  if(daemonize) {
+    char path[256];
+    
+    ntop_mkdir(data_dir, NULL);
+     ntop->getTrace()->traceEvent(TRACE_ERROR, "--> %s", data_dir);
+    
+    snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
+    ntop->fixPath(path);
+    logFd = fopen(path, "w");
+  }
 
   data_dir       = ntop->get_install_dir();
   docs_dir       = ntop->getValidPath(docs_dir);
