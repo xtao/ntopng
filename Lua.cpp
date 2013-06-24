@@ -852,7 +852,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2013 - ntop.org");
   lua_push_str_table_entry(vm, "authors", (char*)"Luca Deri and Alfredo Cardigliano");
   lua_push_str_table_entry(vm, "license", (char*)"GNU GPLv3");
-  snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_VERSION, PACKAGE_RELEASE);
+  snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_VERSION, NTOP_SVN_REVISION);
   lua_push_str_table_entry(vm, "version", rsp);
   lua_push_int_table_entry(vm, "uptime", ntop->getGlobals()->getUptime());
   lua_push_str_table_entry(vm, "version.rrd", rrd_strversion());

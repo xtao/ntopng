@@ -62,10 +62,10 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   char _ifname[64];
 
 #ifdef WIN32
- if(name == NULL) name = "1"; /* First available interface */
+  if(name == NULL) name = "1"; /* First available interface */
 #endif
 
- if(name == NULL) {
+  if(name == NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
     printAvailableInterfaces(false, 0, NULL, 0);
 
@@ -688,7 +688,7 @@ void NetworkInterface::dropPrivileges() {
     /* Drop privileges */
     if((setgid(pw->pw_gid) != 0) || (setuid(pw->pw_uid) != 0)) {
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to drop privileges [%s]",
-		 strerror(errno));
+				   strerror(errno));
     } else
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changeod to %s", username);
   } else {
@@ -790,11 +790,11 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
 	  if(printHelp) {
 #ifdef WIN32
 	    printf("   %d. %s\n"
-			   "\t%s\n", numInterfaces,
+		   "\t%s\n", numInterfaces,
 		   devpointer->description ? devpointer->description : "",
 		   devpointer->name);
 #else
-		printf("   %d. %s\n", numInterfaces, devpointer->name);
+	    printf("   %d. %s\n", numInterfaces, devpointer->name);
 #endif
 	  } else
 	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",
@@ -825,8 +825,8 @@ bool NetworkInterface::isNumber(const char *str) {
     if(!isdigit(*str))
       return(false);
 
-      str++;
-    }
+    str++;
+  }
 
   return(true);
 }
