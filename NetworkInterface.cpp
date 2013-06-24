@@ -794,7 +794,7 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
 		   devpointer->description ? devpointer->description : "",
 		   devpointer->name);
 #else
-		printf("   %d. %s (%s)\n", numInterfaces, devpointer->name);
+		printf("   %d. %s\n", numInterfaces, devpointer->name);
 #endif
 	  } else
 	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",

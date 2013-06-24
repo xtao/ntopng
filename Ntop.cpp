@@ -91,7 +91,7 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
 #ifdef WIN32
 	 return((char*)_wdir);
 #else
-	 return(".");
+	   return((char*)".");
 #endif
  }
 
