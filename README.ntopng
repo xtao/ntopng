@@ -1,3 +1,5 @@
+For ntopng Developers
+---------------------
 In case you want to add new protocols
 
 # autoreconf -ivf
@@ -16,6 +18,31 @@ On Mac OSX please install macports and do
 On Windows you can download the redis server from
 - https://github.com/rgl/redis/downloads
   
---------------------------
-Luca Deri <deri@ntop.org>
+
+Using ntopng as a flow collector
+--------------------------------
+In order to use ntopng as a flow collector with nprobe you need to start the
+apps as follows
+
+- collector
+  ntopng -i "tcp://127.0.0.1:5556"
+
+- probe (nProbe)
+nprobe --zmq "tcp://*:5556" -i ~/pcap/http.pcap -n none -b 2
+
+
+Using ntopng from Windows
+-------------------------
+1. Remember to start the redis server prior to start ntopng
+2. You must start ntopng as a service using the "Services" control panel
+
+
+Defaults
+--------
+The ntopng default user is 'admin' (without ') and the default
+passoword is also 'admin' (without ').
+
+
+-------------------------------------
+Luca Deri <deri@ntop.org> - June 2013
 

@@ -40,7 +40,7 @@ u_char isNtopAservice;
 #define NTOP_LOGOFF 4
 
 void usage() {
-	printf("Usage....\n");
+	printf("Usage: type ntopng /c -h\n");
 }
 
 /* ************************************************** */

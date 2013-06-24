@@ -38,41 +38,33 @@ Ntop::Ntop(char *appName) {
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
   
-#ifdef WIN32
-  snprintf(startup_dir, sizeof(startup_dir), "%s", appName);
-  for(int i=strlen(startup_dir)-1; i>0; i--) {
-    if((startup_dir[i] == '/') || (startup_dir[i] == '\\')) {
-      startup_dir[i] = '\0';
-      break;
-    }
-  }
-#else
+#ifndef WIN32
   getcwd(startup_dir, sizeof(startup_dir));
 #endif
 
-  printf("--> %s [%s]\n", startup_dir, appName);
-
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
-    strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
+	  strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
   }
 
   // Get the full path and filename of this program
   if(GetModuleFileName(NULL, startup_dir, sizeof(startup_dir)) == 0) {
-    startup_dir[0] = '\0';
+	  startup_dir[0] = '\0';
   } else {
-    // wcstombs( _wdir, wdir, sizeof(_wdir));
-
-    for(int i=strlen(startup_dir)-1; i>0; i--)
-      if(startup_dir[i] == '\\') {
-	startup_dir[i] = '\0';
-	break;
-      }
+	  for(int i=strlen(startup_dir)-1; i>0; i--)
+		  if(startup_dir[i] == '\\') {
+			  startup_dir[i] = '\0';
+			  break;
+		  }
   }
+  strcpy(install_dir, startup_dir);
 #else
   strcpy(working_dir, CONST_DEFAULT_WRITABLE_DIR);
   if(getcwd(install_dir, sizeof(install_dir)) == NULL) strcpy(install_dir, ".");
+  getcwd(startup_dir, sizeof(startup_dir));
 #endif
+
+  // printf("--> %s [%s]\n", startup_dir, appName);
 }
 
 /* ******************************************* */
