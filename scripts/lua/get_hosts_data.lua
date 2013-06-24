@@ -3,7 +3,7 @@
 --
 
 dirs = ntop.getDirs()
-package.path = dirs.workingdir .. "/scripts/lua/modules/?.lua;" .. package.path
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')

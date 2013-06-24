@@ -3,18 +3,18 @@
 --
 
 dirs = ntop.getDirs()
-package.path = dirs.workingdir .. "/scripts/lua/modules/?.lua;" .. package.path
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 active_page = "hosts"
-dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/hosts_stats_top.inc")
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_top.inc")
 
 prefs = ntop.getPrefs()
 
@@ -32,5 +32,5 @@ print [[
 		       ]]
 end
 
-ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/hosts_stats_bottom.inc")
-dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_bottom.inc")
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

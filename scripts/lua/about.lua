@@ -3,15 +3,15 @@
 --
 
 dirs = ntop.getDirs()
-package.path = dirs.workingdir .. "/scripts/lua/modules/?.lua;" .. package.path
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 active_page = "about"
-dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 info = ntop.getInfo()
 
 print [[
@@ -38,4 +38,4 @@ print("<tr><th><a href=http://www.zeromq.org>ØMQ</A> Version</th><td>"..info["ve
 print("</table>\n")
 
 
-dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

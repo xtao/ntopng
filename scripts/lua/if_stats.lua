@@ -3,17 +3,17 @@
 --
 
 dirs = ntop.getDirs()
-package.path = dirs.workingdir .. "/scripts/lua/modules/?.lua;" .. package.path
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 require "graph_utils"
 
 sendHTTPHeader('text/html')
 
-ntop.dumpFile(dirs.workingdir .. "/httpdocs/inc/header.inc")
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 active_page = "if_stats"
-dofile(dirs.workingdir .. "/scripts/lua/inc/menu.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
@@ -82,4 +82,4 @@ else
    drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
-dofile(dirs.workingdir .. "/scripts/lua/inc/footer.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
