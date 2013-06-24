@@ -21,39 +21,15 @@
 
 #include "ntop_includes.h"
 
+#ifdef WIN32
+#include <shlobj.h> /* SHGetFolderPath() */
+#endif
+
 Ntop *ntop;
 
 /* ******************************************* */
 
 Ntop::Ntop() {
-#ifdef WIN32
-  WORD wVersionRequested;
-  WSADATA wsaData;
-  int err;
-
-  wVersionRequested = MAKEWORD(2, 0);
-  err = WSAStartup( wVersionRequested, &wsaData );
-  if( err != 0 ) {
-    /* Tell the user that we could not find a usable */
-    /* WinSock DLL.                                  */
-    printf("Fatal error: Unable to initialise Winsock 2.x.");
-    exit(-1);
-  }
-
-    // Get the full path and filename of this program                                                                                                                                               
-    if(GetModuleFileName(NULL, _wdir, sizeof(_wdir)) == 0) {
-      _wdir[0] = '\0';
-    } else {
-	  // wcstombs( _wdir, wdir, sizeof(_wdir));
-
-		for(int i=strlen(_wdir)-1; i>0; i--)
-        if(_wdir[i] == '\\') {
-          _wdir[i] = '\0';
-          break;
-        }
-	}
-#endif
-
   globals = new NtopGlobals();
   pa = new PeriodicActivities();
   address = new AddressResolution();
@@ -61,6 +37,28 @@ Ntop::Ntop() {
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
+  
+#ifdef WIN32
+  if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
+	  strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
+  }
+
+  // Get the full path and filename of this program                                                                                                                                               
+  if(GetModuleFileName(NULL, install_dir, sizeof(install_dir)) == 0) {
+	  install_dir[0] = '\0';
+  } else {
+	  // wcstombs( _wdir, wdir, sizeof(_wdir));
+
+	  for(int i=strlen(install_dir)-1; i>0; i--)
+		  if(install_dir[i] == '\\') {
+			  install_dir[i] = '\0';
+			  break;
+		  }
+  }
+#else
+  strcpy(documents_dir, CONST_DEFAULT_WRITABLE_DIR);
+  if(getcwd(install_dir, sizeof(install_dir)) == NULL) strcpy(install_dir, ".");
+#endif
 }
 
 /* ******************************************* */
@@ -84,16 +82,6 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
     exit(-1);
   }
 }
-
-/* ******************************************* */
-
- char* Ntop::getWorkingDir() {
-#ifdef WIN32
-	 return((char*)_wdir);
-#else
-	   return((char*)".");
-#endif
- }
 
 /* ******************************************* */
 
@@ -267,12 +255,15 @@ void Ntop::fixPath(char *str) {
 
 char* Ntop::getValidPath(char *_path) {
   struct stat buf;
+#ifdef WIN32
+  const char *install_dir = (const char *)get_install_dir();
+#endif
   const char* dirs[] = {
 #ifndef WIN32
     ".",
     "/usr/local/ntopng",
 #else
-    (const char*)_wdir,
+    install_dir,
 #endif
     NULL
   };  

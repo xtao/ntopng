@@ -425,7 +425,6 @@ int win_inet_pton(int af, const char *src, void *dst)
 	}
 	/* NOTREACHED */
 }
-
 }
 
 /* ******************************* */

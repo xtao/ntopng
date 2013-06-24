@@ -25,7 +25,7 @@
 
 Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop;
-  ifName = NULL, local_networks = strdup("192.168.1.0/24");
+  ifName = NULL, local_networks = strdup(CONST_DEFAULT_HOME_NET);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
@@ -263,25 +263,18 @@ int Prefs::setOption(int optkey, char *optarg) {
 /* ******************************************* */
 
 int Prefs::checkOptions() {
-#ifndef WIN32
-  data_dir       = ntop->getValidPath(data_dir);
-#else
+#ifdef WIN32
   char path[256];
-  unsigned long driveSerial;
-
-  get_serial(&driveSerial);
-
-  snprintf(path, sizeof(path), "%s/%u", ntop->getWorkingDir(), driveSerial);
-  ntop->fixPath(path);
-  data_dir = strdup(path);
 
   ntop_mkdir(data_dir, NULL);
-
   // ntop->getTrace()->traceEvent(TRACE_ERROR, "--> %s", data_dir);
 
-  snprintf(path, sizeof(path), "%s/%u/ntopng.log", ntop->getWorkingDir(), driveSerial);
+  snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
+  ntop->fixPath(path);
   logFd = fopen(path, "w");
 #endif
+
+  data_dir       = ntop->getValidPath(data_dir);
   docs_dir       = ntop->getValidPath(docs_dir);
   scripts_dir    = ntop->getValidPath(scripts_dir);
   callbacks_dir  = ntop->getValidPath(callbacks_dir);

@@ -63,19 +63,18 @@ class Prefs {
   inline bool decode_dns_responses()                    { return(sniff_dns_responses);    };
   inline void enable_categorization()                   { categorization_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
-  inline bool do_change_user()                          { return change_user; };
+  inline bool do_change_user()                          { return(change_user);            };
   inline void set_if_name(char *name)                   { if(ifName) free(ifName); ifName = strdup(name); };
-  inline char* get_if_name()                            { return(ifName);   };
-  inline char* get_data_dir()                           { return(data_dir); };
-  inline char* get_docs_dir()                           { return(docs_dir); };
-  inline char* get_scripts_dir()                        { return(scripts_dir); };
-  inline char* get_callbacks_dir()                      { return(callbacks_dir); };
+  inline char* get_if_name()                            { return(ifName);         };
+  inline char* get_data_dir()                           { return(data_dir);       };
+  inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
+  inline char* get_scripts_dir()                        { return(scripts_dir);    };
+  inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
   inline char* get_categorization_key()                 { return(categorization_key); };
-  inline int get_cpu_affinity()                         { return(cpu_affinity); };
-  inline u_int get_http_port()                          { return(http_port); };
-  inline char* get_redis_host()                         { return(redis_host); }
-  inline u_int get_redis_port()                         { return(redis_port); };
-
+  inline int get_cpu_affinity()                         { return(cpu_affinity);   };
+  inline u_int get_http_port()                          { return(http_port);      };
+  inline char* get_redis_host()                         { return(redis_host);     }
+  inline u_int get_redis_port()                         { return(redis_port);     };
   inline u_int16_t get_host_max_idle()                  { return(host_max_idle);  };
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
@@ -84,7 +83,7 @@ class Prefs {
   int loadUsersFromFile();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);
-
+  
   int save();
 };
 

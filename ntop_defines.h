@@ -75,11 +75,13 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
+#define CONST_DEFAULT_HOME_NET      "192.168.1.0/24"
 #define CONST_DEFAULT_DATA_DIR      "data"
 #define CONST_DEFAULT_DOCS_DIR      "httpdocs"
 #define CONST_DEFAULT_SCRIPTS_DIR   "scripts"
 #define CONST_DEFAULT_CALLBACKS_DIR "scripts/callbacks"
 #define CONST_DEFAULT_USERS_FILE    "ntopng-users.conf"
+#define CONST_DEFAULT_WRITABLE_DIR  "/var/tmp"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"

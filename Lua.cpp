@@ -552,12 +552,20 @@ static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_func
   char **argv;
   int argc = lua_gettop(L) + 1;
 
+
   ntop->rrdLock(__FUNCTION__, __LINE__);
+  rrd_clear_error();
   argv = make_argv(cmd, L);
   reset_rrd_state();
   rrd_function(argc, argv);
   free(argv);
-  if (rrd_test_error()) luaL_error(L, rrd_get_error());
+  if (rrd_test_error()) {
+	char *err =  rrd_get_error();
+
+	if(err != NULL)
+	  luaL_error(L, rrd_get_error());
+  }
+
   ntop->rrdUnlock(__FUNCTION__, __LINE__);
 
   return 0;
@@ -828,8 +836,8 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 static int ntop_get_dirs(lua_State* vm) {
 	lua_newtable(vm);
-	lua_push_str_table_entry(vm, "datadir",   ntop->getPrefs()->get_data_dir());
-	lua_push_str_table_entry(vm, "workingdir", ntop->getWorkingDir());
+	lua_push_str_table_entry(vm, "installdir", ntop->get_install_dir());
+	lua_push_str_table_entry(vm, "workingdir", ntop->get_working_dir());
 
 	return(1);
 }

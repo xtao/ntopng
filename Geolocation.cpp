@@ -51,6 +51,8 @@ GeoIP* Geolocation::loadGeoDB(char *base_path, const char *db_name) {
   GeoIP *geo;
 
   snprintf(path, sizeof(path), "%s/%s", base_path, db_name);
+  ntop->fixPath(path);
+
   geo = GeoIP_open(path, GEOIP_CHECK_CACHE);
 
   if(geo == NULL)
@@ -64,10 +66,10 @@ GeoIP* Geolocation::loadGeoDB(char *base_path, const char *db_name) {
 
 Geolocation::~Geolocation() {
 #ifdef HAVE_GEOIP
-  if(geo_ip_asn_db)     GeoIP_delete(geo_ip_asn_db);
-  if(geo_ip_asn_db_v6)  GeoIP_delete(geo_ip_asn_db_v6);
-  if(geo_ip_city_db)    GeoIP_delete(geo_ip_city_db);
-  if(geo_ip_city_db_v6) GeoIP_delete(geo_ip_city_db_v6);
+  if(geo_ip_asn_db != NULL)     GeoIP_delete(geo_ip_asn_db);
+  if(geo_ip_asn_db_v6 != NULL)  GeoIP_delete(geo_ip_asn_db_v6);
+  if(geo_ip_city_db != NULL)    GeoIP_delete(geo_ip_city_db);
+  if(geo_ip_city_db_v6 != NULL) GeoIP_delete(geo_ip_city_db_v6);
 #endif
 }
 
@@ -78,14 +80,14 @@ void Geolocation::getAS(IpAddress *addr, u_int32_t *asn, char **asname) {
   char *rsp = NULL;
   struct ipAddress *ip = addr->getIP();
   
-  switch(ip->ipVersion) {
+  switch(ip->ipVersion != NULL) {
   case 4:
     if(geo_ip_asn_db)
       rsp = GeoIP_name_by_ipnum(geo_ip_asn_db, ntohl(ip->ipType.ipv4));
     break;
     
   case 6:
-    if(geo_ip_asn_db_v6) {
+    if(geo_ip_asn_db_v6 != NULL) {
       struct in6_addr *ipv6 = (struct in6_addr*)&ip->ipType.ipv6;
       rsp = GeoIP_name_by_ipnum_v6(geo_ip_asn_db_v6, *ipv6);
     }
@@ -119,12 +121,12 @@ void Geolocation::getInfo(IpAddress *addr, char **country_code, char **city, flo
   
   switch(ip->ipVersion) {
   case 4:
-    if(geo_ip_city_db)
+    if(geo_ip_city_db != NULL)
       geo = GeoIP_record_by_ipnum(geo_ip_city_db, ntohl(ip->ipType.ipv4));
     break;
     
   case 6:
-    if(geo_ip_city_db_v6) {
+    if(geo_ip_city_db_v6 != NULL) {
       struct in6_addr *ipv6 = (struct in6_addr*)&ip->ipType.ipv6;
       
       geo = GeoIP_record_by_ipnum_v6(geo_ip_city_db_v6, *ipv6);

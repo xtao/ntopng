@@ -26,9 +26,7 @@
 
 class Ntop {
  private:
-#ifdef WIN32
-  TCHAR _wdir[256];
-#endif
+  char working_dir[MAX_PATH], install_dir[MAX_PATH];
   char *custom_ndpi_protos;
   NetworkInterface *iface;
   HTTPserver *httpd;
@@ -49,7 +47,6 @@ class Ntop {
   void setCustomnDPIProtos(char *path);
   inline char* getCustomnDPIProtos()                 { return(custom_ndpi_protos);                 };
   
-  char* getWorkingDir();
   char* getValidPath(char *path);
   void loadGeolocation(char *dir);
   inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
@@ -64,12 +61,14 @@ class Ntop {
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   inline void setCategorization(Categorization *c)   { categorization = c; };
   inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
-  inline HTTPserver*       get_HTTPserver()       { return(httpd); };
-
-  inline NtopGlobals*      getGlobals()           { return(globals); };
-  inline Trace*            getTrace()             { return(globals->getTrace()); };
-  inline Redis*            getRedis()             { return(redis);               };
-  inline Prefs*            getPrefs()             { return(prefs);               };
+  inline HTTPserver*       get_HTTPserver()          { return(httpd);            };
+  inline char* get_working_dir()                     { return(working_dir);      };
+  inline char* get_install_dir()                     { return(install_dir);      };
+ 
+  inline NtopGlobals*      getGlobals()              { return(globals); };
+  inline Trace*            getTrace()                { return(globals->getTrace()); };
+  inline Redis*            getRedis()                { return(redis);               };
+  inline Prefs*            getPrefs()                { return(prefs);               };
 
   inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
   inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
