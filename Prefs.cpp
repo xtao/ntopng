@@ -231,8 +231,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
 #ifndef WIN32
     case 'd':
-      free(data_dir);
-      data_dir = strdup(optarg);
+      ntop->setWorkingDir(optarg);
       break;
 #endif
     case '1':
