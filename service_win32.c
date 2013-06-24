@@ -586,116 +586,134 @@ LPTSTR GetLastErrorText( LPTSTR lpszBuf, DWORD dwSize )
 
 void installService(int argc, char **argv)
 {
-  SC_HANDLE   schService;
-  SC_HANDLE   schSCManager;
+	SC_HANDLE   schService;
+	SC_HANDLE   schSCManager;
 
-  TCHAR szPath[512], szDescr[256];
+	TCHAR szPath[512], szDescr[256];
 
-  TCHAR szAppParameters[8192];
+	TCHAR szAppParameters[8192];
 
-  char szParamKey[1025], szParamKey2[1025];
+	char szParamKey[1025], szParamKey2[1025];
 
-  sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
+	sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s\\Parameters",SZSERVICENAME);
 
-  // Get the full path and filename of this program
-  if ( GetModuleFileName( NULL, szPath, 512 ) == 0 ){
-    _tprintf(TEXT("Unable to install %s - %s\n"), TEXT(SZSERVICEDISPLAYNAME),
-	     GetLastErrorText(szErr, 256));
-    return;
-  }
-
-  // Next, get a handle to the service control manager
-  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-
-  if ( schSCManager ) {
-
-    schService = CreateService(schSCManager,   // SCManager database
-			       TEXT(SZSERVICENAME),        // name of service
-			       TEXT(SZSERVICEDISPLAYNAME), // name to display
-			       SERVICE_ALL_ACCESS,         // desired access
-			       SERVICE_WIN32_OWN_PROCESS,  // service type
-			       SERVICESTARTTYPE,           // start type
-			       SERVICE_ERROR_NORMAL,       // error control type
-			       szPath,                     // service's binary
-			       NULL,                       // no load ordering group
-			       NULL,                       // no tag identifier
-			       TEXT(SZDEPENDENCIES),       // dependencies
-			       NULL,                       // LocalSystem account
-			       NULL);                      // no password
-
-    if (schService){
-      _tprintf(TEXT("%s installed.\n"), TEXT(SZSERVICEDISPLAYNAME) );
-
-      // Close the handle to this service object
-      CloseServiceHandle(schService);
-
-      /* ****************************************** */
-      // Set the service name. Courtesy of Yuri Francalacci <yuri@ntop.org>
-      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s",SZSERVICENAME);
-      strcpy(szDescr, "ntopng: Web-based network traffic monitor");
-
-      // Set the file value (where the message resources are located.... in this case, our runfile.)
-      if(0 != setStringValue((const unsigned char *)szDescr,
-			     strlen(szDescr) + 1,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("Description")))
-	{
-	  _tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
-	}
-      /* ********************************************** */
-
-
-      //Make a registry key to support logging messages using the service name.
-      sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",SZSERVICENAME);
-      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey2)){
-	_tprintf(TEXT("The EventLog subkey could not be created.\n"));
-      }
-
-      // Set the file value (where the message resources are located.... in this case, our runfile.)
-      if(0 != setStringValue((const unsigned char *) szPath,
-			     strlen(szPath) + 1,HKEY_LOCAL_MACHINE,
-			     szParamKey2,TEXT("EventMessageFile")))
-	{
-	  _tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
+	// Get the full path and filename of this program
+	if ( GetModuleFileName( NULL, szPath, 512 ) == 0 ){
+		_tprintf(TEXT("Unable to install %s - %s\n"), TEXT(SZSERVICEDISPLAYNAME),
+			GetLastErrorText(szErr, 256));
+		return;
 	}
 
-      // Set the supported types flags.
-      if(0 != setDwordValue(EVENTLOG_INFORMATION_TYPE,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("TypesSupported"))){
-	_tprintf(TEXT("The Types Supported value could\nnot be assigned.\n"));
-      }
+	// Next, get a handle to the service control manager
+	schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 
-      // Try to create a subkey to hold the runtime args for the JavaVM and
-      // Java application
-      if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey)){
-	_tprintf(TEXT("Could not create Parameters subkey.\n"));
-      } else {
-	//Create an argument string from the argument list
-	// J. R. Duarte: modified it to store the full command line
-	convertArgListToArgString((LPTSTR) szAppParameters,0, argc, argv);
-	if(NULL == szAppParameters){
-	  _tprintf(TEXT("Could not create AppParameters string.\n"));
+	if ( schSCManager ) {
+		schService = CreateService(schSCManager,   // SCManager database
+			TEXT(SZSERVICENAME),        // name of service
+			TEXT(SZSERVICEDISPLAYNAME), // name to display
+			SERVICE_ALL_ACCESS,         // desired access
+			SERVICE_WIN32_OWN_PROCESS,  // service type
+			SERVICESTARTTYPE,           // start type
+			SERVICE_ERROR_NORMAL,       // error control type
+			szPath,                     // service's binary
+			NULL,                       // no load ordering group
+			NULL,                       // no tag identifier
+			TEXT(SZDEPENDENCIES),       // dependencies
+			NULL,                       // LocalSystem account
+			NULL);                      // no password
+
+		if (schService){
+			_tprintf(TEXT("%s installed.\n"), TEXT(SZSERVICEDISPLAYNAME) );
+
+			// Close the handle to this service object
+			CloseServiceHandle(schService);
+
+			/* ****************************************** */
+			// Set the service name. Courtesy of Yuri Francalacci <yuri@ntop.org>
+			sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\%s",SZSERVICENAME);
+			strcpy(szDescr, "ntopng: Web-based network traffic monitor");
+
+			// Set the file value (where the message resources are located.... in this case, our runfile.)
+			if(0 != setStringValue((const unsigned char *)szDescr,
+				strlen(szDescr) + 1,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("Description")))
+			{
+				_tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
+			}
+			/* ********************************************** */
+
+
+			//Make a registry key to support logging messages using the service name.
+			sprintf(szParamKey2, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",SZSERVICENAME);
+			if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey2)){
+				_tprintf(TEXT("The EventLog subkey could not be created.\n"));
+			}
+
+			// Set the file value (where the message resources are located.... in this case, our runfile.)
+			if(0 != setStringValue((const unsigned char *) szPath,
+				strlen(szPath) + 1,HKEY_LOCAL_MACHINE,
+				szParamKey2,TEXT("EventMessageFile")))
+			{
+				_tprintf(TEXT("The Message File value could\nnot be assigned.\n"));
+			}
+
+			// Set the supported types flags.
+			if(0 != setDwordValue(EVENTLOG_INFORMATION_TYPE,HKEY_LOCAL_MACHINE, szParamKey2,TEXT("TypesSupported"))){
+				_tprintf(TEXT("The Types Supported value could\nnot be assigned.\n"));
+			}
+
+			// Try to create a subkey to hold the runtime args for the JavaVM and
+			// Java application
+			if(0 != makeNewKey(HKEY_LOCAL_MACHINE, szParamKey)){
+				_tprintf(TEXT("Could not create Parameters subkey.\n"));
+			} else {
+				//Create an argument string from the argument list
+				// J. R. Duarte: modified it to store the full command line
+				convertArgListToArgString((LPTSTR) szAppParameters,0, argc, argv);
+				if(NULL == szAppParameters){
+					_tprintf(TEXT("Could not create AppParameters string.\n"));
+				} else {
+					HKEY hkey;
+					DWORD disposition;
+					_TCHAR data[] = "redis\0\0";
+
+					// Try to save the argument string under the new subkey
+					if(0 != setStringValue(szAppParameters, strlen(szAppParameters)+1,
+						HKEY_LOCAL_MACHINE, szParamKey, SZAPPPARAMS)){
+							_tprintf(TEXT("Could not save AppParameters value.\n"));
+					}
+
+					sprintf(szParamKey,"SYSTEM\\CurrentControlSet\\Services\\%s",SZSERVICENAME);
+
+
+					if( RegCreateKeyEx( HKEY_LOCAL_MACHINE, szParamKey,
+										0, "", 0, KEY_ALL_ACCESS, NULL, &hkey, &disposition) != ERROR_SUCCESS)
+					{
+						_tprintf(TEXT("Could not create service registry key"));
+						return;
+					}
+
+					
+					strcpy(szAppParameters, "redis");
+					// Try to save the argument string under the new subkey
+					if(RegSetValueEx (hkey, TEXT("DependOnService"), 0, REG_MULTI_SZ, (LPBYTE)data, strlen(data)+2) != 0) {
+							_tprintf(TEXT("Could not save DependOnService value.\n"));
+					}
+
+					RegCloseKey(hkey);
+				}
+			}
+
+		}
+		else{
+			_tprintf(TEXT("CreateService failed - %s\n"), GetLastErrorText(szErr, 256));
+		}
+
+		// Close the handle to the service control manager database
+		CloseServiceHandle(schSCManager);
 	}
-
 	else{
-
-	  // Try to save the argument string under the new subkey
-	  if(0 != setStringValue(szAppParameters, strlen(szAppParameters)+1,
-				 HKEY_LOCAL_MACHINE, szParamKey, SZAPPPARAMS)){
-	    _tprintf(TEXT("Could not save AppParameters value.\n"));
-	  }
-
+		_tprintf(TEXT(SZSCMGRFAILURE), GetLastErrorText(szErr,256));
 	}
-      }
-
-    }
-    else{
-      _tprintf(TEXT("CreateService failed - %s\n"), GetLastErrorText(szErr, 256));
-    }
-
-    // Close the handle to the service control manager database
-    CloseServiceHandle(schSCManager);
-  }
-  else{
-    _tprintf(TEXT(SZSCMGRFAILURE), GetLastErrorText(szErr,256));
-  }
 }
 
 
