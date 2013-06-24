@@ -30,7 +30,7 @@ Prefs::Prefs(Ntop *_ntop) {
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
   max_num_hosts = 32768, max_num_flows = 65536;
-  data_dir = strdup(CONST_DEFAULT_DATA_DIR); 
+  data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   docs_dir = strdup(CONST_DEFAULT_DOCS_DIR);
   scripts_dir = strdup(CONST_DEFAULT_SCRIPTS_DIR);
   callbacks_dir = strdup(CONST_DEFAULT_CALLBACKS_DIR);
@@ -121,10 +121,10 @@ void usage() {
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
 #ifndef WIN32
-	 CONST_DEFAULT_DATA_DIR, 
+	 CONST_DEFAULT_DATA_DIR,
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
-         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, 
+         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT,
 	 CONST_DEFAULT_USERS_FILE);
 
   printf("\n");
@@ -280,10 +280,8 @@ int Prefs::setOption(int optkey, char *optarg) {
 int Prefs::checkOptions() {
   if(daemonize) {
     char path[256];
-    
-    ntop_mkdir(data_dir, NULL);
-     ntop->getTrace()->traceEvent(TRACE_ERROR, "--> %s", data_dir);
-    
+
+    ntop_mkdir(data_dir, 0777);
     snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
     ntop->fixPath(path);
     logFd = fopen(path, "w");
@@ -307,12 +305,12 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:", 
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
   }
-  
+
   return(checkOptions());
 }
 
@@ -353,7 +351,7 @@ int Prefs::loadFromFile(const char *path) {
 
     opt = long_options;
     while (opt->name != NULL) {
-      if (strcmp(opt->name, key) == 0 || 
+      if (strcmp(opt->name, key) == 0 ||
           (strlen(key) == 1 && opt->val == key[0])) {
         setOption(opt->val, value);
         break;
@@ -416,7 +414,7 @@ int Prefs::loadUsersFromFile() {
   if (users_file_path == NULL)
     return(-1);
 
-  snprintf(path, sizeof(path), "%s/%s", data_dir, users_file_path);
+  snprintf(path, sizeof(path), "%s/%s", ntop->get_working_dir(), users_file_path);
   ntop->fixPath(path);
 
   fd = fopen(path, "r");
@@ -485,8 +483,8 @@ int Prefs::saveUsersToFile() {
     for (i = 0; i < rc; i++) {
       if (keys[i] == NULL) continue; /* safety check */
 
-      if(ntop->getRedis()->get(keys[i], val, sizeof(val)) >= 0) 
-        fprintf(fd, "%s=%s\n", keys[i], val); 
+      if(ntop->getRedis()->get(keys[i], val, sizeof(val)) >= 0)
+        fprintf(fd, "%s=%s\n", keys[i], val);
 
       free(keys[i]);
     }

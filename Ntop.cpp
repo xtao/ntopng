@@ -38,6 +38,7 @@ Ntop::Ntop(char *appName) {
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
   
+#ifdef WIN32
   snprintf(startup_dir, sizeof(startup_dir), "%s", appName);
   for(int i=strlen(startup_dir)-1; i>0; i--) {
     if((startup_dir[i] == '/') || (startup_dir[i] == '\\')) {
@@ -45,6 +46,11 @@ Ntop::Ntop(char *appName) {
       break;
     }
   }
+#else
+  getcwd(startup_dir, sizeof(startup_dir));
+#endif
+
+  printf("--> %s [%s]\n", startup_dir, appName);
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
@@ -268,7 +274,6 @@ char* Ntop::getValidPath(char *_path) {
   const char* dirs[] = {
     startup_dir,
 #ifndef WIN32
-    ".",
     "/usr/local/ntopng",
 #else
     install_dir,
@@ -283,7 +288,7 @@ char* Ntop::getValidPath(char *_path) {
     return(strdup(_path));
   }
 #endif
-
+  
   /* relative paths */
 #endif
   for(int i=0; dirs[i] != NULL; i++) {
