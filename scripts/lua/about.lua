@@ -32,6 +32,7 @@ print("<tr><th><a href=http://www.redis.io>Redis</A> Server Version</th><td>"..i
 print("<tr><th><a href=https://github.com/valenok/mongoose>Mongoose web server</A> Version</th><td>"..info["version.httpd"].."</td></tr>\n")
 print("<tr><th><a href=http://www.luajit.org>LuaJIT</A> Version</th><td>"..info["version.luajit"].."</td></tr>\n")
 print("<tr><th><a href=http://www.zeromq.org>ØMQ</A> Version</th><td>"..info["version.zmq"].."</td></tr>\n")
+print("<tr><th><a href=http://www.maxmind.com>GeoIP</A> Version</th><td>"..info["version.geoip"].."</td></tr>\n")
 
 
 

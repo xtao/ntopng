@@ -41,6 +41,8 @@ struct zmq_msg_hdr {
 
 extern "C" {
 #include "rrd.h"
+
+extern const char * GeoIP_lib_version(void);
 };
 
 /* ******************************* */
@@ -552,7 +554,6 @@ static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_func
   char **argv;
   int argc = lua_gettop(L) + 1;
 
-
   ntop->rrdLock(__FUNCTION__, __LINE__);
   rrd_clear_error();
   argv = make_argv(cmd, L);
@@ -859,6 +860,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "version.redis", ntop->getRedis()->getVersion(rsp, sizeof(rsp)));
   lua_push_str_table_entry(vm, "version.httpd", (char*)mg_version());
   lua_push_str_table_entry(vm, "version.luajit", (char*)LUAJIT_VERSION);
+  lua_push_str_table_entry(vm, "version.geoip", (char*)GeoIP_lib_version());
 
   zmq_version(&major, &minor, &patch);
   snprintf(rsp, sizeof(rsp), "%d.%d.%d", major, minor, patch);
