@@ -16,7 +16,8 @@ end
 
 
 function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
-   rrdname = ntop.getDataDir() .. "/rrd/" .. host .. "/" .. rrdFile
+   dirs = ntop.getDirs()
+   rrdname = dirs.workingdir .. "/rrd/" .. host .. "/" .. rrdFile
    names =  {}
    series = {}
    vals = {
@@ -191,8 +192,8 @@ if(show_timeseries == 1) then
 
 print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
 print('<li class="divider"></li>\n')
-
-rrds = ntop.readdir(ntop.getDataDir() .. "/rrd/" .. host)
+dirs = ntop.getDirs()
+rrds = ntop.readdir(dirs.workingdir .. "/rrd/" .. host)
 
 for k,v in pairsByKeys(rrds, asc) do
    proto = string.gsub(rrds[k], ".rrd", "")

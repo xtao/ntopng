@@ -80,7 +80,7 @@ void Geolocation::getAS(IpAddress *addr, u_int32_t *asn, char **asname) {
   char *rsp = NULL;
   struct ipAddress *ip = addr->getIP();
   
-  switch(ip->ipVersion != NULL) {
+  switch(ip->ipVersion != 0) {
   case 4:
     if(geo_ip_asn_db)
       rsp = GeoIP_name_by_ipnum(geo_ip_asn_db, ntohl(ip->ipType.ipv4));

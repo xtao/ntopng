@@ -274,7 +274,7 @@ int Prefs::checkOptions() {
   logFd = fopen(path, "w");
 #endif
 
-  data_dir       = ntop->getValidPath(data_dir);
+  data_dir       = ntop->get_install_dir();
   docs_dir       = ntop->getValidPath(docs_dir);
   scripts_dir    = ntop->getValidPath(scripts_dir);
   callbacks_dir  = ntop->getValidPath(callbacks_dir);

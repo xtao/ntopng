@@ -19,7 +19,8 @@ end
 
 function getHistoricalTopTalkers(ifname, mode, epoch)
    epoch = epoch - (epoch % 60)
-   filename = ntop.getDataDir() .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch)
+   dirs = ntop.getDirs()
+   filename = dirs.workingdir .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch)
 
    if(ntop.exists(filename)) then
       f = io.open(filename, "r")

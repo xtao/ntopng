@@ -37,26 +37,26 @@ Ntop::Ntop() {
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
-  
+
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
-	  strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
+    strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
   }
 
-  // Get the full path and filename of this program                                                                                                                                               
+  // Get the full path and filename of this program
   if(GetModuleFileName(NULL, install_dir, sizeof(install_dir)) == 0) {
-	  install_dir[0] = '\0';
+    install_dir[0] = '\0';
   } else {
-	  // wcstombs( _wdir, wdir, sizeof(_wdir));
+    // wcstombs( _wdir, wdir, sizeof(_wdir));
 
-	  for(int i=strlen(install_dir)-1; i>0; i--)
-		  if(install_dir[i] == '\\') {
-			  install_dir[i] = '\0';
-			  break;
-		  }
+    for(int i=strlen(install_dir)-1; i>0; i--)
+      if(install_dir[i] == '\\') {
+	install_dir[i] = '\0';
+	break;
+      }
   }
 #else
-  strcpy(documents_dir, CONST_DEFAULT_WRITABLE_DIR);
+  strcpy(working_dir, CONST_DEFAULT_WRITABLE_DIR);
   if(getcwd(install_dir, sizeof(install_dir)) == NULL) strcpy(install_dir, ".");
 #endif
 }
@@ -102,7 +102,7 @@ Ntop::~Ntop() {
 
 void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
-			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);  
+			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
 
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
@@ -121,7 +121,7 @@ void Ntop::setCustomnDPIProtos(char *path) {
   if(path != NULL) {
     if(custom_ndpi_protos != NULL) free(custom_ndpi_protos);
     custom_ndpi_protos = strdup(path);
-  }  
+  }
 }
 
 /* ******************************************* */
@@ -146,13 +146,13 @@ void Ntop::getUsers(lua_State* vm) {
     lua_newtable(vm);
 
     snprintf(key, sizeof(key), "user.%s.full_name", username);
-    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0) 
+    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "full_name", val);
     else
       lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
 
     snprintf(key, sizeof(key), "user.%s.group", username);
-    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0) 
+    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "group", val);
     else
       lua_push_str_table_entry(vm, "group", (char*)"unknown");
@@ -192,17 +192,17 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
 
 int Ntop::resetUserPassword(char *username, char *old_password, char *new_password) {
   char key[64];
-  char password_hash[33]; 
+  char password_hash[33];
 
   if (!checkUserPassword(username, old_password))
     return(false);
-  
+
   snprintf(key, sizeof(key), "user.%s.password", username);
 
   mg_md5(password_hash, new_password, NULL);
 
-  if(ntop->getRedis()->set(key, password_hash, 0) < 0) 
-    return(false); 
+  if(ntop->getRedis()->set(key, password_hash, 0) < 0)
+    return(false);
 
   return(true);
 }
@@ -211,7 +211,7 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
 
 int Ntop::addUser(char *username, char *full_name, char *password) {
   char key[64];
-  char password_hash[33]; 
+  char password_hash[33];
 
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
@@ -246,9 +246,9 @@ int Ntop::deleteUser(char *username) {
 void Ntop::fixPath(char *str) {
 #ifdef WIN32
   for(int i=0; str[i] != '\0'; i++)
-   if(str[i] == '/') str[i] = '\\';                                                                                                 
+    if(str[i] == '/') str[i] = '\\';
 #endif
-}  
+}
 
 /* ******************************************* */
 
@@ -266,7 +266,7 @@ char* Ntop::getValidPath(char *_path) {
     install_dir,
 #endif
     NULL
-  };  
+  };
 
 #ifndef WIN32
   /* absolute paths */
@@ -281,12 +281,12 @@ char* Ntop::getValidPath(char *_path) {
 
     snprintf(path, sizeof(path), "%s/%s", dirs[i], _path);
     fixPath(path);
-    
+
     if(stat(path, &buf) == 0) {
-      return(strdup(path));  
+      return(strdup(path));
     }
   }
- 
+
   return(NULL);
 }
 

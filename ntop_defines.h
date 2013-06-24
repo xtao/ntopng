@@ -65,6 +65,10 @@
 #define DNS_CACHE            "dns.cache"
 #define DNS_TO_RESOLVE       "dns.toresolve"
 
+#ifndef MAX_PATH
+#define MAX_PATH             256
+#endif
+
 #define CONST_DEFAULT_NTOP_PORT 3000
 
 #ifdef WIN32
