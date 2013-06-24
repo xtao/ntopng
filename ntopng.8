@@ -14,7 +14,11 @@
 ntopng \- display top network users
 .SH SYNOPSIS
 .B ntopng
-.RB [ @filename ]
+.RB [ filename ]
+
+or
+
+.B ntopng
 .RB [ -i 
 .IR <interface> ]
 .RB [ -d
@@ -59,16 +63,15 @@ for a complete picture of network activity.
 .PP
 .SH "COMMAND\-LINE OPTIONS"
 
-.It @filename
+.It filename
 The text of 
 .B filename
 is copied - ignoring line breaks and comment lines (anything following a #) - into the
 command line.
-.B ntop
+.B ntopng
 behaves as if all of the text had simply been typed directly on the command line.
-For example, if the command line is "ntopng-i eth0 @s -v" and file d contains 
-just the line '-s', then the effective command line is "ntopng -i eth0 -s -v".
-Multiple @s are permitted. Nested @s (an @ inside the file) are not permitted.
+For example, if the command line is "ntopng s.conf" and file s.conf contains 
+just the line '-s', then the effective command line is "ntopng -s".
 
 Remember, most 
 .B ntopng 
@@ -87,15 +90,18 @@ Sets the DNS address resolution mode:
 
 .It -i|--interface
 Specifies the network interface or collector endpoint to be used by
-.B ntop
+.B ntopng
 for network monitoring. On Unix you can specify both the interface name (e.g. lo)
 or the numeric interface id as shown by ntopng -h. On Windows you must use
 the interface number instead.
 
 If a collector endpoint is specified, 
 .B ntopng
-open a connection to the specified endpoint as a subscriber. Example of valid
+open a ZeroMQ connection to the specified endpoint as a subscriber. Example of valid
 collector endpoints are tcp://*:5556 or ipc://flows.ipc
+
+.B nProbe 
+can be instructed to act as a publisher delivering flows to a ZeroMQ endpoint using the --zmq <endpoint> parameter.
 
 .It -d|--data-dir
 Specifies the data directory (it must be writable). Default directory is ./data
@@ -204,7 +210,7 @@ The
 library is a Just-In-Time Compiler for Lua used to execute GUI and periodic scripts.
 
 The
-.B libmicrohttpd
+.B mongoose
 library is used to implement the HTTP server part of ntopng.
 
 .B zeromq
@@ -213,7 +219,7 @@ is a socket library supporting the publish/subscribe pattern used to collect flo
 .
 
 .B ntopng
-includes LuaJIT, libmicrohttpd, rrdtool and zeromq in the third-party/ directory.  Users of
+includes LuaJIT, mongoose, rrdtool and zeromq in the third-party/ directory.  Users of
 .B ntopng 
 should not need to specifically install such libraries.
 .
