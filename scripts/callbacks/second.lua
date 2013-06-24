@@ -23,8 +23,8 @@ end
 ifname = "any"
 interface.find(ifname)
 ifstats = interface.getStats()
-
-basedir = ntop.getDataDir() .. "/rrd/interface."..ifname
+dirs = ntop.getDirs()
+basedir = dirs.workingdir .. "/rrd/interface."..ifname
 
 if(not(ntop.exists(basedir))) then
    if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end

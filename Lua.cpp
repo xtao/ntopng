@@ -935,13 +935,6 @@ static int ntop_get_redis(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_get_datadir(lua_State* vm) {
-  lua_pushfstring(vm, "%s", ntop->get_data_dir());
-  return(1);
-}
-
-/* ****************************************** */
-
 static int ntop_set_redis(lua_State* vm) {
   char *key, *value;
   Redis *redis = ntop->getRedis();
@@ -1052,7 +1045,6 @@ static const luaL_Reg ntop_reg[] = {
   { "getDirs",        ntop_get_dirs },
   { "getInfo",        ntop_get_info },
   { "dumpFile",       ntop_dump_file },
-  { "getDataDir",     ntop_get_datadir },
   { "getCache",       ntop_get_redis },
   { "setCache",       ntop_set_redis },
   { "getResolvedAddress", ntop_get_resolved_address },

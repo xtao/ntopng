@@ -40,7 +40,7 @@ else
       host_ip = host["ip"]
    end
 
-   rrdname = ntop.getDataDir() .. "/rrd/" .. host_ip .. "/bytes.rrd"
+   rrdname = dirs.workingdir .. "/rrd/" .. host_ip .. "/bytes.rrd"
 print [[
 <div class="bs-docs-example">
             <div class="navbar">

@@ -22,7 +22,7 @@ if(ifname == nil) then
    ifname = "any"
 end
 
-rrdname = ntop.getDataDir() .. "/rrd/interface.any/bytes.rrd"
+rrdname = dirs.workingdir .. "/rrd/interface.any/bytes.rrd"
 
 url= '/lua/if_stats.lua?interface=' .. ifname
 

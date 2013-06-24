@@ -14,7 +14,7 @@ when = os.time()
 
 ifname = "any"
 talkers = getTopTalkers(ifname)
-basedir = ntop.getDataDir() .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", when)
+basedir = dirs.workingdir .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", when)
 if(not(ntop.exists(basedir))) then   
   ntop.mkdir(basedir)
 end
@@ -49,7 +49,7 @@ for key, value in pairs(hosts_stats) do
    if(enable_minute_debug == 1) then print ("[" .. key .. "][" .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]) .. "]\n") end
 
    if(hosts_stats[key]["localhost"] == true) then
-      basedir = ntop.getDataDir() .. "/rrd/" .. key
+      basedir = dirs.workingdir .. "/rrd/" .. key
 
       if(not(ntop.exists(basedir))) then
 	 if(enable_minute_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
