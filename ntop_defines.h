@@ -48,8 +48,8 @@
 
 /* ***************************************************** */
 
-#define NTOP_SVN_REVISION         "$Revision"
-#define NTOP_SVN_REVISION_DATE    "$Date"
+#define NTOP_SVN_REVISION         "$Revision$"
+#define NTOP_SVN_REVISION_DATE    "$Date$"
 
 #define NO_NDPI_PROTOCOL          ((u_int)-1)
 #define GTP_U_V1_PORT             2152
