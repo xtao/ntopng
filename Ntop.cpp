@@ -102,8 +102,9 @@ Ntop::~Ntop() {
 
 void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
-			 PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE);
+			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION);
 
+  if(prefs->daemonize_ntopng()) daemonize();
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
@@ -252,7 +253,6 @@ void Ntop::fixPath(char *str) {
 
 /* ******************************************* */
 
-
 char* Ntop::getValidPath(char *_path) {
   struct stat buf;
 #ifdef WIN32
@@ -290,3 +290,51 @@ char* Ntop::getValidPath(char *_path) {
   return(NULL);
 }
 
+/* ******************************************* */
+
+void Ntop::daemonize() {
+#ifndef WIN32
+  int childpid;
+
+  signal(SIGHUP, SIG_IGN);
+  signal(SIGCHLD, SIG_IGN);
+  signal(SIGQUIT, SIG_IGN);
+
+  if((childpid = fork()) < 0)
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while daemonizing (errno=%d)", errno);
+  else {
+    if(!childpid) { /* child */
+      int rc;
+      
+      //ntop->getTrace()->traceEvent(TRACE_NORMAL, "Bye bye: I'm becoming a daemon...");
+
+#if 1
+      rc = chdir("/");
+      if(rc != 0) 
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "Error while moving to / directory");
+
+      setsid();  /* detach from the terminal */
+
+      fclose(stdin);
+      fclose(stdout);
+      /* fclose(stderr); */
+
+      /*
+       * clear any inherited file mode creation mask
+       */
+      umask(0);
+
+      /*
+       * Use line buffered stdout
+       */
+      /* setlinebuf (stdout); */
+      setvbuf(stdout, (char *)NULL, _IOLBF, 0);
+#endif
+    } else { /* father */
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Parent process is exiting (this is normal)");
+      exit(0);
+    }
+  }
+#endif
+}
+ 

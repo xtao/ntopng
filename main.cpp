@@ -93,7 +93,6 @@ int main(int argc, char *argv[])
 
   ifName = ntop->get_if_name();
   
-
   if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
     iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, prefs->do_change_user());
   } else {
@@ -113,7 +112,8 @@ int main(int argc, char *argv[])
 
   ntop->registerInterface(iface);
   ntop->loadGeolocation(prefs->get_docs_dir());
-  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(), prefs->get_docs_dir(), prefs->get_scripts_dir()));
+  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(), 
+						  prefs->get_docs_dir(), prefs->get_scripts_dir()));
 
   /*
     We have created the network interface and thus changed user. Let's not check
@@ -123,12 +123,12 @@ int main(int argc, char *argv[])
     char path[256];
     FILE *fd;
 
-    snprintf(path, sizeof(path), "%s/.test", ntop->get_data_dir());
+    snprintf(path, sizeof(path), "%s/.test", ntop->get_working_dir());
 	ntop->fixPath(path);
     if((fd = fopen(path, "w")) == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR,
 				   "Unable to write on %s: please specify a different directory (-d)",
-				   ntop->get_data_dir());
+				   ntop->get_working_dir());
       exit(0);
     } else {
       fclose(fd); /* All right */
@@ -139,10 +139,16 @@ int main(int argc, char *argv[])
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
 
   if(prefs->get_categorization_key() != NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Host categorization is not enabled: using default key");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				 "Host categorization is not enabled: using default key");
     ntop->setCategorization(new Categorization(prefs->get_categorization_key()));
     prefs->enable_categorization();
   }
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Working directory: %s", 
+			       ntop->get_working_dir());
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Scripts/HTML pages directory: %s", 
+			       ntop->get_install_dir());
 
   signal(SIGINT, sigproc);
   signal(SIGTERM, sigproc);
@@ -150,6 +156,8 @@ int main(int argc, char *argv[])
 
   ntop->start();
   iface->startPacketPolling();
+
+  ntop->daemonize();
 
   while(iface->isRunning()) {
     sleep(2);

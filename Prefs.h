@@ -31,7 +31,8 @@ extern void usage();
 class Prefs {
  private:
   Ntop *ntop;
-  bool enable_dns_resolution, sniff_dns_responses, categorization_enabled, resolve_all_host_ip, change_user;
+  bool enable_dns_resolution, sniff_dns_responses, 
+    categorization_enabled, resolve_all_host_ip, change_user, daemonize;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
@@ -79,6 +80,7 @@ class Prefs {
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
+  inline bool daemonize_ntopng()                        { return(daemonize);      };
 
   int loadUsersFromFile();
   int loadFromCLI(int argc, char *argv[]);

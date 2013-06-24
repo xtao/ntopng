@@ -1,4 +1,4 @@
-AC_INIT([Makefile.in], 0.1)
+AC_INIT([Makefile.in], 1.0)
 
 dnl> Add /usr/local/ /opt/local
 CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"

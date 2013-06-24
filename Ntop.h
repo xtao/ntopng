@@ -79,6 +79,7 @@ class Ntop {
   int  addUser(char *username, char *full_name, char *password);
   int  deleteUser(char *username);
   void fixPath(char *str);
+  void daemonize();
 };
 
 extern Ntop *ntop;

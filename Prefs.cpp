@@ -37,7 +37,7 @@ Prefs::Prefs(Ntop *_ntop) {
   users_file_path = strdup(CONST_DEFAULT_USERS_FILE);
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
-  change_user = true;
+  change_user = true, daemonize = false;
   categorization_key = NULL;
   cpu_affinity = -1;
   redis_host = NULL;
@@ -64,7 +64,10 @@ void usage() {
 	 "  or\n"
 	 "  ntopng [-m <local nets>] "
 #ifndef WIN32
-	 "[-d <data dir>] "
+	 "[-d <data dir>] [-e] "
+#endif
+#ifdef linux
+	 "[-g <core>] "
 #endif
 	 "[-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
@@ -84,6 +87,7 @@ void usage() {
 #ifndef WIN32
 	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
 	 "                                    | Default: %s\n"
+	 "[--daemon|-e]                       | Daemonize ntopng\n"
 #endif
 	 "[--httpdocs-dir|-1] <path>          | Http documents root directory.\n"
 	 "                                    | Default: %s\n"
@@ -101,20 +105,23 @@ void usage() {
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
 	 "                                    | (eg. protos.txt)\n"
 	 "[--redis|-r] <redis host[:port]>    | Redis host[:port]\n"
+#ifdef linux
 	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
 	 "                                    | specific CPU Core\n"
+#endif
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--users-file|-u] <path>            | Users configuration file path\n"
 	 "                                    | Default: %s\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, PACKAGE_RELEASE, 
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
 #ifndef WIN32
 	 CONST_DEFAULT_DATA_DIR, 
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
-         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, CONST_DEFAULT_USERS_FILE);
+         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, 
+	 CONST_DEFAULT_USERS_FILE);
 
   printf("\n");
   n.printAvailableInterfaces(true, 0, NULL, 0);
@@ -131,6 +138,7 @@ static const struct option long_options[] = {
   { "data-dir",                          required_argument, NULL, 'd' },
 #endif
   { "categorization-key",                required_argument, NULL, 'c' },
+  { "daemonize",                         required_argument, NULL, 'e' },
   { "http-port",                         required_argument, NULL, 'w' },
   { "local-networks",                    required_argument, NULL, 'm' },
   { "ndpi-protocols",                    required_argument, NULL, 'p' },
@@ -154,6 +162,10 @@ int Prefs::setOption(int optkey, char *optarg) {
   switch(optkey) {
     case 'c':
       categorization_key = optarg;
+      break;
+
+    case 'e':
+      daemonize = true;
       break;
 
     case 'g':
@@ -292,11 +304,12 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:g:hi:w:r:sm:n:p:d:1:2:3:lvu:", long_options, NULL)) != '?') {
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:", 
+			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
   }
-
+  
   return(checkOptions());
 }
 
