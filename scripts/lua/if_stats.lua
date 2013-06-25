@@ -62,10 +62,10 @@ if((page == "overview") or (page == nil)) then
    ifstats = interface.getStats()
 
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
-   print("<tr><th>Bytes</th><td>" .. bytesToSize(ifstats.stats_bytes) .. "</td></tr>\n")
-   print("<tr><th>Received Packets</th><td>" .. formatPackets(ifstats.stats_packets) .. "</td></tr>\n")
-   print("<tr><th>Dropped Packets</th><td>")
+   print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
+   print("<tr><th>Bytes</th><td><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div></td></tr>\n")
+   print("<tr><th>Received Packets</th><td><div id=if_pkts>" .. formatPackets(ifstats.stats_packets) .. "</div></td></tr>\n")
+   print("<tr><th>Dropped Packets</th><td><div id=if_drops>")
 
    if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
    print(formatPackets(ifstats.stats_drops))
@@ -76,10 +76,35 @@ if((page == "overview") or (page == nil)) then
    end
 
    if(ifstats.stats_drops > 0) then print('</span>') end
-   print("</td></tr>\n")
+   print("</div></td></tr>\n")
    print("</table>\n")
 else
    drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
+
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
+
+print [[
+<script>
+
+setInterval(function() {
+		  $.ajax({
+			    type: 'GET',
+			    url: '/lua/network_load.lua',
+			    data: { if: "]] print(ifstats.name) print [[" },
+			    success: function(content) {
+				var rsp = jQuery.parseJSON(content);
+				$('#if_bytes').html(bytesToVolume(rsp.bytes));
+				$('#if_pkts').html(addCommas(rsp.packets)+" Pkts");
+				var pctg =  ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(0);
+				$('#if_drops').html(addCommas(rsp.drops)+" Pkts [ "+pctg+" % ]");
+
+
+			     }
+		           });
+			 }, 3000)
+
+</script>
+
+]]

@@ -812,9 +812,14 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   } /* else */
 
   if(numInterfaces == 0) {
+#ifdef WIN32
     ntop->getTrace()->traceEvent(TRACE_WARNING, "No interfaces available! This application cannot work");
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "         Make sure that winpcap is installed properly");
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "         and that you have network interfaces installed.");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Make sure that winpcap is installed properly,");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "that you have administrative rights,");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "and that you have network interfaces installed.");
+#else
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "No interfaces available: are you superuser?");
+#endif
   }
 }
 

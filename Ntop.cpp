@@ -44,7 +44,7 @@ Ntop::Ntop(char *appName) {
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
-	  strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
+    strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
   }
 
   // Get the full path and filename of this program
@@ -119,6 +119,23 @@ void Ntop::start() {
 
 void Ntop::loadGeolocation(char *dir) {
   geo = new Geolocation(dir);
+}
+
+/* ******************************************* */
+
+void Ntop::setWorkingDir(char *dir) {
+  snprintf(working_dir, sizeof(working_dir), "%s", dir);
+  removeTrailingSlash(working_dir);
+};
+
+/* ******************************************* */
+
+void Ntop::removeTrailingSlash(char *str) {
+  int len = strlen(str)-1;
+
+  if((len > 0) 
+     && ((str[len] == '/') || (str[len] == '\\')))
+    str[len] = '\0';
 }
 
 /* ******************************************* */
@@ -258,7 +275,8 @@ void Ntop::fixPath(char *str) {
 
 /* ******************************************* */
 
-char* Ntop::getValidPath(char *_path) {
+char* Ntop::getValidPath(char *__path) {
+  char _path[MAX_PATH];
   struct stat buf;
 #ifdef WIN32
   const char *install_dir = (const char *)get_install_dir();
@@ -273,16 +291,24 @@ char* Ntop::getValidPath(char *_path) {
     NULL
   };
 
-#ifndef WIN32
-#if 0
-  /* absolute paths */
-  if(stat(_path, &buf) == 0) {
-    return(strdup(_path));
+  if(strncmp(__path, "./", 2) == 0) {
+    snprintf(_path, MAX_PATH, "%s/%s", startup_dir, &__path[2]);
+    fixPath(_path);
+
+    if(stat(_path, &buf) == 0)
+      return(strdup(_path));
   }
-#endif
-  
+
+  if((__path[0] == '/') || (__path[0] == '\\')) {
+    /* Absolute paths */
+    
+    if(stat(_path, &buf) == 0) {
+      return(strdup(_path));
+    }
+  } else
+    snprintf(_path, MAX_PATH, "%s", __path);
+
   /* relative paths */
-#endif
   for(int i=0; dirs[i] != NULL; i++) {
     char path[256];
 

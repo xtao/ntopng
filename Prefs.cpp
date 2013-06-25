@@ -297,6 +297,10 @@ int Prefs::checkOptions() {
   if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir");   return(-1); }
   if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
 
+  ntop->removeTrailingSlash(docs_dir);
+  ntop->removeTrailingSlash(scripts_dir);
+  ntop->removeTrailingSlash(callbacks_dir);
+
   return(0);
 }
 

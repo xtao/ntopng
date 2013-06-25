@@ -127,11 +127,12 @@ int main(int argc, char *argv[])
     FILE *fd;
 
     snprintf(path, sizeof(path), "%s/.test", ntop->get_working_dir());
-	ntop->fixPath(path);
+    ntop->fixPath(path);
+
     if((fd = fopen(path, "w")) == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR,
-				   "Unable to write on %s: please specify a different directory (-d)",
-				   ntop->get_working_dir());
+				   "Unable to write on %s [%s]: please specify a different directory (-d)",
+				   ntop->get_working_dir(), path);
       exit(0);
     } else {
       fclose(fd); /* All right */

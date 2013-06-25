@@ -18,9 +18,10 @@ print [[
         Home <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/">Dashboard</a></li>
       <li><a href="/lua/about.lua">About ntopng</a></li>
+      <li><a href="http://blog.ntop.org/">ntop Blog</a></li>
       <li class="divider"></li>
+      <li><a href="/">Dashboard</a></li>
       <li><a href="/lua/logout.lua">Logout</a></li>
     </ul>
   </li></a>

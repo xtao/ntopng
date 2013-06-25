@@ -78,8 +78,9 @@ class Ntop {
   int  resetUserPassword(char *username, char *old_password, char *new_password);
   int  addUser(char *username, char *full_name, char *password);
   int  deleteUser(char *username);
-  void setWorkingDir(char *dir)        { snprintf(working_dir, sizeof(working_dir), "%s", dir); };
+  void setWorkingDir(char *dir);
   void fixPath(char *str);
+  void removeTrailingSlash(char *str);
   void daemonize();
 };
 
