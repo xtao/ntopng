@@ -38,7 +38,7 @@ print [[ <br>This product includes GeoLite data created by MaxMind,<br>available
 	 <a href="http://www.maxmind.com">http://www.maxmind.com</a>. ]]
 
 print("</td></tr>\n")
-print("<tr><th><a href=http://www.d3js.org>Data-Driven Documents (d3js)</A></th><td>3.0</td></tr>\n")
+print("<tr><th><a href=http://www.d3js.org>Data-Driven Documents (d3js)</A></th><td>2.9.1 / 3.0</td></tr>\n")
 
 
 

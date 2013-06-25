@@ -18,11 +18,11 @@ print [[
         Home <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/about.lua">About ntopng</a></li>
-      <li><a href="http://blog.ntop.org/">ntop Blog</a></li>
+      <li><a href="/lua/about.lua"><i class="icon-question-sign"></i> About ntopng</a></li>
+      <li><a href="http://blog.ntop.org/"><i class="icon-globe"></i> ntop Blog</a></li>
       <li class="divider"></li>
-      <li><a href="/">Dashboard</a></li>
-      <li><a href="/lua/logout.lua">Logout</a></li>
+      <li><a href="/"><i class="icon-home"></i> Dashboard</a></li>
+      <li><a href="/lua/logout.lua"><i class="icon-off"></i> Logout</a></li>
     </ul>
   </li></a>
 
@@ -64,7 +64,7 @@ print [[
         Admin <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/admin/users.lua">Manage Users</a></li>
+      <li><a href="/lua/admin/users.lua"><i class="icon-user"></i> Manage Users</a></li>
       <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
     </ul>
   </li>
