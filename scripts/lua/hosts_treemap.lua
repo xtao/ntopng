@@ -62,14 +62,22 @@ var treemap = d3.layout.treemap()
 				   .attr("class", "node")
 				   .call(position)
 				   .style("background", function(d) { return d.children ? color(d.name) : null; })
-					  .text(function(d) { return d.children ? null : d.name; });
+					  .html(function(d) {
+						      if(d.children) return(null);
+						   else {
+							 if(d.name != "Other Hosts") {
+							    return("<A HREF=\"/lua/host_details.lua?interface=any&host="+d.name+"\">"+d.name+"</A>");
+							 } else 
+							 return(d.name);
+						      }
+						   });
 
 						d3.selectAll("input").on("change", function change() {
     var value = this.value === "count"
 											 ? function() { return 1; }
 											      : function(d) { return d.size; };
 
-    node
+												   node
 												   .data(treemap.value(value).nodes)
 												   .transition()
 												   .duration(1500)
@@ -77,12 +85,12 @@ var treemap = d3.layout.treemap()
 												});
 											   });
 
-											      function position() {
-												    this.style("left", function(d) { return d.x + "px"; })
-													       .style("top", function(d) { return d.y + "px"; })
-														      .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-															     .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
-																 }
+					      function position() {
+					    this.style("left", function(d) { return d.x + "px"; })
+					       .style("top", function(d) { return d.y + "px"; })
+					      .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+					     .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+				 }
 
 </script>
 

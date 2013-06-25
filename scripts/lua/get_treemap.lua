@@ -65,7 +65,7 @@ print [[,
    "children": [
 ]]
 
-print("{ \"name\": \"Other\", \"size\": " .. other .. "} ")
+print("{ \"name\": \"Other Hosts\", \"size\": " .. other .. "} ")
 
 print [[
    ]
