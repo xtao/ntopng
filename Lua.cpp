@@ -861,6 +861,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "version.httpd", (char*)mg_version());
   lua_push_str_table_entry(vm, "version.luajit", (char*)LUAJIT_VERSION);
   lua_push_str_table_entry(vm, "version.geoip", (char*)GeoIP_lib_version());
+  lua_push_str_table_entry(vm, "version.ndpi", ndpi_revision());
 
   zmq_version(&major, &minor, &patch);
   snprintf(rsp, sizeof(rsp), "%d.%d.%d", major, minor, patch);
