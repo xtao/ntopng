@@ -109,13 +109,13 @@
   //		SERVICE_DEMAND_START
   //		SERVICE_DISABLED
 #define SERVICESTARTTYPE SERVICE_AUTO_START
-//                                                                                                                                                                                                                                  
-// MessageId: EVENT_GENERIC_INFORMATION                                                                                                                                                                                             
-//                                                                                                                                                                                                                                  
-// MessageText:                                                                                                                                                                                                                     
-//                                                                                                                                                                                                                                  
-//  %1                                                                                                                                                                                                                              
-//                                                                                                                                                                                                                                  
+//
+// MessageId: EVENT_GENERIC_INFORMATION
+//
+// MessageText:
+//
+//  %1
+//
 #define EVENT_GENERIC_INFORMATION        0x40000001L
 
   // =========================================================
