@@ -98,10 +98,10 @@
 #endif
 
 #ifdef WIN32
- // internal name of the service
+// internal name of the service
 #define SZSERVICENAME        "ntopng"
 
-  // displayed name of the service
+// displayed name of the service
 #define SZSERVICEDISPLAYNAME "ntopng Win32"
 
   // Service TYPE Permissable values:
@@ -109,6 +109,7 @@
   //		SERVICE_DEMAND_START
   //		SERVICE_DISABLED
 #define SERVICESTARTTYPE SERVICE_AUTO_START
+
 //
 // MessageId: EVENT_GENERIC_INFORMATION
 //
