@@ -46,7 +46,7 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
-      <li><a href="/lua/hosts_treemap.lua">Hosts Map</a></li>
+      <li><a href="/lua/hosts_treemap.lua">Hosts TreeMap</a></li>
       <li><a href="/lua/hosts_matrix.lua">Local Matrix</a></li>
     </ul>
   </li></a>

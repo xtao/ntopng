@@ -32,9 +32,12 @@ print [[
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <hr>
-<h2>Hosts Map</H2>
+<h2>Hosts TreeMap</H2>
 <div id='chart'></div>
 
+<span class="row-fluid marketing">
+<div class="span11">&nbsp;</div><div><small><A HREF=http://bl.ocks.org/mbostock/4063582><i class="icon-question-sign"></i></A></small></div>
+</span>
 <script>
 
    var margin = {top: 0, right: 0, bottom: 0, left: 0},
