@@ -178,6 +178,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
     case 'm':
       free(local_networks);
+      local_networks = strdup(optarg);
       break;
 
     case 'n':
