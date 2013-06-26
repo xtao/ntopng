@@ -36,9 +36,11 @@ or
 .RB [ -r
 .IR <redis_host:port> ]
 .RB [ -s ] 
+.RB [ -U
+.IR <sys_user> ]
 .RB [ -l ] 
 .RB [ -u
-.IR <users file> ]
+.IR <users_file> ]
 .RB [ -v ] 
 .RB [ -h ]
 
@@ -141,6 +143,9 @@ As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
 .It -r|--redis
 Specifies the redis database host and port. For more information about redis, please refer 
 to http://redis.io/.
+
+.It -U|--user
+Run ntopng with the specified system user instead of 'nobody'.
 
 .It -s|--dont-change-user
 Do not change user (debug only)

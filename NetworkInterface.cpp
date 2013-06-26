@@ -676,7 +676,7 @@ void NetworkInterface::dropPrivileges() {
     return;
   }
 
-  username = "nobody";
+  username = ntop->getPrefs()->get_user();
   pw = getpwnam(username);
 
   if(pw == NULL) {

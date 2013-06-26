@@ -40,6 +40,7 @@ class Prefs {
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
   char *users_file_path, *config_file_path, *ndpi_proto_path;
+  char *user;
   char *redis_host;
   int redis_port;
   int cpu_affinity;
@@ -65,6 +66,7 @@ class Prefs {
   inline void enable_categorization()                   { categorization_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
   inline bool do_change_user()                          { return(change_user);            };
+  inline char* get_user()                               { return(user);                   }
   inline void set_if_name(char *name)                   { if(ifName) free(ifName); ifName = strdup(name); };
   inline char* get_if_name()                            { return(ifName);         };
   inline char* get_data_dir()                           { return(data_dir);       };

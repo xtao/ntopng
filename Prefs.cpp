@@ -38,6 +38,7 @@ Prefs::Prefs(Ntop *_ntop) {
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
   change_user = true, daemonize = false;
+  user = strdup(CONST_DEFAULT_NTOP_USER);
   categorization_key = NULL;
   cpu_affinity = -1;
   redis_host = NULL;
@@ -76,7 +77,7 @@ void usage() {
 	 "[-n mode] [-i <iface>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-s] [-v]\n\n"
+	 "              [-l] [-U <sys user>] [-s] [-v]\n\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
 	 "                                    | 0 - Decode DNS responses and resolve\n"
@@ -113,6 +114,7 @@ void usage() {
 	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
 	 "                                    | specific CPU Core\n"
 #endif
+	 "[--user|-U] <sys user>              | Run ntopng with the specified user instead of %s\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--users-file|-u] <path>            | Users configuration file path\n"
@@ -125,7 +127,7 @@ void usage() {
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT,
-	 CONST_DEFAULT_USERS_FILE);
+         CONST_DEFAULT_NTOP_USER, CONST_DEFAULT_USERS_FILE);
 
   printf("\n");
   n.printAvailableInterfaces(true, 0, NULL, 0);
@@ -153,6 +155,7 @@ static const struct option long_options[] = {
   { "users-file",                        required_argument, NULL, 'u' },
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
+  { "user",                              required_argument, NULL, 'U' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
@@ -167,6 +170,12 @@ int Prefs::setOption(int optkey, char *optarg) {
     case 'c':
       categorization_key = optarg;
       break;
+
+#ifndef WIN32
+    case 'd':
+      ntop->setWorkingDir(optarg);
+      break;
+#endif
 
     case 'e':
       daemonize = true;
@@ -234,11 +243,6 @@ int Prefs::setOption(int optkey, char *optarg) {
       change_user = false;
       break;
 
-#ifndef WIN32
-    case 'd':
-      ntop->setWorkingDir(optarg);
-      break;
-#endif
     case '1':
       free(docs_dir);
       docs_dir = strdup(optarg);
@@ -265,6 +269,11 @@ int Prefs::setOption(int optkey, char *optarg) {
 
     case 'v':
       ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
+      break;
+
+    case 'U':
+      free(user);
+      user = strdup(optarg);
       break;
 
     default:
@@ -310,7 +319,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:U:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
