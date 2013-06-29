@@ -2,6 +2,11 @@
 -- (C) 2013 - ntop.org
 --
 
+dirs = ntop.getDirs()
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+
+require "persistence"
+
 function getTopTalkers(ifname, mode, epoch)
    if(ifname == nil) then ifname = "any" end
 
@@ -105,7 +110,30 @@ function getActualTopTalkers(ifname, mode, epoch)
       rsp = rsp .. "[\n"
    end
 
+   -- io.write("Hello\n")
    if((mode == nil) or (mode == "senders")) then
+      -- Read the lastdump
+      lastdump = dirs.workingdir .. "/top_talkers/.sent_lastdump"
+      if(ntop.exists(lastdump)) then
+	 last = persistence.load(lastdump)
+      else
+	 last = {}
+      end
+
+      persistence.store(lastdump, _sent);
+
+      for key, value in pairs(_sent) do
+	 -- io.write(key.."\n")
+
+	 if(sent[key] ~= nil) then
+	    v = sent[key]-value
+
+	    if(v < 0) then v = 0 end
+	    sent[key] = v
+	 end
+      end
+
+      -- Compute traffic
       total = 0
       num = 0
       for _key, _value in pairsByKeys(sent, rev) do
@@ -129,6 +157,8 @@ function getActualTopTalkers(ifname, mode, epoch)
 	    break
 	 end
       end
+
+
    end
 
    if(mode == nil) then
@@ -137,9 +167,31 @@ function getActualTopTalkers(ifname, mode, epoch)
    end
 
    if((mode == nil) or (mode == "receivers")) then
+      -- Read the lastdump
+      lastdump = dirs.workingdir .. "/top_talkers/.rcvd_lastdump"
+      if(ntop.exists(lastdump)) then
+	 last = persistence.load(lastdump)
+      else
+	 last = {}
+      end
+
+      persistence.store(lastdump, _rcvd);
+
+      for key, value in pairs(_rcvd) do
+	 -- io.write(key.."\n")
+
+	 if(rcvd[key] ~= nil) then
+	    v = rcvd[key]-value
+
+	    if(v < 0) then v = 0 end
+	    rcvd[key] = v
+	 end
+      end
+
+      -- Compute traffic
       total = 0
       num = 0
-      for _key, _value in pairsByKeys(sent, rev) do
+      for _key, _value in pairsByKeys(rcvd, rev) do
 	 total = total + _key
       end
 
