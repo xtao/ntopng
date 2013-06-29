@@ -221,7 +221,6 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   bool src2dst_direction;
   u_int8_t l4_proto;
   Flow *flow;
-  u_int16_t frag_off = iph ? ntohs(iph->frag_off) : 0;
   u_int8_t *eth_src = eth->h_source, *eth_dst = eth->h_dest;
   IpAddress src_ip, dst_ip;
   u_int16_t src_port, dst_port;
@@ -230,6 +229,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   u_int16_t l4_packet_len;
   u_int8_t *l4;
   u_int8_t *ip;
+  bool is_fragment = false;
 
   if(iph != NULL) {
     /* IPv4 */
@@ -238,12 +238,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
     if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
        || (iph->frag_off & htons(0x1FFF /* IP_OFFSET */)) != 0) {
-      static bool shown = false;
-
-      if(!shown)
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "IPv4 fragments are not handled yet"), shown = true;
-
-      return;
+      is_fragment = true;
     }
 
     l4_packet_len = ntohs(iph->tot_len) - (iph->ihl * 4);
@@ -293,7 +288,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
   if(flow->isDetectionCompleted()) return;
 
-  if((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */) == 0) {
+  if(!is_fragment) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
     struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();

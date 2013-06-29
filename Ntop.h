@@ -49,7 +49,7 @@ class Ntop {
   
   char* getValidPath(char *path);
   void loadGeolocation(char *dir);
-  inline void setLocalNetworks(char *nets)           { address->setLocalNetworks(nets);            };
+  void setLocalNetworks(char *nets);
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   void start();
   inline Geolocation* getGeolocation()               { return(geo);            }

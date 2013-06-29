@@ -56,14 +56,22 @@ print [[
 </div>
    ]]
 
+interface.find(ifname)
+ifstats = interface.getStats()
 
 if((page == "overview") or (page == nil)) then
-   interface.find(ifname)
-   ifstats = interface.getStats()
-
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
-   print("<tr><th>Bytes</th><td><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div></td></tr>\n")
+   print("<tr><th>Bytes</th><td><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
+   print [[
+	 <p>
+	 <small>
+	 <div class="alert alert-info">
+	    <b>NOTE</b>: In ethernet networks, each packet has an <A HREF=https://en.wikipedia.org/wiki/Ethernet_frame>overhead of 24 bytes</A> [preamble (7 bytes), start of freme (1 byte), CRC (4 bytes), and <A HREF=http://en.wikipedia.org/wiki/Interframe_gap>IFG</A> (12 bytes)]. Such overhead needs to be accounted to the interface traffic, but it is not added to the traffic being exchanged between IP addresses. This is because such data contributes to interface load, but it cannot be accounted in the traffic being exchanged by hosts, and thus expect little discrepancies between host and interface traffic values.
+         </div></small>
+	 </td></tr>
+   ]]
+
    print("<tr><th>Received Packets</th><td><div id=if_pkts>" .. formatPackets(ifstats.stats_packets) .. "</div></td></tr>\n")
    print("<tr><th>Dropped Packets</th><td><div id=if_drops>")
 
@@ -97,10 +105,13 @@ setInterval(function() {
 				var rsp = jQuery.parseJSON(content);
 				$('#if_bytes').html(bytesToVolume(rsp.bytes));
 				$('#if_pkts').html(addCommas(rsp.packets)+" Pkts");
-				var pctg =  ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(0);
-				$('#if_drops').html(addCommas(rsp.drops)+" Pkts [ "+pctg+" % ]");
+				var pctg =  ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2);
+				var drops = "";
 
-
+				if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
+				drops = drops + addCommas(rsp.drops)+" Pkts [ "+pctg+" % ]";
+				if(rsp.drops > 0) { drops = drops + '</span>'; }
+				$('#if_drops').html(drops);
 			     }
 		           });
 			 }, 3000)

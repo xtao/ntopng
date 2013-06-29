@@ -174,16 +174,48 @@ end
 function secondsToTime(seconds)
    days = math.floor(seconds / 86400)
    hours =  math.floor((seconds / 3600) - (days * 24))
-   minutes = (seconds / 60) - (days * 1440) - (hours * 60)
+   minutes = math.floor((seconds / 60) - (days * 1440) - (hours * 60))
    sec = seconds % 60
+   msg = ""
 
    if(days > 0) then
-      msg = days .. " days, "
-   else
-      msg = ""
+      years = math.floor(days/365)
+
+      if(years > 0) then
+	 days = days % 365
+
+	 msg = years .. " year"
+	 if(years > 1) then
+	    msg = msg .. "s"
+	 end
+
+	 msg = msg .. ", "
+      end
+      msg = msg .. days .. " day"
+      if(days > 1) then msg = msg .. "s" end
+      msg = msg .. ", "
    end
 
-   msg = msg .. string.format("%02d:%02d:%02d", hours, minutes, sec);
+   if(hours > 0) then
+      msg = msg .. string.format("%d ", hours)
+      if(hours > 1) then
+	 msg = msg .. "hour"
+      else
+	 msg = msg .. "hour"
+      end
+
+      if(hours > 1) then msg = msg .. "s" end
+      msg = msg .. ", "
+   end
+
+   if(minutes > 0) then
+      msg = msg .. string.format("%d min, ", minutes)
+   end
+
+   if(sec > 0) then
+      msg = msg .. string.format("%d sec", sec);
+   end
+
    return msg
 end
 

@@ -43,6 +43,7 @@ num = 0
 total = 0
 to_skip = (currentPage-1) * perPage
 
+now = os.time()
 vals = {}
 num = 0
 for key, value in pairs(hosts_stats) do
@@ -55,7 +56,7 @@ for key, value in pairs(hosts_stats) do
    elseif(sortColumn == "column_name") then
      vals[hosts_stats[key]["name"]..postfix] = key
    elseif(sortColumn == "column_since") then
-     vals[hosts_stats[key]["duration"]..postfix] = key
+   vals[(now-hosts_stats[key]["seen.first"])..postfix] = key
    elseif(sortColumn == "column_category") then
      vals[hosts_stats[key]["category"]..postfix] = key
    elseif(sortColumn == "column_asn") then
@@ -100,7 +101,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 else
 	    print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
 	 end
-	 print(", \"column_since\" : \"" .. secondsToTime(value["duration"]) .. "\", ")
+	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]) .. "\", ")
 	 print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
 
 	 print ("\", \"column_location\" : \"")

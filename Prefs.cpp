@@ -280,8 +280,6 @@ int Prefs::setOption(int optkey, char *optarg) {
       return(-1);
   }
 
-  ntop->setLocalNetworks(local_networks);
-
   return(0);
 }
 

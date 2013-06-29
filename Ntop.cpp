@@ -87,6 +87,8 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_callbacks_dir());
     exit(-1);
   }
+
+  setLocalNetworks(prefs->get_local_networks());
 }
 
 /* ******************************************* */
@@ -370,4 +372,10 @@ void Ntop::daemonize() {
   }
 #endif
 }
+
+/* ******************************************* */
  
+void Ntop::setLocalNetworks(char *nets) {
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Setting local networks to %s", nets);
+  address->setLocalNetworks(nets);            
+};

@@ -56,6 +56,7 @@ class Prefs {
   Prefs(Ntop *_ntop);
   ~Prefs();
 
+  inline char* get_local_networks()                     { return(local_networks);         };
   inline FILE* get_log_fd()                             { return(logFd);                  };
   inline void disable_dns_resolution()                  { enable_dns_resolution = false;  };
   inline void resolve_all_hosts()                       { resolve_all_host_ip = true;     };
