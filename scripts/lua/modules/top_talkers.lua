@@ -113,7 +113,7 @@ function getActualTopTalkers(ifname, mode, epoch)
    -- io.write("Hello\n")
    if((mode == nil) or (mode == "senders")) then
       -- Read the lastdump
-      lastdump = dirs.workingdir .. "/top_talkers/.sent_lastdump"
+      lastdump = dirs.workingdir .. "/top_talkers/" .. ifname .. "/.sent_lastdump"
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)
       else
@@ -168,7 +168,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    if((mode == nil) or (mode == "receivers")) then
       -- Read the lastdump
-      lastdump = dirs.workingdir .. "/top_talkers/.rcvd_lastdump"
+      lastdump = dirs.workingdir .. "/top_talkers/" .. ifname .. "/.rcvd_lastdump"
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)
       else
