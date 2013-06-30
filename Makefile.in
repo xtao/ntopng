@@ -104,7 +104,7 @@ httpdocs/geoip/GeoIPASNumv6.dat:
 maketar:
 	rm -rf ntopng-@PACKAGE_VERSION@
 	mkdir ntopng-@PACKAGE_VERSION@
-	cp -r *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party/ ntopng-@PACKAGE_VERSION@
+	cp -r *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party ntopng-@PACKAGE_VERSION@
 	find ntopng-@PACKAGE_VERSION@ -name ".svn" | xargs /bin/rm -rf
 	cd ntopng-@PACKAGE_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
 	tar cvfz ntopng-@PACKAGE_VERSION@.tgz ntopng-@PACKAGE_VERSION@
