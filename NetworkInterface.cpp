@@ -277,8 +277,26 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     dst_ip.set_ipv6(&ip6->ip6_dst);
   }
 
-  /* Updating Flow */
+#if defined(WIN32) && defined(DEMO_WIN32)
+  if(this->ethStats.getNumPackets() > MAX_NUM_PACKETS) {
+	  static bool showMsg = false;
 
+	  if(!showMsg) {
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "WARNING: this demo application is a limited ntopng version able to");
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "capture up to %d packets. If you are interested", MAX_NUM_PACKETS);
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "in the full version please have a look at the ntop");
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "home page http://www.ntop.org/.");
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
+		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "");
+		  showMsg = true;
+	  }
+
+	  return;
+  }
+#endif
+
+  /* Updating Flow */
   flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) return;
