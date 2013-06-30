@@ -29,6 +29,13 @@ ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a
 TARGET = ntopng
 LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ -lm -ldl -lpthread
 CPPFLAGS = -g -Wall $(CREDIS_INC) $(MONGOOSE_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) -D SVN_RELEASE="@SVN_RELEASE@" @CPPFLAGS@ -I$(HTTPCLIENT_INC) 
+######
+# ntopng-1.0_1234.x86_64.rpm 
+PLATFORM = `uname -p`
+REVISION = @SVN_RELEASE@
+PACKAGE_VERSION = @PACKAGE_VERSION@
+RPM_PKG = $(TARGET)-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
+######
 
 ifeq ($(OS),Linux)
 LIBS += -lrt
@@ -57,9 +64,11 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS) $(LIBRRDTOOL)
 	g++ $(OBJECTS) -Wall $(LIBS) -o $@
 
-$(NDPI_LIB):
-	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
+$(NDPI_LIB): nDPI
 	cd nDPI; ./configure; @GMAKE@
+
+nDPI:
+	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
 
 $(LUAJIT_LIB):
 	cd $(LUAJIT_HOME); @GMAKE@
@@ -92,3 +101,24 @@ httpdocs/geoip/GeoIPASNum.dat:
 httpdocs/geoip/GeoIPASNumv6.dat:
 	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip -f GeoIPASNumv6.dat.gz
 
+maketar:
+	rm -rf ntopng-@PACKAGE_VERSION@
+	mkdir ntopng-@PACKAGE_VERSION@
+	cp -r *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party/ ntopng-@PACKAGE_VERSION@
+	find ntopng-@PACKAGE_VERSION@ -name ".svn" | xargs /bin/rm -rf
+	cd ntopng-@PACKAGE_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
+	tar cvfz ntopng-@PACKAGE_VERSION@.tgz ntopng-@PACKAGE_VERSION@
+
+build-rpm: maketar
+# Do NOT build package as root (http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment)
+#	mkdir -p $(HOME)/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+#	echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
+	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	cp ntopng-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
+	rpmbuild -bb ./packages/ntopng.spec --define "buildnumber $(REVISION)"
+	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	@echo ""
+	@echo "Package contents:"
+	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
+	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz

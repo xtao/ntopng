@@ -1,6 +1,6 @@
 Summary: Web-based traffic monitoring
 Name: ntopng
-Version: @NTOPNG_PACKAGE_VERSION@
+Version: @PACKAGE_VERSION@
 Release: %{buildnumber}
 License: GPL
 Group: Networking/Utilities
@@ -9,7 +9,6 @@ Source: ntopng-%{version}.tgz
 Packager: Luca Deri <deri@ntop.org>
 # Temporary location where the RPM will be built
 BuildRoot:  %{_tmppath}/%{name}-%{version}-root
-#Requires: pfring = @PFRING_VERSION@-@PFRING_SVN_RELEASE@
 
 %description
 Web-based traffic monitoring
@@ -36,8 +35,8 @@ mkdir -p $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d
 cp ntopng $RPM_BUILD_ROOT/usr/local/bin
 cp ntopng.8 $RPM_BUILD_ROOT/usr/local/man/man8
 cp -r httpdocs scripts $RPM_BUILD_ROOT/usr/local/share/ntopng
-cp $HOME/nProbe/packages/etc/init/ntopng.conf $RPM_BUILD_ROOT/etc/init
-cp $HOME/nProbe/packages/etc/init.d/ntopng    $RPM_BUILD_ROOT/etc/init.d
+cp $HOME/ntopng/packages/etc/init/ntopng.conf $RPM_BUILD_ROOT/etc/init
+cp $HOME/ntopng/packages/etc/init.d/ntopng    $RPM_BUILD_ROOT/etc/init.d
 find $RPM_BUILD_ROOT -name ".svn" | xargs /bin/rm -rf
 find $RPM_BUILD_ROOT -name "*~"   | xargs /bin/rm -f
 #

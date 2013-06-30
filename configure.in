@@ -1,11 +1,13 @@
 AC_INIT([Makefile.in], 0.99)
 
 dnl> Add /usr/local/ /opt/local
+NTOPNG_VERS=`cat ./configure.in | head -1 | grep '_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
 CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"
 CPPFLAGS="${CPPFLAGS} -I/usr/local/include -I/opt/local/include"
 LDFLAGS="${LDFLAGS} -L/usr/local/lib -L/opt/local/lib"
 
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
+PACKAGE_VERSION="${NTOPNG_VERS}_${SVN_RELEASE}"
 MACHINE=`uname -m`
 SYSTEM=`uname -s`
 
@@ -118,7 +120,10 @@ AC_SUBST(GMAKE)
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
+AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(SVN_RELEASE)
 AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_FILES(packages/ntopng.spec)
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT
