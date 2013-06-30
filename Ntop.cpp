@@ -37,7 +37,7 @@ Ntop::Ntop(char *appName) {
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
-  
+
 #ifndef WIN32
   getcwd(startup_dir, sizeof(startup_dir));
 #endif
@@ -49,19 +49,27 @@ Ntop::Ntop(char *appName) {
 
   // Get the full path and filename of this program
   if(GetModuleFileName(NULL, startup_dir, sizeof(startup_dir)) == 0) {
-	  startup_dir[0] = '\0';
+    startup_dir[0] = '\0';
   } else {
-	  for(int i=strlen(startup_dir)-1; i>0; i--)
-		  if(startup_dir[i] == '\\') {
-			  startup_dir[i] = '\0';
-			  break;
-		  }
+    for(int i=strlen(startup_dir)-1; i>0; i--)
+      if(startup_dir[i] == '\\') {
+	startup_dir[i] = '\0';
+	break;
+      }
   }
   strcpy(install_dir, startup_dir);
 #else
+  struct stat statbuf;
+
   strcpy(working_dir, CONST_DEFAULT_WRITABLE_DIR);
-  if(getcwd(install_dir, sizeof(install_dir)) == NULL) strcpy(install_dir, ".");
   getcwd(startup_dir, sizeof(startup_dir));
+
+  if(stat(CONST_DEFAULT_INSTALL_DIR, &statbuf) == 0)
+    strcpy(install_dir, CONST_DEFAULT_INSTALL_DIR);
+  else {
+    if(getcwd(install_dir, sizeof(install_dir)) == NULL)
+      strcpy(install_dir, startup_dir);
+  }
 #endif
 
   // printf("--> %s [%s]\n", startup_dir, appName);
@@ -135,7 +143,7 @@ void Ntop::setWorkingDir(char *dir) {
 void Ntop::removeTrailingSlash(char *str) {
   int len = strlen(str)-1;
 
-  if((len > 0) 
+  if((len > 0)
      && ((str[len] == '/') || (str[len] == '\\')))
     str[len] = '\0';
 }
@@ -303,7 +311,7 @@ char* Ntop::getValidPath(char *__path) {
 
   if((__path[0] == '/') || (__path[0] == '\\')) {
     /* Absolute paths */
-    
+
     if(stat(_path, &buf) == 0) {
       return(strdup(_path));
     }
@@ -340,12 +348,12 @@ void Ntop::daemonize() {
   else {
     if(!childpid) { /* child */
       int rc;
-      
+
       //ntop->getTrace()->traceEvent(TRACE_NORMAL, "Bye bye: I'm becoming a daemon...");
 
 #if 1
       rc = chdir("/");
-      if(rc != 0) 
+      if(rc != 0)
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "Error while moving to / directory");
 
       setsid();  /* detach from the terminal */
@@ -374,8 +382,8 @@ void Ntop::daemonize() {
 }
 
 /* ******************************************* */
- 
+
 void Ntop::setLocalNetworks(char *nets) {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Setting local networks to %s", nets);
-  address->setLocalNetworks(nets);            
+  address->setLocalNetworks(nets);
 };

@@ -86,6 +86,7 @@
 #define CONST_DEFAULT_CALLBACKS_DIR "scripts/callbacks"
 #define CONST_DEFAULT_USERS_FILE    "ntopng-users.conf"
 #define CONST_DEFAULT_WRITABLE_DIR  "/var/tmp"
+#define CONST_DEFAULT_INSTALL_DIR   "/usr/local/share/ntopng"
 #define CONST_DEFAULT_NTOP_USER     "nobody"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
