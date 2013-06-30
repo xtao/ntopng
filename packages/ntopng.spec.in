@@ -47,14 +47,6 @@ mkdir -p $DST/conf
 %clean
 rm -fr $RPM_BUILD_ROOT
 
-# %post is the macro to do post-install scripts.
-%post
-/usr/sbin/useradd ntopng -p ntopng
-
-# %postun is the macro to do post-uninstall scripts.
-%postun
-/usr/sbin/userdel ntopng
-
 %files
 /usr/local/bin/ntopng
 /usr/local/man/man8/ntopng.8

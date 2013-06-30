@@ -2,10 +2,6 @@
 
 set -e
 
-# Remove ntopng user
-ntopng_found=`/bin/grep ^ntopng /etc/passwd|wc -l`
-[ "$ntopng_found" -eq "1" ] && /usr/sbin/userdel -f ntopng
-
 if [ "$1" = "purge" ] ; then
   update-rc.d ntopng remove >/dev/null
 fi

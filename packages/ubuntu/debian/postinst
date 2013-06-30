@@ -17,9 +17,6 @@ esac
 
 umask 022
 
-ntopng_found=`/bin/grep ^ntopng /etc/passwd|wc -l`
-[ "$ntopng_found" -eq "0" ] && /usr/sbin/useradd ntopng -p ntopng
-
 echo "Rebuilding ld cache..."
 /sbin/ldconfig
 
