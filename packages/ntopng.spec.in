@@ -1,0 +1,75 @@
+Summary: Web-based traffic monitoring
+Name: ntopng
+Version: @NTOPNG_PACKAGE_VERSION@
+Release: %{buildnumber}
+License: GPL
+Group: Networking/Utilities
+URL: http://www.ntop.org/
+Source: ntopng-%{version}.tgz
+Packager: Luca Deri <deri@ntop.org>
+# Temporary location where the RPM will be built
+BuildRoot:  %{_tmppath}/%{name}-%{version}-root
+#Requires: pfring = @PFRING_VERSION@-@PFRING_SVN_RELEASE@
+
+%description
+Web-based traffic monitoring
+
+%prep
+
+%setup -q
+
+%build
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+CFLAGS="$RPM_OPT_FLAGS" ./configure
+make
+#
+
+# Installation may be a matter of running an install make target or you
+# may need to manually install files with the install command.
+%install
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+if [ -d $RPM_BUILD_ROOT ]; then
+	\rm -rf $RPM_BUILD_ROOT
+fi
+mkdir -p $RPM_BUILD_ROOT/usr/local/bin $RPM_BUILD_ROOT/usr/local/share/ntopng $RPM_BUILD_ROOT/usr/local/man/man8 
+mkdir -p $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d
+cp ntopng $RPM_BUILD_ROOT/usr/local/bin
+cp ntopng.8 $RPM_BUILD_ROOT/usr/local/man/man8
+cp -r httpdocs scripts $RPM_BUILD_ROOT/usr/local/share/ntopng
+cp $HOME/nProbe/packages/etc/init/ntopng.conf $RPM_BUILD_ROOT/etc/init
+cp $HOME/nProbe/packages/etc/init.d/ntopng    $RPM_BUILD_ROOT/etc/init.d
+find $RPM_BUILD_ROOT -name ".svn" | xargs /bin/rm -rf
+find $RPM_BUILD_ROOT -name "*~"   | xargs /bin/rm -f
+#
+DST=$RPM_BUILD_ROOT/usr/local/ntopng
+SRC=$RPM_BUILD_DIR/%{name}-%{version}
+mkdir -p $DST/conf
+# Clean out our build directory
+%clean
+rm -fr $RPM_BUILD_ROOT
+
+# %post is the macro to do post-install scripts.
+%post
+/usr/sbin/useradd ntopng -p ntopng
+
+# %postun is the macro to do post-uninstall scripts.
+%postun
+/usr/sbin/userdel ntopng
+
+%files
+/usr/local/bin/ntopng
+/usr/local/man/man8/ntopng.8
+/etc/init/ntopng.conf
+/etc/init.d/ntopng
+/usr/local/share/ntopng
+
+# Set the default attributes of all of the files specified to have an
+# owner and group of root and to inherit the permissions of the file
+# itself.
+%defattr(-, root, root)
+
+%changelog
+* Sun Jun 30 2013 Luca Deri <deri@ntop.org> 1.0
+- Current package version
+
+

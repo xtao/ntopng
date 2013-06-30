@@ -1,0 +1,17 @@
+Source: ntopng
+Section: free
+Priority: optional
+Maintainer: Luca Deri <deri@ntop.org>
+Standards-Version: @NTOPNG_VERS@
+Build-Depends:
+Build-Conflicts:
+
+Package: ntopng
+Architecture: @EXTN@
+Recommends:
+Suggests:
+Pre-Depends:
+Conflicts:
+Provides:
+Replaces:
+Description: Web-based traffic monitoring.

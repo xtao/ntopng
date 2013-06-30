@@ -286,7 +286,7 @@ char* Ntop::getValidPath(char *__path) {
   const char* dirs[] = {
     startup_dir,
 #ifndef WIN32
-    "/usr/local/ntopng",
+    "/usr/local/share/ntopng",
 #else
     install_dir,
 #endif
