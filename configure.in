@@ -1,4 +1,4 @@
-AC_INIT([Makefile.in], 0.99)
+AC_INIT([Makefile.in], 1.0)
 
 dnl> Add /usr/local/ /opt/local
 NTOPNG_VERS=`cat ./configure.in | head -1 | grep '_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
