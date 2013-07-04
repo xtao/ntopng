@@ -122,3 +122,9 @@ build-rpm: maketar
 	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
+
+install:
+	echo "We do not provide install make target bur rather we encourage you"
+	echo "to create a package and install that"
+	echo "rpm - do 'make build-rpm'"
+	echo "deb - do 'cd packages/ubuntu;./configure;make"
