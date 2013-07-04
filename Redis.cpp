@@ -25,6 +25,7 @@
 
 Redis::Redis(char *redis_host, int redis_port) {
   REDIS_INFO info;
+  int major, minor, sub;
 
   if(((redis = credis_connect(redis_host, redis_port, 10000)) == NULL)
      || (credis_ping(redis) != 0)
@@ -34,6 +35,17 @@ Redis::Redis(char *redis_host, int redis_port) {
 				 "Unable to connect to redis %s:%d",
 				 redis_host, redis_port);
     exit(-1);
+  }
+
+  if(sscanf(info.redis_version, "%d.%d.%d", &major, &minor, &sub) == 3) {
+    u_int version = (major << 16) + (minor << 8) + sub;
+
+    if(version < 0x00020400 /* 2.4.0 */) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				   "Your redis version is too old (%s): please use at least 2.4 or newer", 
+				   info.redis_version);
+      exit(0);
+    }
   }
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
