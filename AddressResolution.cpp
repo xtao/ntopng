@@ -212,6 +212,7 @@ void AddressResolution::resolveHostName(char *numeric_ip) {
 
     if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD)) == 0) {
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Resolved %s to %s", numeric_ip, hostname);
       num_resolved_addresses++;
     } else {
       num_resolved_fails++;
