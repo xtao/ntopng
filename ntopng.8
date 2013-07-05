@@ -20,7 +20,7 @@ or
 
 .B ntopng
 .RB [ -i 
-.IR <interface> ]
+.IR <interface|pcap> ]
 .RB [ -d
 .IR <data_directory> ]
 .RB [ -n 
@@ -101,6 +101,9 @@ If a collector endpoint is specified,
 .B ntopng
 open a ZeroMQ connection to the specified endpoint as a subscriber. Example of valid
 collector endpoints are tcp://*:5556 or ipc://flows.ipc
+
+If you want you can pass a path of a pcap file (e.g. -i dummy.pcap) and ntopng
+will read packets from the specified pcap file.
 
 .B nProbe 
 can be instructed to act as a publisher delivering flows to a ZeroMQ endpoint using the --zmq <endpoint> parameter.

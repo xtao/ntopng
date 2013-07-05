@@ -74,7 +74,7 @@ void usage() {
 #ifdef linux
 	 "[-g <core>] "
 #endif
-	 "[-n mode] [-i <iface>]\n"
+	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-U <sys user>] [-s] [-v]\n\n"
@@ -88,7 +88,8 @@ void usage() {
 	 "                                    |     resolve numeric IPs\n"
 	 "                                    | 3 - Don't decode DNS responses and don't\n"
 	 "                                    |     resolve numeric IPs\n"
-	 "[--interface|-i] <interface>        | Input interface name (numeric/symbolic)\n"
+	 "[--interface|-i] <interface|pcap>   | Input interface name (numeric/symbolic)\n"
+	 "                                    | or pcap file path\n"
 #ifndef WIN32
 	 "[--data-dir|-d] <path>              | Data directory (must be writable).\n"
 	 "                                    | Default: %s\n"
