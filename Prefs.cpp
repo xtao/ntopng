@@ -236,6 +236,8 @@ int Prefs::setOption(int optkey, char *optarg) {
 	if(redis_host) {
 	  char *c = strtok(NULL, ":");
 	  if(c) redis_port = atoi(c);
+
+	  redis_host = strdup(redis_host);
 	}
       }
       break;
