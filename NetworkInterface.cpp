@@ -703,7 +703,7 @@ void NetworkInterface::dropPrivileges() {
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to drop privileges [%s]",
 				   strerror(errno));
     } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changeod to %s", username);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changed to %s", username);
   } else {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate user %s", username);
   }

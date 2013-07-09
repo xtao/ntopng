@@ -92,9 +92,28 @@ int main(int argc, char *argv[])
   prefs->loadUsersFromFile();
 
   ifName = ntop->get_if_name();
-  
-  if(ifName && ((strncmp(ifName, "tcp://", 6) == 0 || strncmp(ifName, "ipc://", 6) == 0))) {
-    iface = new CollectorInterface("zmq-collector", ifName /* endpoint */, prefs->do_change_user());
+
+  /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
+  if(ifName && (strstr(ifName, "tcp://") || strstr(ifName, "ipc://"))) {
+    char *at = strchr(ifName, '@');
+    char *script, *endpoint;
+
+    if(at != NULL) {
+      u_int len = strlen(ifName)-strlen(at);
+
+      script = (char*)malloc(len+1);
+      if(script == NULL) {
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "Not enough memory");
+	exit(-1);
+      }
+
+      strncpy(script, ifName, len);
+      script[len] = '\0';
+      endpoint = &at[1];
+    } else
+      script = strdup("nprobe-collector.lua"), endpoint = ifName;
+
+    iface = new CollectorInterface(endpoint, script, prefs->do_change_user());
   } else {
 #ifdef HAVE_PF_RING
     try {

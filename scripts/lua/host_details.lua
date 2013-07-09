@@ -237,7 +237,11 @@ end
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-	 print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	 if(host["localhost"] == true) then
+	    print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	 else
+	    print(k)
+	 end
 	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
 	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
 

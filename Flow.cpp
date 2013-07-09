@@ -95,6 +95,8 @@ Flow::~Flow() {
 void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
   if(ndpi_flow != NULL) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
+      u_int16_t sport = htons(src_port), dport = htons(dst_port);
+
       detected_protocol = proto_id;
     
       switch(detected_protocol) {
@@ -112,11 +114,20 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	}
 	break;
 
+      case NDPI_PROTOCOL_SSL:
+	/* 
+	   In case of SSL there are probably sub-protocols
+	   such as IMAPS that can be otherwise detected
+	*/
+	if((sport == 465) || (dport == 465)) detected_protocol = NDPI_PROTOCOL_MAIL_SMTP;
+	else if((sport == 993) || (dport == 993)) detected_protocol = NDPI_PROTOCOL_MAIL_IMAP;
+	else if((sport == 995) || (dport == 995)) detected_protocol = NDPI_PROTOCOL_MAIL_POP;
+	/* No break !!!! */
+
       case NDPI_PROTOCOL_HTTP:
-      case NDPI_PROTOCOL_SSL:	
 	if(ndpi_flow->host_server_name[0] != '\0') {
 	  char buf[64], *doublecol, delimiter = ':';	  
-	  Host *svr = (htons(src_port) < htons(dst_port)) ? src_host : dst_host;
+	  Host *svr = (sport < dport) ? src_host : dst_host;
 
 	  /* if <host>:<port> We need to remove ':' */
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
@@ -135,8 +146,13 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
       } /* switch */
       detection_completed = true;
-    } else if((cli2srv_packets+srv2cli_packets) > 10) {
+    } else if((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS) {
       detection_completed = true; /* We give up */
+
+      /* We can guess the protocol */
+      detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
+							 ntohl(src_host->get_ip()->get_ipv4()), ntohs(src_port),
+							 ntohl(dst_host->get_ip()->get_ipv4()), ntohs(dst_port));
     }
 
     if(detection_completed) deleteFlowMemory();
@@ -339,7 +355,13 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "dst.port", ntohs(get_dst_port()));
   lua_push_int_table_entry(vm, "vlan", get_vlan_id());
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
-  lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+
+  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS) 
+     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+    lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+  else
+    lua_push_str_table_entry(vm, "proto.ndpi", "(Too Early)");
+
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());
   lua_push_int_table_entry(vm, "seen.last", get_last_seen());

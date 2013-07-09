@@ -172,6 +172,10 @@ end
 
 
 function secondsToTime(seconds)
+   if(seconds < 1) then
+      return("< 1 sec")
+   end
+
    days = math.floor(seconds / 86400)
    hours =  math.floor((seconds / 3600) - (days * 24))
    minutes = math.floor((seconds / 60) - (days * 1440) - (hours * 60))
@@ -209,10 +213,11 @@ function secondsToTime(seconds)
    end
 
    if(minutes > 0) then
-      msg = msg .. string.format("%d min, ", minutes)
+      msg = msg .. string.format("%d min", minutes)
    end
 
    if(sec > 0) then
+      if(string.len(msg) > 0) then msg = msg .. ", " end
       msg = msg .. string.format("%d sec", sec);
    end
 

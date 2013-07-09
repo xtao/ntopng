@@ -29,7 +29,7 @@ print [[
    ]]
 
 if active_page == "flows" then
-  print [[ <li class="active"><a href="#">Flows</a></li> ]]
+  print [[ <li class="active"><a href="/lua/flows_stats.lua">Flows</a></li> ]]
 else
   print [[ <li><a href="/lua/flows_stats.lua">Flows</a></li> ]]
 end

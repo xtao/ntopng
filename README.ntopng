@@ -22,10 +22,14 @@ On Windows you can download the redis server from
 Using ntopng as a flow collector
 --------------------------------
 In order to use ntopng as a flow collector with nprobe you need to start the
-apps as follows
+apps as follows: "script_name@endpoint" where the
+ - script_name is stored in scripts/callbacks
+ - endpoint is the nProbe endpoint
 
 - collector
-  ntopng -i "tcp://127.0.0.1:5556"
+  ntopng -i tcp://127.0.0.1:5556
+  or
+  ntopng -i "nprobe-collector.lua@tcp://127.0.0.1:5556"
 
 - probe (nProbe)
 nprobe --zmq "tcp://*:5556" -i ~/pcap/http.pcap -n none -b 2

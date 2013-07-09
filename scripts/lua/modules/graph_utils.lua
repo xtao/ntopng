@@ -74,7 +74,9 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
    end
 
    if(ntop.exists(rrdname)) then
+      -- print("=> Found ".. start_time .. "|" .. end_time .. "\n")
       local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      --print("=> here we gho")
       local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
       local sample_rate = round(num_points_found / max_num_points)
@@ -89,6 +91,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
 	 names[num] = prefixLabel
 	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
 	 num = num + 1
+	 -- print(num.."\n")
       end
 
       id = 0
@@ -132,7 +135,6 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
 	    sampling = sampling + 1
 	 end
       end
-
 
    for key, value in pairs(series) do
       local t = 0

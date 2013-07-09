@@ -29,11 +29,11 @@ class Lua;
 class CollectorInterface : public NetworkInterface {
  private:
   Lua *l;
-  char *name;
+  char *script_name;
   char *endpoint;
 
  public:
-  CollectorInterface(const char *name, const char *_endpoint, bool change_user);
+  CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user);
   ~CollectorInterface();
 
   char *getEndpoint() { return endpoint; }

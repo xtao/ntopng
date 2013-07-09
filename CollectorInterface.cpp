@@ -27,10 +27,10 @@
 
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(const char *name, const char *_endpoint, bool change_user)
-  : NetworkInterface(name, change_user) {
+CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user)
+  : NetworkInterface(_endpoint, change_user) {
 
-  endpoint = strdup(_endpoint);
+  endpoint = (char*)_endpoint, script_name = strdup(_script_name);
 
   l = new Lua();
 
@@ -44,6 +44,7 @@ CollectorInterface::~CollectorInterface() {
 
   delete l;
   free(endpoint);
+  free(script_name);
 
   deleteDataStructures();
 }
@@ -53,9 +54,9 @@ CollectorInterface::~CollectorInterface() {
 void CollectorInterface::run_collector_script() {
   char script[256];
 
-  snprintf(script, sizeof(script), "%s/%s.lua", ntop->get_callbacks_dir(), ifname);
+  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), script_name);
 
-  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s..", ifname);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s.. [%s]", ifname, script);
 
   l->run_script(script);
 }
