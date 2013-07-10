@@ -40,9 +40,9 @@ Redis::Redis(char *redis_host, int redis_port) {
   if(sscanf(info.redis_version, "%d.%d.%d", &major, &minor, &sub) == 3) {
     u_int version = (major << 16) + (minor << 8) + sub;
 
-    if(version < 0x00020400 /* 2.4.0 */) {
+    if(version < 0x00020200 /* 2.2.0 */) {
       ntop->getTrace()->traceEvent(TRACE_NORMAL,
-				   "Your redis version is too old (%s): please use at least 2.4 or newer",
+				   "Your redis version is too old (%s): please use at least 2.2 or newer",
 				   info.redis_version);
       exit(0);
     }

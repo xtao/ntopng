@@ -115,15 +115,6 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
 
       case NDPI_PROTOCOL_SSL:
-	/* 
-	   In case of SSL there are probably sub-protocols
-	   such as IMAPS that can be otherwise detected
-	*/
-	if((sport == 465) || (dport == 465)) detected_protocol = NDPI_PROTOCOL_MAIL_SMTP;
-	else if((sport == 993) || (dport == 993)) detected_protocol = NDPI_PROTOCOL_MAIL_IMAP;
-	else if((sport == 995) || (dport == 995)) detected_protocol = NDPI_PROTOCOL_MAIL_POP;
-	/* No break !!!! */
-
       case NDPI_PROTOCOL_HTTP:
 	if(ndpi_flow->host_server_name[0] != '\0') {
 	  char buf[64], *doublecol, delimiter = ':';	  
@@ -154,8 +145,10 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 							 ntohl(src_host->get_ip()->get_ipv4()), ntohs(src_port),
 							 ntohl(dst_host->get_ip()->get_ipv4()), ntohs(dst_port));
     }
-
-    if(detection_completed) deleteFlowMemory();
+    
+    if(detection_completed) {
+      deleteFlowMemory();
+    }
   }
 }
 
