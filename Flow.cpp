@@ -360,7 +360,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   else
-    lua_push_str_table_entry(vm, "proto.ndpi", "(Too Early)");
+    lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());

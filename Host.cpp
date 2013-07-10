@@ -88,7 +88,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	       mac_address[3], mac_address[4], mac_address[5]);
       
       symbolic_name = strdup(buf);
-      localHost = false;
+      localHost = true;
     }
   }
 }

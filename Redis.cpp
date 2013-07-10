@@ -164,11 +164,6 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
   }
     
   if(!found) {
-#if 0
-    credis_set(redis, key, hostname); /* Avoid recursive add */
-    credis_expire(redis, key, 60);    /* Avoid entries to live forever */
-#endif
-
     /* Add to the list of addresses to resolve */
     rc = credis_rpush(redis, DNS_TO_RESOLVE, hostname);
 
@@ -199,6 +194,18 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
     snprintf(hostname, hostname_len, "%s", val);
   else
     hostname[0] = '\0';
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::getDNSQueueLength() {
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_llen(redis, (char*)DNS_TO_RESOLVE);
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -262,7 +269,7 @@ void Redis::setDefaults() {
 
   setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
-  setResolvedAddress((char*)"0.0.0.0", (char*)"No IP");
+  setResolvedAddress((char*)"0.0.0.0", (char*)"NoIP");
   
   if(get((char*)"user.admin.password", value, sizeof(value)) < 0)
     set((char*)"user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");

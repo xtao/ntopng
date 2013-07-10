@@ -51,6 +51,8 @@ class Redis {
   
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
+
+  int getDNSQueueLength();
 };
 
 #endif /* _REDIS_H_ */

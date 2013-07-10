@@ -79,6 +79,7 @@ Ntop::Ntop(char *appName) {
 
 void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   struct stat statbuf;
+  char *local_nets;
 
   prefs = _prefs, redis = _redis;
 
@@ -97,6 +98,11 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   }
 
   setLocalNetworks(prefs->get_local_networks());
+
+  /* Add defaults */
+  local_nets = strdup((char*)"0.0.0.0/32,192.168.0.0/16,172.16.0.0/16");
+  setLocalNetworks(local_nets);
+  free(local_nets);
 }
 
 /* ******************************************* */
