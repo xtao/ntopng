@@ -30,7 +30,8 @@ Flow::Flow(NetworkInterface *_iface,
 	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = 0, cli2srv_bytes = 0, srv2cli_packets = 0, srv2cli_bytes = 0, cli2srv_last_packets = 0,
-    cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
+    cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0,
+    diff_sent_packets = 0, diff_sent_bytes = 0, diff_rcvd_packets = 0, diff_rcvd_bytes = 0;
   
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
@@ -246,8 +247,8 @@ void Flow::print_peers(lua_State* vm) {
   lua_push_str_table_entry(vm, "server", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
   lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
-  lua_push_int_table_entry(vm, "sent.last", cli2srv_bytes-cli2srv_last_bytes);
-  lua_push_int_table_entry(vm, "rcvd.last", srv2cli_bytes-srv2cli_last_bytes);
+  lua_push_int_table_entry(vm, "sent.last", diff_sent_bytes);
+  lua_push_int_table_entry(vm, "rcvd.last", diff_rcvd_bytes);
     
   // Key
   snprintf(buf, sizeof(buf), "%s %s", 
@@ -284,7 +285,6 @@ void Flow::print() {
 void Flow::update_hosts_stats() {
   /* if(detection_completed) */ {
     u_int64_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
-    u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
     
     sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
     diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;

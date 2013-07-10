@@ -47,6 +47,7 @@ class Flow : public GenericHashEntry {
   /* Counter values at last host update */
   u_int64_t cli2srv_last_packets, srv2cli_last_packets;
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes;
+  u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
 
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);

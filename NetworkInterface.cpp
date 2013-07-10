@@ -431,11 +431,11 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   }
 
   if((n = purgeIdleFlows()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle flows",
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
 				 n, getNumFlows());
 
   if((n = purgeIdleHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Purged %u/%u idle hosts",
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
 				 n, getNumHosts());
 }
 
