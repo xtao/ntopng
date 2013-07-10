@@ -75,7 +75,7 @@ void PeriodicActivities::runScript(char *path) {
 /* ******************************************* */
 
 void PeriodicActivities::secondActivitiesLoop() {
-  char script[256];
+  char script[MAX_PATH];
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), SECOND_SCRIPT_PATH);
 
@@ -88,7 +88,7 @@ void PeriodicActivities::secondActivitiesLoop() {
 /* ******************************************* */
 
 void PeriodicActivities::minuteActivitiesLoop() {
-  char script[256];
+  char script[MAX_PATH];
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), MINUTE_SCRIPT_PATH);
 
@@ -103,7 +103,7 @@ void PeriodicActivities::minuteActivitiesLoop() {
 /* ******************************************* */
 
 void PeriodicActivities::hourActivitiesLoop() {
-  char script[256];
+  char script[MAX_PATH];
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), HOURLY_SCRIPT_PATH);
 
@@ -118,7 +118,7 @@ void PeriodicActivities::hourActivitiesLoop() {
 /* ******************************************* */
 
 void PeriodicActivities::dayActivitiesLoop() {
-  char script[256];
+  char script[MAX_PATH];
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), DAILY_SCRIPT_PATH);
 

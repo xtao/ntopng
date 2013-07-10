@@ -320,7 +320,7 @@ char* Ntop::getValidPath(char *__path) {
 
   /* relative paths */
   for(int i=0; dirs[i] != NULL; i++) {
-    char path[256];
+    char path[MAX_PATH];
 
     snprintf(path, sizeof(path), "%s/%s", dirs[i], _path);
     fixPath(path);

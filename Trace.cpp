@@ -57,13 +57,13 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
     char *syslogMsg;
 
 #ifdef WIN32
-	char filebuf[256];
-	const char *backslash = strrchr(_file, '\\');
+    char filebuf[MAX_PATH];
+    const char *backslash = strrchr(_file, '\\');
 
-	if(backslash != NULL) {
-		snprintf(filebuf, sizeof(filebuf), "%s", &backslash[1]);
-		file = (char*)filebuf;
-	} 
+    if(backslash != NULL) {
+      snprintf(filebuf, sizeof(filebuf), "%s", &backslash[1]);
+      file = (char*)filebuf;
+    } 
 #endif
 
     va_start (va_ap, format);
@@ -89,12 +89,12 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
     // trace_mutex.lock();
     snprintf(out_buf, sizeof(out_buf), "%s [%s:%d] %s%s", theDate, file, line, extra_msg, buf);
 
-	if(ntop && ntop->getPrefs() && ntop->getPrefs()->get_log_fd()) {
-		fprintf(ntop->getPrefs()->get_log_fd(), "%s\n", out_buf);
-		fflush(ntop->getPrefs()->get_log_fd());
-	}
+    if(ntop && ntop->getPrefs() && ntop->getPrefs()->get_log_fd()) {
+      fprintf(ntop->getPrefs()->get_log_fd(), "%s\n", out_buf);
+      fflush(ntop->getPrefs()->get_log_fd());
+    }
 
-	printf("%s\n", out_buf);
+    printf("%s\n", out_buf);
     fflush(stdout);
 
     // trace_mutex.unlock();
@@ -115,10 +115,10 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
 
 #ifdef WIN32
 
- /* service_win32.cpp */
+/* service_win32.cpp */
 extern "C" {
-	extern short isWinNT();
-	extern BOOL  bConsole;
+  extern short isWinNT();
+  extern BOOL  bConsole;
 };
 
 /* ******************************* */

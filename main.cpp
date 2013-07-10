@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     if we can write on the data directory
   */
   {
-    char path[256];
+    char path[MAX_PATH];
     FILE *fd;
 
     snprintf(path, sizeof(path), "%s/.test", ntop->get_working_dir());

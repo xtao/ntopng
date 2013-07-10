@@ -290,7 +290,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
 int Prefs::checkOptions() {
   if(daemonize) {
-    char path[256];
+    char path[MAX_PATH];
 
     ntop_mkdir(data_dir, 0777);
     snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
@@ -422,7 +422,7 @@ int Prefs::save() {
 /* ******************************************* */
 
 int Prefs::loadUsersFromFile() {
-  char buffer[512], *line, *key, *value, path[256];
+  char buffer[512], *line, *key, *value, path[MAX_PATH];
   FILE *fd;
   int i;
 
@@ -476,7 +476,7 @@ int Prefs::loadUsersFromFile() {
 
 int Prefs::saveUsersToFile() {
   char **keys;
-  char val[64], path[256];
+  char val[64], path[MAX_PATH];
   int rc, i;
   FILE *fd;
 

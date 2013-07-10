@@ -12,7 +12,7 @@ LIBPCAP=-lpcap
 MONGOOSE_HOME=./third-party/mongoose
 MONGOOSE_INC=-I$(MONGOOSE_HOME)
 ######
-LUAJIT_HOME=./third-party/LuaJIT-2.0.1
+LUAJIT_HOME=./third-party/LuaJIT-2.0.2
 LUAJIT_INC=-I$(LUAJIT_HOME)/src
 LUAJIT_LIB=$(LUAJIT_HOME)/src/libluajit.a
 ######

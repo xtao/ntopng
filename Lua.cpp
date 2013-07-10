@@ -901,7 +901,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
-  char *dir, path[256];
+  char *dir, path[MAX_PATH];
   int permission = 0777, i, rc;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);

@@ -32,7 +32,7 @@
 
 Geolocation::Geolocation(char *db_home) {
 #ifdef HAVE_GEOIP
-  char path[256];
+  char path[MAX_PATH];
 
   snprintf(path, sizeof(path), "%s/geoip", db_home);
 
@@ -47,7 +47,7 @@ Geolocation::Geolocation(char *db_home) {
 
 #ifdef HAVE_GEOIP
 GeoIP* Geolocation::loadGeoDB(char *base_path, const char *db_name) {
-  char path[256];
+  char path[MAX_PATH];
   GeoIP *geo;
 
   snprintf(path, sizeof(path), "%s/%s", base_path, db_name);

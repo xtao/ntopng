@@ -52,13 +52,18 @@ CollectorInterface::~CollectorInterface() {
 /* **************************************************** */
 
 void CollectorInterface::run_collector_script() {
-  char script[256];
+  char script[MAX_PATH];
+  struct stat buf;
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), script_name);
 
-  ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s.. [%s]", ifname, script);
-
-  l->run_script(script);
+  if(stat(script, &buf) != 0) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "The script %s does not exist", script);
+    exit(0);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s.. [%s]", ifname, script);    
+    l->run_script(script);
+  }
 }
 
 /* **************************************************** */
