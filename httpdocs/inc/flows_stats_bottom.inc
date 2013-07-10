@@ -7,7 +7,15 @@
 			     }
 				 },
 			     {
-			     title: "Bytes",
+			     title: "Current Bytes",
+				 field: "column_bytes_last",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
+				 },
+			     {
+			     title: "Total Bytes",
 				 field: "column_bytes",
 				 sortable: true,
 	 	             css: { 
