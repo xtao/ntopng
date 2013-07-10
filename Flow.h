@@ -46,7 +46,8 @@ class Flow : public GenericHashEntry {
 
   /* Counter values at last host update */
   u_int64_t cli2srv_last_packets, srv2cli_last_packets;
-  u_int64_t cli2srv_last_bytes, srv2cli_last_bytes;
+  u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
+    prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;
 
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
@@ -88,8 +89,8 @@ class Flow : public GenericHashEntry {
   inline Host* get_src_host()                     { return(src_host); };
   inline Host* get_dst_host()                     { return(dst_host); };
   inline char* get_json_info()			  { return(json_info); }
-  inline u_int64_t get_current_bytes_cli2srv()    { return(cli2srv_bytes - cli2srv_last_bytes); };
-  inline u_int64_t get_current_bytes_srv2cli()    { return(srv2cli_bytes - srv2cli_last_bytes); };
+  u_int64_t get_current_bytes_cli2srv();
+  u_int64_t get_current_bytes_srv2cli();
   bool idle();
   int compare(Flow *fb);
   void print();

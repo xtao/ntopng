@@ -234,6 +234,36 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
 /* *************************************** */
 
+u_int64_t Flow::get_current_bytes_cli2srv() {
+  if((cli2srv_last_bytes == 0) && (prev_cli2srv_last_bytes == 0))
+    return(cli2srv_bytes);
+  else {
+    u_int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
+    
+    if(diff > 0)
+      return(diff);
+    else
+      return(cli2srv_bytes - prev_cli2srv_last_bytes); 
+  }
+};
+
+/* *************************************** */
+
+u_int64_t Flow::get_current_bytes_srv2cli() {
+  if((srv2cli_last_bytes == 0) && (prev_srv2cli_last_bytes == 0))
+    return(srv2cli_bytes);
+  else {
+    u_int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
+    
+    if(diff > 0)
+      return(diff);
+    else    
+      return(srv2cli_bytes - prev_srv2cli_last_bytes); 
+  }
+};
+
+/* *************************************** */
+
 void Flow::print_peers(lua_State* vm) {
   char buf1[64], buf2[64], buf[256];
   Host *src = get_src_host(), *dst = get_dst_host();
@@ -287,10 +317,12 @@ void Flow::update_hosts_stats() {
 
   sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
+  prev_cli2srv_last_bytes = cli2srv_last_bytes;
   cli2srv_last_packets = sent_packets, cli2srv_last_bytes = sent_bytes;
     
   rcvd_packets = srv2cli_packets, rcvd_bytes = srv2cli_bytes;
   diff_rcvd_packets = rcvd_packets - srv2cli_last_packets, diff_rcvd_bytes = rcvd_bytes - srv2cli_last_bytes;
+  prev_srv2cli_last_bytes = srv2cli_last_bytes;
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
     
   if(src_host)
