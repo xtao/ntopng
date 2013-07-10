@@ -31,7 +31,7 @@ Redis::Redis(char *redis_host, int redis_port) {
      || (credis_ping(redis) != 0)
      || (credis_info(redis, &info) != 0)
      ) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+    ntop->getTrace()->traceEvent(TRACE_ERROR,
 				 "Unable to connect to redis %s:%d",
 				 redis_host, redis_port);
     exit(-1);
@@ -42,14 +42,14 @@ Redis::Redis(char *redis_host, int redis_port) {
 
     if(version < 0x00020400 /* 2.4.0 */) {
       ntop->getTrace()->traceEvent(TRACE_NORMAL,
-				   "Your redis version is too old (%s): please use at least 2.4 or newer", 
+				   "Your redis version is too old (%s): please use at least 2.4 or newer",
 				   info.redis_version);
       exit(0);
     }
   }
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
-			       "Succesfully connected to Redis %d bit v.%s", 
+			       "Succesfully connected to Redis %d bit v.%s",
 			       info.arch_bits, info.redis_version);
   l = new Mutex();
   setDefaults();
@@ -112,7 +112,7 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 int Redis::keys(const char *pattern, char ***keys_p) {
   char **keys;
   int rc, i;
-  
+
   l->lock(__FILE__, __LINE__);
   rc = credis_keys(redis, pattern, &keys);
   if(rc > 0) {
@@ -144,9 +144,9 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
   int rc;
   char key[128], *val;
   bool found;
-  
+
   if(!ntop->getPrefs()->is_dns_resolution_enabled()) return(0);
-  
+
   snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, hostname);
 
   l->lock(__FILE__, __LINE__);
@@ -162,16 +162,16 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
     else
       found = true;
   }
-    
+
   if(!found) {
     /* Add to the list of addresses to resolve */
     rc = credis_rpush(redis, DNS_TO_RESOLVE, hostname);
 
     /*
-      We make sure that no more than 1000 entries are in queue 
+      We make sure that no more than MAX_NUM_QUEUED_ADDRS entries are in queue
       This is important in order to avoid the cache to grow too much
     */
-    credis_ltrim(redis, DNS_TO_RESOLVE, 0, 1000); 
+    credis_ltrim(redis, DNS_TO_RESOLVE, 0, MAX_NUM_QUEUED_ADDRS);
   } else
     rc = 0;
 
@@ -227,7 +227,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool ca
   l->lock(__FILE__, __LINE__);
 
   snprintf(key, sizeof(key), "%s.%s", DOMAIN_CATEGORY, domainname);
-  
+
   /*
     Add only if the domain has not been categorized yet
   */
@@ -237,7 +237,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf, u_int buf_len, bool ca
 
     buf[0] = 0, val = NULL;
   } else
-    snprintf(buf, buf_len, "%s", val);  
+    snprintf(buf, buf_len, "%s", val);
 
   l->unlock(__FILE__, __LINE__);
 
@@ -270,7 +270,7 @@ void Redis::setDefaults() {
   setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
   setResolvedAddress((char*)"0.0.0.0", (char*)"NoIP");
-  
+
   if(get((char*)"user.admin.password", value, sizeof(value)) < 0)
     set((char*)"user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");
 }
@@ -284,7 +284,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 
   rsp[0] = '\0';
   snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, numeric_ip);
- 
+
  rc = get(key, rsp, rsp_len);
 
   if(rc != 0) {

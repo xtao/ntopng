@@ -60,11 +60,13 @@
 #define HOST_PURGE_FREQUENCY     1 /* sec */
 
 #define PURGE_FRACTION          32 /* check 1/32 of hashes per iteration */
+#define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
 
 #define DOMAIN_CATEGORY      "domain.category"
 #define DOMAIN_TO_CATEGORIZE "domain.tocategorize"
 #define DNS_CACHE            "dns.cache"
 #define DNS_TO_RESOLVE       "dns.toresolve"
+
 
 #ifndef MAX_PATH
 #define MAX_PATH             256
