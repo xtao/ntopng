@@ -21,7 +21,7 @@ max_num_hosts = 8
 -- 1. compute total traffic
 total_traffic = 0
 for key, values in pairs(peers) do
-   total_traffic = total_traffic + values["sent"] + values["rcvd"]
+   total_traffic = total_traffic + values["sent.last"] + values["rcvd.last"]
    -- print("->"..key.."(".. total_traffic..")" .. "\n")
 end
 
@@ -38,7 +38,7 @@ print '{"nodes":[\n'
 
 while(num == 0) do
    for key, values in pairs(peers) do
-      if((values["sent"] + values["rcvd"]) > threshold) then
+      if((values["sent.last"] + values["rcvd.last"]) > threshold) then
 
 	 --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
 	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
@@ -135,7 +135,7 @@ num = 0
 -- Avoid to have a link A->B, and B->A
 reverse_nodes = {}
 for key, values in pairs(peers) do
-   val = values["sent"] + values["rcvd"]
+   val = values["sent.last"] + values["rcvd.last"]
 
    if((val > threshold) or ((top_host ~= nil) and (findString(key, top_host) ~= nil)) and (num < max_num_links)) then
       e = {}
@@ -154,7 +154,7 @@ for key, values in pairs(peers) do
 
 	 reverse_nodes[e[1]..":"..e[0]] = 1
 
-	 print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent"] .. ", \"rcvd\": ".. values["rcvd"] .. "}")
+	 print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent.last"] .. ", \"rcvd\": ".. values["rcvd.last"] .. "}")
 	 num = num + 1
       end
    end

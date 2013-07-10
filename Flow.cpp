@@ -246,6 +246,8 @@ void Flow::print_peers(lua_State* vm) {
   lua_push_str_table_entry(vm, "server", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
   lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
+  lua_push_int_table_entry(vm, "sent.last", cli2srv_bytes-cli2srv_last_bytes);
+  lua_push_int_table_entry(vm, "rcvd.last", srv2cli_bytes-srv2cli_last_bytes);
     
   // Key
   snprintf(buf, sizeof(buf), "%s %s", 
