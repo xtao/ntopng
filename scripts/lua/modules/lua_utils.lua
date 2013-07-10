@@ -39,7 +39,13 @@ function shortHostName(name)
    if (#chunks == 4) then
       return(name)
    else
-      for token in string.gmatch(name, "(%w+).") do
+      chunks = {name:match("%w+:%w+:%w+:%w+:%w+:%w+")}
+      io.write(#chunks.."\n")
+      if (#chunks == 1) then
+	 return(name)
+      end
+
+      for token in string.gmatch(name, "([%w-]+).") do
 	 return(token)
       end
    end
