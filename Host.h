@@ -63,9 +63,6 @@ class Host : public GenericHost {
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
   
-  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
-
-  inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   bool idle();
   void lua(lua_State* vm, bool host_details, bool returnHost);
   void resolveHostName();

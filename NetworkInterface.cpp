@@ -50,7 +50,8 @@ static void free_wrapper(void *freeable)
 /* **************************************************** */
 
 NetworkInterface::NetworkInterface() {
-  ifname = NULL, flows_hash = NULL, hosts_hash = NULL, ndpi_struct = NULL;
+  ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
+    strings_hash = NULL, ndpi_struct = NULL;
 }
 
 /* **************************************************** */
@@ -99,6 +100,7 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
 
   num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
   hosts_hash = new HostHash(num_hashes, ntop->getPrefs()->get_max_num_hosts());
+  strings_hash = new StringHash(num_hashes, ntop->getPrefs()->get_max_num_hosts());
 
   // init global detection structure
   ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
@@ -126,6 +128,7 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
 void NetworkInterface::deleteDataStructures() {
   delete flows_hash;
   delete hosts_hash;
+  delete strings_hash;
 
   ndpi_exit_detection_module(ndpi_struct, free_wrapper);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
@@ -847,4 +850,18 @@ bool NetworkInterface::isNumber(const char *str) {
   }
 
   return(true);
+}
+
+/* **************************************************** */
+
+StringHost* NetworkInterface::findHostByString(char *keyname,
+					       bool createIfNotPresent) {
+  StringHost *ret = strings_hash->get(keyname);
+
+  if((ret == NULL) && createIfNotPresent) {
+    if((ret = new StringHost(this, keyname)) != NULL)
+      strings_hash->add(ret);
+  }
+
+  return(ret);
 }

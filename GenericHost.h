@@ -38,6 +38,8 @@ class GenericHost : public GenericHashEntry {
   ~GenericHost();
 
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
+  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
+		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
 };
 
 #endif /* _GENERIC_HOST_H_ */

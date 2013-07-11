@@ -29,7 +29,7 @@ StringHash::StringHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_n
 
 /* ************************************ */
 
-StringHost* StringHash::get(u_int16_t vlanId, char *key) {
+StringHost* StringHash::get(char *key) {
   u_int32_t hash = Utils::hashString(key) % num_hashes;
 
   if(table[hash] == NULL) {

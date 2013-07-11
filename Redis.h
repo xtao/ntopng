@@ -43,7 +43,7 @@ class Redis {
   int keys(const char *pattern, char ***keys_p);
   int del(char *key); 
 
-  int queueHostToResolve(char *hostname, bool dont_check_for_existance);
+  int queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost);
   int popHostToResolve(char *hostname, u_int hostname_len);
 
   char* getFlowCategory(char *domainname, char *buf, u_int buf_len, bool categorize_if_unknown);

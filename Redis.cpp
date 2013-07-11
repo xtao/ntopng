@@ -140,7 +140,7 @@ int Redis::del(char *key) {
 
 /* **************************************** */
 
-int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
+int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost) {
   int rc;
   char key[128], *val;
   bool found;
@@ -165,7 +165,10 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance) {
 
   if(!found) {
     /* Add to the list of addresses to resolve */
-    rc = credis_rpush(redis, DNS_TO_RESOLVE, hostname);
+    if(localHost)
+      rc = credis_lpush(redis, DNS_TO_RESOLVE, hostname);
+    else
+      rc = credis_rpush(redis, DNS_TO_RESOLVE, hostname);
 
     /*
       We make sure that no more than MAX_NUM_QUEUED_ADDRS entries are in queue
@@ -289,7 +292,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 
   if(rc != 0) {
     if(queue_if_not_found)
-      queueHostToResolve(numeric_ip, true);
+      queueHostToResolve(numeric_ip, true, false);
   } else {
     /* We need to extend expire */
 

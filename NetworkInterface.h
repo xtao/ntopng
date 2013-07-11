@@ -45,6 +45,9 @@ class NetworkInterface {
   FlowHash *flows_hash;
   /* Hosts */
   HostHash *hosts_hash;
+  /* String hash (Aggregation) */
+  StringHash *strings_hash;
+
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
   bool running;
@@ -126,6 +129,8 @@ class NetworkInterface {
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 		      bool createIfNotPresent);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
+  
+  StringHost* findHostByString(char *keyname, bool createIfNotPresent);  
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

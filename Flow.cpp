@@ -24,14 +24,14 @@
 /* *************************************** */
 
 Flow::Flow(NetworkInterface *_iface,
-	   u_int16_t _vlanId, u_int8_t _protocol, 
+	   u_int16_t _vlanId, u_int8_t _protocol,
 	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
 	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
 	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
   vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
   cli2srv_packets = 0, cli2srv_bytes = 0, srv2cli_packets = 0, srv2cli_bytes = 0, cli2srv_last_packets = 0,
     cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
-  
+
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
   json_info = strdup("{}");
@@ -48,11 +48,11 @@ Flow::Flow(NetworkInterface *_iface,
 /* *************************************** */
 
 Flow::Flow(NetworkInterface *_iface,
-	   u_int16_t _vlanId, u_int8_t _protocol, 
+	   u_int16_t _vlanId, u_int8_t _protocol,
 	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
 	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
   time_t last_recvd = iface->getTimeLastPktRcvd();
-  Flow(_iface, _vlanId, _protocol, 
+  Flow(_iface, _vlanId, _protocol,
        src_mac, _src_ip, _src_port,
        dst_mac, _dst_ip, _dst_port,
        last_recvd, last_recvd);
@@ -62,13 +62,13 @@ Flow::Flow(NetworkInterface *_iface,
 
 void Flow::allocFlowMemory() {
   if((ndpi_flow = (ndpi_flow_struct*)calloc(1, iface->get_flow_size())) == NULL)
-    throw "Not enough memory";  
-  
+    throw "Not enough memory";
+
   if((src_id = calloc(1, iface->get_size_id())) == NULL)
-    throw "Not enough memory";  
-  
+    throw "Not enough memory";
+
   if((dst_id = calloc(1, iface->get_size_id())) == NULL)
-    throw "Not enough memory";  
+    throw "Not enough memory";
 }
 
 /* *************************************** */
@@ -98,14 +98,14 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
       u_int16_t sport = htons(src_port), dport = htons(dst_port);
 
       detected_protocol = proto_id;
-    
+
       switch(detected_protocol) {
       case NDPI_PROTOCOL_DNS:
 	if(ntop->getPrefs()->decode_dns_responses()) {
 	  if(ndpi_flow->host_server_name[0] != '\0') {
 	    char delimiter = '@';
 	    char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
-	    
+
 	    if(at) {
 	      at[0] = '\0';
 	      ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
@@ -114,15 +114,26 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	}
 	break;
 
+      case NDPI_PROTOCOL_WHOIS_DAS:
+	if(ndpi_flow->host_server_name[0] != '\0') {
+	  StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, true);
+
+	  if(host != NULL) {
+	    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
+	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
+	  }
+	}
+	break;
+
       case NDPI_PROTOCOL_SSL:
       case NDPI_PROTOCOL_HTTP:
 	if(ndpi_flow->host_server_name[0] != '\0') {
-	  char buf[64], *doublecol, delimiter = ':';	  
+	  char buf[64], *doublecol, delimiter = ':';
 	  Host *svr = (sport < dport) ? src_host : dst_host;
 
 	  /* if <host>:<port> We need to remove ':' */
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
-	    doublecol[0] = '\0';	  
+	    doublecol[0] = '\0';
 
 	  if(svr) {
 	    svr->setName((char*)ndpi_flow->host_server_name, true);
@@ -145,7 +156,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 							 ntohl(src_host->get_ip()->get_ipv4()), ntohs(src_port),
 							 ntohl(dst_host->get_ip()->get_ipv4()), ntohs(dst_port));
     }
-    
+
     if(detection_completed) {
       deleteFlowMemory();
     }
@@ -238,12 +249,21 @@ u_int64_t Flow::get_current_bytes_cli2srv() {
   if((cli2srv_last_bytes == 0) && (prev_cli2srv_last_bytes == 0))
     return(cli2srv_bytes);
   else {
-    u_int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
-    
+    int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
+
+    if(diff > 0)
+      return(diff);
+
+    /*
+       We need to do this as due to concurrency issues,
+       we might have a negative value
+    */
+    diff = cli2srv_bytes - prev_cli2srv_last_bytes;
+
     if(diff > 0)
       return(diff);
     else
-      return(cli2srv_bytes - prev_cli2srv_last_bytes); 
+      return(0);
   }
 };
 
@@ -253,12 +273,21 @@ u_int64_t Flow::get_current_bytes_srv2cli() {
   if((srv2cli_last_bytes == 0) && (prev_srv2cli_last_bytes == 0))
     return(srv2cli_bytes);
   else {
-    u_int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
-    
+    int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
+
     if(diff > 0)
       return(diff);
-    else    
-      return(srv2cli_bytes - prev_srv2cli_last_bytes); 
+
+    /*
+       We need to do this as due to concurrency issues,
+       we might have a negative value
+    */
+    diff = srv2cli_bytes - prev_srv2cli_last_bytes;
+
+    if(diff > 0)
+      return(diff);
+    else
+      return(0);
   }
 };
 
@@ -269,7 +298,7 @@ void Flow::print_peers(lua_State* vm) {
   Host *src = get_src_host(), *dst = get_dst_host();
 
   if((src == NULL) || (dst == NULL)) return;
-  
+
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "client", get_src_host()->get_ip()->print(buf, sizeof(buf)));
@@ -278,9 +307,9 @@ void Flow::print_peers(lua_State* vm) {
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
   lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
-    
+
   // Key
-  snprintf(buf, sizeof(buf), "%s %s", 
+  snprintf(buf, sizeof(buf), "%s %s",
 	   src->Host::get_name(buf1, sizeof(buf1), false),
 	   dst->Host::get_name(buf2, sizeof(buf2), false));
 
@@ -291,7 +320,7 @@ void Flow::print_peers(lua_State* vm) {
   */
   lua_pushstring(vm, buf);
   lua_insert(vm, -2);
-  lua_settable(vm, -3);  
+  lua_settable(vm, -3);
 }
 
 /* *************************************** */
@@ -319,32 +348,32 @@ void Flow::update_hosts_stats() {
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
   prev_cli2srv_last_bytes = cli2srv_last_bytes;
   cli2srv_last_packets = sent_packets, cli2srv_last_bytes = sent_bytes;
-    
+
   rcvd_packets = srv2cli_packets, rcvd_bytes = srv2cli_bytes;
   diff_rcvd_packets = rcvd_packets - srv2cli_last_packets, diff_rcvd_bytes = rcvd_bytes - srv2cli_last_bytes;
   prev_srv2cli_last_bytes = srv2cli_last_bytes;
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
-    
+
   if(src_host)
-    src_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes, 
+    src_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes,
 		       diff_rcvd_packets, diff_rcvd_bytes);
-  if(dst_host) 
-    dst_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes, 
+  if(dst_host)
+    dst_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
 		       diff_sent_packets, diff_sent_bytes);
 }
 
 /* *************************************** */
 
-bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port, 
+bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port,
 		 u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol,
 		 bool *src2dst_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(src_host && src_host->equal(_src_ip) && dst_host && dst_host->equal(_dst_ip) 
+  if(src_host && src_host->equal(_src_ip) && dst_host && dst_host->equal(_dst_ip)
      && (_src_port == src_port) && (_dst_port == dst_port)) {
     *src2dst_direction = true;
     return(true);
-  } else if(dst_host && dst_host->equal(_src_ip) && src_host && src_host->equal(_dst_ip) 
+  } else if(dst_host && dst_host->equal(_src_ip) && src_host && src_host->equal(_dst_ip)
 	    && (_dst_port == src_port) && (_src_port == dst_port)) {
     *src2dst_direction = false;
     return(true);
@@ -370,18 +399,18 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "src.port", ntohs(get_src_port()));
 
   if(get_dst_host()) {
-    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf), false)); 
+    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
     lua_push_nil_table_entry(vm, "dst.host");
-    lua_push_nil_table_entry(vm, "dst.ip");    
+    lua_push_nil_table_entry(vm, "dst.ip");
   }
 
   lua_push_int_table_entry(vm, "dst.port", ntohs(get_dst_port()));
   lua_push_int_table_entry(vm, "vlan", get_vlan_id());
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
 
-  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS) 
+  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   else
@@ -395,9 +424,9 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
   lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
-    
+
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
-  
+
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index
     lua_insert(vm, -2);
@@ -412,7 +441,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
 u_int32_t Flow::key() {
   u_int32_t k = src_port+dst_port+vlanId+protocol;
-  
+
   if(src_host) k += src_host->key();
   if(dst_host) k += dst_host->key();
 
@@ -422,7 +451,7 @@ u_int32_t Flow::key() {
 /* *************************************** */
 
 bool Flow::idle() {
-  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
+  return(isIdle(ntop->getPrefs()->get_host_max_idle()));
 };
 
 /* *************************************** */
@@ -433,7 +462,7 @@ char* Flow::getDomainCategory() {
       categorization.flow_categorized = true;
     else if(ndpi_flow->host_server_name) {
       if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
-					   categorization.category, sizeof(categorization.category), 
+					   categorization.category, sizeof(categorization.category),
 					   false) != NULL)
 	categorization.flow_categorized = true;
     }

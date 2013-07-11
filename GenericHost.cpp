@@ -24,11 +24,49 @@
 /* *************************************** */
 
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
-  ;
+  ndpiStats = new NdpiStats();
+  
 }
 
 /* *************************************** */
 
 GenericHost::~GenericHost() {
-  ;
+  if(ndpiStats)  delete ndpiStats;
 }
+
+/* *************************************** */
+
+void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto, 
+			   u_int64_t sent_packets, u_int64_t sent_bytes,
+			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) { 
+  if(sent_packets || rcvd_packets) {
+    sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
+    if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
+      ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
+
+    switch(l4_proto) {
+    case 0:
+      /* Unknown protocol */
+      break;
+    case IPPROTO_UDP:
+      udp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	udp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    case IPPROTO_TCP:
+      tcp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	tcp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    case IPPROTO_ICMP:
+      icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
+	icmp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    default:
+      other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	other_ip_sent.incStats(sent_packets, sent_bytes);
+      break;
+    }
+ 
+   updateSeen();
+  }
+}
+

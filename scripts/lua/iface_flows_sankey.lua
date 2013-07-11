@@ -154,7 +154,14 @@ for key, values in pairs(peers) do
 
 	 reverse_nodes[e[1]..":"..e[0]] = 1
 
-	 print ("{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. values["sent.last"] .. ", \"rcvd\": ".. values["rcvd.last"] .. "}")
+	 sentv = values["sent.last"]
+	 recvv = values["rcvd.last"]
+	 
+	 if(val == 0) then
+	    val = 1
+	 end
+
+	 print ("\t{\"source\": " .. e[0] .. ", \"target\": " .. e[1] .. ", \"value\": " .. val .. ", \"sent\": " .. sentv .. ", \"rcvd\": ".. recvv .. "}")
 	 num = num + 1
       end
    end

@@ -24,21 +24,21 @@
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface) : GenericHost(_iface) {
-  ip = new IpAddress(), ndpiStats = new NdpiStats();
+  ip = new IpAddress();
   initialize(NULL, 0, false);
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
-  ip = new IpAddress(_ip), ndpiStats = new NdpiStats();
+  ip = new IpAddress(_ip);
   initialize(mac, _vlanId, true);
 }
 
 /* *************************************** */
 
 Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHost(_iface) {
-  ip = NULL, ndpiStats = NULL;
+  ip = NULL;
   initialize(mac, _vlanId, true);
 }
 
@@ -46,7 +46,6 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : Gener
 
 Host::~Host() {
   if(symbolic_name) free(symbolic_name);
-  if(ndpiStats)     delete ndpiStats;
   if(country)       free(country);
   if(city)          free(city);
   if(asname)        free(asname);
@@ -75,7 +74,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
 	  symbolic_name = strdup(rsp);
 	else
-	  ntop->getRedis()->queueHostToResolve(host, false);
+	  ntop->getRedis()->queueHostToResolve(host, false, localHost);
       }
 
       ntop->getGeolocation()->getAS(ip, &asn, &asname);
@@ -242,41 +241,6 @@ char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_foun
     }
   }
 }
-
-/* *************************************** */
-
-void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, 
-		    u_int64_t sent_packets, u_int64_t sent_bytes,
-		    u_int64_t rcvd_packets, u_int64_t rcvd_bytes) { 
-    if(sent_packets || rcvd_packets) {
-      sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
-      if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
-	ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
-
-      switch(l4_proto) {
-      case 0:
-	/* Unknown protocol */
-	break;
-      case IPPROTO_UDP:
-	udp_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	  udp_sent.incStats(sent_packets, sent_bytes);
-	break;
-      case IPPROTO_TCP:
-	tcp_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	  tcp_sent.incStats(sent_packets, sent_bytes);
-	break;
-      case IPPROTO_ICMP:
-	icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
-	  icmp_sent.incStats(sent_packets, sent_bytes);
-	break;
-      default:
-	other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	  other_ip_sent.incStats(sent_packets, sent_bytes);
-	break;
-      }
-      updateSeen();
-    }
-  }
 
 /* *************************************** */
 
