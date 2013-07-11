@@ -95,7 +95,10 @@ extern "C" {
 #include "ProtoStats.h"
 #include "EthStats.h"
 #include "GenericHashEntry.h"
+#include "GenericHost.h"
 #include "GenericHash.h"
+#include "StringHost.h"
+#include "StringHash.h"
 #include "NetworkInterface.h"
 #include "CollectorInterface.h"
 #include "PcapInterface.h"
@@ -103,6 +106,7 @@ extern "C" {
 #include "PF_RINGInterface.h"
 #endif
 #include "Geolocation.h"
+#include "GenericHost.h"
 #include "Host.h"
 #include "Flow.h"
 #include "FlowHash.h"

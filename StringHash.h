@@ -19,25 +19,16 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef _STRING_HASH_H_
+#define _STRING_HASH_H_
 
 #include "ntop_includes.h"
-
-/* ******************************* */
-
-class Utils {
- private:
-
+ 
+class StringHash : public GenericHash {
  public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-  static bool  isIPAddress(char *name);
-  static void  setThreadAffinity(pthread_t thread, int core_id);
-  static char* trim(char *s);
-  static u_int32_t hashString(char *s);
+  StringHash(u_int _num_hashes, u_int _max_hash_size);
+
+  StringHost* get(u_int16_t vlanId, char *key);
 };
 
-
-#endif /* _UTILS_H_ */
+#endif /* _STRING_HASH_H_ */

@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Host : public GenericHashEntry {
+class Host : public GenericHost {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
@@ -32,12 +32,6 @@ class Host : public GenericHashEntry {
   u_int16_t num_uses, vlan_id;
   float latitude, longitude;
   IpAddress *ip;
-  NdpiStats *ndpiStats;
-  TrafficStats sent, rcvd;
-  TrafficStats tcp_sent, tcp_rcvd;
-  TrafficStats udp_sent, udp_rcvd;
-  TrafficStats icmp_sent, icmp_rcvd;
-  TrafficStats other_ip_sent, other_ip_rcvd;
   Mutex *m;
   bool localHost;
   

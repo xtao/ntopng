@@ -19,25 +19,35 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
-
 #include "ntop_includes.h"
 
-/* ******************************* */
+/* ************************************ */
 
-class Utils {
- private:
+StringHash::StringHash(u_int _num_hashes, u_int _max_hash_size) : GenericHash(_num_hashes, _max_hash_size) {
+  ;
+}
 
- public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-  static bool  isIPAddress(char *name);
-  static void  setThreadAffinity(pthread_t thread, int core_id);
-  static char* trim(char *s);
-  static u_int32_t hashString(char *s);
-};
+/* ************************************ */
 
+StringHost* StringHash::get(u_int16_t vlanId, char *key) {
+  u_int32_t hash = Utils::hashString(key) % num_hashes;
 
-#endif /* _UTILS_H_ */
+  if(table[hash] == NULL) {
+    return(NULL);
+  } else {
+    StringHost *head;
+
+    locks[hash]->lock(__FILE__, __LINE__);
+    head = (StringHost*)table[hash];
+    
+    while(head != NULL) {      
+      if(strcmp(key, head->host_key()) == 0)
+	break;
+      else
+	head = (StringHost*)head->next();
+    }
+    locks[hash]->unlock(__FILE__, __LINE__);
+
+    return(head);
+  }
+}

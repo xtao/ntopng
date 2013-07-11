@@ -19,25 +19,23 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
-
 #include "ntop_includes.h"
 
-/* ******************************* */
+/* *************************************** */
 
-class Utils {
- private:
+StringHost::StringHost(NetworkInterface *_iface, char *_key) : GenericHost(_iface) {
+  keyname = strdup(_key);
+}
 
- public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-  static bool  isIPAddress(char *name);
-  static void  setThreadAffinity(pthread_t thread, int core_id);
-  static char* trim(char *s);
-  static u_int32_t hashString(char *s);
+/* *************************************** */
+
+StringHost::~StringHost() {
+  free(keyname);
+}
+
+
+/* *************************************** */
+
+bool StringHost::idle() {
+  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
 };
-
-
-#endif /* _UTILS_H_ */

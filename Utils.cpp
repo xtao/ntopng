@@ -136,3 +136,11 @@ char *Utils::trim(char *s) {
 
 /* ****************************************************** */
 
+u_int32_t Utils::hashString(char *key) {
+  u_int32_t hash = 0, len = strlen(key);
+  
+  for(u_int32_t i=0; i<len; i++)
+    hash += ((u_int32_t)key[i])*i;
+  
+  return(hash);
+}

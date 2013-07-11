@@ -19,25 +19,16 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
-
 #include "ntop_includes.h"
 
-/* ******************************* */
+/* *************************************** */
 
-class Utils {
- private:
+GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
+  ;
+}
 
- public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-  static bool  isIPAddress(char *name);
-  static void  setThreadAffinity(pthread_t thread, int core_id);
-  static char* trim(char *s);
-  static u_int32_t hashString(char *s);
-};
+/* *************************************** */
 
-
-#endif /* _UTILS_H_ */
+GenericHost::~GenericHost() {
+  ;
+}

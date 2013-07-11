@@ -23,21 +23,21 @@
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface) : GenericHashEntry(_iface) {
+Host::Host(NetworkInterface *_iface) : GenericHost(_iface) {
   ip = new IpAddress(), ndpiStats = new NdpiStats();
   initialize(NULL, 0, false);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
   ip = new IpAddress(_ip), ndpiStats = new NdpiStats();
   initialize(mac, _vlanId, true);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHashEntry(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHost(_iface) {
   ip = NULL, ndpiStats = NULL;
   initialize(mac, _vlanId, true);
 }
