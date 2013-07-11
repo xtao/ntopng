@@ -116,7 +116,11 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
       case NDPI_PROTOCOL_WHOIS_DAS:
 	if(ndpi_flow->host_server_name[0] != '\0') {
-	  StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, true);
+	  char key[256];
+	  StringHost *host;
+
+	  snprintf(key, sizeof(key), "whois:%s", (char*)ndpi_flow->host_server_name);
+	  host = iface->findHostByString(key, true);
 
 	  if(host != NULL) {
 	    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
