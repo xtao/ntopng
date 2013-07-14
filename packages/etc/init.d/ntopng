@@ -74,6 +74,9 @@ start_ntopng() {
 
     if [ ! -d "/etc/ntopng" ]; then
 	echo "Configuration directory /etc/ntopng does not exist: quitting..."
+	echo "This package is designed to be used from within the nBox package that"
+	echo "configures ntopng using a web GUI. Please install the nBox package"
+	echo "from http://packages.ntop.org"
 	return 0
     fi
 
