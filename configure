@@ -3047,6 +3047,52 @@ echo "Please install libglib-2.0 (RRD prerequisite)"
 exit
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcap_open_live in -lpcap" >&5
+$as_echo_n "checking for pcap_open_live in -lpcap... " >&6; }
+if ${ac_cv_lib_pcap_pcap_open_live+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpcap  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcap_open_live ();
+int
+main ()
+{
+return pcap_open_live ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pcap_pcap_open_live=yes
+else
+  ac_cv_lib_pcap_pcap_open_live=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcap_pcap_open_live" >&5
+$as_echo "$ac_cv_lib_pcap_pcap_open_live" >&6; }
+if test "x$ac_cv_lib_pcap_pcap_open_live" = xyes; then :
+  pcap=true
+fi
+
+if test x$pcap = x
+then
+echo "Please install libpcap(-dev) (http://tcpdump.org)"
+exit
+fi
+
 DOWNLOAD_GEOIP=0
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GeoIP_record_by_ipnum in -lGeoIP" >&5
 $as_echo_n "checking for GeoIP_record_by_ipnum in -lGeoIP... " >&6; }
@@ -3505,9 +3551,9 @@ done
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum}" = ".yes" &&
    test ".${ac_cv_header_GeoIP_h}" = ".yes"; then
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GeoIP_record_by_ipnum_v6 in -lGeoIP" >&5
-$as_echo_n "checking for GeoIP_record_by_ipnum_v6 in -lGeoIP... " >&6; }
-if ${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6+:} false; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GeoIP_lib_version in -lGeoIP" >&5
+$as_echo_n "checking for GeoIP_lib_version in -lGeoIP... " >&6; }
+if ${ac_cv_lib_GeoIP_GeoIP_lib_version+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -3521,27 +3567,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char GeoIP_record_by_ipnum_v6 ();
+char GeoIP_lib_version ();
 int
 main ()
 {
-return GeoIP_record_by_ipnum_v6 ();
+return GeoIP_lib_version ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6=yes
+  ac_cv_lib_GeoIP_GeoIP_lib_version=yes
 else
-  ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6=no
+  ac_cv_lib_GeoIP_GeoIP_lib_version=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6" >&5
-$as_echo "$ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6" >&6; }
-if test "x$ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_GeoIP_GeoIP_lib_version" >&5
+$as_echo "$ac_cv_lib_GeoIP_GeoIP_lib_version" >&6; }
+if test "x$ac_cv_lib_GeoIP_GeoIP_lib_version" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBGEOIP 1
 _ACEOF
@@ -3550,7 +3596,7 @@ _ACEOF
 
 fi
 
-if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
+   if test ".${ac_cv_lib_GeoIP_GeoIP_lib_version}" = ".yes"; then
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GEOIP_IPv6 1
@@ -3561,15 +3607,20 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_GEOIP 1
 _ACEOF
 
-  GEOIP_LIB="-lGeoIP"
-    DOWNLOAD_GEOIP=1
-fi
+     GEOIP_LIB="-lGeoIP"
+          DOWNLOAD_GEOIP=1
+   else
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GEOIP_IPv6 1
+_ACEOF
+
+   fi
 else
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Build ntop without geolocation - GeoIP (http://www.maxmind.com/)" >&5
 $as_echo "Build ntop without geolocation - GeoIP (http://www.maxmind.com/)" >&6; }
 GEOIP_DEP=""
 fi
-
 
 GMAKE=`which gmake`
 if test x$GMAKE = x

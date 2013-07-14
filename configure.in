@@ -75,6 +75,13 @@ echo "Please install libglib-2.0 (RRD prerequisite)"
 exit
 fi
 
+AC_CHECK_LIB([pcap], [pcap_open_live], pcap=true)
+if test x$pcap = x
+then
+echo "Please install libpcap(-dev) (http://tcpdump.org)"
+exit
+fi
+
 dnl> Check for package install
 DOWNLOAD_GEOIP=0
 AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum])
@@ -82,20 +89,21 @@ AC_HAVE_HEADERS(GeoIP.h)
 if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum}" = ".yes" &&
    test ".${ac_cv_header_GeoIP_h}" = ".yes"; then
 
-AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum_v6])
-if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum_v6}" = ".yes"; then
-   AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP IPv6 support is present])
-  dnl> LIBS="$LIBS -lGeoIP"
-  AC_DEFINE_UNQUOTED(HAVE_GEOIP, 1, [GeoIP support is present])
-  GEOIP_LIB="-lGeoIP" 
-  dnl> Download databases
-  DOWNLOAD_GEOIP=1
-fi
+   AC_CHECK_LIB([GeoIP], [GeoIP_lib_version])
+   if test ".${ac_cv_lib_GeoIP_GeoIP_lib_version}" = ".yes"; then
+     AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP IPv6 support is present])
+     dnl> LIBS="$LIBS -lGeoIP"
+     AC_DEFINE_UNQUOTED(HAVE_GEOIP, 1, [GeoIP support is present])
+     GEOIP_LIB="-lGeoIP" 
+     dnl> Download databases
+     DOWNLOAD_GEOIP=1
+   else
+     AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP not supported: library too old, plase upgrade first])
+   fi
 else
 AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
 GEOIP_DEP=""
 fi
-
 
 GMAKE=`which gmake`
 if test x$GMAKE = x

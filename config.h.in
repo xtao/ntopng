@@ -6,7 +6,7 @@
 /* Define to 1 if you have the <GeoIP.h> header file. */
 #undef HAVE_GEOIP_H
 
-/* GeoIP IPv6 support is present */
+/* GeoIP not supported: library too old, plase upgrade first */
 #undef HAVE_GEOIP_IPv6
 
 /* We have gnutls */

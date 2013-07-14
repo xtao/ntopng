@@ -9,7 +9,9 @@ In case you want to add new protocols
 Prerequisites
 - glib2
 - libgeoip
-- redis (redis server)
+- libpcap
+- redis (redis server) 2.2 or newer
+- GeoIP (optional) 1.4.8 or newer
 
 On Mac OSX please install macports and do
 - port install XXX
