@@ -20,6 +20,7 @@
  */
 
 #include "ntop_includes.h"
+#include <string>
 
 /* *************************************** */
 
@@ -70,3 +71,80 @@ void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
   lua_insert(vm, -2);
   lua_settable(vm, -3);
 }
+
+/* *************************************** */
+
+const char* NdpiStats::serialize() {
+  std::string s("{");
+  bool first = true;
+
+  for(int i=0; i<MAX_NDPI_PROTOS; i++) {
+    if(packets[i].sent || packets[i].rcvd) {
+      char tmp[128];
+
+      snprintf(tmp, sizeof(tmp), "\"%d\":[%llu,%llu,%llu,%llu]", 
+	       i, 
+	       packets[i].sent, packets[i].rcvd,
+	       bytes[i].sent, bytes[i].rcvd);
+
+      if(!first) s.append(",");
+      s.append(tmp);
+      first = false;
+    }
+  }
+  
+  s.append("}");
+  return(strdup(s.c_str()));
+}
+
+/* *************************************** */
+
+void NdpiStats::deserialize(const char *v) {
+  json_settings settings;
+  char error[256];
+  json_value *value;
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", v);
+  
+  /* Reset all values */
+  memset(packets, 0, sizeof(packets)), memset(bytes, 0, sizeof(bytes));
+
+  memset(&settings, 0, sizeof (json_settings));
+  if((value = json_parse_ex(&settings, v, strlen(v), error)) != NULL) {
+    if(value->type == json_object) {
+      for(u_int i=0; i<value->u.object.length; i++) {
+	u_int id = atoi(value->u.object.values[i].name);
+
+	if(id < MAX_NDPI_PROTOS) {
+	  if((value->u.object.values[i].value->type == json_array)
+	     && (value->u.object.values[i].value->u.array.length == 4)) {
+	    u_int64_t v;
+
+	    if(value->u.object.values[i].value->u.array.values[0]->type == json_integer) {
+	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[0]->u.integer;
+	      packets[id].sent = v;
+	    }
+
+	    if(value->u.object.values[i].value->u.array.values[1]->type == json_integer) {
+	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[1]->u.integer;
+	      packets[id].rcvd = v;
+	    }
+
+	    if(value->u.object.values[i].value->u.array.values[2]->type == json_integer) {
+	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[2]->u.integer;
+	      bytes[id].sent = v;
+	    }
+
+	    if(value->u.object.values[i].value->u.array.values[3]->type == json_integer) {	      
+	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[3]->u.integer;
+	      bytes[id].rcvd = v;
+	    }
+	  }
+	}
+      }
+    }
+
+    json_value_free(value);
+  }
+}
+

@@ -25,6 +25,9 @@
 #include <shlobj.h> /* SHGetFolderPath() */
 #endif
 
+/* Trick to include it once */
+#include "third-party/json-parser/json.c"
+
 Ntop *ntop;
 
 /* ******************************************* */

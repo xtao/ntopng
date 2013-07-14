@@ -80,6 +80,7 @@ extern "C" {
 #endif
 };
 
+#include "third-party/json-parser/json.h"
 #include "mongoose.h"
 #include "ntop_defines.h"
 #include "patricia.h"
@@ -89,6 +90,7 @@ extern "C" {
 #include "NtopGlobals.h"
 #include "Prefs.h"
 #include "Mutex.h"
+#include "Serializable.h"
 #include "IpAddress.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"

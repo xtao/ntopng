@@ -36,7 +36,7 @@ class NetworkInterface;
 
 /* *************************************** */
 
-class NdpiStats {
+class NdpiStats : public Serializable {
  private:
   TrafficCounter packets[MAX_NDPI_PROTOS], bytes[MAX_NDPI_PROTOS];
 
@@ -58,6 +58,9 @@ class NdpiStats {
   inline TrafficCounter* getBytes(u_int16_t proto_id)   { if(proto_id < (MAX_NDPI_PROTOS)) return(&bytes[proto_id]);   else return(NULL); };
   void print(NetworkInterface *iface);
   void lua(NetworkInterface *iface, lua_State* vm);
+
+  const char* serialize();
+  void  deserialize(const char*);
 };
 
 #endif /* _NDPI_STATS_H_ */

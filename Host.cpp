@@ -45,6 +45,15 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : Gener
 /* *************************************** */
 
 Host::~Host() {
+#if 0
+  if(ndpiStats) {
+    ndpiStats->print(iface);
+    //printf("%s\n", ndpiStats->serialize());
+    ndpiStats->deserialize(ndpiStats->serialize());        
+    //ndpiStats->serialize());
+  }
+#endif
+
   if(symbolic_name) free(symbolic_name);
   if(country)       free(country);
   if(city)          free(city);
