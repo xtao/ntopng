@@ -20,6 +20,11 @@ On Mac OSX please install macports and do
 On Windows you can download the redis server from
 - https://github.com/rgl/redis/downloads
   
+Binary Packages
+---------------
+- Debian/CentOS		 http://packages.ntop.org
+- OSX			 http://sourceforge.net/projects/ntop/files/ntopng/
+- Windows		 http://shop.ntop.org or build it from source
 
 Using ntopng as a flow collector
 --------------------------------
@@ -50,5 +55,5 @@ passoword is also 'admin' (without ').
 
 
 -------------------------------------
-Luca Deri <deri@ntop.org> - June 2013
+Luca Deri <deri@ntop.org> - July 2013
 
