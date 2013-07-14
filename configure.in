@@ -1,5 +1,7 @@
 AC_INIT([Makefile.in], 1.0.1)
 
+AC_PROG_CPP
+
 dnl> Add /usr/local/ /opt/local
 NTOPNG_VERS=`cat ./configure.in | head -1 | grep '_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
 CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"
@@ -20,13 +22,26 @@ fi
 DATE=`date +"%Y-%m-%d"`
 
 PF_RING_HOME=${HOME}/PF_RING
+AC_MSG_CHECKING(for PF_RING source installed in $PF_RING_HOME)
 if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
   AC_DEFINE_UNQUOTED(HAVE_PF_RING, 1, [Native PF_RING support])
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a"
-      CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib"
+      CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib -I${PF_RING_HOME}/userland/libpcap"
   else  
       LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
+  fi
+  if test -f "/usr/local/lib/libpfring.a"; then
+    echo "Using PF_RING installed in /usr/local/lib"
+  else
+    echo "Using PF_RING installed in ${PF_RING_HOME}"
+  fi
+else
+  AC_CHECK_LIB([pcap], [pcap_open_live], pcap=true)
+  if test x$pcap = x
+  then
+    echo "Please install libpcap(-dev) (http://tcpdump.org)"
+    exit
   fi
 fi
 
@@ -64,23 +79,17 @@ echo "Checking RRD prerequisites..."
 AC_CHECK_LIB([xml2], [xmlParseFile], xml2=true)
 if test x$xml2 = x
 then
-echo "Please install libxml2 (RRD prerequisite)"
+echo "Please install libxml2(-devel) package (RRD prerequisite)"
 exit
 fi
 
 AC_CHECK_LIB([glib-2.0], [glib_check_version], glib2=true)
 if test x$glib2 = x
 then
-echo "Please install libglib-2.0 (RRD prerequisite)"
+echo "Please install libglib-2.0 (glib2-devel) package (RRD prerequisite)"
 exit
 fi
 
-AC_CHECK_LIB([pcap], [pcap_open_live], pcap=true)
-if test x$pcap = x
-then
-echo "Please install libpcap(-dev) (http://tcpdump.org)"
-exit
-fi
 
 dnl> Check for package install
 DOWNLOAD_GEOIP=0
