@@ -34,6 +34,9 @@ Redis::Redis(char *redis_host, int redis_port) {
     ntop->getTrace()->traceEvent(TRACE_ERROR,
 				 "Unable to connect to redis %s:%d",
 				 redis_host, redis_port);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "ntong requires redis server to be up and running");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Please start it and try again or use -r");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "to specify a redis server other than the default");
     exit(-1);
   }
 
