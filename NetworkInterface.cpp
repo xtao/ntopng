@@ -526,7 +526,7 @@ void NetworkInterface::updateHostStats() {
 static void hosts_get_list(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->lua(vm, false, false);
+  ((Host*)h)->lua(vm, false, false, false);
 }
 
 /* **************************************************** */
@@ -534,7 +534,7 @@ static void hosts_get_list(GenericHashEntry *h, void *user_data) {
 static void hosts_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
-  ((Host*)h)->lua(vm, true, false);
+  ((Host*)h)->lua(vm, true, false, false);
 }
 
 /* **************************************************** */
@@ -606,7 +606,7 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_
   if(h) {
     lua_newtable(vm);
 
-    h->lua(vm, true, true);
+    h->lua(vm, true, true, true);
     return(true);
   } else
     return(false);

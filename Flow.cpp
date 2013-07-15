@@ -37,8 +37,8 @@ Flow::Flow(NetworkInterface *_iface,
   json_info = strdup("{}");
 
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
-  if(src_host) src_host->incUses();
-  if(dst_host) dst_host->incUses();
+  if(src_host) { src_host->incUses(); if(dst_host) src_host->incrContact(dst_host, true);  }
+  if(dst_host) { dst_host->incUses(); if(src_host) dst_host->incrContact(src_host, false); }
   first_seen = _first_seen;
   last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
@@ -116,18 +116,12 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
       case NDPI_PROTOCOL_WHOIS_DAS:
 	if(ndpi_flow->host_server_name[0] != '\0') {
-	  char key[256];
 	  StringHost *host;
 
 	  for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	    ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-#if 1
 	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, true);
-#else
-	  snprintf(key, sizeof(key), "whois:%s", (char*)ndpi_flow->host_server_name);
-	  host = iface->findHostByString(key, true);
-#endif
 
 	  if(host != NULL) {
 	    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);

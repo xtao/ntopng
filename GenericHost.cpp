@@ -70,4 +70,3 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
    updateSeen();
   }
 }
-

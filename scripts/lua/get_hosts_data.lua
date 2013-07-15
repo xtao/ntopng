@@ -101,8 +101,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	 if(value["country"] ~= nil) then 
 	    print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
-	 else
-	    print("\"")
 	 end
 
 	 if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
@@ -114,6 +112,8 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    else
 	       print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
 	    end
+	 else
+	    print("\"")	    
 	 end
 
 	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]) .. "\", ")

@@ -64,12 +64,14 @@ class Host : public GenericHost {
   void decUses() { num_uses--; }
   
   bool idle();
-  void lua(lua_State* vm, bool host_details, bool returnHost);
+  void lua(lua_State* vm, bool host_details, bool verbose, bool returnHost);
   void resolveHostName();
   void setName(char *name, bool update_categorization);
   int compare(Host *h);
   inline bool equal(IpAddress *_ip)  { return(ip->equal(_ip)); };
   bool isIdle(u_int max_idleness);
+  void incrContact(Host *peer, bool contacted_peer_as_client);
+  void getHostContacts(lua_State* vm);
 };
 
 #endif /* _HOST_H_ */

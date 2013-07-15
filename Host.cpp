@@ -54,6 +54,18 @@ Host::~Host() {
   }
 #endif
 
+  if(localHost && (ip != NULL)) {
+    char key[128], buf[64], *k;
+
+    k = ip->print(buf, sizeof(buf));
+
+    snprintf(key, sizeof(key), "%s.client", k);
+    ntop->getRedis()->del(key);
+
+    snprintf(key, sizeof(key), "%s.server", k);
+    ntop->getRedis()->del(key);
+  }
+
   if(symbolic_name) free(symbolic_name);
   if(country)       free(country);
   if(city)          free(city);
@@ -109,7 +121,8 @@ void Host::updateLocal() {
   if(0) {
     char buf[64];
     
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s", ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s", 
+				 ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
   }
 }
 
@@ -127,7 +140,33 @@ char* Host::get_mac(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
-void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
+void Host::getHostContacts(lua_State* vm) {
+
+  if(get_ip() == NULL) return;
+
+  lua_newtable(vm);
+
+  /* client */
+  ntop->getRedis()->getHostContacts(vm, this, true /* client */);
+  lua_pushstring(vm, "client");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  /* server */
+  ntop->getRedis()->getHostContacts(vm, this, false /* server */);
+  lua_pushstring(vm, "server");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  lua_pushstring(vm, "contacts");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+}
+
+/* *************************************** */
+
+void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) {
   char buf[64];
 
   if(host_details) {
@@ -145,10 +184,13 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "asn", asn);
     lua_push_str_table_entry(vm, "asname", asname);
-    lua_push_float_table_entry(vm, "latitude", latitude);
-    lua_push_float_table_entry(vm, "longitude", longitude);
-    lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
-    lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
+
+    if(verbose) {
+      lua_push_float_table_entry(vm, "latitude", latitude);
+      lua_push_float_table_entry(vm, "longitude", longitude);
+      lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
+      lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
+    }
 
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
@@ -180,7 +222,10 @@ void Host::lua(lua_State* vm, bool host_details, bool returnHost) {
     lua_push_int_table_entry(vm, "duration", get_duration());
     lua_push_str_table_entry(vm, "category", get_category());
 
-    if(ndpiStats) ndpiStats->lua(iface, vm);
+    if(verbose) {
+      if(ndpiStats) ndpiStats->lua(iface, vm);    
+      if(localHost) getHostContacts(vm);
+    }
 
     if(!returnHost) {
       lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
@@ -285,5 +330,28 @@ u_int32_t Host::key() {
     for(int i=0; i<6; i++) hash += mac_address[i] << (i+1);
     
     return(hash);
+  }
+}
+
+/* *************************************** */
+
+void Host::incrContact(Host *peer, bool contacted_peer_as_client) {
+  if(localHost && (peer->get_ip() != NULL)) {
+    char s_buf[32], d_buf[32], key[128];
+    
+    snprintf(key, sizeof(key), "%s.%s",
+	     get_ip()->print(s_buf, sizeof(s_buf)),
+	     contacted_peer_as_client ? "client" : "server");
+    
+    ntop->getRedis()->zincrbyAndTrim(key,
+				     peer->get_ip()->print(d_buf, sizeof(d_buf)),
+				     1 /* +1 */, MAX_NUM_HOST_CONTACTS);
+    
+#if 0
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s contacted %s as %s", 
+				 get_ip()->print(s_buf, sizeof(s_buf)), 
+				 peer->get_ip()->print(d_buf, sizeof(d_buf)),
+				 contacted_peer_as_client ? "client" : "server");
+#endif
   }
 }

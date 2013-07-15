@@ -112,6 +112,26 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 
 /* **************************************** */
 
+/*
+  Incrememnt key.member of +value and keeps at most trim_len elements
+*/
+int Redis::zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len) {
+  int rc;
+  double new_val;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_zincrby(redis, key, (double)value, member, &new_val);
+
+  if((rc == 0) && (trim_len > 0))
+    rc = credis_zremrangebyrank(redis, key, 0, -1*trim_len);
+  l->unlock(__FILE__, __LINE__);
+
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s <-> %s", key, value);
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::keys(const char *pattern, char ***keys_p) {
   char **keys;
   int rc, i;
@@ -331,3 +351,32 @@ char* Redis::getVersion(char *str, u_int str_len) {
 
 /* **************************************** */
 
+void Redis::getHostContacts(lua_State* vm, Host *h, bool client_contacts) {
+  int rc;
+  char **rsp, buf[64], key[128];
+
+  if(h->get_ip() == NULL) return;
+
+  snprintf(key, sizeof(key), "%s.%s", 
+	   h->get_ip()->print(buf, sizeof(buf)),
+	   client_contacts ? "client" : "server");
+
+  lua_newtable(vm);
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_zrevrange(redis, key, 0, -1, 1 /* withscores */, &rsp);
+
+  if(rc > 0) {
+    for(int i=0; i<(rc-1); i++) {
+      if((i % 2) == 0) {
+	const char *key = (const char*)rsp[i];
+	u_int64_t value = (u_int64_t)atol(rsp[i+1]);
+	
+	//ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s:%llu", key, value);
+	lua_push_int_table_entry(vm, key, value);
+      }
+    }
+  }
+  
+  l->unlock(__FILE__, __LINE__);
+}

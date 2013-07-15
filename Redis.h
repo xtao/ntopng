@@ -25,6 +25,8 @@
 #include "ntop_includes.h"
 #include "credis.h"
 
+class Host;
+
 class Redis {
   REDIS redis;
   Mutex *l;
@@ -42,6 +44,7 @@ class Redis {
   int set(char *key, char *value, u_int expire_secs=0);
   int keys(const char *pattern, char ***keys_p);
   int del(char *key); 
+  int zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len);
 
   int queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost);
   int popHostToResolve(char *hostname, u_int hostname_len);
@@ -53,6 +56,8 @@ class Redis {
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 
   int getDNSQueueLength();
+
+  void getHostContacts(lua_State* vm, Host *h, bool client_contacts);
 };
 
 #endif /* _REDIS_H_ */

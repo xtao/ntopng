@@ -90,6 +90,20 @@ else
    end
 end
 
+num = 0
+if(host.contacts ~= nil) then
+   for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
+end
+
+if(num > 0) then 
+   if(page == "contacts") then
+      print("<li class=\"active\"><a href=\"#\">Host Contacts</a></li>\n")
+   else
+      print("<li><a href=\""..url.."&page=contacts\">Host Contacts</a></li>")
+   end
+end
+
+
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
   print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
@@ -328,6 +342,38 @@ elseif(page == "talkers") then
 print("<center>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
 print("</center>")
+elseif(page == "contacts") then
+
+
+if(num > 0) then
+print("<table class=\"table table-bordered table-striped\">\n")
+print("<tr><th>Client Contacts (Initiator)</th><th>Server Contacts (Receiver)</th></tr>\n")
+
+print("<tr>")
+print("<td><table class=\"table table-bordered table-striped\">\n")
+print("<tr><th>Peer</th><th>Contacts</th></tr>\n")
+
+for k,v in pairs(host["contacts"]["client"]) do 
+   url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..k.."</A>"
+   print("<tr><th>"..url.."</th><td align=right>" .. formatValue(v) .. "</td></tr>\n")
+end
+print("</table></td>\n")
+
+print("<td><table class=\"table table-bordered table-striped\">\n")
+print("<tr><th>Peer</th><th>Contacts</th></tr>\n")
+for k,v in pairs(host["contacts"]["server"]) do 
+   url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..k.."</A>"
+   print("<tr><th>"..url.."</th><td align=right>" .. formatValue(v) .. "</td></tr>\n")
+end
+print("</table></td></tr>\n")
+
+
+print("</table>\n")
+else
+   print("No contacts for this host")
+end
+
+
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
    rrdfile = "bytes.rrd"

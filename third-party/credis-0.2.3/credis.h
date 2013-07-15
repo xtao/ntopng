@@ -360,14 +360,14 @@ int credis_zrank(REDIS rhnd, const char *key, const char *member);
 
 /* returns the reverse rank of the given member or -1 if the member was not a member of the sorted set */
 int credis_zrevrank(REDIS rhnd, const char *key, const char *member);
+  
+/* returns number of elements returned in vector `elementv' 
+ * TODO add support for WITHSCORES */
+int credis_zrange(REDIS rhnd, const char *key, int start, int end, u_int with_scores, char ***elementv);
 
 /* returns number of elements returned in vector `elementv' 
  * TODO add support for WITHSCORES */
-int credis_zrange(REDIS rhnd, const char *key, int start, int end, char ***elementv);
-
-/* returns number of elements returned in vector `elementv' 
- * TODO add support for WITHSCORES */
-int credis_zrevrange(REDIS rhnd, const char *key, int start, int end, char ***elementv);
+int credis_zrevrange(REDIS rhnd, const char *key, int start, int end, u_int with_scores, char ***elementv);
 
 /* returns cardinality or -1 if `key' does not exist */
 int credis_zcard(REDIS rhnd, const char *key);

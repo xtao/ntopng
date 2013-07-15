@@ -1258,8 +1258,12 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
   /* Put the _SESSION params into the environment */
   lua_newtable(L);
-  mg_get_cookie(conn, "user", buf, sizeof(buf)); lua_push_str_table_entry(L, "user", buf);
-  mg_get_cookie(conn, "session", buf, sizeof(buf)); lua_push_str_table_entry(L, "session", buf);
+
+  mg_get_cookie(conn, "user", buf, sizeof(buf)); 
+  lua_push_str_table_entry(L, "user", buf);
+  mg_get_cookie(conn, "session", buf, sizeof(buf)); 
+  lua_push_str_table_entry(L, "session", buf);
+
   lua_setglobal(L, "_SESSION"); /* Like in php */
 
   if(luaL_dofile(L, script_path) != 0) {

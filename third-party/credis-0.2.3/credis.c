@@ -1462,8 +1462,8 @@ int credis_zrem(REDIS rhnd, const char *key, const char *member)
 /* TODO what does Redis return if member is not member of set? */
 int credis_zincrby(REDIS rhnd, const char *key, double incr_score, const char *member, double *new_score)
 {
-  int rc = cr_sendfandreceive(rhnd, CR_BULK, "ZINCRBY %s %f %zu\r\n%s\r\n", 
-                              key, incr_score, strlen(member), member);
+  int rc = cr_sendfandreceive(rhnd, CR_BULK, "ZINCRBY %s %f %s\r\n%zu\r\n", 
+                              key, incr_score, member, strlen(member));
 
   if (rc == 0 && new_score)
     *new_score = strtod(rhnd->reply.bulk, NULL);
@@ -1493,10 +1493,11 @@ int credis_zrevrank(REDIS rhnd, const char *key, const char *member)
   return cr_zrank(rhnd, 1, key, member);
 }
 
-int cr_zrange(REDIS rhnd, int reverse, const char *key, int start, int end, char ***elementv)
+int cr_zrange(REDIS rhnd, int reverse, const char *key, int start, int end, u_int with_scores, char ***elementv)
 {
-  int rc = cr_sendfandreceive(rhnd, CR_MULTIBULK, "%s %s %d %d\r\n",
-                              reverse==1?"ZREVRANGE":"ZRANGE", key, start, end);
+  int rc = cr_sendfandreceive(rhnd, CR_MULTIBULK, "%s %s %d %d%s\r\n",
+                              reverse==1?"ZREVRANGE":"ZRANGE", key, start, end,
+			      with_scores ? " WITHSCORES" : "");
 
   if (rc == 0) {
     *elementv = rhnd->reply.multibulk.bulks;
@@ -1506,14 +1507,14 @@ int cr_zrange(REDIS rhnd, int reverse, const char *key, int start, int end, char
   return rc;
 }
 
-int credis_zrange(REDIS rhnd, const char *key, int start, int end, char ***elementv)
+int credis_zrange(REDIS rhnd, const char *key, int start, int end, u_int with_scores, char ***elementv)
 {
-  return cr_zrange(rhnd, 0, key, start, end, elementv);
+  return cr_zrange(rhnd, 0, key, start, end, with_scores, elementv);
 }
 
-int credis_zrevrange(REDIS rhnd, const char *key, int start, int end, char ***elementv)
+int credis_zrevrange(REDIS rhnd, const char *key, int start, int end, u_int with_scores, char ***elementv)
 {
-  return cr_zrange(rhnd, 1, key, start, end, elementv);
+  return cr_zrange(rhnd, 1, key, start, end, with_scores, elementv);
 }
 
 int credis_zcard(REDIS rhnd, const char *key)

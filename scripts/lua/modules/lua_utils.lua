@@ -146,7 +146,7 @@ function bitsToSize(bits)
    end
 end
 
-function formatPackets(amount)
+function formatValue(amount)
   local formatted = amount
   while true do  
      formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
@@ -154,7 +154,11 @@ function formatPackets(amount)
       break
      end
   end
-  return formatted.." Pkts"
+  return formatted
+end
+
+function formatPackets(amount)
+   return formatValue(amount).." Pkts"
 end
 
 function split(pString, pPattern)
