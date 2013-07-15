@@ -39,3 +39,25 @@ StringHost::~StringHost() {
 bool StringHost::idle() {
   return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
 };
+
+/* *************************************** */
+
+void StringHost::lua(lua_State* vm) {
+  lua_newtable(vm);
+
+  lua_push_str_table_entry(vm, "name", keyname);
+
+  lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
+  lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
+  lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
+  lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
+  lua_push_int_table_entry(vm, "seen.first", first_seen);
+  lua_push_int_table_entry(vm, "seen.last", last_seen);
+  lua_push_int_table_entry(vm, "duration", get_duration());
+
+  if(ndpiStats) ndpiStats->lua(iface, vm);
+
+  lua_pushstring(vm, keyname);
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);  
+}

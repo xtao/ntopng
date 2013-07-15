@@ -28,7 +28,8 @@ class Ntop {
  private:
   char working_dir[MAX_PATH], install_dir[MAX_PATH], startup_dir[MAX_PATH];
   char *custom_ndpi_protos;
-  NetworkInterface *iface;
+  NetworkInterface *iface[MAX_NUM_DEFINED_INTERFACES];
+  u_int8_t num_defined_interfaces;
   HTTPserver *httpd;
   NtopGlobals *globals;
   Redis *redis;
@@ -57,10 +58,12 @@ class Ntop {
   inline char* get_data_dir()                        { return(prefs->get_data_dir()); };
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   inline Categorization* get_categorization()        { return(categorization); };
- inline void registerInterface(NetworkInterface *i)  { iface = i;              };
+  void registerInterface(NetworkInterface *i);
+  inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }
+  inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   inline void setCategorization(Categorization *c)   { categorization = c; };
-  inline NetworkInterface* get_NetworkInterface(const char *name) { return(iface); }; /* FIX: check name */
+  NetworkInterface* get_NetworkInterface(const char *name);
   inline HTTPserver*       get_HTTPserver()          { return(httpd);            };
   inline char* get_working_dir()                     { return(working_dir);      };
   inline char* get_install_dir()                     { return(install_dir);      };

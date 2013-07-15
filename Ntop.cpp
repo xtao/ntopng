@@ -40,6 +40,7 @@ Ntop::Ntop(char *appName) {
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL;
+  num_defined_interfaces = 0;
 
 #ifndef WIN32
   getcwd(startup_dir, sizeof(startup_dir));
@@ -106,6 +107,8 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   local_nets = strdup((char*)"0.0.0.0/32,192.168.0.0/16,172.16.0.0/16");
   setLocalNetworks(local_nets);
   free(local_nets);
+
+  memset(iface, 0, sizeof(iface));
 }
 
 /* ******************************************* */
@@ -395,4 +398,32 @@ void Ntop::daemonize() {
 void Ntop::setLocalNetworks(char *nets) {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Setting local networks to %s", nets);
   address->setLocalNetworks(nets);
+};
+
+/* ******************************************* */
+
+NetworkInterface* Ntop::get_NetworkInterface(const char *name) {
+  for(int i=0; i<num_defined_interfaces; i++)
+    if(strcmp(iface[i]->get_name(), name) == 0)
+      return(iface[i]); 
+
+
+  /* Not found */
+  if(!strcmp(name, "any"))
+    return(iface[0]); /* FIX: remove at some point */
+
+  return(NULL);
+};
+
+/* ******************************************* */
+
+void Ntop::registerInterface(NetworkInterface *_if) {  
+  if(num_defined_interfaces < MAX_NUM_DEFINED_INTERFACES) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Registered interface %s [id: %d]",
+				 _if->get_name(), num_defined_interfaces);
+    iface[num_defined_interfaces++] = _if;
+    return;
+  }
+
+  ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many networks defined");
 };

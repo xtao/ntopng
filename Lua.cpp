@@ -172,6 +172,22 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  ntop_interface->getActiveAggregatedHostsList(vm);
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_file_dir_exists(lua_State* vm) {
   char *path;
   struct stat buf;
@@ -1047,19 +1063,20 @@ typedef struct {
 } ntop_class_reg;
 
 static const luaL_Reg ntop_interface_reg[] = {
-  { "find",           ntop_find_interface },
-  { "getStats",       ntop_get_interface_stats },
-  { "getNdpiStats",   ntop_get_ndpi_interface_stats },
-  { "getHosts",       ntop_get_interface_hosts },
-  { "getHostsInfo",   ntop_get_interface_hosts_info },
-  { "getHostInfo",    ntop_get_interface_host_info },
-  { "getFlowsInfo",   ntop_get_interface_flows_info },
-  { "getFlowPeers",   ntop_get_interface_flows_peers },
-  { "findFlowByKey",  ntop_get_interface_flow_by_key },
-  { "getEndpoint",    ntop_get_interface_endpoint },
-  { "processFlow",    ntop_process_flow },
-  { "isRunning",      ntop_interface_is_running },
-  { NULL,             NULL}
+  { "find",                   ntop_find_interface },
+  { "getStats",               ntop_get_interface_stats },
+  { "getNdpiStats",           ntop_get_ndpi_interface_stats },
+  { "getHosts",               ntop_get_interface_hosts },
+  { "getHostsInfo",           ntop_get_interface_hosts_info },
+  { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },
+  { "getHostInfo",            ntop_get_interface_host_info },
+  { "getFlowsInfo",           ntop_get_interface_flows_info },
+  { "getFlowPeers",           ntop_get_interface_flows_peers },
+  { "findFlowByKey",          ntop_get_interface_flow_by_key },
+  { "getEndpoint",            ntop_get_interface_endpoint },
+  { "processFlow",            ntop_process_flow },
+  { "isRunning",              ntop_interface_is_running },
+  { NULL,                     NULL }
 };
 
 static const luaL_Reg ntop_reg[] = {

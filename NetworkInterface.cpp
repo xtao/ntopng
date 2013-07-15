@@ -282,25 +282,26 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
 #if defined(WIN32) && defined(DEMO_WIN32)
   if(this->ethStats.getNumPackets() > MAX_NUM_PACKETS) {
-	  static bool showMsg = false;
+    static bool showMsg = false;
 
-	  if(!showMsg) {
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "WARNING: this demo application is a limited ntopng version able to");
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "capture up to %d packets. If you are interested", MAX_NUM_PACKETS);
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "in the full version please have a look at the ntop");
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "home page http://www.ntop.org/.");
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
-		  ntop->getTrace()->traceEvent(TRACE_NORMAL, "");
-		  showMsg = true;
-	  }
+    if(!showMsg) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "WARNING: this demo application is a limited ntopng version able to");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "capture up to %d packets. If you are interested", MAX_NUM_PACKETS);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "in the full version please have a look at the ntop");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "home page http://www.ntop.org/.");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "");
+      showMsg = true;
+    }
 
-	  return;
+    return;
   }
 #endif
 
   /* Updating Flow */
-  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
+  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, 
+		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) return;
   else flow->incStats(src2dst_direction, rawsize);
@@ -315,7 +316,8 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
-							    ip, ipsize, (u_int32_t)time, src, dst),
+							    ip, ipsize, (u_int32_t)time, 
+							    src, dst),
 			      l4_proto);
   } else {
     // FIX - only handle unfragmented packets
@@ -541,6 +543,20 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
   lua_newtable(vm);
 
   hosts_hash->walk(host_details ? hosts_get_list_details : hosts_get_list, (void*)vm);
+}
+
+/* **************************************************** */
+
+static void aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
+  ((StringHost*)h)->lua((lua_State*)user_data);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm) {
+  lua_newtable(vm);
+
+  strings_hash->walk(aggregated_hosts_get_list, (void*)vm);
 }
 
 /* **************************************************** */

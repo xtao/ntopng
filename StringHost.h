@@ -34,6 +34,7 @@ class StringHost : public GenericHost {
 
   inline char* host_key() { return(keyname); };
   bool idle();
+  void lua(lua_State* vm);
   inline u_int32_t key()  { return(Utils::hashString(keyname)); };
 };
 

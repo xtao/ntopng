@@ -77,6 +77,7 @@ class NetworkInterface {
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
+  inline char* get_name()              { return(ifname); };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
@@ -129,7 +130,7 @@ class NetworkInterface {
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 		      bool createIfNotPresent);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  
+  void getActiveAggregatedHostsList(lua_State* vm);
   StringHost* findHostByString(char *keyname, bool createIfNotPresent);  
 };
 

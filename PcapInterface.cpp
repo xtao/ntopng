@@ -38,8 +38,16 @@ PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterf
     if(pcap_handle == NULL) {
       printf("ERROR: could not open pcap file: %s\n", pcap_error_buffer);
       exit(0);
-    } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
+    } else {
+      char *slash = strrchr(ifname, '/');
+
+      if(slash) {
+	free(ifname);
+	ifname = strdup(&slash[1]);
+      }
+
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);     
+    }
   } else
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
 
