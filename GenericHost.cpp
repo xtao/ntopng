@@ -31,7 +31,8 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
 /* *************************************** */
 
 GenericHost::~GenericHost() {
-  if(ndpiStats)  delete ndpiStats;
+  if(ndpiStats)
+    delete ndpiStats;
 }
 
 /* *************************************** */

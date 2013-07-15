@@ -26,7 +26,9 @@
 
 class Serializable {
 
- public:
+ protected:
+  inline Serializable()                     { ; }
+  virtual inline ~Serializable()            { ; }
   virtual const char* serialize()           { return(NULL); };
   virtual void  deserialize(const char *)   { ;             };
 };

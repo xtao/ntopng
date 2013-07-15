@@ -121,8 +121,8 @@ static void ptree_add_rule(patricia_tree_t *ptree, char *line) {
 
   ip = line;
   bits  = strchr(line, '/');
-  if (bits == NULL)
-    return;
+  if(bits == NULL)
+    bits = (char*)"/32";
 
   bits[0] = '\0';  bits++;
 

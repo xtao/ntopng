@@ -32,30 +32,42 @@ typedef struct {
   u_int64_t sent, rcvd;
 } TrafficCounter;
 
+typedef struct {
+  TrafficCounter packets, bytes;
+} ProtoCounter;
+
 class NetworkInterface;
 
 /* *************************************** */
 
 class NdpiStats : public Serializable {
  private:
-  TrafficCounter packets[MAX_NDPI_PROTOS], bytes[MAX_NDPI_PROTOS];
+  ProtoCounter *counters[MAX_NDPI_PROTOS];
 
  public:
   NdpiStats();
+  ~NdpiStats();
 
   void sumStats(NdpiStats *stats);
 
-  inline void incStats(u_int proto_id,
-		       u_int64_t sent_packets, u_int64_t sent_bytes,
-		       u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
-    if(proto_id < (MAX_NDPI_PROTOS)) {
-      packets[proto_id].sent += sent_packets, bytes[proto_id].sent += sent_bytes;
-      packets[proto_id].rcvd += rcvd_packets, bytes[proto_id].rcvd += rcvd_bytes;
-    }
+  void incStats(u_int proto_id,
+		u_int64_t sent_packets, u_int64_t sent_bytes,
+		u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
+
+  inline TrafficCounter* getPackets(u_int16_t proto_id) { 
+    if(proto_id < (MAX_NDPI_PROTOS)) 
+      return(&counters[proto_id]->packets);
+    else 
+      return(NULL); 
   };
 
-  inline TrafficCounter* getPackets(u_int16_t proto_id) { if(proto_id < (MAX_NDPI_PROTOS)) return(&packets[proto_id]); else return(NULL); };
-  inline TrafficCounter* getBytes(u_int16_t proto_id)   { if(proto_id < (MAX_NDPI_PROTOS)) return(&bytes[proto_id]);   else return(NULL); };
+  inline TrafficCounter* getBytes(u_int16_t proto_id) {
+    if((proto_id < MAX_NDPI_PROTOS) && (counters[proto_id] != NULL))
+      return(&counters[proto_id]->bytes);  
+    else 
+      return(NULL); 
+  };
+
   void print(NetworkInterface *iface);
   void lua(NetworkInterface *iface, lua_State* vm);
 

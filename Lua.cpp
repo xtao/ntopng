@@ -42,7 +42,7 @@ struct zmq_msg_hdr {
 extern "C" {
 #include "rrd.h"
 #ifdef HAVE_GEOIP
-extern const char * GeoIP_lib_version(void);
+  extern const char * GeoIP_lib_version(void);
 #endif
 };
 
@@ -132,7 +132,7 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
 
   ntop_interface->getnDPIStats(&stats);
 
-  lua_newtable(vm);  
+  lua_newtable(vm);
   stats.lua(ntop_interface, vm);
 
   return(1);
@@ -176,13 +176,13 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
   char *path;
   struct stat buf;
   int rc;
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   path = (char*)lua_tostring(vm, 1);
 
   rc = (stat(path, &buf) != 0) ? 0 : 1;
   //   ntop->getTrace()->traceEvent(TRACE_ERROR, "%s: %d", path, rc);
-  lua_pushboolean(vm, rc);  
+  lua_pushboolean(vm, rc);
 
   return(1);
 }
@@ -274,15 +274,15 @@ static int ntop_get_keyval(lua_State* vm) {
 #if 0
   if(stat(path, &buf) != 0)        return(luaL_error(vm, "The specified DB %s does not exist", path));
   if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open DB %s", path));
-  
-  key.data = k, key.len = strlen(k);  
+
+  key.data = k, key.len = strlen(k);
   if(db_get(db, &key, &value) == 1) {
     lua_pushlstring(vm, value.data,value.len);
     free(value.data);
     rc = 1;
   } else
     rc = 0;
-  
+
   db_close(db);
 #endif
 
@@ -309,10 +309,10 @@ static int ntop_set_keyval(lua_State* vm) {
 
 #if 0
   if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open/create DB %s", path));
-  
-  key.data = k, key.len = strlen(k);  
+
+  key.data = k, key.len = strlen(k);
   rc = db_add(db, &key, &value);
-  lua_pushboolean(vm, rc);  
+  lua_pushboolean(vm, rc);
   db_close(db);
 #endif
 
@@ -374,8 +374,8 @@ static int ntop_zmq_receive(lua_State* vm) {
     if (rc < 0 || !ntop_interface->isRunning()) return(-1);
   } while (rc == 0);
 
-  size = zmq_recv(subscriber, &h, sizeof(h), 0); 
-  
+  size = zmq_recv(subscriber, &h, sizeof(h), 0);
+
   if(size != sizeof(h) || h.version != MSG_VERSION) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unsupported publisher version [%d]", h.version);
     return -1;
@@ -383,8 +383,8 @@ static int ntop_zmq_receive(lua_State* vm) {
 
   payload_len = h.size + 1;
   if((payload = (char*)malloc(payload_len)) != NULL) {
-    size = zmq_recv(subscriber, payload, payload_len, 0); 
-    
+    size = zmq_recv(subscriber, payload, payload_len, 0);
+
     payload[h.size] = '\0';
     lua_pushfstring(vm, "%s", payload);
     ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
@@ -416,7 +416,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
   u_int16_t vlan_id;
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   host_ip = (char*)lua_tostring(vm, 1);
 
@@ -517,9 +517,9 @@ typedef int (*RRD_FUNCTION)(int, char **);
 
 static void reset_rrd_state(void)
 {
-    optind = 0;
-    opterr = 0;
-    rrd_clear_error();
+  optind = 0;
+  opterr = 0;
+  rrd_clear_error();
 }
 
 static char **make_argv(const char *cmd, lua_State * L)
@@ -528,7 +528,7 @@ static char **make_argv(const char *cmd, lua_State * L)
   int i;
   int argc = lua_gettop(L) + 1;
 
-  if (!(argv = (char**)calloc(argc, sizeof (char *)))) 
+  if (!(argv = (char**)calloc(argc, sizeof (char *))))
     /* raise an error and never return */
     luaL_error(L, "Can't allocate memory for arguments array", cmd);
 
@@ -560,20 +560,30 @@ static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_func
   char **argv;
   int argc = lua_gettop(L) + 1;
 
-  ntop->rrdLock(__FUNCTION__, __LINE__);
+  if(ntop->getGlobals()->isShutdown()) return(-1);
+
+  ntop->rrdLock(__FILE__, __LINE__);
   rrd_clear_error();
   argv = make_argv(cmd, L);
   reset_rrd_state();
   rrd_function(argc, argv);
   free(argv);
-  if (rrd_test_error()) {
-	char *err =  rrd_get_error();
+  if(rrd_test_error()) {
+    char *err =  rrd_get_error();
 
-	if(err != NULL)
-	  luaL_error(L, rrd_get_error());
+    if(err != NULL) {
+      /*
+	IMPORTANT
+
+	It is important to unlock now as if luaL_error is called the
+	function returns and no unlock will take place
+      */
+      ntop->rrdUnlock(__FILE__, __LINE__);
+      luaL_error(L, err);
+    }
   }
 
-  ntop->rrdUnlock(__FUNCTION__, __LINE__);
+  ntop->rrdUnlock(__FILE__, __LINE__);
 
   return 0;
 }
@@ -589,7 +599,7 @@ static int ntop_rrd_fetch(lua_State* L) {
   char    **names;
   time_t  t, start, end;
 
-  ntop->rrdLock(__FUNCTION__, __LINE__);
+  ntop->rrdLock(__FILE__, __LINE__);
   reset_rrd_state();
   rrd_fetch(argc, argv, &start, &end, &step, &ds_cnt, &names, &data);
   free(argv);
@@ -621,7 +631,7 @@ static int ntop_rrd_fetch(lua_State* L) {
     lua_rawseti(L, -2, i+1);
   }
   rrd_freemem(data);
-  ntop->rrdUnlock(__FUNCTION__, __LINE__);
+  ntop->rrdUnlock(__FILE__, __LINE__);
 
   /* return the end as the last value */
   lua_pushnumber(L, (lua_Number) end);
@@ -661,12 +671,12 @@ static int ntop_process_flow(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
   if((str = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
-  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", 
+  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
          &smac[0], &smac[1], &smac[2], &smac[3], &smac[4], &smac[5]);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
   if((str = (char*)lua_tostring(vm, 2)) == NULL)  return(-1);
-  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", 
+  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
          &dmac[0], &dmac[1], &dmac[2], &dmac[3], &dmac[4], &dmac[5]);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
@@ -719,10 +729,10 @@ static int ntop_process_flow(lua_State* vm) {
     return(false);
   }
 
-  ntop_interface->flow_processing(smac, dmac, &src_ip, &dst_ip, src_port, dst_port, 
-    vlan_id, proto_id, l4_proto,
-    in_pkts, in_bytes, out_pkts, out_bytes, first_switched, last_switched, 
-    additional_fields_json);
+  ntop_interface->flow_processing(smac, dmac, &src_ip, &dst_ip, src_port, dst_port,
+				  vlan_id, proto_id, l4_proto,
+				  in_pkts, in_bytes, out_pkts, out_bytes, first_switched, last_switched,
+				  additional_fields_json);
 
   return(true);
 }
@@ -809,7 +819,7 @@ void lua_push_bool_table_entry(lua_State *L, const char *key, bool value) {
 
 void lua_push_int_table_entry(lua_State *L, const char *key, u_int64_t value) {
   lua_pushstring(L, key);
-  /* using LUA_NUMBER (double: 64 bit) in place of LUA_INTEGER (ptrdiff_t: 32 or 64 bit 
+  /* using LUA_NUMBER (double: 64 bit) in place of LUA_INTEGER (ptrdiff_t: 32 or 64 bit
    * according to the platform, as defined in luaconf.h) to handle big counters */
   lua_pushnumber(L, (lua_Number)value); // lua_pushinteger(L, value);
   lua_settable(L, -3);
@@ -842,11 +852,11 @@ static int ntop_get_interface_stats(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_dirs(lua_State* vm) {
-	lua_newtable(vm);
-	lua_push_str_table_entry(vm, "installdir", ntop->get_install_dir());
-	lua_push_str_table_entry(vm, "workingdir", ntop->get_working_dir());
+  lua_newtable(vm);
+  lua_push_str_table_entry(vm, "installdir", ntop->get_install_dir());
+  lua_push_str_table_entry(vm, "workingdir", ntop->get_working_dir());
 
-	return(1);
+  return(1);
 }
 
 /* ****************************************** */
@@ -1005,21 +1015,21 @@ static int ntop_lua_http_print(lua_State* vm) {
 
 static int ntop_lua_cli_print(lua_State* vm) {
   int t;
-  
+
   switch(t = lua_type(vm, 1)) {
   case LUA_TSTRING:
     {
       char *str = (char*)lua_tostring(vm, 1);
-      
+
       if(str && (strlen(str) > 0))
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", str);
     }
     break;
-    
+
   case LUA_TNUMBER:
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "%f", (float)lua_tonumber(vm, 1));
     break;
-    
+
   default:
     ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): Lua type %d is not handled",
 				 __FUNCTION__, t);
@@ -1178,17 +1188,18 @@ static int post_iterator(void *cls,
 /* ****************************************** */
 
 int Lua::run_script(char *script_path) {
-  luaL_openlibs(L); /* Load base libraries */   
+  luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, false); /* Load custom classes */
   return(luaL_dofile(L, script_path));
 }
 
 /* ****************************************** */
 
-int Lua::handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path) {
+int Lua::handle_script_request(struct mg_connection *conn, 
+			       const struct mg_request_info *request_info, char *script_path) {
   char buf[64];
 
-  luaL_openlibs(L); /* Load base libraries */   
+  luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
 
   lua_pushlightuserdata(L, (char*)conn);
@@ -1229,7 +1240,7 @@ int Lua::handle_script_request(struct mg_connection *conn, const struct mg_reque
   lua_setglobal(L, "_GET"); /* Like in php */
 
   /* Put the _SESSION params into the environment */
-  lua_newtable(L);  
+  lua_newtable(L);
   mg_get_cookie(conn, "user", buf, sizeof(buf)); lua_push_str_table_entry(L, "user", buf);
   mg_get_cookie(conn, "session", buf, sizeof(buf)); lua_push_str_table_entry(L, "session", buf);
   lua_setglobal(L, "_SESSION"); /* Like in php */
@@ -1237,7 +1248,7 @@ int Lua::handle_script_request(struct mg_connection *conn, const struct mg_reque
   if(luaL_dofile(L, script_path) != 0) {
     const char *err = lua_tostring(L, -1);
 
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);				 
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
     return(send_error(conn, 500 /* Internal server error */, "Internal server error", PAGE_ERROR, script_path, err));
   }
 
