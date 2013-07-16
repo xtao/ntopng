@@ -123,8 +123,15 @@ build-rpm: maketar
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
 
-install:
-	echo "We do not provide install make target bur rather we encourage you"
-	echo "to create a package and install that"
-	echo "rpm - do 'make build-rpm'"
-	echo "deb - do 'cd packages/ubuntu;./configure;make"
+install: ntopng geoip
+	@echo "While we provide you an install make target, we encourage you"
+	@echo "to create a package and install that"
+	@echo "rpm - do 'make build-rpm'"
+	@echo "deb - do 'cd packages/ubuntu;./configure;make"
+	mkdir -p /usr/local/share/ntopng /usr/local/man/man8 /usr/local/bin
+	cp ntopng /usr/local/bin
+	cp ./ntopng.8 /usr/local/man/man8
+	cp -r ./httpdocs /usr/local/share/ntopng
+	cp -r ./scripts /usr/local/share/ntopng
+	find /usr/local/share/ntopng -name "*~"   | xargs /bin/rm -f
+	find /usr/local/share/ntopng -name ".svn" | xargs /bin/rm -rf
