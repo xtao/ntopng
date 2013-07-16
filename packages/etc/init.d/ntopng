@@ -27,7 +27,7 @@ start_ntopng() {
     if [ -f /etc/ntopng/ntopng.start ] || [ $FORCE -eq 1 ]; then
 	echo "Starting ntopng"
 
-	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G '|cut -d ' ' -f 2)
+	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G='|cut -d '=' -f 2)
         if [ -f $PID_FILE ]; then
 	    PID=$(cat $PID_FILE)
             if [ $PID -gt 0 ]; then
@@ -53,7 +53,7 @@ stop_ntopng() {
     fi
 
     if [ -f /etc/ntopng/ntopng.conf ]; then
-	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G '|cut -d ' ' -f 2)
+	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G='|cut -d '=' -f 2)
 	if [ -f $PID_FILE ]; then
 	    PID=$(cat $PID_FILE)
 	    if [ $PID -gt 0 ]; then
