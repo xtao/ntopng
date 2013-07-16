@@ -42,6 +42,7 @@ class Prefs {
   char *users_file_path, *config_file_path, *ndpi_proto_path;
   char *user;
   char *redis_host;
+  char *pid_path;
   int redis_port;
   int cpu_affinity;
   int dns_mode;
@@ -79,6 +80,7 @@ class Prefs {
   inline u_int get_http_port()                          { return(http_port);      };
   inline char* get_redis_host()                         { return(redis_host);     }
   inline u_int get_redis_port()                         { return(redis_port);     };
+  inline char* get_pid_path()                           { return(pid_path);       };
   inline u_int16_t get_host_max_idle()                  { return(host_max_idle);  };
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };

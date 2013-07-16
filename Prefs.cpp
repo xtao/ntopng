@@ -45,6 +45,7 @@ Prefs::Prefs(Ntop *_ntop) {
   redis_port = 6379;
   dns_mode = 0;
   logFd = NULL;
+  pid_path = NULL;
 
 #ifdef WIN32
   daemonize = true;
@@ -120,6 +121,9 @@ void usage() {
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--users-file|-u] <path>            | Users configuration file path\n"
 	 "                                    | Default: %s\n"
+#ifndef WIN32
+	 "[--pid|-G] <path>                   | Pid file path\n"
+#endif
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
@@ -156,6 +160,9 @@ static const struct option long_options[] = {
   { "users-file",                        required_argument, NULL, 'u' },
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
+#ifndef WIN32
+  { "pid",                               required_argument, NULL, 'G' },
+#endif
   { "user",                              required_argument, NULL, 'U' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
@@ -221,7 +228,7 @@ int Prefs::setOption(int optkey, char *optarg) {
       break;
 
     case 'i':
-      ifName = optarg;
+      ifName = strdup(optarg);
       break;
 
     case 'w':
@@ -274,6 +281,12 @@ int Prefs::setOption(int optkey, char *optarg) {
       ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
       break;
 
+#ifndef WIN32
+    case 'G':
+      pid_path = strdup(optarg);
+      break;
+#endif
+
     case 'U':
       free(user);
       user = strdup(optarg);
@@ -320,7 +333,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:U:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:G:U:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -356,13 +369,16 @@ int Prefs::loadFromFile(const char *path) {
 
     key = line;
     key = Utils::trim(key);
-
+    
     value = strrchr(line, '=');
     if(value == NULL)
       value = &line[strlen(line)]; /* empty */
     else
       value[0] = 0, value = &value[1];
     value = Utils::trim(value);
+
+    if (strlen(key) > 2) key = &key[2];
+    else key = &key[1];
 
     opt = long_options;
     while (opt->name != NULL) {

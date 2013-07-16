@@ -55,7 +55,12 @@ void sigproc(int sig) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
 #endif
 
-  delete ntop;
+#ifndef WIN32
+  if (ntop->getPrefs()->get_pid_path() != NULL) 
+    unlink(ntop->getPrefs()->get_pid_path());
+#endif
+
+  //delete ntop;
   exit(0);
 }
 
@@ -83,6 +88,16 @@ int main(int argc, char *argv[])
   else
     rc = prefs->loadFromCLI(argc, argv);
   if(rc < 0) return(-1);
+
+#ifndef WIN32
+  if (prefs->get_pid_path() != NULL) {
+    FILE *fd = fopen(prefs->get_pid_path(), "w");
+    if(fd != NULL) {
+      fprintf(fd, "%u\n", getpid());
+      fclose(fd);
+    } else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", prefs->get_pid_path());
+  }
+#endif
 
   if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
   if(redis == NULL) redis = new Redis();
@@ -194,7 +209,7 @@ int main(int argc, char *argv[])
   }
 
   sigproc(0);
-  delete ntop;
+  //delete ntop;
 
   return(0);
 }
