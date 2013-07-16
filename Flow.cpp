@@ -52,10 +52,9 @@ Flow::Flow(NetworkInterface *_iface,
 	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
 	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
   time_t last_recvd = iface->getTimeLastPktRcvd();
-  Flow(_iface, _vlanId, _protocol,
-       src_mac, _src_ip, _src_port,
-       dst_mac, _dst_ip, _dst_port,
-       last_recvd, last_recvd);
+
+  Flow(_iface, _vlanId, _protocol, src_mac, _src_ip, _src_port,
+       dst_mac, _dst_ip, _dst_port, last_recvd, last_recvd);
 }
 
 /* *************************************** */
@@ -124,9 +123,15 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, true);
 
 	  if(host != NULL) {
+	    char s_buf[64];
+
 	    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
 	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
 	    host->updateSeen();
+
+	    host->incrContact((char*)ndpi_flow->host_server_name,
+			      src_host->get_ip()->print(s_buf, sizeof(s_buf)), 
+			      true);
 	  }
 	}
 	break;

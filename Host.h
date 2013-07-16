@@ -34,6 +34,10 @@ class Host : public GenericHost {
   IpAddress *ip;
   Mutex *m;
   bool localHost;
+  TrafficStats tcp_sent, tcp_rcvd;
+  TrafficStats udp_sent, udp_rcvd;
+  TrafficStats icmp_sent, icmp_rcvd;
+  TrafficStats other_ip_sent, other_ip_rcvd;
   
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
@@ -72,6 +76,10 @@ class Host : public GenericHost {
   bool isIdle(u_int max_idleness);
   void incrContact(Host *peer, bool contacted_peer_as_client);
   void getHostContacts(lua_State* vm);
+
+  void incStats(u_int8_t l4_proto, u_int ndpi_proto, 
+		u_int64_t sent_packets, u_int64_t sent_bytes,
+		u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
 };
 
 #endif /* _HOST_H_ */

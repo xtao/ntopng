@@ -565,6 +565,7 @@ struct host_find_info {
   char *host_to_find;
   u_int16_t vlan_id;
   Host *h;
+  StringHost *s;
 };
 
 static void find_host_by_name(GenericHashEntry *h, void *user_data) {
@@ -576,6 +577,17 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
      && host->get_name()
      && (!strcmp(host->get_name(), info->host_to_find)))
     info->h = host;
+}
+
+static void find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
+  struct host_find_info *info = (struct host_find_info*)user_data;
+  StringHost *host            = (StringHost*)h;
+
+  if((info->s == NULL)
+     && host->host_key()
+     && info->host_to_find
+     && (!strcmp(host->host_key(), info->host_to_find)))
+    info->s = host;
 }
 
 /* **************************************************** */
@@ -590,7 +602,8 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_
     /* Looks like a symbolic name */
     struct host_find_info info;
 
-    info.host_to_find = host_ip, info.vlan_id = vlan_id, info.h = NULL;
+    memset(&info, 0, sizeof(info));
+    info.host_to_find = host_ip, info.vlan_id = vlan_id;
     hosts_hash->walk(find_host_by_name, (void*)&info);
 
     h = info.h;
@@ -607,6 +620,24 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_
     lua_newtable(vm);
 
     h->lua(vm, true, true, true);
+    return(true);
+  } else
+    return(false);
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
+  struct host_find_info info;
+
+  memset(&info, 0, sizeof(info));
+  info.host_to_find = host_name;
+  strings_hash->walk(find_aggregated_host_by_name, (void*)&info);  
+
+  if(info.s != NULL) {
+    lua_newtable(vm);
+
+    info.s->lua(vm);
     return(true);
   } else
     return(false);

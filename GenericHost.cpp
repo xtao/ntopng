@@ -42,31 +42,29 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) { 
   if(sent_packets || rcvd_packets) {
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
+
     if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
       ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
-
-    switch(l4_proto) {
-    case 0:
-      /* Unknown protocol */
-      break;
-    case IPPROTO_UDP:
-      udp_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	udp_sent.incStats(sent_packets, sent_bytes);
-      break;
-    case IPPROTO_TCP:
-      tcp_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	tcp_sent.incStats(sent_packets, sent_bytes);
-      break;
-    case IPPROTO_ICMP:
-      icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
-	icmp_sent.incStats(sent_packets, sent_bytes);
-      break;
-    default:
-      other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes),
-	other_ip_sent.incStats(sent_packets, sent_bytes);
-      break;
-    }
  
    updateSeen();
   }
+}
+
+/* *************************************** */
+
+void GenericHost::incrContact(char *me, char *peer, 
+			      bool contacted_peer_as_client) {
+  char key[128];
+
+  snprintf(key, sizeof(key), "%s.%s",
+	   me, contacted_peer_as_client ? "client" : "server");
+  
+  ntop->getRedis()->zincrbyAndTrim(key, peer, 1 /* +1 */, MAX_NUM_HOST_CONTACTS);
+  
+#if 0
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s contacted %s as %s",
+			       me, peer,
+			       contacted_peer_as_client ? "client" : "server");
+#endif
+
 }

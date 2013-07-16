@@ -9,7 +9,7 @@
 	 $("#table-hosts").datatable({
 	   url: "/lua/get_hosts_data.lua?aggregated=1",
 	       showPagination: true,
-	       title: "Hosts List",
+	       title: "Aggregation List",
 	        columns: [
 			     {
 			     title: "Name",

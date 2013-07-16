@@ -131,7 +131,9 @@ class NetworkInterface {
 		      bool createIfNotPresent);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm);
+  bool getAggregatedHostInfo(lua_State* vm, char *host_name);
   StringHost* findHostByString(char *keyname, bool createIfNotPresent);  
+  inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

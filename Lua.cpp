@@ -188,6 +188,22 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_file_dir_exists(lua_State* vm) {
   char *path;
   struct stat buf;
@@ -446,6 +462,27 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   }
 
   if(!ntop_interface->getHostInfo(vm, host_ip, vlan_id))
+    return(0);
+  else
+    return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *host_name;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
+  host_name = (char*)lua_tostring(vm, 1);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    return(0);
+  }
+
+  if(!ntop_interface->getAggregatedHostInfo(vm, host_name))
     return(0);
   else
     return(1);
@@ -1069,7 +1106,9 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getHosts",               ntop_get_interface_hosts },
   { "getHostsInfo",           ntop_get_interface_hosts_info },
   { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },
+  { "getNumAggregatedHosts",  ntop_get_interface_num_aggregated_hosts },
   { "getHostInfo",            ntop_get_interface_host_info },
+  { "getAggregatedHostInfo",  ntop_get_interface_aggregated_host_info },
   { "getFlowsInfo",           ntop_get_interface_flows_info },
   { "getFlowPeers",           ntop_get_interface_flows_peers },
   { "findFlowByKey",          ntop_get_interface_flow_by_key },

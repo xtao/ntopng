@@ -42,8 +42,9 @@ PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterf
       char *slash = strrchr(ifname, '/');
 
       if(slash) {
-	free(ifname);
+	char *old = ifname;
 	ifname = strdup(&slash[1]);
+	free(old);
       }
 
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);     

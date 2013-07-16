@@ -104,7 +104,8 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   setLocalNetworks(prefs->get_local_networks());
 
   /* Add defaults */
-  local_nets = strdup((char*)"0.0.0.0/32,192.168.0.0/16,172.16.0.0/16");
+  /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
+  local_nets = strdup((char*)"0.0.0.0/32,192.168.0.0/16,172.16.0.0/16,224.0.0.0/8,239.0.0.0/8");
   setLocalNetworks(local_nets);
   free(local_nets);
 

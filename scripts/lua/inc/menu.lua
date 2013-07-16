@@ -7,6 +7,10 @@ print [[
         <ul class="nav nav-pills pull-right">
    ]]
 
+ifname = _GET["if"]
+if(ifname == nil) then ifname = "any" end
+interface.find(ifname)
+
 if active_page == "home" or active_page == "about" then
   print [[ <li class="dropdown active"> ]]
 else
@@ -46,6 +50,14 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
+   ]]
+
+if(interface.getNumAggregatedHosts() > 0) then
+   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\">Aggregation List</a></li>\n")
+end
+
+print [[
+      <li class="divider"></li>
       <li><a href="/lua/hosts_treemap.lua">Hosts TreeMap</a></li>
       <li><a href="/lua/hosts_matrix.lua">Local Matrix</a></li>
     </ul>

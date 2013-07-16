@@ -335,23 +335,45 @@ u_int32_t Host::key() {
 
 /* *************************************** */
 
-void Host::incrContact(Host *peer, bool contacted_peer_as_client) {
-  if(localHost && (peer->get_ip() != NULL)) {
-    char s_buf[32], d_buf[32], key[128];
-    
-    snprintf(key, sizeof(key), "%s.%s",
-	     get_ip()->print(s_buf, sizeof(s_buf)),
-	     contacted_peer_as_client ? "client" : "server");
-    
-    ntop->getRedis()->zincrbyAndTrim(key,
-				     peer->get_ip()->print(d_buf, sizeof(d_buf)),
-				     1 /* +1 */, MAX_NUM_HOST_CONTACTS);
-    
-#if 0
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s contacted %s as %s", 
-				 get_ip()->print(s_buf, sizeof(s_buf)), 
-				 peer->get_ip()->print(d_buf, sizeof(d_buf)),
-				 contacted_peer_as_client ? "client" : "server");
-#endif
+void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
+  if(localHost && (_peer->get_ip() != NULL)) {
+    char s_buf[32], d_buf[32], *me, *peer;
+
+    me   = get_ip()->print(s_buf, sizeof(s_buf));
+    peer = _peer->get_ip()->print(d_buf, sizeof(d_buf));
+
+    ((GenericHost*)this)->incrContact(me, peer, contacted_peer_as_client);
+  }
+}
+
+/* *************************************** */
+
+void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
+		    u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
+  if(sent_packets || rcvd_packets) {
+    ((GenericHost*)this)->incStats(l4_proto, ndpi_proto, sent_packets,
+				   sent_bytes, rcvd_packets, rcvd_bytes);
+
+    switch(l4_proto) {
+    case 0:
+      /* Unknown protocol */
+      break;
+    case IPPROTO_UDP:
+      udp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	udp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    case IPPROTO_TCP:
+      tcp_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	tcp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    case IPPROTO_ICMP:
+      icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
+	icmp_sent.incStats(sent_packets, sent_bytes);
+      break;
+    default:
+      other_ip_rcvd.incStats(rcvd_packets, rcvd_bytes),
+	other_ip_sent.incStats(sent_packets, sent_bytes);
+      break;
+    }
   }
 }

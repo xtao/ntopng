@@ -93,6 +93,7 @@ end
 num = 0
 if(host.contacts ~= nil) then
    for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
+   for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
 end
 
 if(num > 0) then 
@@ -144,7 +145,7 @@ if((page == "overview") or (page == nil)) then
 
    if(host["ip"] ~= nil) then
       print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
-
+      
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
    print("</td></tr>\n")
 end
@@ -201,9 +202,9 @@ end
 	    print("<tr><th>")
 	    print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    t = sent+rcvd
-	    print("</th><td>" .. bytesToSize(sent) .. "</td><td>" .. bytesToSize(rcvd) .. "</td><td>")
+	    print("</th><td class=\"text-right\">" .. bytesToSize(sent) .. "</td><td class=\"text-right\">" .. bytesToSize(rcvd) .. "</td><td>")
 	    breakdownBar(sent, "Sent", rcvd, "Rcvd")
-	    print("</td><td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+	    print("</td><td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
 	 end
       end
       print("</table></tr>\n")
