@@ -68,6 +68,11 @@
       .marketing p + h4 {
         margin-top: 28px;
       }
+
+      .table th.text-right,
+      .table td.text-right {
+        text-align: right;
+      }
     </style>
   </head>
 <body>

@@ -240,13 +240,13 @@ end
       end
       table.sort(vals)
 
-      print("<tr><th>Total</th><td  class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td  class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td>")
+      print("<tr><th>Total</th><td class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td>")
 
       print("<td>")
       breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
       print("</td>\n")
 
-      print("<td colspan=2>" ..  bytesToSize(total).. "</td></tr>\n")
+      print("<td colspan=2 class=\"text-right\">" ..  bytesToSize(total).. "</td></tr>\n")
 
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
@@ -257,13 +257,13 @@ end
 	    print(k)
 	 end
 	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
-	 print("</th><td>" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td>" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
+	 print("</th><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
 
 	 print("<td>")
 	 breakdownBar(host["ndpi"][k]["bytes.sent"], "Sent", host["ndpi"][k]["bytes.rcvd"], "Rcvd")
 	 print("</td>\n")
 
-	 print("<td>" .. bytesToSize(t).. "</td><td>" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+	 print("<td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
       print("</table>\n")
@@ -351,19 +351,40 @@ print("<tr><th>Client Contacts (Initiator)</th><th>Server Contacts (Receiver)</t
 
 print("<tr>")
 print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Peer</th><th>Contacts</th></tr>\n")
+print("<tr><th>Server Address</th><th>Contacts</th></tr>\n")
 
-for k,v in pairs(host["contacts"]["client"]) do 
-   url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..k.."</A>"
-   print("<tr><th>"..url.."</th><td align=right>" .. formatValue(v) .. "</td></tr>\n")
+-- Client
+sortTable = {}
+for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
+
+for _v,k in pairsByKeys(sortTable, rev) do 
+   name = interface.getHostInfo(k)
+   v = host["contacts"]["client"][k]
+   if(name ~= nil) then
+      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
+   else
+      url = k
+   end
+   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
 end
 print("</table></td>\n")
 
 print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Peer</th><th>Contacts</th></tr>\n")
-for k,v in pairs(host["contacts"]["server"]) do 
-   url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..k.."</A>"
-   print("<tr><th>"..url.."</th><td align=right>" .. formatValue(v) .. "</td></tr>\n")
+print("<tr><th>Client Address</th><th>Contacts</th></tr>\n")
+
+-- Server
+sortTable = {}
+for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
+
+for _v,k in pairsByKeys(sortTable, rev) do 
+   name = interface.getHostInfo(k)   
+   v = host["contacts"]["server"][k]
+   if(name ~= nil) then
+      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
+   else
+      url = k
+   end
+   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
 end
 print("</table></td></tr>\n")
 
