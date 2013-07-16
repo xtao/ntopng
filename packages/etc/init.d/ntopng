@@ -11,66 +11,8 @@
 # Short-Description: Start/stop ntopng web
 ### END INIT INFO
 
-start_ntopng_eth() {
-    INTERFACE_NAME=$1
-    FORCE=$2
-
-    NTOPNG_BINARY=/usr/local/bin/ntopng
-
-    if [ -f /etc/ntopng/ntopng-${INTERFACE_NAME}.start ] || [ $FORCE -eq 1 ]; then
-	echo "Starting ntopng $INTERFACE_NAME"
-
-	PID_FILE=$(cat /etc/ntopng/ntopng-${INTERFACE_NAME}.conf | grep '\-P='|cut -d '=' -f 2)
-        if [ -f $PID_FILE ]; then
-	    PID=$(cat $PID_FILE)
-            if [ $PID -gt 0 ]; then
-		IS_EXISTING=$(ps auxw | grep -v grep| grep $PID|wc -l)
-		if [ $IS_EXISTING -gt 0 ]; then
-		    echo "ntopng $INTERFACE_NAME is already running [pid $PID]: not started"
-		    return 0
-		fi
-	    fi
-	fi
-	$NTOPNG_BINARY /etc/ntopng/ntopng-${INTERFACE_NAME}.conf > /dev/null &
-    else
-	echo "ntopng $INTERFACE_NAME not started: missing /etc/ntopng/ntopng-${INTERFACE_NAME}.start"
-    fi
-    return 1
-}
-
-
-stop_ntopng_eth() {
-    INTERFACE_NAME=$1
-
-    if [ ! -d "/etc/ntopng" ]; then
-	echo "Configuration directory /etc/ntopng does not exist: quitting..."
-	return 0
-    fi
-
-    if [ -f /etc/ntopng/ntopng-${INTERFACE_NAME}.conf ]; then
-	PID_FILE=$(cat /etc/ntopng/ntopng-${INTERFACE_NAME}.conf | grep '\-P='|cut -d '=' -f 2)
-	if [ -f $PID_FILE ]; then
-	    PID=$(cat $PID_FILE)
-	    if [ $PID -gt 0 ]; then
-		echo "Stopping ntopng $INTERFACE_NAME"
-		kill -15 $PID > /dev/null
-		/bin/rm $PID_FILE
-	    else
-		echo "Unable to stop ntopng $INTERFACE_NAME: invalid pid [$PID][$PID_FILE]"
-	    fi
-	#else
-	#    echo "Unable to stop ntopng $INTERFACE_NAME: missing pid $PID_FILE"
-	fi
-    else
-	echo "ntopng $INTERFACE_NAME can't be stopped: missing /etc/ntopng/ntopng-${INTERFACE_NAME}.conf"
-    fi
-
-    return 0
-}
-
 start_ntopng() {
-    INTERFACE_NAME=$1
-    FORCE=$2
+    FORCE=$1
 
     if [ ! -d "/etc/ntopng" ]; then
 	echo "Configuration directory /etc/ntopng does not exist: quitting..."
@@ -80,84 +22,86 @@ start_ntopng() {
 	return 0
     fi
 
-    NUM_TO_START="$(find /etc/ntopng/ -name "*.start"|wc -l)"
-    if [ "$NUM_TO_START" -eq 0 ] && [ $FORCE -eq 0 ]; then
-	# No instances to start
-	return 0
-    fi
+    NTOPNG_BINARY=/usr/local/bin/ntopng
 
-    if [ -z $INTERFACE_NAME ]; then
-	NETDEVICES="$(/bin/ls /etc/ntopng/*.start | /usr/bin/cut -d '-' -f 2 | /usr/bin/cut -d '.' -f 1)"
+    if [ -f /etc/ntopng/ntopng.start ] || [ $FORCE -eq 1 ]; then
+	echo "Starting ntopng"
+
+	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G '|cut -d ' ' -f 2)
+        if [ -f $PID_FILE ]; then
+	    PID=$(cat $PID_FILE)
+            if [ $PID -gt 0 ]; then
+		IS_EXISTING=$(ps auxw | grep -v grep| grep $PID|wc -l)
+		if [ $IS_EXISTING -gt 0 ]; then
+		    echo "ntopng is already running [pid $PID]: not started"
+		    return 0
+		fi
+	    fi
+	fi
+	$NTOPNG_BINARY /etc/ntopng/ntopng.conf > /dev/null &
     else
- 	NETDEVICES=$INTERFACE_NAME
+	echo "ntopng not started: missing /etc/ntopng/ntopng.start"
     fi
-
-    for E in $NETDEVICES ; do
-	start_ntopng_eth $E $FORCE
-    done
+    return 1
 }
 
-
 stop_ntopng() {
-    INTERFACE_NAME=$1
 
     if [ ! -d "/etc/ntopng" ]; then
 	echo "Configuration directory /etc/ntopng does not exist: quitting..."
 	return 0
     fi
 
-    if [ -z $INTERFACE_NAME ]; then
-	NUM_TO_START="$(find /etc/ntopng/ -name "*.start"|wc -l)"
-	if [ "$NUM_TO_START" -eq 0 ]; then
-	    # No instances to start
-	    return 0
+    if [ -f /etc/ntopng/ntopng.conf ]; then
+	PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G '|cut -d ' ' -f 2)
+	if [ -f $PID_FILE ]; then
+	    PID=$(cat $PID_FILE)
+	    if [ $PID -gt 0 ]; then
+		echo "Stopping ntopng"
+		kill -15 $PID > /dev/null
+		/bin/rm $PID_FILE
+	    else
+		echo "Unable to stop ntopng: invalid pid [$PID][$PID_FILE]"
+	    fi
+	#else
+	#    echo "Unable to stop ntopng: missing pid $PID_FILE"
 	fi
-	NETDEVICES="$(/bin/ls /etc/ntopng/*.start | /usr/bin/cut -d '-' -f 2 | /usr/bin/cut -d '.' -f 1)"
     else
- 	NETDEVICES=$INTERFACE_NAME
+	echo "ntopng can't be stopped: missing /etc/ntopng/ntopng.conf"
     fi
 
-    for E in $NETDEVICES ; do
-	stop_ntopng_eth $E
-    done
+    return 0
 }
 
 ########
 
-INTERFACE_NAME=$2
-
-logger "ntopng $1 $2"
+logger "ntopng $1"
 
 case "$1" in
   start)
-	start_ntopng "$INTERFACE_NAME" 0;
+	start_ntopng 0;
 	;;
 
   force-start)	
-	if [ -z $INTERFACE_NAME ]; then
-	    echo "ERROR: no interface name specified"
+	if [ ! -f /etc/ntopng/ntopng.conf ]; then
+	    echo "ERROR: No configuration file found"
 	    exit 1
 	fi
-
-	if [ ! -f /etc/ntopng/ntopng-$INTERFACE_NAME.conf ]; then
-	    echo "ERROR: No configuration file found for $INTERFACE_NAME"
-	    exit 1
-	fi
-	start_ntopng "$INTERFACE_NAME" 1;
+	start_ntopng 1;
 	;;
 
   stop)
-       	stop_ntopng "$INTERFACE_NAME";
+       	stop_ntopng;
 	;;
 
   restart)
-        stop_ntopng "$INTERFACE_NAME";
+        stop_ntopng;
 	sleep 5
-	start_ntopng "$INTERFACE_NAME" 0;
+	start_ntopng 0;
 	;;
 
   *)
-	echo "Usage: /etc/init.d/ntopng {start|force-start|stop|restart} [interface(s)]"
+	echo "Usage: /etc/init.d/ntopng {start|force-start|stop|restart}]"
 	exit 1
 esac
 
