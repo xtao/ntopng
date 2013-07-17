@@ -61,7 +61,9 @@ for key, value in pairs(hosts_stats) do
    elseif(sortColumn == "column_name") then
      vals[hosts_stats[key]["name"]..postfix] = key
    elseif(sortColumn == "column_since") then
-   vals[(now-hosts_stats[key]["seen.first"])..postfix] = key
+   vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
+   elseif(sortColumn == "column_last") then
+   vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
    elseif(sortColumn == "column_category") then
      vals[hosts_stats[key]["category"]..postfix] = key
    elseif(sortColumn == "column_asn") then
@@ -116,8 +118,14 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print("\"")	    
 	 end
 
-	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]) .. "\", ")
-	 print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
+	 print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
+
+	 if(aggregated ~= nil) then  
+	 	 print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]))
+	 else
+	 	 print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	end
 
 	 if(value["localhost"] ~= nil) then 
 	    print ("\", \"column_location\" : \"")

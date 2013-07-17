@@ -29,6 +29,14 @@
  			       }
 		   	     },
 			     {
+			     title: "Last Seen",
+				 field: "column_last",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+ 			       }
+		   	     },
+			     {
 			     title: "Query Number",
 				 field: "column_traffic",
 				 sortable: true,
