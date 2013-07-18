@@ -24,7 +24,7 @@
 /* ***************************************** */
 
 GenericHashEntry::GenericHashEntry(NetworkInterface *_iface) {
-  hash_next = NULL, iface = _iface;
+  hash_next = NULL, iface = _iface, first_seen = last_seen = 0;
 }
 
 /* ***************************************** */
