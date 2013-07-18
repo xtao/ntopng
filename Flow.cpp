@@ -120,7 +120,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	    ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, true);
+	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_WHOIS_DAS, true);
 
 	  if(host != NULL) {
 	    char s_buf[64];

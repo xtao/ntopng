@@ -27,12 +27,14 @@
 class StringHost : public GenericHost {
  private:
   char *keyname;
+  u_int16_t family_id;
 
  public:
-  StringHost(NetworkInterface *_iface, char *_key);
+  StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
   ~StringHost();
 
-  inline char* host_key() { return(keyname); };
+  inline char* host_key()          { return(keyname);   };
+  inline u_int16_t get_family_id() { return(family_id); };
   bool idle();
   void lua(lua_State* vm);
   inline u_int32_t key()  { return(Utils::hashString(keyname)); };

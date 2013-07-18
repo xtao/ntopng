@@ -49,7 +49,7 @@ class NetworkInterface {
   StringHash *strings_hash;
 
   struct ndpi_detection_module_struct *ndpi_struct;
-  time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge;
+  time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
   bool running;
 
   void dropPrivileges();
@@ -120,6 +120,7 @@ class NetworkInterface {
 
   u_int purgeIdleFlows();
   u_int purgeIdleHosts();
+  u_int purgeIdleAggregatedHosts();
 
   u_int getNumFlows();
   u_int getNumHosts();
@@ -132,7 +133,8 @@ class NetworkInterface {
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm);
   bool getAggregatedHostInfo(lua_State* vm, char *host_name);
-  StringHost* findHostByString(char *keyname, bool createIfNotPresent);  
+  StringHost* findHostByString(char *keyname, u_int16_t family_id, 
+			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
 };
 

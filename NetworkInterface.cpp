@@ -729,6 +729,25 @@ u_int NetworkInterface::purgeIdleHosts() {
 
 /* **************************************************** */
 
+u_int NetworkInterface::purgeIdleAggregatedHosts() {
+  if(next_idle_aggregated_host_purge == 0) {
+    next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
+    return(0);
+  } else if(last_pkt_rcvd < next_idle_aggregated_host_purge)
+    return(0); /* Too early */
+  else {
+    /* Time to purge hosts */
+    u_int n;
+
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle aggregated hosts");
+    n = strings_hash->purgeIdle();
+    next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
+    return(n);
+  }
+}
+
+/* **************************************************** */
+
 void NetworkInterface::dropPrivileges() {
 #ifndef WIN32
   struct passwd *pw = NULL;
@@ -902,11 +921,12 @@ bool NetworkInterface::isNumber(const char *str) {
 /* **************************************************** */
 
 StringHost* NetworkInterface::findHostByString(char *keyname,
+					       u_int16_t family_id,
 					       bool createIfNotPresent) {
   StringHost *ret = strings_hash->get(keyname);
 
   if((ret == NULL) && createIfNotPresent) {
-    if((ret = new StringHost(this, keyname)) != NULL)
+    if((ret = new StringHost(this, keyname, family_id)) != NULL)
       strings_hash->add(ret);
   }
 
