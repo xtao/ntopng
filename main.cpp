@@ -89,16 +89,6 @@ int main(int argc, char *argv[])
     rc = prefs->loadFromCLI(argc, argv);
   if(rc < 0) return(-1);
 
-#ifndef WIN32
-  if (prefs->get_pid_path() != NULL) {
-    FILE *fd = fopen(prefs->get_pid_path(), "w");
-    if(fd != NULL) {
-      fprintf(fd, "%u\n", getpid());
-      fclose(fd);
-    } else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", prefs->get_pid_path());
-  }
-#endif
-
   if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
   if(redis == NULL) redis = new Redis();
   
@@ -143,6 +133,16 @@ int main(int argc, char *argv[])
 
   if(prefs->daemonize_ntopng())
     ntop->daemonize();
+
+#ifndef WIN32
+  if (prefs->get_pid_path() != NULL) {
+    FILE *fd = fopen(prefs->get_pid_path(), "w");
+    if(fd != NULL) {
+      fprintf(fd, "%u\n", getpid());
+      fclose(fd);
+    } else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", prefs->get_pid_path());
+  }
+#endif
 
   if (prefs->get_cpu_affinity() >= 0)
     iface->set_cpu_affinity(prefs->get_cpu_affinity());
