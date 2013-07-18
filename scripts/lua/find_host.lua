@@ -20,25 +20,42 @@ print [[
    num = 0
    query = _GET["query"]
 --   query = "192"
+
    for _key, value in pairs(hosts_stats) do
-      found = 0
+      found = 0 
       what = hosts_stats[_key]["name"]
       if(starts(what, query)) then 
-        found = 1
+	 found = 1
       else
-          what = hosts_stats[_key]["mac"]
-          if(starts(what, query)) then 
+	 what = hosts_stats[_key]["mac"]
+	 if(starts(what, query)) then 
             found = 1
-          end
+	 end
       end
-
+      
       if(found == 1) then
-            if(num > 0) then print(",\n") end
-            print("\t\""..what .. "\"")
-	    num = num + 1
+	 if(num > 0) then print(",\n") end
+	 print("\t\""..what .. "\"")
+	 num = num + 1
       end
    end
 
+
+   aggregated_hosts_stats = interface.getAggregatedHostsInfo()
+   for _key, value in pairs(aggregated_hosts_stats) do
+      found = 0 
+      what = aggregated_hosts_stats[_key]["name"]
+      if(starts(what, query)) then 
+	 found = 1
+      end
+      
+      if(found == 1) then
+	 if(num > 0) then print(",\n") end
+	 print("\t\""..what .. "\"")
+	 num = num + 1
+      end
+   end
+   
 print [[
 
     ]

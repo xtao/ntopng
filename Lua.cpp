@@ -694,6 +694,31 @@ static int ntop_rrd_fetch(lua_State* L) {
 
 /* ****************************************** */
 
+static int ntop_http_redirect(lua_State* vm) {
+  char *url, str[512];
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((url = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+
+  snprintf(str, sizeof(str), "HTTP/1.1 302 Found\r\n"
+	   "Location: %s\r\n\r\n"
+	   "<html>\n"
+	   "<head>\n"
+	   "<title>Moved</title>\n"
+	   "</head>\n"
+	   "<body>\n"
+	   "<h1>Moved</h1>\n"
+	   "<p>This page has moved to <a href=\"%s\">%s</a>.</p>\n"
+	   "</body>\n"
+	   "</html>\n", url, url, url);
+
+  lua_pushstring(vm, str);
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_get_prefs(lua_State* vm) {
   lua_newtable(vm);
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts());
@@ -1144,6 +1169,9 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Prefs */
   { "getPrefs",       ntop_get_prefs },
+
+  /* HTTP */
+  { "httpRedirect",   ntop_http_redirect },
 
   /* Admin */
   { "getUsers",       ntop_get_users },

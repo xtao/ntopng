@@ -8,13 +8,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
-sendHTTPHeader('text/html')
-
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-
-active_page = "hosts"
-dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-
 page = _GET["page"]
 
 ifname = _GET["interface"]
@@ -24,7 +17,12 @@ end
 
 host_ip = _GET["host"]
 
+active_page = "hosts"
+
 if(host_ip == nil) then
+   sendHTTPHeader('text/html')
+   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+   dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
    return
 end
@@ -33,9 +31,23 @@ interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
 if(host == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
+   -- We need to check if this is an aggregated host
+   host = interface.getAggregatedHostInfo(host_ip)
+
+   if(host == nil) then
+      sendHTTPHeader('text/html')
+      ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+      dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
+   else
+      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?interface="..ifname.."&host="..host_ip))
+   end
    return
 else
+   sendHTTPHeader('text/html')
+   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+   dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
    if(host["ip"] ~= nil) then
       host_ip = host["ip"]
    end
