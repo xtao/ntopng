@@ -78,9 +78,9 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td>" .. host["name"].. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
-   print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>Last Seen</th><td><div id=last_seen>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Contacts Received</th><td>" .. formatValue(host["pkts.rcvd"]) .. "</td></tr>\n")
+   print("<tr><th>Contacts Received</th><td><div id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</id></td></tr>\n")
    print("</table>\n")
 
 elseif(page == "contacts") then
@@ -136,16 +136,26 @@ else
 end
 
 
-elseif(page == "historical") then
-if(_GET["rrd_file"] == nil) then
-   rrdfile = "bytes.rrd"
-else
-   rrdfile=_GET["rrd_file"]
-end
-
-drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1, _GET["epoch"])
 else
    print(page)
 end
 end
+
+print [[
+<script>
+setInterval(function() {
+		  $.ajax({
+			    type: 'GET',
+			    url: '/lua/get_aggregated_host_info.lua',
+			    data: { if: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
+			    success: function(content) {
+				var rsp = jQuery.parseJSON(content);
+
+				$('#last_seen').html(bytesToVolume(rsp.bytes));
+				$('#contacts').html(addCommas(rsp.packets)+" Pkts");
+			     }
+		           });
+			 }, 3000);
+
+		      ]]
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
