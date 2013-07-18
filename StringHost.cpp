@@ -37,7 +37,14 @@ StringHost::~StringHost() {
 /* *************************************** */
 
 bool StringHost::idle() {
-  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
+  bool rc = isIdle(ntop->getPrefs()->get_host_max_idle()); 
+
+#if 0
+  if(rc)
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s/%d is idle", keyname, family_id);
+#endif
+
+  return(rc);
 };
 
 /* *************************************** */

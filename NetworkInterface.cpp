@@ -118,7 +118,7 @@ NetworkInterface::NetworkInterface(const char *name, bool change_user) {
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
 
   last_pkt_rcvd = 0;
-  next_idle_flow_purge = next_idle_host_purge = 0;
+  next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
   cpu_affinity = -1;
   running = false;
 }
