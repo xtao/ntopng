@@ -161,7 +161,6 @@ void Host::getHostContacts(lua_State* vm) {
   lua_pushstring(vm, "contacts");
   lua_insert(vm, -2);
   lua_settable(vm, -3);
-
 }
 
 /* *************************************** */

@@ -23,7 +23,8 @@
 
 /* *************************************** */
 
-StringHost::StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id) : GenericHost(_iface) {
+StringHost::StringHost(NetworkInterface *_iface, char *_key, 
+		       u_int16_t _family_id) : GenericHost(_iface) {
   keyname = strdup(_key), family_id = _family_id;
 }
 
@@ -33,18 +34,10 @@ StringHost::~StringHost() {
   free(keyname);
 }
 
-
 /* *************************************** */
 
 bool StringHost::idle() {
-  bool rc = isIdle(ntop->getPrefs()->get_host_max_idle()); 
-
-#if 0
-  if(rc)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s/%d is idle", keyname, family_id);
-#endif
-
-  return(rc);
+  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
 };
 
 /* *************************************** */
@@ -63,8 +56,4 @@ void StringHost::lua(lua_State* vm) {
   lua_push_int_table_entry(vm, "duration", get_duration());
 
   if(ndpiStats) ndpiStats->lua(iface, vm);
-
-  lua_pushstring(vm, keyname);
-  lua_insert(vm, -2);
-  lua_settable(vm, -3);  
 }
