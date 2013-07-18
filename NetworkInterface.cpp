@@ -442,6 +442,10 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   if((n = purgeIdleHosts()) > 0)
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
 				 n, getNumHosts());
+
+  if((n = purgeIdleAggregatedHosts()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
+				 n, getNumHosts());
 }
 
 /* **************************************************** */
