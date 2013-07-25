@@ -127,8 +127,10 @@ const char* NdpiStats::serialize() {
 	
 	snprintf(tmp, sizeof(tmp), "\"%d\":[%lu,%lu,%lu,%lu]", 
 		 i, 
-		 counters[i]->packets.sent, counters[i]->packets.rcvd,
-		 counters[i]->bytes.sent, counters[i]->bytes.rcvd);
+		 (long unsigned int)counters[i]->packets.sent,
+		 (long unsigned int)counters[i]->packets.rcvd,
+		 (long unsigned int)counters[i]->bytes.sent,
+		 (long unsigned int)counters[i]->bytes.rcvd);
 	
 	if(!first) s.append(",");
 	s.append(tmp);

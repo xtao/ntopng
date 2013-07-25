@@ -115,7 +115,9 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
 /* ******************************************* */
 
 Ntop::~Ntop() {
-  if(iface) delete iface;
+  for(int i=0; i<num_defined_interfaces; i++)
+    delete(iface[i]);
+
   if(httpd) delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 

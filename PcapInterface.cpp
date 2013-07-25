@@ -47,10 +47,10 @@ PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterf
 	free(old);
       }
 
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);     
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
     }
   } else
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);  
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 
@@ -99,7 +99,7 @@ void PcapInterface::shutdown() {
   if(running) {
     if(pcap_handle) pcap_breakloop(pcap_handle);
     pthread_join(pollLoop, &res);
-    NetworkInterface::shutdown(); 
+    NetworkInterface::shutdown();
   }
 }
 
@@ -107,9 +107,27 @@ void PcapInterface::shutdown() {
 
 u_int PcapInterface::getNumDroppedPackets() {
   struct pcap_stat pcapStat;
- 
+
   if(pcap_stats(pcap_handle, &pcapStat) >= 0) {
     return(pcapStat.ps_drop);
   } else
     return(0);
 }
+
+/* **************************************************** */
+
+bool PcapInterface::set_packet_filter(char *filter) {
+  struct bpf_program fcode;
+  struct in_addr netmask;
+
+  netmask.s_addr = htonl(0xFFFFFF00);
+
+  if((pcap_compile(pcap_handle, &fcode, filter, 1, netmask.s_addr) < 0)
+     || (pcap_setfilter(pcap_handle, &fcode) < 0)) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to set filter %s. Filter ignored.\n", filter);
+    return(false);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Packet capture filter set to \"%s\"", filter);
+    return(true);
+  }
+};

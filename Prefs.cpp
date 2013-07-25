@@ -46,6 +46,7 @@ Prefs::Prefs(Ntop *_ntop) {
   dns_mode = 0;
   logFd = NULL;
   pid_path = NULL;
+  packet_filter = NULL;
 
 #ifdef WIN32
   daemonize = true;
@@ -78,7 +79,9 @@ void usage() {
 	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-U <sys user>] [-s] [-v]\n\n"
+	 "              [-l] [-U <sys user>] [-s] [-v]\n"
+	 "              [-B <filter>]\n"
+	 "\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
 	 "                                    | 0 - Decode DNS responses and resolve\n"
@@ -124,6 +127,8 @@ void usage() {
 #ifndef WIN32
 	 "[--pid|-G] <path>                   | Pid file path\n"
 #endif
+
+	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
@@ -148,6 +153,7 @@ static const struct option long_options[] = {
 #ifndef WIN32
   { "data-dir",                          required_argument, NULL, 'd' },
 #endif
+  { "packet-filter",                     required_argument, NULL, 'B' },
   { "categorization-key",                required_argument, NULL, 'c' },
   { "daemonize",                         required_argument, NULL, 'e' },
   { "http-port",                         required_argument, NULL, 'w' },
@@ -175,6 +181,10 @@ static const struct option long_options[] = {
 
 int Prefs::setOption(int optkey, char *optarg) {
   switch(optkey) {
+    case 'B':
+      packet_filter = optarg;
+      break;
+
     case 'c':
       categorization_key = optarg;
       break;
@@ -333,7 +343,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:G:U:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:B:G:U:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

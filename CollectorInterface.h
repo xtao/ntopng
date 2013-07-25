@@ -42,6 +42,8 @@ class CollectorInterface : public NetworkInterface {
 
   void startPacketPolling();
   void shutdown();
+
+  bool set_packet_filter(char *filter);
 };
 
 #endif /* _COLLECTOR_INTERFACE_H_ */

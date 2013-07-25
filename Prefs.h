@@ -40,6 +40,7 @@ class Prefs {
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
   char *users_file_path, *config_file_path, *ndpi_proto_path;
+  char *packet_filter;
   char *user;
   char *redis_host;
   char *pid_path;
@@ -81,6 +82,7 @@ class Prefs {
   inline char* get_redis_host()                         { return(redis_host);     }
   inline u_int get_redis_port()                         { return(redis_port);     };
   inline char* get_pid_path()                           { return(pid_path);       };
+  inline char* get_packet_filter()                      { return(packet_filter);  };
   inline u_int16_t get_host_max_idle()                  { return(host_max_idle);  };
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };

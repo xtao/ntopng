@@ -36,6 +36,7 @@ class PcapInterface : public NetworkInterface {
   void startPacketPolling();
   void shutdown();
   u_int getNumDroppedPackets();
+  bool set_packet_filter(char *filter);
 };
 
 #endif /* _PCAP_INTERFACE_H_ */

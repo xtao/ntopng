@@ -147,6 +147,10 @@ int main(int argc, char *argv[])
   if (prefs->get_cpu_affinity() >= 0)
     iface->set_cpu_affinity(prefs->get_cpu_affinity());
 
+
+  if(prefs->get_packet_filter() != NULL)
+    iface->set_packet_filter(prefs->get_packet_filter());
+
   ntop->registerInterface(iface);
   ntop->loadGeolocation(prefs->get_docs_dir());
   ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(), 

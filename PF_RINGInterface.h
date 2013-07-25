@@ -38,6 +38,7 @@ class PF_RINGInterface : public NetworkInterface {
   u_int getNumDroppedPackets();
   void startPacketPolling();
   void shutdown();
+  bool set_packet_filter(char *filter);
 };
 
 #endif /* _PF_RING_NETWORK_INTERFACE_H_ */

@@ -70,14 +70,15 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
-  virtual u_int getNumDroppedPackets() { return(0); }
-  virtual char *getEndpoint() { return NULL; }
+  virtual u_int getNumDroppedPackets()         { return(0);     };
+  virtual char *getEndpoint()                  { return NULL;   };
+  virtual bool set_packet_filter(char *filter) { return(false); };
 
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
-  inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id)); };
+  inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id));   };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
-  inline char* get_name()              { return(ifname); };
+  inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
   inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };

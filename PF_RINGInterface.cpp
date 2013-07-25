@@ -111,4 +111,16 @@ u_int PF_RINGInterface::getNumDroppedPackets() {
 
 /* **************************************************** */
 
+bool PF_RINGInterface::set_packet_filter(char *filter) {
+  if(pfring_set_bpf_filter(pfring_handle, filter) != 0) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to set filter %s. Filter ignored.\n", filter);
+    return(false);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Packet capture filter set to \"%s\"", filter);
+    return(true);
+  }
+}
+
+/* **************************************************** */
+
 #endif /* HAVE_PF_RING */
