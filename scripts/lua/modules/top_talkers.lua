@@ -60,47 +60,35 @@ function getActualTopTalkers(ifname, mode, epoch)
    _rcvd = {}
 
    for _key, value in pairs(hosts_stats) do
-      key = abbreviateString(hosts_stats[_key]["src.host"], 15)
-      if(key == nil) then key = hosts_stats[_key]["src.ip"] end
+      key = hosts_stats[_key]["src.ip"]
       if(key ~= nil) then
-      old = _sent[key]
-      if(old == nil) then old = 0 end
-      _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
+	 old = _sent[key]
+	 if(old == nil) then old = 0 end
+	 _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
       end
 
-      key = hosts_stats[_key]["dst.host"]
-      if(key == nil) then key = hosts_stats[_key]["dst.ip"] end
+      key = hosts_stats[_key]["dst.ip"]
       if(key ~= nil) then
-      old = _rcvd[key]
-      if(old == nil) then old = 0 end
-      _rcvd[key] = old + hosts_stats[_key]["cli2srv.bytes"]
+	 old = _rcvd[key]
+	 if(old == nil) then old = 0 end
+	 _rcvd[key] = old + hosts_stats[_key]["cli2srv.bytes"]
       end
 
       -- ###########################
 
-      key = abbreviateString(hosts_stats[_key]["dst.host"], 15)
-      if(key == nil) then key = hosts_stats[_key]["dst.ip"] end
+      key = hosts_stats[_key]["dst.ip"]
       if(key ~= nil) then
-      old = _sent[key]	
-      if(old == nil) then old = 0 end
-      _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
+	 old = _sent[key]	
+	 if(old == nil) then old = 0 end
+	 _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
 
-      key = hosts_stats[_key]["src.host"]
-      if(key == nil) then key = hosts_stats[_key]["src.ip"] end
-      if(key ~= nil) then
-      old = _rcvd[key]
-      if(old == nil) then old = 0 end
-      _rcvd[key] = old + hosts_stats[_key]["srv2cli.bytes"]
+	 key = hosts_stats[_key]["src.ip"]
+	 if(key ~= nil) then
+	    old = _rcvd[key]
+	    if(old == nil) then old = 0 end
+	    _rcvd[key] = old + hosts_stats[_key]["srv2cli.bytes"]
+	 end
       end
-      end
-   end
-
-   for key, value in pairs(_sent) do
-      sent[value] = key
-   end
-
-   for key, value in pairs(_rcvd) do
-      rcvd[value] = key
    end
 
    if(mode == nil) then
@@ -128,14 +116,16 @@ function getActualTopTalkers(ifname, mode, epoch)
       persistence.store(lastdump, _sent);
 
       for key, value in pairs(_sent) do
-	 -- io.write(key.."\n")
-
-	 if(sent[key] ~= nil) then
-	    v = sent[key]-value
+	 if(last[key] ~= nil) then
+	    v = _sent[key]-value
 
 	    if(v < 0) then v = 0 end
-	    sent[key] = v
+	    _sent[key] = v
 	 end
+      end
+
+      for key, value in pairs(_sent) do
+	 sent[value] = key
       end
 
       -- Compute traffic
@@ -167,7 +157,8 @@ function getActualTopTalkers(ifname, mode, epoch)
    end
 
    if(mode == nil) then
-      rsp = rsp .. " }\n\t],\n"
+      if(num > 0) then rsp = rsp .. " }" end
+      rsp = rsp .. "\n\t],\n"
       rsp = rsp .. '\t"receivers": ['
    end
 
@@ -185,12 +176,16 @@ function getActualTopTalkers(ifname, mode, epoch)
       for key, value in pairs(_rcvd) do
 	 -- io.write(key.."\n")
 
-	 if(rcvd[key] ~= nil) then
-	    v = rcvd[key]-value
+	 if(last[key] ~= nil) then
+	    v = _rcvd[key]-last[key]
 
 	    if(v < 0) then v = 0 end
-	    rcvd[key] = v
+	    _rcvd[key] = v
 	 end
+      end
+
+      for key, value in pairs(_rcvd) do
+	 rcvd[value] = key
       end
 
       -- Compute traffic
@@ -220,13 +215,15 @@ function getActualTopTalkers(ifname, mode, epoch)
    end
 
    if(mode == nil) then
-      rsp = rsp .. " }\n\t]"
+      if(num > 0) then rsp = rsp .. " }" end
+      rsp = rsp .. "\n\t],\n"
       rsp = rsp .. "\n}\n"
    else
       rsp = rsp .. " }\n"
       rsp = rsp .. "\n]\n"
    end
 
+   --print(rsp.."\n")
    return(rsp)
 end
 
