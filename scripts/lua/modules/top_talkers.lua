@@ -117,7 +117,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
       for key, value in pairs(_sent) do
 	 if(last[key] ~= nil) then
-	    v = _sent[key]-value
+	    v = _sent[key]-last[key]
 
 	    if(v < 0) then v = 0 end
 	    _sent[key] = v
