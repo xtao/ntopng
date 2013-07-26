@@ -36,7 +36,8 @@ class CollectorInterface : public NetworkInterface {
   CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user);
   ~CollectorInterface();
 
-  char *getEndpoint() { return endpoint; }
+  char *getScriptName() { return script_name; }
+  char *getEndpoint()   { return endpoint; }
 
   void run_collector_script();
 

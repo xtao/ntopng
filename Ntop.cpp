@@ -410,6 +410,12 @@ NetworkInterface* Ntop::get_NetworkInterface(const char *name) {
     if(strcmp(iface[i]->get_name(), name) == 0)
       return(iface[i]); 
 
+  /* FIX: remove this for at some point, when endpoint is passed */
+  for(int i=0; i<num_defined_interfaces; i++) {
+    char *script = iface[i]->getScriptName();
+    if(script != NULL && strcmp(script, name) == 0)
+      return(iface[i]);
+  }
 
   /* Not found */
   if(!strcmp(name, "any"))

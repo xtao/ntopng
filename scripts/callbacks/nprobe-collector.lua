@@ -34,7 +34,7 @@ local handled_fields = {
 [template.LAST_SWITCHED]  = true
 }
  
-interface.find("zmq-collector")
+interface.find("nprobe-collector.lua") -- FIX this should be replaced with the actual endpoint
 local endpoint = interface.getEndpoint()
 ntop.zmq_connect(endpoint, "flow")
 

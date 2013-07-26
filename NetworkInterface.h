@@ -71,6 +71,7 @@ class NetworkInterface {
   virtual void startPacketPolling();
   virtual void shutdown();
   virtual u_int getNumDroppedPackets()         { return(0);     };
+  virtual char *getScriptName()                { return NULL;   }
   virtual char *getEndpoint()                  { return NULL;   };
   virtual bool set_packet_filter(char *filter) { return(false); };
 
