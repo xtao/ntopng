@@ -29,7 +29,7 @@ Prefs::Prefs(Ntop *_ntop) {
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
-  max_num_hosts = 32768, max_num_flows = 65536;
+  max_num_hosts = MAX_NUM_INTERFACE_HOSTS/2, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
   data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   docs_dir = strdup(CONST_DEFAULT_DOCS_DIR);
   scripts_dir = strdup(CONST_DEFAULT_SCRIPTS_DIR);
@@ -122,6 +122,8 @@ void usage() {
 	 "[--user|-U] <sys user>              | Run ntopng with the specified user instead of %s\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
+	 "[--max-num-flows|-X] <num>          | Max number of active flows (default: %u)\n"
+	 "[--max-num-hosts|-x] <num>          | Max number of active hosts (default: %u)\n"
 	 "[--users-file|-u] <path>            | Users configuration file path\n"
 	 "                                    | Default: %s\n"
 #ifndef WIN32
@@ -137,7 +139,9 @@ void usage() {
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT,
-         CONST_DEFAULT_NTOP_USER, CONST_DEFAULT_USERS_FILE);
+         CONST_DEFAULT_NTOP_USER, 
+	 MAX_NUM_INTERFACE_HOSTS, MAX_NUM_INTERFACE_HOSTS/2,
+	 CONST_DEFAULT_USERS_FILE);
 
   printf("\n");
   n.printAvailableInterfaces(true, 0, NULL, 0);
@@ -181,129 +185,137 @@ static const struct option long_options[] = {
 
 int Prefs::setOption(int optkey, char *optarg) {
   switch(optkey) {
-    case 'B':
-      packet_filter = optarg;
-      break;
+  case 'B':
+    packet_filter = optarg;
+    break;
 
-    case 'c':
-      categorization_key = optarg;
-      break;
-
-#ifndef WIN32
-    case 'd':
-      ntop->setWorkingDir(optarg);
-      break;
-#endif
-
-    case 'e':
-      daemonize = true;
-      break;
-
-    case 'g':
-      cpu_affinity = atoi(optarg);
-      break;
-
-    case 'm':
-      free(local_networks);
-      local_networks = strdup(optarg);
-      break;
-
-    case 'n':
-      dns_mode = atoi(optarg);
-      switch(dns_mode) {
-      case 0:
-	break;
-      case 1:
-	resolve_all_hosts();
-	break;
-      case 2:
-	disable_dns_resolution();
-	break;
-      case 3:
-	disable_dns_resolution();
-	disable_dns_responses_decoding();
-	break;
-      default:
-	help();
-      }
-      break;
-
-    case 'p':
-      ndpi_proto_path = strdup(optarg);
-      ntop->setCustomnDPIProtos(ndpi_proto_path);
-      break;
-
-    case 'h':
-      help();
-      break;
-
-    case 'i':
-      ifName = strdup(optarg);
-      break;
-
-    case 'w':
-      http_port = atoi(optarg);
-      break;
-
-    case 'r':
-      {
-	char buf[64];
-	snprintf(buf, sizeof(buf), "%s", optarg);
-	redis_host = strtok(buf, ":");
-	if(redis_host) {
-	  char *c = strtok(NULL, ":");
-	  if(c) redis_port = atoi(c);
-
-	  redis_host = strdup(redis_host);
-	}
-      }
-      break;
-
-    case 's':
-      change_user = false;
-      break;
-
-    case '1':
-      free(docs_dir);
-      docs_dir = strdup(optarg);
-      break;
-
-    case '2':
-      free(scripts_dir);
-      scripts_dir = strdup(optarg);
-      break;
-
-    case '3':
-      free(callbacks_dir);
-      callbacks_dir = strdup(optarg);
-      break;
-
-    case 'l':
-      enable_users_login = false;
-      break;
-
-    case 'u':
-      free(users_file_path);
-      users_file_path = strdup(optarg);
-      break;
-
-    case 'v':
-      ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
-      break;
+  case 'c':
+    categorization_key = optarg;
+    break;
 
 #ifndef WIN32
-    case 'G':
-      pid_path = strdup(optarg);
-      break;
+  case 'd':
+    ntop->setWorkingDir(optarg);
+    break;
 #endif
 
-    case 'U':
-      free(user);
-      user = strdup(optarg);
-      break;
+  case 'e':
+    daemonize = true;
+    break;
 
+  case 'g':
+    cpu_affinity = atoi(optarg);
+    break;
+
+  case 'm':
+    free(local_networks);
+    local_networks = strdup(optarg);
+    break;
+
+  case 'n':
+    dns_mode = atoi(optarg);
+    switch(dns_mode) {
+    case 0:
+      break;
+    case 1:
+      resolve_all_hosts();
+      break;
+    case 2:
+      disable_dns_resolution();
+      break;
+    case 3:
+      disable_dns_resolution();
+      disable_dns_responses_decoding();
+      break;
     default:
-      return(-1);
+      help();
+    }
+    break;
+
+  case 'p':
+    ndpi_proto_path = strdup(optarg);
+    ntop->setCustomnDPIProtos(ndpi_proto_path);
+    break;
+
+  case 'h':
+    help();
+    break;
+
+  case 'i':
+    ifName = strdup(optarg);
+    break;
+
+  case 'w':
+    http_port = atoi(optarg);
+    break;
+
+  case 'r':
+    {
+      char buf[64];
+      snprintf(buf, sizeof(buf), "%s", optarg);
+      redis_host = strtok(buf, ":");
+      if(redis_host) {
+	char *c = strtok(NULL, ":");
+	if(c) redis_port = atoi(c);
+
+	redis_host = strdup(redis_host);
+      }
+    }
+    break;
+
+  case 's':
+    change_user = false;
+    break;
+
+  case '1':
+    free(docs_dir);
+    docs_dir = strdup(optarg);
+    break;
+
+  case '2':
+    free(scripts_dir);
+    scripts_dir = strdup(optarg);
+    break;
+
+  case '3':
+    free(callbacks_dir);
+    callbacks_dir = strdup(optarg);
+    break;
+
+  case 'l':
+    enable_users_login = false;
+    break;
+
+  case 'u':
+    free(users_file_path);
+    users_file_path = strdup(optarg);
+    break;
+
+  case 'x':
+    max_num_hosts = max(atoi(optarg), 1024);
+    break;
+
+  case 'v':
+    ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
+    break;
+
+#ifndef WIN32
+  case 'G':
+    pid_path = strdup(optarg);
+    break;
+#endif
+
+  case 'U':
+    free(user);
+    user = strdup(optarg);
+    break;
+
+  case 'X':
+    max_num_flows = max(atoi(optarg), 1024);
+    break;
+      
+  default:
+    return(-1);
   }
 
   return(0);
@@ -343,7 +355,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:1:2:3:lvu:B:G:U:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:B:G:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -462,7 +474,7 @@ int Prefs::loadUsersFromFile() {
 
   if(fd == NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING,
-			"Config file %s not found (it will be created)", path);
+				 "Config file %s not found (it will be created)", path);
     return(-1);
   }
 

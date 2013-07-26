@@ -26,10 +26,10 @@
 
 class Flow : public GenericHashEntry {
  private:
-  Host *src_host, *dst_host;
+  Host *src_host, *dst_host;  
   u_int16_t src_port, dst_port;
   u_int16_t vlanId;
-  u_int8_t protocol;
+  u_int8_t protocol, tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
   bool detection_completed;
   u_int16_t detected_protocol;
@@ -67,6 +67,8 @@ class Flow : public GenericHashEntry {
 
   char *getDomainCategory();
   void allocFlowMemory();
+  inline u_int8_t getTcpFlags()              { return(tcp_flags); };
+  inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; }
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   void setJSONInfo(char *json);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };

@@ -190,7 +190,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 				       u_int16_t src_port, u_int16_t dst_port,
 				       u_int16_t vlan_id,
 				       u_int16_t proto_id,
-				       u_int8_t l4_proto,
+				       u_int8_t l4_proto, u_int8_t tcp_flags,
 				       u_int in_pkts, u_int in_bytes,
 				       u_int out_pkts, u_int out_bytes,
 				       u_int first_switched, u_int last_switched,
@@ -203,10 +203,12 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 
   /* Updating Flow */
 
-  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port, l4_proto, &src2dst_direction, first_switched, last_switched);
+  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port, 
+		 l4_proto, &src2dst_direction, first_switched, last_switched);
 
   if(flow == NULL) return;
 
+  if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
   flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
   flow->setDetectedProtocol(proto_id, l4_proto);
   flow->setJSONInfo(additional_fields_json);
@@ -230,7 +232,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
   u_int16_t l4_packet_len;
-  u_int8_t *l4;
+  u_int8_t *l4, tcp_flags = 0;
   u_int8_t *ip;
   bool is_fragment = false;
 
@@ -263,6 +265,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     /* tcp */
     tcph = (struct ndpi_tcphdr *)l4;
     src_port = tcph->source, dst_port = tcph->dest;
+    tcp_flags = tcph->fin | tcph->syn | tcph->rst | tcph->psh | tcph->ack | tcph->urg;
   } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
     /* udp */
     udph = (struct ndpi_udphdr *)l4;
@@ -303,8 +306,12 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, 
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
-  if(flow == NULL) return;
-  else flow->incStats(src2dst_direction, rawsize);
+  if(flow == NULL) 
+    return;
+  else {
+    flow->incStats(src2dst_direction, rawsize);
+    if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
+  }
 
   /* Protocol Detection */
 

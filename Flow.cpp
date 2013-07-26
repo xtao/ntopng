@@ -35,6 +35,7 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
   json_info = strdup("{}");
+  tcp_flags = 0;
 
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) { src_host->incUses(); if(dst_host) src_host->incrContact(dst_host, true);  }
@@ -432,6 +433,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());
   lua_push_int_table_entry(vm, "seen.last", get_last_seen());
   lua_push_int_table_entry(vm, "duration", get_duration());
+  lua_push_int_table_entry(vm, "tcp_flags", get_duration());
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
   lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
@@ -462,6 +464,14 @@ u_int32_t Flow::key() {
 /* *************************************** */
 
 bool Flow::idle() {
+  /* If this flow is idle for at least MAX_TCP_FLOW_IDLE */  
+  if((protocol == IPPROTO_TCP)
+     && ((tcp_flags & TH_FIN) || (tcp_flags & TH_RST))
+     && isIdle(MAX_TCP_FLOW_IDLE /* sec */)) {
+    /* ntop->getTrace()->traceEvent(TRACE_NORMAL, "[TCP] Early flow expire"); */
+    return(true);  
+  }
+
   return(isIdle(ntop->getPrefs()->get_host_max_idle()));
 };
 

@@ -76,7 +76,7 @@ class Prefs {
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
-  inline char* get_categorization_key()                 { return(categorization_key); };
+  inline char* get_categorization_key()                 { return(categorization_key);      };
   inline int get_cpu_affinity()                         { return(cpu_affinity);   };
   inline u_int get_http_port()                          { return(http_port);      };
   inline char* get_redis_host()                         { return(redis_host);     }

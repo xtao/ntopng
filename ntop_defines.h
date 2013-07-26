@@ -56,16 +56,35 @@
 #define GTP_U_V1_PORT             2152
 #define MAX_NUM_INTERFACE_HOSTS   65536
 
-#define FLOW_PURGE_FREQUENCY     1 /* sec */
-#define HOST_PURGE_FREQUENCY     1 /* sec */
-
-#define PURGE_FRACTION          32 /* check 1/32 of hashes per iteration */
+#define FLOW_PURGE_FREQUENCY      1 /* sec */
+#define HOST_PURGE_FREQUENCY      1 /* sec */
+#define MAX_TCP_FLOW_IDLE         3 /* sec */
+#define PURGE_FRACTION           32 /* check 1/32 of hashes per iteration */
 #define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
 
 #define DOMAIN_CATEGORY         "domain.category"
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
+
+#ifndef TH_FIN
+#define	TH_FIN	0x01
+#endif
+#ifndef TH_SYN
+#define	TH_SYN	0x02
+#endif
+#ifndef TH_RST
+#define	TH_RST	0x04
+#endif
+#ifndef TH_PUSH
+#define	TH_PUSH	0x08
+#endif
+#ifndef TH_ACK
+#define	TH_ACK	0x10
+#endif
+#ifndef TH_URG
+#define	TH_URG	0x20
+#endif
 
 #define MAX_NUM_DEFINED_INTERFACES 16
 
