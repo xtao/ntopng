@@ -106,6 +106,10 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
+#ifndef max
+#define max(a,b) ((a > b) ? a : b)
+#endif
+
 #define CONST_DEFAULT_HOME_NET      "192.168.1.0/24"
 #define CONST_DEFAULT_DATA_DIR      "data"
 #define CONST_DEFAULT_DOCS_DIR      "httpdocs"
