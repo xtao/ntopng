@@ -51,6 +51,9 @@ to_skip = (currentPage-1) * perPage
 now = os.time()
 vals = {}
 num = 0
+
+--for k,v in pairs(hosts_stats) do io.write(k.."\n") end
+
 for key, value in pairs(hosts_stats) do
     num = num + 1
     postfix = string.format("0.%04u", num)
@@ -71,6 +74,10 @@ for key, value in pairs(hosts_stats) do
    elseif(sortColumn == "column_2") then
      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
   else
+     -- io.write(key.."\n")
+     -- io.write(hosts_stats[key].."\n")
+     -- for k,v in pairs(hosts_stats[key]) do io.write(k.."\n") end
+
      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
    end
 end

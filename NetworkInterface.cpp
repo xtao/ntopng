@@ -552,7 +552,7 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 /* **************************************************** */
 
 static void aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
-  ((StringHost*)h)->lua((lua_State*)user_data);
+  ((StringHost*)h)->lua((lua_State*)user_data, true);
 }
 
 /* **************************************************** */
@@ -641,7 +641,7 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
   if(info.s != NULL) {
     lua_newtable(vm);
 
-    info.s->lua(vm);
+    info.s->lua(vm, false);
     return(true);
   } else
     return(false);

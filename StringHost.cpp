@@ -42,7 +42,7 @@ bool StringHost::idle() {
 
 /* *************************************** */
 
-void StringHost::lua(lua_State* vm) {
+void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "name", keyname);
@@ -56,4 +56,10 @@ void StringHost::lua(lua_State* vm) {
   lua_push_int_table_entry(vm, "duration", get_duration());
 
   if(ndpiStats) ndpiStats->lua(iface, vm);
+
+  if(returnHost) {
+    lua_pushstring(vm, keyname);
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
+  }
 }
