@@ -135,13 +135,14 @@ print [[
 if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
 
-
    if(host["ip"] ~= nil) then
       -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?interface=" .. ifname .. "&host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
       print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
       print("<tr><th>IP Address</th><td>" .. host["ip"])
    else
-      print("<tr><th>MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+      if(host["mac"] ~= nil) then
+	 print("<tr><th>MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+      end
    end
 
    if((host["city"] ~= "") or (host["country"] ~= "")) then
