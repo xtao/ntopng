@@ -9,6 +9,7 @@ require "lua_utils"
 require "graph_utils"
 
 page = _GET["page"]
+if(page == nil) then page = "overview" end
 
 ifname = _GET["interface"]
 if(ifname == nil) then
@@ -16,8 +17,6 @@ if(ifname == nil) then
 end
 
 host_ip = _GET["host"]
-
-active_page = "overview"
 
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
@@ -42,21 +41,21 @@ print [[
 <ul class="nav">
 ]]
 
-url="/lua/host_details.lua?host="..host_ip
+url="/lua/aggregated_host_details.lua?host="..host_ip
 
 print("<li><a href=\"#\">Host: "..host_ip.." </a></li>\n")
 
-if((page == "overview") or (page == nil)) then
+if(page == "overview") then
   print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")
 else
   print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
 end
 
 num = 0
---if(host.contacts ~= nil) then
---   for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
---   for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
---end
+if(host.contacts ~= nil) then
+   for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
+   for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
+end
 
 if(num > 0) then 
    if(page == "contacts") then
@@ -66,7 +65,6 @@ if(num > 0) then
    end
 end
 
-
 print [[
 </ul>
 </div>
@@ -74,7 +72,8 @@ print [[
 </div>
    ]]
 
-if((page == "overview") or (page == nil)) then
+--print("<b>".._GET["page"].."</b>")
+if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td>" .. host["name"].. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
@@ -88,11 +87,7 @@ elseif(page == "contacts") then
 
 if(num > 0) then
 print("<table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Client Contacts (Initiator)</th><th>Server Contacts (Receiver)</th></tr>\n")
-
-print("<tr>")
-print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Server Address</th><th>Contacts</th></tr>\n")
+print("<tr><th>Contacted by</th><th>Contacts Number</th></tr>\n")
 
 -- Client
 sortTable = {}
@@ -109,25 +104,6 @@ for _v,k in pairsByKeys(sortTable, rev) do
    print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
 end
 print("</table></td>\n")
-
-print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Client Address</th><th>Contacts</th></tr>\n")
-
--- Server
-sortTable = {}
-for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
-
-for _v,k in pairsByKeys(sortTable, rev) do 
-   name = interface.getHostInfo(k)   
-   v = host["contacts"]["server"][k]
-   if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
-   else
-      url = k
-   end
-   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
-end
-print("</table></td></tr>\n")
 
 
 print("</table>\n")

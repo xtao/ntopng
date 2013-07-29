@@ -46,6 +46,7 @@ class GenericHashEntry {
   virtual bool idle();
   inline u_int get_duration()        { return((u_int)(1+last_seen-first_seen)); };
   virtual u_int32_t key()            { return(0);         };  
+  virtual char* get_string_key(char *buf, u_int buf_len) { buf[0] = '\0'; return(buf); };
   virtual bool isIdle(u_int max_idleness);
 };
 

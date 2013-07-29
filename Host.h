@@ -63,7 +63,7 @@ class Host : public GenericHost {
   inline bool isLocalHost()                    { return(localHost);     }
   char* get_mac(char *buf, u_int buf_len);
   char* get_name(char *buf, u_int buf_len, bool force_resolution_if_not_found);
-
+  char* get_string_key(char *buf, u_int buf_len);
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
   
@@ -75,7 +75,6 @@ class Host : public GenericHost {
   inline bool equal(IpAddress *_ip)  { return(ip->equal(_ip)); };
   bool isIdle(u_int max_idleness);
   void incrContact(Host *peer, bool contacted_peer_as_client);
-  void getHostContacts(lua_State* vm);
 
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, 
 		u_int64_t sent_packets, u_int64_t sent_bytes,

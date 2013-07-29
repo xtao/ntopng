@@ -140,31 +140,6 @@ char* Host::get_mac(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
-void Host::getHostContacts(lua_State* vm) {
-
-  if(get_ip() == NULL) return;
-
-  lua_newtable(vm);
-
-  /* client */
-  ntop->getRedis()->getHostContacts(vm, this, true /* client */);
-  lua_pushstring(vm, "client");
-  lua_insert(vm, -2);
-  lua_settable(vm, -3);
-
-  /* server */
-  ntop->getRedis()->getHostContacts(vm, this, false /* server */);
-  lua_pushstring(vm, "server");
-  lua_insert(vm, -2);
-  lua_settable(vm, -3);
-
-  lua_pushstring(vm, "contacts");
-  lua_insert(vm, -2);
-  lua_settable(vm, -3);
-}
-
-/* *************************************** */
-
 void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) {
   char buf[64];
 
@@ -336,19 +311,18 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(localHost && (_peer->get_ip() != NULL)) {
-    char s_buf[32], d_buf[32], *me, *peer;
+    char d_buf[32], *peer;
 
-    me   = get_ip()->print(s_buf, sizeof(s_buf));
     peer = _peer->get_ip()->print(d_buf, sizeof(d_buf));
-
-    ((GenericHost*)this)->incrContact(me, peer, contacted_peer_as_client);
+    ((GenericHost*)this)->incrContact(peer, contacted_peer_as_client);
   }
 }
 
 /* *************************************** */
 
-void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
-		    u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
+void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
+		    u_int64_t sent_packets, u_int64_t sent_bytes,
+		    u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
   if(sent_packets || rcvd_packets) {
     ((GenericHost*)this)->incStats(l4_proto, ndpi_proto, sent_packets,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
@@ -375,4 +349,13 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets,
       break;
     }
   }
+}
+
+/* *************************************** */
+
+char* Host::get_string_key(char *buf, u_int buf_len) {
+  if(ip != NULL)
+    return(ip->print(buf, buf_len));
+  else
+    return(get_mac(buf, buf_len));
 }

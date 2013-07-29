@@ -130,9 +130,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
 	    host->updateSeen();
 
-	    host->incrContact((char*)ndpi_flow->host_server_name,
-			      src_host->get_ip()->print(s_buf, sizeof(s_buf)), 
-			      true);
+	    host->incrContact(src_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
 	  }
 	}
 	break;

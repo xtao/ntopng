@@ -57,7 +57,7 @@ class Redis {
 
   int getDNSQueueLength();
 
-  void getHostContacts(lua_State* vm, Host *h, bool client_contacts);
+  void getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts);
 };
 
 #endif /* _REDIS_H_ */

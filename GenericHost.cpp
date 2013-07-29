@@ -24,13 +24,25 @@
 /* *************************************** */
 
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
-  ndpiStats = new NdpiStats();
-  
+  ndpiStats = new NdpiStats();  
 }
 
 /* *************************************** */
 
 GenericHost::~GenericHost() {
+  char buf[64], *keyname;
+
+  keyname = get_string_key(buf, sizeof(buf));
+  if(keyname[0] != '\0') {
+    char key[64];
+    
+    snprintf(key, sizeof(key), "%s.client", keyname);
+    ntop->getRedis()->del(key);
+    
+    snprintf(key, sizeof(key), "%s.server", keyname);
+    ntop->getRedis()->del(key);
+  }
+
   if(ndpiStats)
     delete ndpiStats;
 }
@@ -46,25 +58,50 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
       ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
  
-   updateSeen();
+    updateSeen();
   }
 }
 
 /* *************************************** */
 
-void GenericHost::incrContact(char *me, char *peer, 
-			      bool contacted_peer_as_client) {
-  char key[128];
+void GenericHost::incrContact(char *peer, bool contacted_peer_as_client) {
+  char buf[64], *keyname;
 
-  snprintf(key, sizeof(key), "%s.%s",
-	   me, contacted_peer_as_client ? "client" : "server");
-  
-  ntop->getRedis()->zincrbyAndTrim(key, peer, 1 /* +1 */, MAX_NUM_HOST_CONTACTS);
-  
-#if 0
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s contacted %s as %s",
-			       me, peer,
-			       contacted_peer_as_client ? "client" : "server");
-#endif
+  keyname = get_string_key(buf, sizeof(buf));
+  if(keyname[0] != '\0') {
+    char key[96];
 
+    snprintf(key, sizeof(key), "%s.%s",
+	     keyname, contacted_peer_as_client ? "client" : "server");
+    
+    ntop->getRedis()->zincrbyAndTrim(key, peer, 1 /* +1 */, MAX_NUM_HOST_CONTACTS);
+  }
 }
+
+/* *************************************** */
+
+void GenericHost::getHostContacts(lua_State* vm) {
+  char key[64];
+
+  get_string_key(key, sizeof(key));
+  if(key[0] == '\0') return;
+
+  lua_newtable(vm);
+
+  /* client */
+  ntop->getRedis()->getHostContacts(vm, this, true /* client */);
+  lua_pushstring(vm, "client");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  /* server */
+  ntop->getRedis()->getHostContacts(vm, this, false /* server */);
+  lua_pushstring(vm, "server");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  lua_pushstring(vm, "contacts");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+}
+

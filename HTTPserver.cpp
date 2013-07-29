@@ -110,6 +110,8 @@ static int is_authorized(const struct mg_connection *conn,
   }
 
   mg_get_cookie(conn, "session", session_id, sizeof(session_id));
+  if(session_id[0] == '\0') return(0);
+
   mg_get_cookie(conn, "user", username, sizeof(username));
   // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Received session %s/%s", session_id, username);
 

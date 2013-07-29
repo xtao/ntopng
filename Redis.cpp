@@ -351,14 +351,14 @@ char* Redis::getVersion(char *str, u_int str_len) {
 
 /* **************************************** */
 
-void Redis::getHostContacts(lua_State* vm, Host *h, bool client_contacts) {
+void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts) {
   int rc;
-  char **rsp, buf[64], key[128];
+  char **rsp, hkey[64], key[64];
 
-  if(h->get_ip() == NULL) return;
+  h->get_string_key(hkey, sizeof(hkey));
+  if(hkey[0] == '\0') return;
 
-  snprintf(key, sizeof(key), "%s.%s", 
-	   h->get_ip()->print(buf, sizeof(buf)),
+  snprintf(key, sizeof(key), "%s.%s", hkey,
 	   client_contacts ? "client" : "server");
 
   lua_newtable(vm);
