@@ -67,8 +67,8 @@ class Flow : public GenericHashEntry {
 
   char *getDomainCategory();
   void allocFlowMemory();
-  inline u_int8_t getTcpFlags()              { return(tcp_flags); };
-  inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; }
+  inline u_int8_t getTcpFlags()              { return(tcp_flags);  };
+  inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; };
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   void setJSONInfo(char *json);
   inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };

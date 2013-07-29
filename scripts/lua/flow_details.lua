@@ -71,7 +71,20 @@ else
 
    print("<tr><th>Client to Server Traffic</th><td>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</td></tr>\n")
    print("<tr><th>Server to Client Traffic</th><td>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</td></tr>\n")
-  
+
+   if(flow["tcp_flags"] > 0) then
+      print("<tr><th>TCP Flags</th><td>")
+
+      if(hasbit(flow["tcp_flags"],0x01)) then print('<span class="label label-info">FIN</span> ') end
+      if(hasbit(flow["tcp_flags"],0x02)) then print('<span class="label label-info">SYN</span> ') end
+      if(hasbit(flow["tcp_flags"],0x04)) then print('<span class="label label-info">RST</span> ') end
+      if(hasbit(flow["tcp_flags"],0x08)) then print('<span class="label label-info">PUSH</span> ') end
+      if(hasbit(flow["tcp_flags"],0x10)) then print('<span class="label label-info">ACK</span> ') end
+      if(hasbit(flow["tcp_flags"],0x20)) then print('<span class="label label-info">URG</span> ') end
+      
+      print("</td></tr>\n")
+   end
+
    local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
    for key,value in pairs(info) do
       print("<tr><th>" .. getFlowKey(key) .. "</th><td>" .. handleCustomFlowField(key, value) .. "</td></tr>\n") 

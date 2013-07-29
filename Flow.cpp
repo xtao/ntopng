@@ -431,7 +431,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());
   lua_push_int_table_entry(vm, "seen.last", get_last_seen());
   lua_push_int_table_entry(vm, "duration", get_duration());
-  lua_push_int_table_entry(vm, "tcp_flags", get_duration());
+  lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
   lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");

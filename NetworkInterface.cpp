@@ -265,7 +265,7 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     /* tcp */
     tcph = (struct ndpi_tcphdr *)l4;
     src_port = tcph->source, dst_port = tcph->dest;
-    tcp_flags = tcph->fin | tcph->syn | tcph->rst | tcph->psh | tcph->ack | tcph->urg;
+    tcp_flags = l4[13];
   } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
     /* udp */
     udph = (struct ndpi_udphdr *)l4;
