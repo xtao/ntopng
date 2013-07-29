@@ -92,7 +92,7 @@ setInterval(function() {
 
 					   pps = packets_diff / epoch_diff;
 
-					   $('#network-load').html(""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+rsp.num_hosts+" hosts]["+rsp.num_flows+" flows][uptime "+rsp.uptime+"]");
+					   $('#network-load').html(""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+addCommas(rsp.num_hosts)+" hosts]["+addCommas(rsp.num_flows)+" flows][uptime "+rsp.uptime+"]");
    					}
 					   prev_bytes = rsp.bytes;
 					   prev_packets  = rsp.packets;

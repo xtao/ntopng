@@ -249,10 +249,12 @@ print('   <tr><th>Last</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .
 print('   <tr><th>Average</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
 print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes)..  '</td></tr>\n')
 
+print('   <tr><th>Selection Time</th><td colspan=2><div id=when></div></td></tr>\n')
+print('   <tr><th>Top Talkers</th><td colspan=2><div id=talkers></div></td></tr>\n')
+
 
 print [[
    </table>
-
    </td></tr>
    </table>
 </div>
@@ -386,7 +388,7 @@ if (xInfoURL) then
 				var info = jQuery.parseJSON(content);
 				infoHTML += "<ul>";
 				$.each(info, function(i, n) {
-				  infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Average Host Traffic per Sec]<ol>";
+				  infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Avg Traffic/sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if (items < 3)
@@ -404,11 +406,15 @@ print [[
 		this.element.innerHTML = '';
 		this.element.style.left = graph.x(point.value.x) + 'px';
 
-		var xLabel = document.createElement('div');
+		/*var xLabel = document.createElement('div');
 		xLabel.setAttribute("style", "opacity: 0.5; background-color: #EEEEEE; filter: alpha(opacity=0.5)");
 		xLabel.className = 'x_label';
 		xLabel.innerHTML = formattedXValue + infoHTML;
 		this.element.appendChild(xLabel);
+		*/
+		$('#when').html(formattedXValue);
+		$('#talkers').html(infoHTML);
+
 
 		var item = document.createElement('div');
 

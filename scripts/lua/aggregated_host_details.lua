@@ -75,7 +75,7 @@ print [[
 --print("<b>".._GET["page"].."</b>")
 if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th>Name</th><td>" .. host["name"].. "</td></tr>\n")
+   print("<tr><th>Name</th><td><A HREF=http://" .. host["name"].. ">".. host["name"].."</A></td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
@@ -101,7 +101,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    else
       url = k
    end
-   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
+   print("<tr><th>"..url.."</th><td class=\"text-right\"><div id=\""..string.gsub(k, '%.', '_').."\">" .. formatValue(v) .. "</div></td></tr>\n")
 end
 print("</table></td>\n")
 
@@ -120,18 +120,23 @@ end
 print [[
 <script>
 setInterval(function() {
-		  $.ajax({
-			    type: 'GET',
-			    url: '/lua/get_aggregated_host_info.lua',
-			    data: { if: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
-			    success: function(content) {
-				var rsp = jQuery.parseJSON(content);
+	  $.ajax({
+		    type: 'GET',
+		    url: '/lua/get_aggregated_host_info.lua',
+		    data: { if: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
+		    success: function(content) {
+			var rsp = jQuery.parseJSON(content);
+			$('#last_seen').html(rsp.last_seen);
+			$('#contacts').html(addCommas(rsp.num_contacts));
+			for (var i = 0; i < rsp.contacts.length; i++) {
+			   var key = '#'+rsp.contacts[i].key.replace(/\./g, '_');
+			   $(key).html(addCommas(rsp.contacts[i].value));
+			   $("#192.165.67.166").html('9');
 
-				$('#last_seen').html(bytesToVolume(rsp.bytes));
-				$('#contacts').html(addCommas(rsp.packets)+" Pkts");
-			     }
-		           });
-			 }, 3000);
-
+			}
+		     }
+	           });
+		 }, 3000);
+</script>
 		      ]]
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
