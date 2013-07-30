@@ -26,7 +26,8 @@
 #endif
 
 /* Trick to include it once */
-#include "third-party/json-parser/json.c"
+#include "third-party/SimpleJSON/src/JSON.cpp"
+#include "third-party/SimpleJSON/src/JSONValue.cpp"
 
 Ntop *ntop;
 

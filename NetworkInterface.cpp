@@ -417,7 +417,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
       }
 
-      packet_processing(time, ethernet, vlan_id, iph, NULL, h->len - ip_offset, h->len);
+      packet_processing(time, ethernet, vlan_id, iph, NULL, h->caplen - ip_offset, h->caplen);
     }
     break;
 

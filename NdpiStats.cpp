@@ -117,92 +117,12 @@ void NdpiStats::incStats(u_int proto_id,
 /* *************************************** */
 
 const char* NdpiStats::serialize() {
-  std::string s("{");
-  bool first = true;
-  
-  for(int i=0; i<MAX_NDPI_PROTOS; i++) {
-    if(counters[i] != NULL) {
-      if(counters[i]->packets.sent || counters[i]->packets.rcvd) {
-	char tmp[128];
-	
-	snprintf(tmp, sizeof(tmp), "\"%d\":[%lu,%lu,%lu,%lu]", 
-		 i, 
-		 (long unsigned int)counters[i]->packets.sent,
-		 (long unsigned int)counters[i]->packets.rcvd,
-		 (long unsigned int)counters[i]->bytes.sent,
-		 (long unsigned int)counters[i]->bytes.rcvd);
-	
-	if(!first) s.append(",");
-	s.append(tmp);
-	first = false;
-      }
-    }
-  }
-  
-  s.append("}");
-  return(strdup(s.c_str()));
+
+  return(NULL);
 }
 
 /* *************************************** */
 
 void NdpiStats::deserialize(const char *v) {
-  json_settings settings;
-  char error[256];
-  json_value *value;
-
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", v);
-  
-  /* Reset all values */
-  for(int i=0; i<MAX_NDPI_PROTOS; i++) {
-    if(counters[i] != NULL)
-      free(counters[i]);
-  }
-
-  memset(counters, 0, sizeof(counters));
-
-  memset(&settings, 0, sizeof (json_settings));
-  if((value = json_parse_ex(&settings, v, strlen(v), error)) != NULL) {
-    if(value->type == json_object) {
-      for(u_int i=0; i<value->u.object.length; i++) {
-	u_int id = atoi(value->u.object.values[i].name);
-
-	if(id < MAX_NDPI_PROTOS) {
-	  if(counters[id] == NULL) {
-	    if((counters[id] = (ProtoCounter*)calloc(1, sizeof(ProtoCounter))) == NULL) {
-	      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Not enough memory");
-	      return;
-	    }
-	  }
-
-	  if((value->u.object.values[i].value->type == json_array)
-	     && (value->u.object.values[i].value->u.array.length == 4)) {
-	    u_int64_t v;
-
-	    if(value->u.object.values[i].value->u.array.values[0]->type == json_integer) {
-	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[0]->u.integer;
-	      counters[id]->packets.sent = v;
-	    }
-
-	    if(value->u.object.values[i].value->u.array.values[1]->type == json_integer) {
-	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[1]->u.integer;
-	      counters[id]->packets.rcvd = v;
-	    }
-
-	    if(value->u.object.values[i].value->u.array.values[2]->type == json_integer) {
-	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[2]->u.integer;
-	      counters[id]->bytes.sent = v;
-	    }
-
-	    if(value->u.object.values[i].value->u.array.values[3]->type == json_integer) {	      
-	      v = (u_int64_t)value->u.object.values[i].value->u.array.values[3]->u.integer;
-	      counters[id]->bytes.rcvd = v;
-	    }
-	  }
-	}
-      }
-    }
-
-    json_value_free(value);
-  }
 }
 

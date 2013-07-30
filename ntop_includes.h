@@ -80,7 +80,7 @@ extern "C" {
 #endif
 };
 
-#include "third-party/json-parser/json.h"
+#include "JSON.h"
 #include "mongoose.h"
 #include "ntop_defines.h"
 #include "patricia.h"

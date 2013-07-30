@@ -30,6 +30,16 @@ Host::Host(NetworkInterface *_iface) : GenericHost(_iface) {
 
 /* *************************************** */
 
+Host::Host(NetworkInterface *_iface, char *jsonString) : GenericHost(_iface) {
+  ip = new IpAddress();
+  initialize(NULL, 0, false);
+
+  /* TODO */
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() IS MISSING", __FUNCTION__);
+}
+
+/* *************************************** */
+
 Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
   ip = new IpAddress(_ip);
   initialize(mac, _vlanId, true);
@@ -53,6 +63,14 @@ Host::~Host() {
     //ndpiStats->serialize());
   }
 #endif
+
+  if(0) {
+    char *s = getJSON();
+
+    
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", s);
+    free(s);
+  }
 
   if(localHost && (ip != NULL)) {
     char key[128], buf[64], *k;
@@ -358,4 +376,22 @@ char* Host::get_string_key(char *buf, u_int buf_len) {
     return(ip->print(buf, buf_len));
   else
     return(get_mac(buf, buf_len));
+}
+
+/* *************************************** */
+
+char* Host::getJSON() {
+  JSONObject root;
+  JSONValue *value;
+  
+  char *rsp;
+
+  root[L"mac_address"] = new JSONValue(mac_address);
+  root[L"asn"]         = new JSONValue((double)asn);
+
+  value = new JSONValue(root);
+  rsp = strdup((char*)value->Stringify().c_str());
+  delete value;
+
+  return(rsp);
 }

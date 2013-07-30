@@ -25,9 +25,9 @@
 
 NtopGlobals::NtopGlobals() {
   start_time = time(NULL);
-  ifMTU = 1500;
+  ifMTU = 1514;
   promiscuousMode = 1;
-  snaplen = 1500;
+  snaplen = 1514;
   file_id = 0;
   detection_tick_resolution = 1000;
   trace = new Trace();
