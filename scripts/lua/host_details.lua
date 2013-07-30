@@ -145,7 +145,7 @@ if((page == "overview") or (page == nil)) then
       end
    end
 
-   if((host["city"] ~= "") or (host["country"] ~= "")) then
+   if((host["city"] ~= "") and (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
    
