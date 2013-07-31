@@ -43,7 +43,7 @@ print [[
 
 url="/lua/aggregated_host_details.lua?host="..host_ip
 
-print("<li><a href=\"#\">Host: "..host_ip.." </a></li>\n")
+print("<li><a href=\"#\">"..host_ip.." </a></li>\n")
 
 if(page == "overview") then
   print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")

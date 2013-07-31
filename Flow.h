@@ -45,9 +45,11 @@ class Flow : public GenericHashEntry {
   u_int64_t cli2srv_bytes, srv2cli_bytes;
 
   /* Counter values at last host update */
+  time_t prev_update_time, last_update_time;
   u_int64_t cli2srv_last_packets, srv2cli_last_packets;
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;
+  
 
   void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
@@ -96,7 +98,7 @@ class Flow : public GenericHashEntry {
   bool idle();
   int compare(Flow *fb);
   void print();
-  void update_hosts_stats();
+  void update_hosts_stats(time_t when);
   void print_peers(lua_State* vm);
   u_int32_t key();
   void lua(lua_State* vm, bool detailed_dump);

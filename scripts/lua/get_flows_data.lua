@@ -150,7 +150,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
-	 print ("\", \"column_bytes_last\" : \"" .. bytesToSize(value["bytes.last"]) .. "")
+	 print ("\", \"column_throughput\" : \"" .. value["throughput"] .. "")
 
 	 cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)
 	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")

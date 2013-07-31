@@ -107,14 +107,14 @@ function getActualTopTalkers(ifname, mode, epoch)
 
       -- Read the lastdump      
       lastdump = talkers_dir .. "/.sent_lastdump"
+      last = nil
       if(ntop.exists(lastdump)) then
-	 last = persistence.load(lastdump)
-      else
-	 last = {}
+	 last = persistence.load(lastdump)      
       end
+      if(last == nil) then last = {} end
 
       persistence.store(lastdump, _sent);
-
+      
       for key, value in pairs(_sent) do
 	 if(last[key] ~= nil) then
 	    v = _sent[key]-last[key]
@@ -165,11 +165,11 @@ function getActualTopTalkers(ifname, mode, epoch)
    if((mode == nil) or (mode == "receivers")) then
       -- Read the lastdump
       lastdump = dirs.workingdir .. "/top_talkers/" .. ifname .. "/.rcvd_lastdump"
+      last = nil
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)
-      else
-	 last = {}
       end
+      if(last == nil) then last = {} end
 
       persistence.store(lastdump, _rcvd);
 

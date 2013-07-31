@@ -35,7 +35,7 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, src_id = dst_id = NULL;
   json_info = strdup("{}");
-  tcp_flags = 0;
+  tcp_flags = 0, prev_update_time = last_update_time = 0;
 
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) { src_host->incUses(); if(dst_host) src_host->incrContact(dst_host, true);  }
@@ -350,7 +350,7 @@ void Flow::print() {
 
 /* *************************************** */
 
-void Flow::update_hosts_stats() {
+void Flow::update_hosts_stats(time_t when) {
   u_int64_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
   u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
 
@@ -370,6 +370,9 @@ void Flow::update_hosts_stats() {
   if(dst_host)
     dst_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
 		       diff_sent_packets, diff_sent_bytes);
+
+  prev_update_time = last_update_time;
+  last_update_time = when;
 }
 
 /* *************************************** */

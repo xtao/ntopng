@@ -106,6 +106,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("{ \"column_ip\" : \"<A HREF='/lua/")
 	 if(aggregated ~= nil) then print("aggregated_") end
 	 print("host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
+
 	 print("</A>\", \"column_name\" : \"" .. value["name"] .. " ")
 
 	 if(value["country"] ~= nil) then 

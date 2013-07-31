@@ -180,9 +180,10 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     if(verbose) {
       lua_push_float_table_entry(vm, "latitude", latitude);
       lua_push_float_table_entry(vm, "longitude", longitude);
-      lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
       lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
     }
+
+    lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
 
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());

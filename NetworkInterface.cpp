@@ -522,14 +522,16 @@ void NetworkInterface::getnDPIStats(NdpiStats *stats) {
 
 static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
+  time_t *now = (time_t*)user_data;
 
-  flow->update_hosts_stats();
+  flow->update_hosts_stats(*now);
 }
 
 /* **************************************************** */
 
 void NetworkInterface::updateHostStats() {
-  flows_hash->walk(flow_update_hosts_stats, this);
+  time_t now = time(NULL);
+  flows_hash->walk(flow_update_hosts_stats, (void*)&now);
 }
 
 /* **************************************************** */
