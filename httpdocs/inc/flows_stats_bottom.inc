@@ -7,8 +7,8 @@
 			     }
 				 },
 			     {
-			     title: "Current Bytes",
-				 field: "column_bytes_last",
+			     title: "Throughput",
+				 field: "column_thpt",
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'right'

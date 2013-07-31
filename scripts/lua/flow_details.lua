@@ -58,9 +58,9 @@ else
    end				
    print("<tr><th>Application Protocol</th><td>" .. flow["proto.ndpi"] .. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. os.date("%x %X", flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</td></tr>\n")
-   print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>Last Seen</th><td><div id=last_seen>" .. os.date("%x %X", flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Total Traffic Volume</th><td>" .. bytesToSize(flow["bytes"]) .. "</td></tr>\n")
+   print("<tr><th>Total Traffic Volume</th><td><div id=volume>" .. bytesToSize(flow["bytes"]) .. "</div></td></tr>\n")
 
    print("<tr><th>Client vs Server Traffic Breakdown</th><td>")  
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
@@ -69,8 +69,9 @@ else
    print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["src.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["dst.ip"] .. '</div></div>')
    print("</td></tr>\n")
 
-   print("<tr><th>Client to Server Traffic</th><td>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</td></tr>\n")
-   print("<tr><th>Server to Client Traffic</th><td>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</td></tr>\n")
+   print("<tr><th>Client to Server Traffic</th><td><div id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</div></td></tr>\n")
+   print("<tr><th>Server to Client Traffic</th><td><div id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</div></td></tr>\n")
+   print("<tr><th>Actual Throughput</th><td><div id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</div></td></tr>\n")
 
    if(flow["tcp_flags"] > 0) then
       print("<tr><th>TCP Flags</th><td>")
@@ -95,9 +96,28 @@ end
 
 print [[
 <script>
+/*
       $(document).ready(function() {
 	      $('.progress .bar').progressbar({ use_percentage: true, display_text: 1 });
    });
+*/
+
+setInterval(function() {
+	  $.ajax({
+		    type: 'GET',
+		    url: '/lua/flow_stats.lua',
+		    data: { if: "]] print(ifname) print [[", flow_key: "]] print(flow_key) print [[" },
+		    success: function(content) {
+			var rsp = jQuery.parseJSON(content);
+			$('#last_seen').html(rsp["seen.last"]);
+			$('#volume').html(bytesToVolume(rsp.bytes));
+			$('#cli2srv').html(addCommas(rsp["cli2srv.packets"])+" Pkts / "+bytesToVolume(rsp["cli2srv.bytes"]));
+			$('#srv2cli').html(addCommas(rsp["srv2cli.packets"])+" Pkts / "+bytesToVolume(rsp["srv2cli.bytes"]));
+			$('#throughput').html(rsp.throughput);
+		     }
+	           });
+		 }, 3000);
+
 </script>
  ]]
 

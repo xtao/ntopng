@@ -339,7 +339,15 @@ print [[
 			       }
 			       },
 			     {
-			     title: "Bytes",
+			     title: "Throughput",
+				 field: "column_thpt",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
+				 },
+			     {
+			     title: "Total Bytes",
 				 field: "column_bytes",
 				 sortable: true,
 	 	             css: {

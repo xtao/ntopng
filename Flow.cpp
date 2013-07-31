@@ -36,6 +36,7 @@ Flow::Flow(NetworkInterface *_iface,
   ndpi_flow = NULL, src_id = dst_id = NULL;
   json_info = strdup("{}");
   tcp_flags = 0, prev_update_time = last_update_time = 0;
+  cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
 
   iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
   if(src_host) { src_host->incUses(); if(dst_host) src_host->incrContact(dst_host, true);  }
@@ -398,6 +399,8 @@ bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port,
 
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
+  u_int32_t time_diff;
+  float thpt;
 
   lua_newtable(vm);
 
@@ -438,6 +441,25 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
   lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
+
+  /*
+    Redo the loop in case we're computing th throughput
+    while updating it
+  */
+  while(1) {
+    if((time_diff = last_update_time - prev_update_time) == 0) time_diff = 1;  
+    int64_t tdiff = cli2srv_last_bytes-prev_cli2srv_last_bytes;
+
+    if(tdiff >= 0)  {
+      thpt = (float)tdiff/(float)time_diff;
+      break;
+    } else {
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "DIFF=%ld [%lu][%lu]", tdiff, cli2srv_last_bytes, prev_cli2srv_last_bytes);
+    }
+  }
+
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", thpt);
+  lua_push_float_table_entry(vm, "throughput", thpt);
 
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
 

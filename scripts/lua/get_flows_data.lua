@@ -78,6 +78,8 @@ for key, value in pairs(flows_stats) do
    	 vkey = flows_stats[key]["category"]..postfix
 	 elseif(sortColumn == "column_duration") then
 	 vkey = flows_stats[key]["duration"]+postfix	  
+	 elseif(sortColumn == "column_thpt") then
+	 vkey = flows_stats[key]["throughput"]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
       else
@@ -150,10 +152,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
-	 print ("\", \"column_throughput\" : \"" .. value["throughput"] .. "")
+	 print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. "\"")
 
 	 cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)
-	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")
+	 print (", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")
 
 	 print ("\" }\n")
 	 num = num + 1
