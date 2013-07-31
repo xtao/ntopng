@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
   #if defined(WIN32) && defined(DEMO_WIN32)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
     ntop->getTrace()->traceEvent(TRACE_WARNING, "This is a demo version of ntopng limited to %d packets", MAX_NUM_PACKETS);
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "Please go to http://shop.ntop.org for getting the full version");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Please go to http://shop.ntop.org for getting the full version");
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "-----------------------------------------------------------");
   #endif
 
