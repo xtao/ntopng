@@ -37,6 +37,7 @@ class Utils {
   static void  setThreadAffinity(pthread_t thread, int core_id);
   static char* trim(char *s);
   static u_int32_t hashString(char *s);
+  static float timeval2ms(struct timeval *tv);
 };
 
 

@@ -24,7 +24,7 @@ if(host == nil) then
    return
 else
    diff = os.time()-host["seen.last"]
-   print('{ "name": \"' .. hostname .. '\", "last_seen": "' .. os.date("%x %X", host["seen.last"]) .. ' ['.. secondsToTime(diff) .. ' ago]", "num_contacts": ' .. host["pkts.rcvd"] .. ', "epoch": ' .. os.time())
+   print('{ "name": \"' .. hostname .. '\", "last_seen": "' .. formatEpoch(host["seen.last"]) .. ' ['.. secondsToTime(diff) .. ' ago]", "num_contacts": ' .. host["pkts.rcvd"] .. ', "epoch": ' .. os.time())
 
 print(', "contacts": [')
 

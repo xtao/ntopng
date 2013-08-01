@@ -63,6 +63,8 @@ class Host : public GenericHost {
   inline char* get_category()                  { refreshCategory(); return(category); }
   inline u_int32_t get_asn()                   { return(asn);           }
   inline bool isLocalHost()                    { return(localHost);     }
+  inline float get_latitude()                  { return(latitude);      }
+  inline float get_longitude()                 { return(longitude);     }
   char* get_mac(char *buf, u_int buf_len);
   char* get_name(char *buf, u_int buf_len, bool force_resolution_if_not_found);
   char* get_string_key(char *buf, u_int buf_len);

@@ -28,7 +28,7 @@ print [[
       <li><a href="/"><i class="icon-home"></i> Dashboard</a></li>
       <li><a href="/lua/logout.lua"><i class="icon-off"></i> Logout</a></li>
     </ul>
-  </li></a>
+  </li>
 
    ]]
 
@@ -58,10 +58,11 @@ end
 
 print [[
       <li class="divider"></li>
-      <li><a href="/lua/hosts_treemap.lua">Hosts TreeMap</a></li>
-      <li><a href="/lua/hosts_matrix.lua">Local Matrix</a></li>
+      <li><a href="/lua/hosts_geomap.lua"><i class="icon-map-marker"></i> Geo Map</a></li>
+      <li><a href="/lua/hosts_treemap.lua"><i class="icon-th"></i> Tree Map</a></li>
+      <li><a href="/lua/hosts_matrix.lua"><i class="icon-th-large"></i> Local Matrix</a></li>
     </ul>
-  </li></a>
+  </li>
 
    ]]
 

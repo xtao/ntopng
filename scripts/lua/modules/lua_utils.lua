@@ -181,6 +181,10 @@ function split(pString, pPattern)
 end
 
 
+function formatEpoch(epoch)
+   return(os.date("%d/%m/%Y %X", epoch))
+end
+
 function secondsToTime(seconds)
    if(seconds < 1) then
       return("< 1 sec")

@@ -104,8 +104,13 @@ end
 
 num = 0
 if(host.contacts ~= nil) then
-   for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
-   for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
+   if(host["contacts"]["client"] ~= nil) then
+      for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
+   end
+
+   if(host["contacts"]["server"] ~= nil) then
+      for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
+   end
 end
 
 if(num > 0) then 
@@ -151,8 +156,8 @@ if((page == "overview") or (page == nil)) then
    
    print("</td></tr>\n")
 
-   if(host["vlan"] > 0) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
-   if(host["asn"] > 0) then print("<tr><th>ASN</th><td>"..host["asn"].." [ " .. host.asname .. " ] </td></tr>\n") end
+   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
+   if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>"..host["asn"].." [ " .. host.asname .. " ] </td></tr>\n") end
 
    if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
 
@@ -163,15 +168,17 @@ if((page == "overview") or (page == nil)) then
    print("</td></tr>\n")
 end
 
-   print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
-   print("<tr><th>Last Seen</th><td>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>First Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td></tr>\n")
+   print("<tr><th>Last Seen</th><td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
 
-   print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")
-   breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
-   print("</td></tr>\n")
+   if((host["bytes.sent"]+host["bytes.rcvd"]) > 0) then
+      print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")
+      breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
+      print("</td></tr>\n")
+   end
 
-   print("<tr><th>Traffic Sent</th><td>" .. formatPackets(host["pkts.sent"]) .. " / ".. bytesToSize(host["bytes.sent"]) .. "</td></tr>\n")
-   print("<tr><th>Traffic Received</th><td>" .. formatPackets(host["pkts.rcvd"]) .. " / ".. bytesToSize(host["bytes.rcvd"]) .. "</td></tr>\n")
+   print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span></td></tr>\n")
+   print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span></td></tr>\n")
    print("</table>\n")
 
    elseif((page == "traffic")) then
@@ -429,4 +436,49 @@ else
    print(page)
 end
 end
+
+print [[
+<script>
+/*
+      $(document).ready(function() {
+	      $('.progress .bar').progressbar({ use_percentage: true, display_text: 1 });
+   });
+*/
+
+
+//var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
+
+setInterval(function() {
+	  $.ajax({
+		    type: 'GET',
+		    url: '/lua/host_stats.lua',
+		    data: { if: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
+		    error: function(content) { alert("JSON Error"); },
+		    success: function(content) {
+			var host = jQuery.parseJSON(content);
+			$('#first_seen').html(epoch2Seen(host["seen.first"]));
+			$('#last_seen').html(epoch2Seen(host["seen.last"]));
+
+
+			$('#pkts_sent').html(formatPackets(host["pkts.sent"]));
+			$('#pkts_rcvd').html(formatPackets(host["pkts.rcvd"]));
+			$('#bytes_sent').html(bytesToSize(host["bytes.sent"]));
+			$('#bytes_rcvd').html(bytesToSize(host["bytes.rcvd"]));
+
+			/*
+			$('#throughput').html(rsp.throughput);
+
+			var values = thptChart.text().split(",");
+			values.shift();
+			values.push(rsp.throughput_raw);
+			thptChart.text(values.join(",")).change();
+			*/
+		     }
+	           });
+		 }, 3000);
+
+</script>
+ ]]
+
+
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

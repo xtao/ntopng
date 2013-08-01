@@ -217,7 +217,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
     if(verbose) {
       if(ndpiStats) ndpiStats->lua(iface, vm);    
-      if(localHost) getHostContacts(vm);
+      //if(localHost) getHostContacts(vm);
     }
 
     if(!returnHost) {

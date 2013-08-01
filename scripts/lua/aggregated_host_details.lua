@@ -76,8 +76,8 @@ print [[
 if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td><A HREF=http://" .. host["name"].. ">".. host["name"].."</A></td></tr>\n")
-   print("<tr><th>First Seen</th><td>" .. os.date("%x %X", host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
-   print("<tr><th>Last Seen</th><td><div id=last_seen>" .. os.date("%x %X", host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
+   print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
+   print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
    print("<tr><th>Contacts Received</th><td><div id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</id></td></tr>\n")
    print("</table>\n")

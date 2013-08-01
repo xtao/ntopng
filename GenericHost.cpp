@@ -81,9 +81,9 @@ void GenericHost::incrContact(char *peer, bool contacted_peer_as_client) {
 /* *************************************** */
 
 void GenericHost::getHostContacts(lua_State* vm) {
-  char key[64];
+  char _key[64], *key;
 
-  get_string_key(key, sizeof(key));
+  key = get_string_key(_key, sizeof(_key));
   if(key[0] == '\0') return;
 
   lua_newtable(vm);
