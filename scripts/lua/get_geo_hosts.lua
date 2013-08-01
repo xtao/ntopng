@@ -30,7 +30,7 @@ for key, values in pairs(peers) do
    if(t > maxval) then maxval = t end
 end
 
-min_threshold = (t*10)/100
+min_threshold = 0
 max_num = 100
 num = 0
 for key, values in pairs(peers) do
