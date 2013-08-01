@@ -30,13 +30,15 @@ for key, values in pairs(peers) do
    if(t > maxval) then maxval = t end
 end
 
+min_threshold = (t*10)/100
+max_num = 100
 num = 0
 for key, values in pairs(peers) do
    if(((values["client.latitude"]+values["client.longitude"]) > 0) and ((values["server.latitude"]+values["server.longitude"]) > 0)) then
       t = values["sent"]+values["rcvd"]
       pctg = (t*100)/maxval
 
-      if(pctg > 0) then 
+      if(pctg >= min_threshold) then 
 	 if(num > 0) then print(",") end
 	 print('{\n"host":\n[	\n{\n')
 	 print('"lat": '..values["client.latitude"]..',\n')
@@ -51,6 +53,8 @@ for key, values in pairs(peers) do
 	 print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
 	 print('}\n')
 	 num = num + 1
+	 
+	 if(num > max_num) then break end
       end
    end
 end
