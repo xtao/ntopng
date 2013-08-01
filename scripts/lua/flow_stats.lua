@@ -24,5 +24,9 @@ end
 sendHTTPHeader('text/html')
 --sendHTTPHeader('application/json')
 
-diff = os.time()-flow["seen.last"]
-print('{ "seen.last": "'.. os.date("%x %X", flow["seen.last"]) .. ' ['.. secondsToTime(diff) .. ' ago]", "bytes": ' .. flow["bytes"] .. ', "cli2srv.packets": ' .. flow["cli2srv.packets"] .. ', "srv2cli.packets": ' .. flow["srv2cli.packets"] .. ', "cli2srv.bytes": ' .. flow["cli2srv.bytes"] .. ', "srv2cli.bytes": ' .. flow["srv2cli.bytes"].. ', "throughput": "' .. bitsToSize(8*flow["throughput"])..'" }\n')
+if(flow == nil) then
+   print('{}')
+else
+   diff = os.time()-flow["seen.last"]
+   print('{ "seen.last": "'.. os.date("%x %X", flow["seen.last"]) .. ' ['.. secondsToTime(diff) .. ' ago]", "bytes": ' .. flow["bytes"] .. ', "cli2srv.packets": ' .. flow["cli2srv.packets"] .. ', "srv2cli.packets": ' .. flow["srv2cli.packets"] .. ', "cli2srv.bytes": ' .. flow["cli2srv.bytes"] .. ', "srv2cli.bytes": ' .. flow["srv2cli.bytes"].. ', "throughput": "' .. bitsToSize(8*flow["throughput"])..'" }\n')
+end
