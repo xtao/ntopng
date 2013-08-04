@@ -28,6 +28,9 @@
         padding-bottom: 20px;
       }
 
+
+
+
       /* Custom container */
       .container-narrow {
         margin: 0 auto;
@@ -73,6 +76,13 @@
       .table td.text-right {
         text-align: right;
       }
+
+/* Fix for Google Maps and Twitter Bootstrap
+      https://github.com/twbs/bootstrap/issues/1552
+*/
+img {
+  max-width: none;
+}
     </style>
   </head>
 <body>

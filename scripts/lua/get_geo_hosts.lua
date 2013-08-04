@@ -30,11 +30,10 @@ for key, values in pairs(peers) do
    if(t > maxval) then maxval = t end
 end
 
-min_threshold = 0
+min_threshold = .5 --  0.5%
 max_num = 100
 num = 0
 for key, values in pairs(peers) do
-   if(((values["client.latitude"]+values["client.longitude"]) > 0) and ((values["server.latitude"]+values["server.longitude"]) > 0)) then
       t = values["sent"]+values["rcvd"]
       pctg = (t*100)/maxval
 
@@ -43,12 +42,32 @@ for key, values in pairs(peers) do
 	 print('{\n"host":\n[	\n{\n')
 	 print('"lat": '..values["client.latitude"]..',\n')
 	 print('"lng": '..values["client.longitude"]..',\n')
-	 print('"html": "City: '..values["client.city"]..'",\n')
+
+	 print('"html": "')
+	 if((values["client.city"] ~= nil) and (values["client.city"] ~= "")) then
+	    print('City: '..values["client.city"])
+	 end
+
+	 if((values["client.country"] ~= nil) and (values["client.country"] ~= "")) then
+	    print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["client.country"]) .."'>")
+	 end
+	 print('",\n')
+
 	 print('"name": "'..values["client"]..'"\n')
 	 print('},\n{\n')
 	 print('"lat": '..values["server.latitude"]..',\n')
 	 print('"lng": '..values["server.longitude"]..',\n')
-	 print('"html": "City: '..values["server.city"]..'",\n')
+	 
+	 print('"html": "')
+	 if((values["server.city"] ~= nil) and (values["server.city"] ~= "")) then
+	    print('City: '..values["server.city"])
+	 end
+	 if((values["server.country"] ~= nil) and (values["server.country"] ~= "")) then
+	    print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["server.country"]) .."'>")
+	 end
+	 print('",\n')
+
+
 	 print('"name": "'..values["server"]..'"\n')
 	 print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
 	 print('}\n')
@@ -56,7 +75,6 @@ for key, values in pairs(peers) do
 	 
 	 if(num > max_num) then break end
       end
-   end
 end
 
 

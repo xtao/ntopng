@@ -28,6 +28,7 @@ print [[
   <div class="row-fluid">
     <div class="span8">
       <div id="map-canvas"></div>
+<p>&nbsp;<p><small><b>NOTE</b>: HTML <A HREF=http://diveintohtml5.info/geolocation.html>browser geolocation</A> is used to place on map hosts with private IP addresses or unknown locations.</small>
 </div>
 </div>
 </div>

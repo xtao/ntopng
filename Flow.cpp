@@ -316,11 +316,13 @@ void Flow::print_peers(lua_State* vm) {
   lua_push_float_table_entry(vm, "client.latitude", get_src_host()->get_latitude());
   lua_push_float_table_entry(vm, "client.longitude", get_src_host()->get_longitude());
   lua_push_str_table_entry(vm, "client.city", get_src_host()->get_city() ? get_src_host()->get_city() : (char*)"");
+  lua_push_str_table_entry(vm, "client.country", get_src_host()->get_country() ? get_src_host()->get_country() : (char*)"");
 
   lua_push_str_table_entry(vm, "server", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
   lua_push_float_table_entry(vm, "server.latitude", get_dst_host()->get_latitude());
   lua_push_float_table_entry(vm, "server.longitude", get_dst_host()->get_longitude());
   lua_push_str_table_entry(vm, "server.city", get_dst_host()->get_city() ? get_dst_host()->get_city() : (char*)"");
+  lua_push_str_table_entry(vm, "server.country", get_dst_host()->get_country() ? get_dst_host()->get_country() : (char*)"");
 
   lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
