@@ -125,7 +125,7 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
 	 end
 
 	 total_bytes = total_bytes + v*fstep
-	 -- print(" | " .. (v*fstep) .." |\n")
+	 --print(" | " .. (v*fstep) .." |\n")
 
 	 if(sampling == sample_rate) then
 	    series[id] = s

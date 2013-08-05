@@ -30,13 +30,14 @@ for key, values in pairs(peers) do
    if(t > maxval) then maxval = t end
 end
 
-min_threshold = .5 --  0.5%
+min_threshold = 0 --  0.5%
 max_num = 100
 num = 0
 for key, values in pairs(peers) do
-      t = values["sent"]+values["rcvd"]
-      pctg = (t*100)/maxval
+   t = values["sent"]+values["rcvd"]
+   pctg = (t*100)/maxval
 
+   if(not(isBroadMulticast(values["client"])) and not(isBroadMulticast(values["server"]))) then
       if(pctg >= min_threshold) then 
 	 if(num > 0) then print(",") end
 	 print('{\n"host":\n[	\n{\n')
@@ -67,7 +68,6 @@ for key, values in pairs(peers) do
 	 end
 	 print('",\n')
 
-
 	 print('"name": "'..values["server"]..'"\n')
 	 print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
 	 print('}\n')
@@ -75,6 +75,7 @@ for key, values in pairs(peers) do
 	 
 	 if(num > max_num) then break end
       end
+   end
 end
 
 

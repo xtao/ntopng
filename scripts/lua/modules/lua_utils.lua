@@ -180,6 +180,31 @@ function split(pString, pPattern)
    return Table
 end
 
+string.split = function(s, p)
+		  local temp = {}
+    local index = 0
+		  local last_index = string.len(s)
+
+    while true do
+       local i, e = string.find(s, p, index)
+
+        if i and e then
+            local next_index = e + 1
+            local word_bound = i - 1
+	   table.insert(temp, string.sub(s, index, word_bound))
+            index = next_index
+        else            
+            if index > 0 and index <= last_index then
+	       table.insert(temp, string.sub(s, index, last_index))
+            elseif index == 0 then
+                temp = nil
+            end
+            break
+	 end
+      end
+
+    return temp
+   end
 
 function formatEpoch(epoch)
    return(os.date("%d/%m/%Y %X", epoch))
@@ -533,3 +558,17 @@ function clearbit(x, p)
    return hasbit(x, p) and x - p or x
 end
 
+function isBroadMulticast(ip)
+   if(ip == "0.0.0.0") then return(true) end
+
+   -- print(ip)
+   t = string.split(ip, "%.")
+   -- print(table.concat(t, "\n"))
+   if(t == nil) then 
+      return(false) -- Might be an IPv6 address
+   else
+      if(tonumber(t[1]) >= 224)  then return(true) end
+   end
+
+   return(false)
+end
