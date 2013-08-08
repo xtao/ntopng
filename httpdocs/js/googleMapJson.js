@@ -118,7 +118,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
 function createGoogleMap() {
   ConsoleDebug("[createGoogleMap][Start]");
 
-  var l_DefaultLatlng = new google.maps.LatLng(55.00408, 3.562228);
+  var l_DefaultLatlng = new google.maps.LatLng(default_latitude, default_longitude);
   var l_MapOptions = {
   zoom : 4,
   center : l_DefaultLatlng,
