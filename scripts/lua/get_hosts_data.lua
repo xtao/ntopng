@@ -107,7 +107,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 if(aggregated ~= nil) then print("aggregated_") end
 	 print("host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
 
-	 print("</A>\", \"column_name\" : \"" .. value["name"] .. " ")
+	 print("</A>\", \"column_name\" : \"")
+	 print(value["name"])
+         print("</div>")
 
 	 if(value["country"] ~= nil) then 
 	    print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")

@@ -34,7 +34,7 @@ class AddressResolution {
   ~AddressResolution();
 
   void startResolveAddressLoop();
-  void resolveHostName(char *numeric_ip);
+  void resolveHostName(char *numeric_ip, char *rsp = NULL, u_int rsp_len = 0);
 
   void setLocalNetworks(char *rule);
   bool findAddress(int family, void *addr);

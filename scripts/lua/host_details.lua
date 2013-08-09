@@ -162,7 +162,7 @@ if((page == "overview") or (page == nil)) then
    if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
 
    if(host["ip"] ~= nil) then
-      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\">".. host["name"] .. "</A> ")
+      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>".. host["name"] .. "</span></A> ")
       
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
    print("</td></tr>\n")
@@ -464,7 +464,7 @@ setInterval(function() {
 			$('#pkts_rcvd').html(formatPackets(host["pkts.rcvd"]));
 			$('#bytes_sent').html(bytesToSize(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToSize(host["bytes.rcvd"]));
-
+			$('#name').html(host["name"]);
 			/*
 			$('#throughput').html(rsp.throughput);
 

@@ -162,17 +162,29 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
   char buf[64];
 
   if(host_details) {
+    char *ipaddr = NULL;
+
     lua_newtable(vm);
 
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
 
+    lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
+
     if(ip)
-      lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
+      lua_push_str_table_entry(vm, "ip", (ipaddr = ip->print(buf, sizeof(buf))));
     else
       lua_push_nil_table_entry(vm, "ip");
 
-    lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
+    if(verbose
+       && (ipaddr != NULL)
+       && ((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0))) {
+      /* We resolve immediately the IP address by queueing on the top of address queue */
+
+      ntop->getRedis()->queueHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
+    }
+
     lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
+
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "asn", asn);
     lua_push_str_table_entry(vm, "asname", asname);
@@ -241,8 +253,6 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 void Host::setName(char *name, bool update_categorization) {
   bool to_categorize = false;
 
-  if(symbolic_name) return;
-
   m->lock(__FILE__, __LINE__);
   if((symbolic_name == NULL) || (symbolic_name && strcmp(symbolic_name, name))) {
     symbolic_name = strdup(name);
@@ -272,10 +282,11 @@ char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_foun
     char *addr, redis_buf[64];
     int rc;
 
-    if(symbolic_name != NULL)
+    addr = ip->print(buf, buf_len);
+    
+    if((symbolic_name != NULL) && strcmp(symbolic_name, addr))
       return(symbolic_name);
 
-    addr = ip->print(buf, buf_len);
     rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), 
 				      force_resolution_if_not_found);
 

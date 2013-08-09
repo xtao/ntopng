@@ -190,8 +190,10 @@ AddressResolution::~AddressResolution() {
 
 /* ***************************************** */
 
-void AddressResolution::resolveHostName(char *numeric_ip) {
+void AddressResolution::resolveHostName(char *numeric_ip, char *symbolic, u_int symbolic_len) {
   char rsp[128];
+
+  if((symbolic != NULL) && (symbolic_len > 0)) symbolic[0] = '\0';
 
   if(ntop->getRedis()->getAddress(numeric_ip, rsp, sizeof(rsp), false) < 0) {
     char hostname[NI_MAXHOST];
@@ -212,6 +214,7 @@ void AddressResolution::resolveHostName(char *numeric_ip) {
 
     if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD)) == 0) {
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
+      if((symbolic != NULL) && (symbolic_len > 0)) snprintf(symbolic, symbolic_len, "%s", hostname);
       ntop->getTrace()->traceEvent(TRACE_INFO, "Resolved %s to %s", numeric_ip, hostname);
       num_resolved_addresses++;
     } else {
@@ -220,6 +223,8 @@ void AddressResolution::resolveHostName(char *numeric_ip) {
 				   numeric_ip, rc, gai_strerror(rc), strerror(errno));
       ntop->getRedis()->setResolvedAddress(numeric_ip, numeric_ip); /* So we avoid to continuously resolver the same address */
     }
+  } else {
+    if((symbolic != NULL) && (symbolic_len > 0)) snprintf(symbolic, symbolic_len, "%s", rsp);
   }
 }
 

@@ -53,6 +53,9 @@ class Ntop {
   void setLocalNetworks(char *nets);
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   void start();
+  inline void resolveHostName(char *numeric_ip, char *symbolic, u_int symbolic_len) { 
+    address->resolveHostName(numeric_ip, symbolic, symbolic_len);
+  }
   inline Geolocation* getGeolocation()               { return(geo);            }
   inline char* get_if_name()                         { return(prefs->get_if_name()); }
   inline char* get_data_dir()                        { return(prefs->get_data_dir()); };

@@ -891,6 +891,19 @@ static int ntop_delete_user(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_resolve_address(lua_State* vm) {
+  char *numIP, symIP[64];
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
+  if((numIP = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
+
+  ntop->resolveHostName(numIP, symIP, sizeof(symIP));
+  lua_pushstring(vm, symIP);
+  return(1);
+}
+
+/* ****************************************** */
+
 void lua_push_str_table_entry(lua_State *L, const char *key, char *value) {
   lua_pushstring(L, key);
   lua_pushstring(L, value);
@@ -1169,7 +1182,6 @@ static const luaL_Reg ntop_reg[] = {
   { "dumpFile",       ntop_dump_file },
   { "getCache",       ntop_get_redis },
   { "setCache",       ntop_set_redis },
-  { "getResolvedAddress", ntop_get_resolved_address },
   { "mkdir",          ntop_mkdir_tree },
   { "exists",         ntop_get_file_dir_exists },
   { "readdir",        ntop_list_dir_files },
@@ -1198,6 +1210,10 @@ static const luaL_Reg ntop_reg[] = {
   { "resetUserPassword", ntop_reset_user_password },
   { "addUser",        ntop_add_user },
   { "deleteUser",     ntop_delete_user },
+
+  /* Address Resolution */
+  { "resolveAddress",     ntop_resolve_address },
+  { "getResolvedAddress", ntop_get_resolved_address },
 
   { NULL,          NULL}
 };
