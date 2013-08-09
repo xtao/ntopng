@@ -13,6 +13,12 @@ var g_UrlJsonFile = '/lua/get_geo_hosts.lua';
 var g_InfoWindowMarker = new google.maps.InfoWindow();
 var g_InfowindowPolyline = new google.maps.InfoWindow();
 
+
+if(!(zoomIP === undefined)) {
+    g_UrlJsonFile = g_UrlJsonFile+"?host="+zoomIP;
+}
+
+
 /*----------------------------------------JSON----------------------------------------*/
 var g_JSONData = {};
 
@@ -70,7 +76,7 @@ var default_latitude  = 41.9;
 var default_longitude = 12.4833333;
 
 function displayError(error) {
-  var errors = { 
+  var errors = {
   1: 'Permission denied',
   2: 'Position unavailable',
   3: 'Request timeout'
@@ -94,7 +100,7 @@ function initialize() {
   if (navigator.geolocation) {
     var timeoutVal = 10 * 1000 * 1000;
     navigator.geolocation.getCurrentPosition(
-					     displayPosition, 
+					     displayPosition,
 					     displayError,
 					     { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
 					     );
@@ -146,7 +152,7 @@ function createMarkers(p_data) {
 	    hostData.lat = default_latitude;
 	    hostData.lng = default_longitude;
 	  }
-			
+
 	  l_hostPosition = new google.maps.LatLng(hostData.lat, hostData.lng);
 
 	  if (find(l_hostPosition) == false) {

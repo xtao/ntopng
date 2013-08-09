@@ -1,14 +1,3 @@
-
-
-      <hr>
-
-
-
-      <div id="table-hosts"></div>
-	 <script>
-	 $("#table-hosts").datatable({
-	   url: "/lua/get_flows_data.lua",
-	       showPagination: true,
 	       title: "Active Flows",
 	        columns: [
 			     {

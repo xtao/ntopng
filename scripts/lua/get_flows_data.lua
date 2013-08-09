@@ -16,6 +16,7 @@ sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 host        = _GET["host"]
 port        = _GET["port"]
+application = _GET["application"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -56,6 +57,12 @@ for key, value in pairs(flows_stats) do
    end	
    if(port ~= nil) then
       if((flows_stats[key]["src.port"] ~= port) and (flows_stats[key]["dst.port"] ~= port)) then
+	 process = 0
+      end
+   end
+
+   if(application ~= nil) then
+      if(flows_stats[key]["proto.ndpi"] ~= application) then
 	 process = 0
       end
    end

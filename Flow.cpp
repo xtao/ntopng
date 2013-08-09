@@ -496,6 +496,20 @@ bool Flow::idle() {
 
 /* *************************************** */
 
+bool Flow::isFlowPeer(char *numIP) {
+  char s_buf[32], *ret;
+
+  ret = src_host->get_ip()->print(s_buf, sizeof(s_buf));
+  if(strcmp(ret, numIP) == 0) return(true);
+
+  ret = dst_host->get_ip()->print(s_buf, sizeof(s_buf));
+  if(strcmp(ret, numIP) == 0) return(true);
+
+  return(false);
+}
+
+/* *************************************** */
+
 char* Flow::getDomainCategory() {
   if(!categorization.flow_categorized) {
     if(ndpi_flow == NULL)
@@ -509,4 +523,12 @@ char* Flow::getDomainCategory() {
   }
 
   return(categorization.category);
+}
+
+/* *************************************** */
+
+void Flow::sumStats(NdpiStats *stats) {
+  stats-> incStats(detected_protocol,
+		   cli2srv_packets, cli2srv_bytes,
+		   srv2cli_packets, srv2cli_bytes);
 }

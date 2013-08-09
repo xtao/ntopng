@@ -102,6 +102,14 @@ else
    end
 end
 
+if(page == "geomap") then
+  print("<li class=\"active\"><a href=\"#\">Geomap</a></li>\n")
+else
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=geomap\">Geomap</a></li>")
+   end
+end
+
 num = 0
 if(host.contacts ~= nil) then
    if(host["contacts"]["client"] ~= nil) then
@@ -162,7 +170,13 @@ if((page == "overview") or (page == nil)) then
    if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
 
    if(host["ip"] ~= nil) then
-      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>".. host["name"] .. "</span></A> ")
+      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>")
+
+      if(host["ip"] ==  host["name"]) then
+	 print("<i class=\"icon-refresh\"></i> ")
+      end
+
+      print(host["name"] .. "</span></A> ")
       
    if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
    print("</td></tr>\n")
@@ -370,6 +384,35 @@ print [[
 elseif(page == "talkers") then
 print("<center>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
+print("</center>")
+elseif(page == "geomap") then
+print("<center>")
+
+
+print [[
+
+     <style type="text/css">
+     #map-canvas { width: 640px; height: 480px; }
+   </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span8">
+      <div id="map-canvas"></div>
+<p>&nbsp;<p><small><b>NOTE</b>: HTML <A HREF=http://diveintohtml5.info/geolocation.html>browser geolocation</A> is used to place on map hosts with private IP addresses or unknown locations.</small>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+/* IP Address to zoom */
+  var zoomIP = "]] print(host_ip) print [[ ";
+</script>
+
+    <script type="text/javascript" src="/js/googleMapJson.js" ></script>
+]]
+
 print("</center>")
 elseif(page == "contacts") then
 

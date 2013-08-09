@@ -41,6 +41,7 @@ class NetworkInterface {
   int pcap_datalink_type;
   pthread_t pollLoop;
   int cpu_affinity;
+  NdpiStats ndpiStats;
 
   FlowHash *flows_hash;
   /* Hosts */
@@ -82,7 +83,10 @@ class NetworkInterface {
   inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
-  inline void incStats(time_t last, u_int16_t eth_proto, u_int pkt_len) { last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len); };
+  inline void incStats(time_t last, u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len) { 
+    last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len);
+    ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 
+  };
   inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
@@ -96,7 +100,8 @@ class NetworkInterface {
   Flow* findFlowByKey(u_int32_t key);
 
   void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
-  void packet_processing(const u_int64_t time,
+  void packet_processing(const u_int32_t when,
+			 const u_int64_t time,
 			 struct ndpi_ethhdr *eth,
 			 u_int16_t vlan_id,
 			 struct ndpi_iphdr *iph,
@@ -118,7 +123,7 @@ class NetworkInterface {
   void lua(lua_State* v);
   void getActiveHostsList(lua_State* v, bool host_details);
   void getActiveFlowsList(lua_State* v);
-  void getFlowPeersList(lua_State* vm);
+  void getFlowPeersList(lua_State* vm, char *numIP);
 
   u_int purgeIdleFlows();
   u_int purgeIdleHosts();

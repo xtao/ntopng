@@ -17,7 +17,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 print [[
 
      <style type="text/css">
-     #map-canvas { width: 800px; height: 600px; }
+     #map-canvas { width: 640px; height: 480px; }
    </style>
 
 <hr>

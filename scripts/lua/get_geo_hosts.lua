@@ -11,9 +11,7 @@ sendHTTPHeader('text/html')
 
 ifname = _GET["if"]
 interface.find("any")
-peers = interface.getFlowPeers()
-
-
+peers = interface.getFlowPeers(_GET["host"])
 
 print [[
 

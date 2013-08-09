@@ -492,6 +492,12 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
 
 static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface;
+  char *host_name;
+
+  if(lua_type(vm, 1) == LUA_TSTRING)
+    host_name = (char*)lua_tostring(vm, 1);
+  else
+    host_name = NULL;
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -499,7 +505,7 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
     return(0);
   }
 
-  ntop_interface->getFlowPeersList(vm);
+  ntop_interface->getFlowPeersList(vm, host_name);
 
   return(1);
 }

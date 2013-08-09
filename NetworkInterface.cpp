@@ -216,7 +216,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 
 /* **************************************************** */
 
-void NetworkInterface::packet_processing(const u_int64_t time,
+void NetworkInterface::packet_processing(const u_int32_t when,
+					 const u_int64_t time,
 					 struct ndpi_ethhdr *eth,
 					 u_int16_t vlan_id,
 					 struct ndpi_iphdr *iph,
@@ -238,8 +239,10 @@ void NetworkInterface::packet_processing(const u_int64_t time,
 
   if(iph != NULL) {
     /* IPv4 */
-    if(ipsize < 20)
+    if(ipsize < 20) {
+      incStats(when, ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize);
       return;
+    }
 
     if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
        || (iph->frag_off & htons(0x1FFF /* IP_OFFSET */)) != 0) {
@@ -252,8 +255,10 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     ip = (u_int8_t*)iph;
   } else {
     /* IPv6 */
-    if(ipsize < sizeof(const struct ndpi_ip6_hdr))
+    if(ipsize < sizeof(const struct ndpi_ip6_hdr)) {
+      incStats(when, ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
       return;
+    }
 
     l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen)-sizeof(const struct ndpi_ip6_hdr);
     l4_proto = ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt;
@@ -272,6 +277,8 @@ void NetworkInterface::packet_processing(const u_int64_t time,
     src_port = udph->source,  dst_port = udph->dest;
   } else {
     /* non tcp/udp protocols */
+
+    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
     return;
   }
 
@@ -306,16 +313,21 @@ void NetworkInterface::packet_processing(const u_int64_t time,
   flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, 
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
-  if(flow == NULL) 
+  if(flow == NULL) {
+    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
     return;
-  else {
+  } else {
     flow->incStats(src2dst_direction, rawsize);
     if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
   }
 
   /* Protocol Detection */
 
-  if(flow->isDetectionCompleted()) return;
+  if(flow->isDetectionCompleted()) {
+    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize);
+    return;
+  } else
+    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
 
   if(!is_fragment) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
@@ -358,9 +370,9 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
     type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-    incStats(h->ts.tv_sec, 0, h->len);
+    incStats(h->ts.tv_sec, 0, NDPI_PROTOCOL_UNKNOWN, h->len);
   } else {
-    incStats(h->ts.tv_sec, 0, h->len);
+    incStats(h->ts.tv_sec, 0, NDPI_PROTOCOL_UNKNOWN, h->len);
     return;
   }
 
@@ -371,8 +383,6 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
     ip_offset += 4;
   }
-
-  incStats(h->ts.tv_sec, type, h->len);
 
   // just work on Ethernet packets that contain IPv4
   switch(type) {
@@ -388,7 +398,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       } else
 	frag_off = ntohs(iph->frag_off);
 
-      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) && ((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */ ) == 0)) {
+      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) 
+	 && ((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */ ) == 0)) {
 	u_short ip_len = ((u_short)iph->ihl * 4);
 	struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
 	u_int16_t sport = ntohs(udp->source), dport = ntohs(udp->dest);
@@ -417,7 +428,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
       }
 
-      packet_processing(time, ethernet, vlan_id, iph, NULL, h->caplen - ip_offset, h->caplen);
+      packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph, NULL, h->caplen - ip_offset, h->caplen);
     }
     break;
 
@@ -429,7 +440,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 	/* This is not IPv6 */
 	return;
       } else
-	packet_processing(time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
+	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
     }
     break;
 
@@ -439,6 +450,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
     if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
     if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
+
+    incStats(h->ts.tv_sec, type, NDPI_PROTOCOL_UNKNOWN, h->len);
     break;
   }
 
@@ -504,10 +517,11 @@ void NetworkInterface::findFlowHosts(u_int16_t vlanId,
 
 /* **************************************************** */
 
-static void hosts_node_sum_protos(GenericHashEntry *h, void *user_data) {
-  NdpiStats *stats = (NdpiStats*)user_data, *s = ((Host*)h)->get_ndpi_stats();
+static void flow_sum_protos(GenericHashEntry *f, void *user_data) {
+  NdpiStats *stats = (NdpiStats*)user_data;
+  Flow *flow = (Flow*)f;
 
-  if(s) s->sumStats(stats);
+  flow->sumStats(stats);
 }
 
 /* **************************************************** */
@@ -515,7 +529,7 @@ static void hosts_node_sum_protos(GenericHashEntry *h, void *user_data) {
 void NetworkInterface::getnDPIStats(NdpiStats *stats) {
   memset(stats, 0, sizeof(NdpiStats));
 
-  hosts_hash->walk(hosts_node_sum_protos, (void*)stats);
+  flows_hash->walk(flow_sum_protos, (void*)stats);
 }
 
 /* **************************************************** */
@@ -677,18 +691,29 @@ void NetworkInterface::getActiveFlowsList(lua_State* vm) {
 
 /* **************************************************** */
 
+struct flow_peers_info {
+  lua_State *vm;
+  char *numIP;
+};
+
 static void flow_peers_walker(GenericHashEntry *h, void *user_data) {
   Flow *flow = (Flow*)h;
+  struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
-  flow->print_peers((lua_State*)user_data);
+  if((info->numIP == NULL) || flow->isFlowPeer(info->numIP))
+    flow->print_peers(info->vm);
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getFlowPeersList(lua_State* vm) {
+void NetworkInterface::getFlowPeersList(lua_State* vm, char *numIP) {
+  struct flow_peers_info info;
+
   lua_newtable(vm);
 
-  flows_hash->walk(flow_peers_walker, (void*)vm);
+  info.vm = vm, info.numIP = numIP;
+
+  flows_hash->walk(flow_peers_walker, (void*)&info);
 }
 
 /* **************************************************** */
