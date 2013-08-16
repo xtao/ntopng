@@ -77,14 +77,15 @@ class NetworkInterface {
   virtual bool set_packet_filter(char *filter) { return(false); };
 
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
+  inline void  setTimeLastPktRcvd(time_t t)  { last_pkt_rcvd = t; };
   inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id));   };
   inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
-  inline void incStats(time_t last, u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len) { 
-    last_pkt_rcvd = last, ethStats.incStats(eth_proto, 1, pkt_len);
+  inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len) { 
+    ethStats.incStats(eth_proto, 1, pkt_len);
     ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 
   };
   inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }

@@ -41,9 +41,9 @@
 window.onload=function() {
    var refresh = 3000 /* ms */;
 
-   do_pie("#topHosts", '/lua/iface_hosts_list.lua', { if: "any" }, "", refresh);
-   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { if: "any" }, "", refresh);
-   do_pie("#topASN", '/lua/top_asn.lua', { if : "any" }, "", refresh);
+   do_pie("#topHosts", '/lua/iface_hosts_list.lua', {  }, "", refresh);
+   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', {  }, "", refresh);
+   do_pie("#topASN", '/lua/top_asn.lua', {  }, "", refresh);
    do_pie("#topSenders", '/lua/top_talkers.lua', { mode : "senders" }, "", refresh);
 }
 

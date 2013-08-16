@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Host : public GenericHost {
+class Host : public GenericHost, Serializable {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
@@ -54,7 +54,8 @@ class Host : public GenericHost {
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
   u_int32_t key();
   char* getJSON();
-  inline IpAddress* get_ip()                   { return(ip);            }
+  inline IpAddress* get_ip()                   { return(ip);               }
+  void set_mac(char *m);
   inline u_int8_t*  get_mac()                  { return(mac_address);   }
   inline u_int16_t get_vlan_id()               { return(vlan_id);       }
   inline char* get_name()                      { return(symbolic_name); }
@@ -83,6 +84,9 @@ class Host : public GenericHost {
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, 
 		u_int64_t sent_packets, u_int64_t sent_bytes,
 		u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
+
+  char* serialize();
+  bool deserialize(char *json_str);
 };
 
 #endif /* _HOST_H_ */

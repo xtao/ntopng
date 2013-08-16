@@ -4,8 +4,16 @@
 
 print [[
 	 <li><form action="/lua/host_details.lua">
+]]
+
+-- FIX: show notifications to the user
+--        print('<a class="btn" href="#"><i class="icon-bell"></i></a>')
+
+print [[
 	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead">
+
 	 </form>
+
 	 </li>
 
 	 <script type='text/javascript'>

@@ -31,12 +31,13 @@ extern void usage();
 class Prefs {
  private:
   Ntop *ntop;
-  bool enable_dns_resolution, sniff_dns_responses, 
+  bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, resolve_all_host_ip, change_user, daemonize;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
-  char *ifName, *local_networks;
+  u_int8_t num_interfaces;
+  char *ifNames[MAX_NUM_INTERFACES], *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
   char *users_file_path, *config_file_path, *ndpi_proto_path;
@@ -69,14 +70,15 @@ class Prefs {
   inline void enable_categorization()                   { categorization_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
   inline bool do_change_user()                          { return(change_user);            };
-  inline char* get_user()                               { return(user);                   }
-  inline void set_if_name(char *name)                   { if(ifName) free(ifName); ifName = strdup(name); };
-  inline char* get_if_name()                            { return(ifName);         };
+  inline char* get_user()                               { return(user);                   };
+  inline u_int8_t get_num_interfaces()                  { return(num_interfaces);         };
+  inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id] : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
-  inline char* get_categorization_key()                 { return(categorization_key);      };
+  inline char* get_categorization_key()                 { return(categorization_key); };
+  inline bool  is_host_persistency_enabled()            { return(disable_host_persistency ? false : true); };
   inline int get_cpu_affinity()                         { return(cpu_affinity);   };
   inline u_int get_http_port()                          { return(http_port);      };
   inline char* get_redis_host()                         { return(redis_host);     }
@@ -88,7 +90,7 @@ class Prefs {
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
   inline bool daemonize_ntopng()                        { return(daemonize);      };
-
+  inline void addDefaultInterface()                     { num_interfaces++;       };
   int loadUsersFromFile();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);

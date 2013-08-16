@@ -22,14 +22,16 @@ LIBRRDTOOL_LIB=$(LIBRRDTOOL_HOME)/src/.libs/librrd_th.a
 ######
 HTTPCLIENT_INC=third-party/http-client-c/src/
 ######
-JSON_INC=third-party/SimpleJSON/src
+JSON_HOME=third-party/json-c
+JSON_INC=$(JSON_HOME)
+JSON_LIB=$(JSON_HOME)/.libs/libjson-c.a
 ######
 ZEROMQ_HOME=./third-party/zeromq-3.2.3
 ZEROMQ_INC=-I$(ZEROMQ_HOME)/include
 ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a 
 ######
 TARGET = ntopng
-LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) -lxml2 @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ -lm -ldl -lpthread
+LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) -lxml2 @SQLITE_LIB@ @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ @Z_LIB@ -lm -ldl -lpthread
 CPPFLAGS = -g -Wall $(CREDIS_INC) $(MONGOOSE_INC) -I$(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) -D SVN_RELEASE="@SVN_RELEASE@" @CPPFLAGS@ -I$(HTTPCLIENT_INC) 
 ######
 # ntopng-1.0_1234.x86_64.rpm 
@@ -49,21 +51,21 @@ endif
 
 .PHONY: default all clean
 
-default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(TARGET)
+default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
 HEADERS = $(wildcard *.h)
 
-%.o: %.c $(HEADERS)
+%.o: %.c $(HEADERS) Makefile
 	g++ $(CPPFLAGS) -c $< -o $@
 
-%.o: %.cpp $(HEADERS)
+%.o: %.cpp $(HEADERS) Makefile
 	g++ $(CPPFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
-$(TARGET): $(OBJECTS) $(LIBRRDTOOL)
+$(TARGET): $(OBJECTS) $(LIBRRDTOOL) Makefile
 	g++ $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(NDPI_LIB): nDPI
@@ -80,6 +82,9 @@ $(ZEROMQ_LIB):
 
 $(LIBRRDTOOL_LIB):
 	cd $(LIBRRDTOOL_HOME); ./configure --disable-rrd_graph --disable-libdbi --disable-libwrap --disable-rrdcgi --disable-libtool-lock --disable-nls --disable-rpath --disable-perl --disable-ruby --disable-lua --disable-tcl --disable-python --disable-dependency-tracking; cd src; @GMAKE@ librrd_th.la
+
+$(JSON_LIB):
+	cd $(JSON_HOME); ./autogen.sh; ./configure; make
 
 clean:
 	-rm -f *.o *~ svn-commit.* #config.h

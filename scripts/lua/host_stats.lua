@@ -8,13 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "flow_utils"
 
-
 local json = require ("dkjson")
-
-ifname = _GET["if"]
-if(ifname == nil) then	  
-  ifname = "any"
-end
 
 host_ip = _GET["host"]
 if(host_ip ~= nil) then

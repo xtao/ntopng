@@ -240,7 +240,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   if(iph != NULL) {
     /* IPv4 */
     if(ipsize < 20) {
-      incStats(when, ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize);
+      incStats(ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize);
       return;
     }
 
@@ -256,7 +256,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   } else {
     /* IPv6 */
     if(ipsize < sizeof(const struct ndpi_ip6_hdr)) {
-      incStats(when, ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+      incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
       return;
     }
 
@@ -278,7 +278,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   } else {
     /* non tcp/udp protocols */
 
-    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
     return;
   }
 
@@ -314,7 +314,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) {
-    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
     return;
   } else {
     flow->incStats(src2dst_direction, rawsize);
@@ -324,19 +324,19 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   /* Protocol Detection */
 
   if(flow->isDetectionCompleted()) {
-    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize);
     return;
   } else
-    incStats(when, iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
 
   if(!is_fragment) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
-    struct ndpi_id_struct *src = (struct ndpi_id_struct*)flow->get_src_id();
-    struct ndpi_id_struct *dst = (struct ndpi_id_struct*)flow->get_dst_id();
+    struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
+    struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 							    ip, ipsize, (u_int32_t)time, 
-							    src, dst),
+							    cli, srv),
 			      l4_proto);
   } else {
     // FIX - only handle unfragmented packets
@@ -351,41 +351,63 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   struct ndpi_iphdr *iph;
   u_int64_t time;
   static u_int64_t lasttime = 0;
-  u_int16_t type, ip_offset, vlan_id = 0;
-  u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution();
+  u_int16_t eth_type, ip_offset, vlan_id = 0;
+  u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution(), null_type;
   int pcap_datalink_type = get_datalink();
   u_int n;
+
+  setTimeLastPktRcvd(h->ts.tv_sec);
 
   time = ((uint64_t) h->ts.tv_sec) * res + h->ts.tv_usec / (1000000 / res);
   if(lasttime > time) time = lasttime;
 
   lasttime = time;
 
-  if(pcap_datalink_type == DLT_EN10MB) {
+  if(pcap_datalink_type == DLT_NULL) {
+    memcpy(&null_type, packet, sizeof(u_int32_t));
+    
+    switch(null_type) {
+    case BSD_AF_INET:
+      eth_type = ETHERTYPE_IP;
+      break;
+    case BSD_AF_INET6_BSD:
+    case BSD_AF_INET6_FREEBSD:
+    case BSD_AF_INET6_DARWIN:
+      eth_type = ETHERTYPE_IPV6;
+      break;
+    default:
+      incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
+      return; /* Any other non IP protocol */
+    }
+
+    memset(&dummy_ethernet, 0, sizeof(dummy_ethernet));
+    ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
+    ip_offset = 4;    
+  } else if(pcap_datalink_type == DLT_EN10MB) {
     ethernet = (struct ndpi_ethhdr *) packet;
     ip_offset = sizeof(struct ndpi_ethhdr);
-    type = ntohs(ethernet->h_proto);
+    eth_type = ntohs(ethernet->h_proto);
   } else if(pcap_datalink_type == 113 /* Linux Cooked Capture */) {
     memset(&dummy_ethernet, 0, sizeof(dummy_ethernet));
     ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
-    type = (packet[14] << 8) + packet[15];
+    eth_type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-    incStats(h->ts.tv_sec, 0, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
   } else {
-    incStats(h->ts.tv_sec, 0, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
     return;
   }
 
-  if(type == 0x8100 /* VLAN */) {
+  if(eth_type == 0x8100 /* VLAN */) {
     Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
 
     vlan_id = ntohs(qType->vlanId) & 0xFFF;
-    type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
+    eth_type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
     ip_offset += 4;
   }
 
   // just work on Ethernet packets that contain IPv4
-  switch(type) {
+  switch(eth_type) {
   case ETHERTYPE_IP:
     if(h->caplen >= ip_offset) {
       u_int16_t frag_off;
@@ -451,7 +473,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
     if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
 
-    incStats(h->ts.tv_sec, type, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len);
     break;
   }
 
@@ -472,7 +494,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
 void NetworkInterface::startPacketPolling() {
   if (cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling...");
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling on interface %s...", get_name());
   running = true;
 }
 

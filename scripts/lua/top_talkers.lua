@@ -9,4 +9,4 @@ require "top_talkers"
 
 sendHTTPHeader('text/html')
 
-print(getTopTalkers(_GET["if"], _GET["mode"], _GET["epoch"]))
+print(getTopTalkers(ifname, _GET["mode"], _GET["epoch"]))

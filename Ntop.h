@@ -39,6 +39,9 @@ class Ntop {
   Geolocation *geo;
   Categorization *categorization;
   Mutex *rrd_lock;
+#ifdef HAVE_SQLITE
+  DB *db;
+#endif
 
  public:
   Ntop(char *appName);
@@ -56,17 +59,21 @@ class Ntop {
   inline void resolveHostName(char *numeric_ip, char *symbolic, u_int symbolic_len) { 
     address->resolveHostName(numeric_ip, symbolic, symbolic_len);
   }
-  inline Geolocation* getGeolocation()               { return(geo);            }
-  inline char* get_if_name()                         { return(prefs->get_if_name()); }
-  inline char* get_data_dir()                        { return(prefs->get_data_dir()); };
+  inline Geolocation* getGeolocation()               { return(geo);                        };
+  inline char* get_if_name(u_int8_t id)              { return(prefs->get_if_name(id));     };
+  inline char* get_data_dir()                        { return(prefs->get_data_dir());      };
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
-  inline Categorization* get_categorization()        { return(categorization); };
+  inline Categorization* get_categorization()        { return(categorization);             };
+#ifdef HAVE_SQLITE  
+  inline DB* get_db()                                { return(db); };
+#endif
   void registerInterface(NetworkInterface *i);
   inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }
   inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
+  NetworkInterface* getInterface(char *name);
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   inline void setCategorization(Categorization *c)   { categorization = c; };
-  NetworkInterface* get_NetworkInterface(const char *name);
+  NetworkInterface* getNetworkInterface(const char *name);
   inline HTTPserver*       get_HTTPserver()          { return(httpd);            };
   inline char* get_working_dir()                     { return(working_dir);      };
   inline char* get_install_dir()                     { return(install_dir);      };
@@ -88,6 +95,8 @@ class Ntop {
   void fixPath(char *str);
   void removeTrailingSlash(char *str);
   void daemonize();
+  void shutdown();
+  void runHousekeepingTasks();
 };
 
 extern Ntop *ntop;

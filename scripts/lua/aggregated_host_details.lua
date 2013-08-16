@@ -11,11 +11,6 @@ require "graph_utils"
 page = _GET["page"]
 if(page == nil) then page = "overview" end
 
-ifname = _GET["interface"]
-if(ifname == nil) then
-   ifname = "any"
-end
-
 host_ip = _GET["host"]
 
 sendHTTPHeader('text/html')
@@ -97,7 +92,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
+      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
    else
       url = k
    end
@@ -123,7 +118,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/get_aggregated_host_info.lua',
-		    data: { if: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
+		    data: { ifname: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);

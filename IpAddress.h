@@ -37,7 +37,7 @@ struct ipAddress {
 
 /* *********************************** */
 
-class IpAddress {
+class IpAddress : Serializable {
  private:
   struct ipAddress addr;
 
@@ -67,6 +67,10 @@ class IpAddress {
   bool islocalAddress();
   char* print(char *str, u_int str_len);
   bool isLocalHost();
+
+  void deserialize(json_object *o);
+  char* serialize();
+  json_object* getJSONObject();
 };
 
 #endif /* _IP_ADDRESS_H_ */

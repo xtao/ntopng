@@ -13,7 +13,6 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-ifname      = _GET["if"]
 application = _GET["application"]
 
 stats = interface.getNdpiStats()

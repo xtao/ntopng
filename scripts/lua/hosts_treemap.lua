@@ -9,11 +9,19 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "hosts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+interface.find(ifname)
+hosts_stats = interface.getHostsInfo()
+num = 0
+for key, value in pairs(hosts_stats) do
+    num = num + 1
+end
+
+
+if(num > 0) then
 print [[
 
 <style>
@@ -58,7 +66,7 @@ var treemap = d3.layout.treemap()
        .style("left", margin.left + "px")
        .style("top", margin.top + "px");
 
-       d3.json("get_treemap.lua", function(error, root) {
+       d3.json("/lua/get_treemap.lua", function(error, root) {
 				   var node = div.datum(root).selectAll(".node")
 				   .data(treemap.nodes)
 				   .enter().append("div")
@@ -69,7 +77,7 @@ var treemap = d3.layout.treemap()
 						      if(d.children) return(null);
 						   else {
 							 if(d.name != "Other Hosts") {
-							    return("<A HREF=\"/lua/host_details.lua?interface=any&host="+d.name+"\">"+d.name+"</A>");
+							    return("<A HREF=\"/lua/host_details.lua?host="+d.name+"\">"+d.name+"</A>");
 							 } else 
 							 return(d.name);
 						      }
@@ -99,5 +107,8 @@ var treemap = d3.layout.treemap()
 
 
 ]]
+else 
+print("<div class=\"alert alert-error\"><img src=/img/warning.png> No results found</div>")
+end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

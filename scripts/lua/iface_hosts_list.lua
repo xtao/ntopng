@@ -9,8 +9,7 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ifname = _GET["if"]
-interface.find("any")
+interface.find(ifname)
 hosts_stats = interface.getHosts()
 
 tot = 0

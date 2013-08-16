@@ -90,6 +90,13 @@ echo "Please install libglib-2.0 (glib2-devel) package (RRD prerequisite)"
 exit
 fi
 
+dnl> zlib (used by edjdb)
+Z_LIB=""
+AC_CHECK_LIB([z], [zlibVersion], zlib=true)
+if test x$zlib = xtrue
+then
+  Z_LIB="-lz"
+fi
 
 dnl> Check for package install
 DOWNLOAD_GEOIP=0
@@ -114,6 +121,13 @@ AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
 GEOIP_DEP=""
 fi
 
+AC_CHECK_LIB([sqlite3], [sqlite3_open], sqlite=true)
+AC_DEFINE_UNQUOTED([HAVE_SQLITE], 1, [We have sqlite])
+if test x$sqlite = xtrue
+then
+  SQLITE_LIB="-lsqlite3"
+fi
+
 GMAKE=`which gmake`
 if test x$GMAKE = x
 then
@@ -132,7 +146,9 @@ AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(LINK_OPTS)
 AC_SUBST(LIBGNUTLS)
+AC_SUBST(Z_LIB)
 AC_SUBST(GEOIP_LIB)
+AC_SUBST(SQLITE_LIB)
 AC_SUBST(GMAKE)
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)

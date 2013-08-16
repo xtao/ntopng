@@ -17,14 +17,9 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
-ifname = _GET["interface"]
-if(ifname == nil) then
-   ifname = "any"
-end
+rrdname = dirs.workingdir .. "/rrd/interface."..ifname.."/bytes.rrd"
 
-rrdname = dirs.workingdir .. "/rrd/interface.any/bytes.rrd"
-
-url= '/lua/if_stats.lua?interface=' .. ifname
+url= '/lua/if_stats.lua?ifname=' .. ifname
 
 print [[
 <div class="bs-docs-example">
@@ -80,14 +75,14 @@ if((page == "overview") or (page == nil)) then
 
    if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
       local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
-      print(" [ " .. pctg .. " % ] ")
+      if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
    end
 
    if(ifstats.stats_drops > 0) then print('</span>') end
    print("</div></td></tr>\n")
    print("</table>\n")
 else
-   drawRRD('interface.any', "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
+   drawRRD('interface.'..ifname, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 
@@ -100,17 +95,19 @@ setInterval(function() {
 		  $.ajax({
 			    type: 'GET',
 			    url: '/lua/network_load.lua',
-			    data: { if: "]] print(ifstats.name) print [[" },
+			    data: { ifname: "]] print(ifstats.name) print [[" },
 			    success: function(content) {
 				var rsp = jQuery.parseJSON(content);
 				$('#if_bytes').html(bytesToVolume(rsp.bytes));
 				$('#if_pkts').html(addCommas(rsp.packets)+" Pkts");
-				var pctg =  ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2);
+				var pctg = 0;
 				var drops = "";
 
+				if((rsp.packets+rsp.drops) > 0)	{ pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
 				if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
-				drops = drops + addCommas(rsp.drops)+" Pkts [ "+pctg+" % ]";
-				if(rsp.drops > 0) { drops = drops + '</span>'; }
+				drops = drops + addCommas(rsp.drops)+" Pkts ";
+				if(pctg > 0)      { drops = drops + " [ "+pctg+" % ]"; }
+				if(rsp.drops > 0) { drops = drops + '</span>';         }
 				$('#if_drops').html(drops);
 			     }
 		           });

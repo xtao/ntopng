@@ -25,11 +25,6 @@ print [[
 
 print("<li>".._GET["label"].."</li></ul>")
 
-ifname = _GET["if"]
-if(ifname == nil) then
-  ifname = "any"
-end
-
 flow_key = _GET["flow_key"]
 if(flow_key == nil) then
    flow = nil
@@ -46,12 +41,12 @@ else
    if(flow["vlan"] ~= 0) then
       print("<tr><th width=30%>VLAN ID</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
    end
-   print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?interface=" ..ifname .. "&host=" .. flow["src.ip"] .. "\">")
-   if(flow["src.host"] ~= "") then print(flow["src.host"]) else print(flow["src.ip"]) end
-   print("</A>:<A HREF=\"/lua/port_details.lua?interface=" ..ifname .. "&port=" .. flow["src.port"].. "\">" .. flow["src.port"].. "</A></td></tr>\n")
-   print("<tr><th width=30%>Server</th><td colspan=2><A HREF=\"/lua/host_details.lua?interface=" ..ifname .. "&host=" .. flow["dst.ip"] .. "\">")
-   if(flow["dst.host"] ~= "") then print(flow["dst.host"]) else print(flow["dst.ip"]) end
-   print("</A>:<A HREF=\"/lua/port_details.lua?interface=" ..ifname .. "&port=" .. flow["dst.port"].. "\">" .. flow["dst.port"].. "</A></td></tr>\n")
+   print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["cli.ip"] .. "\">")
+   if(flow["cli.host"] ~= "") then print(flow["cli.host"]) else print(flow["cli.ip"]) end
+   print("</A>:<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"].. "</A></td></tr>\n")
+   print("<tr><th width=30%>Server</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["srv.ip"] .. "\">")
+   if(flow["srv.host"] ~= "") then print(flow["srv.host"]) else print(flow["srv.ip"]) end
+   print("</A>:<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A></td></tr>\n")
 
    if(flow["category"] ~= "") then
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
@@ -66,7 +61,7 @@ else
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
 
 
-   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["src.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["dst.ip"] .. '</div></div>')
+   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["cli.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["srv.ip"] .. '</div></div>')
    print("</td></tr>\n")
 
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><div id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</div></td></tr>\n")
@@ -114,7 +109,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/flow_stats.lua',
-		    data: { if: "]] print(ifname) print [[", flow_key: "]] print(flow_key) print [[" },
+		    data: { ifname: "]] print(ifname) print [[", flow_key: "]] print(flow_key) print [[" },
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#first_seen').html(rsp["seen.first"]);

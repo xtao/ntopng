@@ -63,7 +63,7 @@ void NdpiStats::print(NetworkInterface *iface) {
   for(int i=0; i<MAX_NDPI_PROTOS; i++) {
     if(counters[i] != NULL) {
       if(counters[i]->packets.sent || counters[i]->packets.rcvd)
-	printf("[%s] [pkts: %llu/%llu][bytes: %llu/%llu]\n", 
+	printf("[%s] [pkts: %llu/%llu][bytes: %llu/%llu]\n",
 	       iface->get_ndpi_proto_name(i),
 	       (long long unsigned) counters[i]->packets.sent, (long long unsigned) counters[i]->packets.rcvd,
 	       (long long unsigned) counters[i]->bytes.sent,   (long long unsigned)counters[i]->bytes.rcvd);
@@ -75,7 +75,7 @@ void NdpiStats::print(NetworkInterface *iface) {
 
 void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
   lua_newtable(vm);
-  
+
   for(int i=0; i<MAX_NDPI_PROTOS; i++)
     if(counters[i] != NULL) {
       if(counters[i]->packets.sent || counters[i]->packets.rcvd) {
@@ -84,12 +84,12 @@ void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
 	lua_push_int_table_entry(vm, "packets.rcvd", counters[i]->packets.rcvd);
 	lua_push_int_table_entry(vm, "bytes.sent", counters[i]->bytes.sent);
 	lua_push_int_table_entry(vm, "bytes.rcvd", counters[i]->bytes.rcvd);
-	
+
 	lua_pushstring(vm, iface->get_ndpi_proto_name(i)); // Index
 	lua_insert(vm, -2);
 	lua_settable(vm, -3);
       }
-  }
+    }
 
   lua_pushstring(vm, "ndpi");
   lua_insert(vm, -2);
@@ -116,13 +116,101 @@ void NdpiStats::incStats(u_int proto_id,
 
 /* *************************************** */
 
-const char* NdpiStats::serialize() {
+char* NdpiStats::serialize(NetworkInterface *iface) {
+  char *rsp, *unknown = iface->get_ndpi_proto_name(NDPI_PROTOCOL_UNKNOWN);
+  json_object *my_object, *o[MAX_NDPI_PROTOS];
+  int n = 0;
+  
+  my_object = json_object_new_object();
 
-  return(NULL);
+  for(int proto_id=0; proto_id<MAX_NDPI_PROTOS; proto_id++) {
+    if(counters[proto_id] != NULL) {
+      char *name = iface->get_ndpi_proto_name(proto_id);
+      
+      if((proto_id > 0) && (name == unknown)) break;
+
+      if(name != NULL) {
+	json_object *inner = json_object_new_object();
+	json_object *inner1 = json_object_new_object();
+
+	o[n++] = inner;
+	o[n++] = inner1;
+
+	json_object_object_add(inner1, "sent", json_object_new_int64(counters[proto_id]->bytes.sent));
+	json_object_object_add(inner1, "rcvd", json_object_new_int64(counters[proto_id]->bytes.rcvd));
+	json_object_object_add(inner, "bytes", inner1);
+
+	inner1 = json_object_new_object();
+	o[n++] = inner1;
+
+	json_object_object_add(inner1, "sent", json_object_new_int64(counters[proto_id]->packets.sent));
+	json_object_object_add(inner1, "rcvd", json_object_new_int64(counters[proto_id]->packets.rcvd));
+	json_object_object_add(inner, "packets", inner1);
+
+	json_object_object_add(my_object, name, inner);
+      }
+    }
+  }
+
+  rsp = strdup(json_object_to_json_string(my_object));
+
+  /* Free memory */
+  json_object_put(my_object);
+  for(int i=0; i<n; i++) json_object_put(o[i]);
+
+  return(rsp);
 }
 
 /* *************************************** */
 
-void NdpiStats::deserialize(const char *v) {
+void NdpiStats::deserialize(NetworkInterface *iface, json_object *o) {
+  if(!o) return;
+
+  /* Reset all */
+  for(int i=0; i<MAX_NDPI_PROTOS; i++) if(counters[i] != NULL) free(counters[i]);
+  memset(counters, 0, sizeof(counters));
+
+  for(int proto_id=0; proto_id<MAX_NDPI_PROTOS; proto_id++) {
+    char *name = iface->get_ndpi_proto_name(proto_id);
+
+    if(name != NULL) {
+      json_object *obj;
+
+      if(json_object_object_get_ex(o, name, &obj)) {
+	json_object *bytes, *packets;
+
+	if((counters[proto_id] = (ProtoCounter*)malloc(sizeof(ProtoCounter))) != NULL) {
+	  if(json_object_object_get_ex(obj, "bytes", &bytes)) {
+	    json_object *sent, *rcvd;
+
+	    if(json_object_object_get_ex(bytes, "sent", &sent))
+	      counters[proto_id]->bytes.sent = json_object_get_int64(sent);
+
+	    if(json_object_object_get_ex(bytes, "rcvd", &rcvd))
+	      counters[proto_id]->bytes.rcvd = json_object_get_int64(rcvd);
+	  }
+
+	  if(json_object_object_get_ex(obj, "packets", &packets)) {
+	    json_object *sent, *rcvd;
+
+	    if(json_object_object_get_ex(bytes, "sent", &sent))
+	      counters[proto_id]->packets.sent = json_object_get_int64(sent);
+
+	    if(json_object_object_get_ex(bytes, "rcvd", &rcvd))
+	      counters[proto_id]->packets.rcvd = json_object_get_int64(rcvd);
+	  }
+	}
+      }
+    }
+  }
 }
 
+/* *************************************** */
+
+json_object* NdpiStats::getJSONObject(NetworkInterface *iface) {
+  char *s = serialize(iface);
+  json_object *o = json_tokener_parse(s);
+
+  free(s);
+  return(o);
+}

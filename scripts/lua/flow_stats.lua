@@ -8,11 +8,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "flow_utils"
 
-ifname = _GET["if"]
-if(ifname == nil) then	  
-  ifname = "any"
-end
-
 flow_key = _GET["flow_key"]
 if(flow_key == nil) then
    flow = nil

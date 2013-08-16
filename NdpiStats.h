@@ -70,9 +70,9 @@ class NdpiStats : public Serializable {
 
   void print(NetworkInterface *iface);
   void lua(NetworkInterface *iface, lua_State* vm);
-
-  const char* serialize();
-  void  deserialize(const char*);
+  char* serialize(NetworkInterface *iface);
+  json_object* getJSONObject(NetworkInterface *iface);
+  void deserialize(NetworkInterface *iface, json_object *o);
 };
 
 #endif /* _NDPI_STATS_H_ */

@@ -150,3 +150,32 @@ u_int32_t Utils::hashString(char *key) {
 float Utils::timeval2ms(struct timeval *tv) {
   return((float)tv->tv_sec*1000+(float)tv->tv_usec/1000);
 }
+
+/* ****************************************************** */
+
+bool Utils::mkdir_tree(char *path) {
+  int permission = 0777, i, rc;
+  struct stat s;
+
+  ntop->fixPath(path);
+
+  if(stat(path, &s) != 0) {
+    /* Start at 1 to skip the root */
+    for(i=1; path[i] != '\0'; i++)
+      if(path[i] == CONST_PATH_SEP) {
+#ifdef WIN32
+	/* Do not create devices directory */
+	if((i > 1) && (path[i-1] == ':')) continue;
+#endif
+
+	path[i] = '\0';
+	rc = ntop_mkdir(path, permission);
+	path[i] = CONST_PATH_SEP;
+      }
+
+    rc = ntop_mkdir(path, permission);
+
+    return(rc == 0 ? true : false);
+  } else
+    return(true); /* Already existing */
+}

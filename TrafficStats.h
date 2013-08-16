@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class TrafficStats {
+class TrafficStats : Serializable {
  private:
   u_int64_t numPkts, numBytes;
 
@@ -35,8 +35,11 @@ class TrafficStats {
   inline void incStats(u_int pkt_len) { numPkts++, numBytes += pkt_len; };  
   inline u_int64_t getNumPkts()       { return(numPkts);                };
   inline u_int64_t getNumBytes()      { return(numBytes);               };
-
   void printStats();
+
+  char* serialize();
+  void deserialize(json_object *o);
+  json_object* getJSONObject();
 };
 
 #endif /* _TRAFFIC_STATS_H_ */

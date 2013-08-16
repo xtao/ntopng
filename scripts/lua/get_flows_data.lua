@@ -9,7 +9,6 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ifname      = _GET["if"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
@@ -30,10 +29,6 @@ else
    perPage = tonumber(perPage)
 end
 
-if(ifname == nil) then	  
-  ifname = "any"
-end
-
 if(port ~= nil) then port = tonumber(port) end
 
 interface.find(ifname)
@@ -51,19 +46,23 @@ for key, value in pairs(flows_stats) do
 
    process = 1
    if(host ~= nil) then
-      if((flows_stats[key]["src.ip"] ~= host) and (flows_stats[key]["dst.ip"] ~= host)) then
+      if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
 	 process = 0
       end
    end	
    if(port ~= nil) then
-      if((flows_stats[key]["src.port"] ~= port) and (flows_stats[key]["dst.port"] ~= port)) then
+      if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
 	 process = 0
       end
    end
 
    if(application ~= nil) then
-      if(flows_stats[key]["proto.ndpi"] ~= application) then
-	 process = 0
+    if(flows_stats[key]["proto.ndpi"] == "(Too Early)") then
+         if(application ~= "Unknown") then process = 0 end
+      else
+        if(flows_stats[key]["proto.ndpi"] ~= application) then
+  	   process = 0
+        end
       end
    end
 
@@ -72,9 +71,9 @@ for key, value in pairs(flows_stats) do
       num = num + 1
       postfix = string.format("0.%04u", num)
       if(sortColumn == "column_client") then
-	 vkey = flows_stats[key]["src.ip"]..postfix
+	 vkey = flows_stats[key]["cli.ip"]..postfix
 	 elseif(sortColumn == "column_server") then
-	 vkey = flows_stats[key]["dst.ip"]..postfix
+	 vkey = flows_stats[key]["srv.ip"]..postfix
 	 elseif(sortColumn == "column_bytes") then
 	 vkey = flows_stats[key]["bytes"]+postfix
 	 elseif(sortColumn == "column_bytes_last") then
@@ -124,32 +123,32 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 
-	 name = value["src.host"]
+	 name = value["cli.host"]
 	 if(name == "") then
-	    name = value["src.ip"]
+	    name = value["cli.ip"]
 	 end
 
-	 src_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["src.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
-	 if(value["src.port"] > 0) then
-  	   src_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["src.port"] .. "'>"..value["src.port"].."</A>"
+	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
+	 if(value["cli.port"] > 0) then
+  	   src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
          else
 	   src_port=""
          end
 
-	 name = value["dst.host"]
+	 name = value["srv.host"]
 	 if(name == "") then
-	    name = value["dst.ip"]
+	    name = value["srv.ip"]
 	 end
 
-	 dst_key="<A HREF='/lua/host_details.lua?interface=".. ifname .. "&host=" .. value["dst.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
-	 if(value["dst.port"] > 0) then
-  	   dst_port=":<A HREF='/lua/port_details.lua?interface=".. ifname .. "&port=" .. value["dst.port"] .. "'>"..value["dst.port"].."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
+	 if(value["srv.port"] > 0) then
+  	   dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
          else
 	   dst_port=""
          end
 
-	 descr=value["src.host"]..":"..value["src.port"].." &lt;-&gt; "..value["dst.host"]..":"..value["dst.port"]
-	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?interface=".. ifname .. "&flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
+	 descr=value["cli.host"]..":"..value["cli.port"].." &lt;-&gt; "..value["srv.host"]..":"..value["srv.port"]
+	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])

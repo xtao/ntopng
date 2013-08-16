@@ -40,27 +40,21 @@ void sigproc(int sig) {
 
   ntop->getGlobals()->shutdown();
   sleep(2); /* Wait until all threads know that we're shutting down... */
-
-  if(NetworkInterface *iface = ntop->get_NetworkInterface("any")) {
-    EthStats *stats = iface->getStats();
-
-    stats->print();
-    iface->shutdown();
-  }
+  ntop->shutdown();
 
 #if 0
   /* For the time being preferences are not saved. In the future this might change */
-  
+
   if (ntop->getPrefs()->save() < 0)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
 #endif
 
 #ifndef WIN32
-  if (ntop->getPrefs()->get_pid_path() != NULL) 
+  if (ntop->getPrefs()->get_pid_path() != NULL)
     unlink(ntop->getPrefs()->get_pid_path());
 #endif
 
-  //delete ntop;
+  delete ntop;
   exit(0);
 }
 
@@ -72,13 +66,13 @@ int ntop_main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
 #endif
- {
-  NetworkInterface *iface = NULL;
+{
   HTTPserver *httpd = NULL;
   Redis *redis = NULL;
   Prefs *prefs = NULL;
   char *ifName;
   int rc;
+
 
   if((ntop = new Ntop(argv[0])) == NULL) exit(0);
   if((prefs = new Prefs(ntop)) == NULL) exit(0);
@@ -91,44 +85,61 @@ int main(int argc, char *argv[])
 
   if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
   if(redis == NULL) redis = new Redis();
-  
+
   ntop->registerPrefs(prefs, redis);
 
   prefs->loadUsersFromFile();
 
-  ifName = ntop->get_if_name();
+  if(prefs->get_num_interfaces() == 0) {
+    /* We need to add a default interface */
+    prefs->addDefaultInterface();
+  }
 
-  /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
-  if(ifName && (strstr(ifName, "tcp://") || strstr(ifName, "ipc://"))) {
-    char *at = strchr(ifName, '@');
-    char *script, *endpoint;
+  for(int i=0; i<max_val(1, prefs->get_num_interfaces()); i++) {
+    NetworkInterface *iface;
 
-    if(at != NULL) {
-      u_int len = strlen(ifName)-strlen(at);
+    ifName = ntop->get_if_name(i);
 
-      script = (char*)malloc(len+1);
-      if(script == NULL) {
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "Not enough memory");
-	exit(-1);
+    /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
+    if(ifName && (strstr(ifName, "tcp://") || strstr(ifName, "ipc://"))) {
+      char *at = strchr(ifName, '@');
+      char *script, *endpoint;
+
+      if(at != NULL) {
+	u_int len = strlen(ifName)-strlen(at);
+
+	script = (char*)malloc(len+1);
+	if(script == NULL) {
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "Not enough memory");
+	  exit(-1);
+	}
+
+	strncpy(script, ifName, len);
+	script[len] = '\0';
+	endpoint = &at[1];
+      } else
+	script = strdup("nprobe-collector.lua"), endpoint = ifName;
+
+      iface = new CollectorInterface(endpoint, script, prefs->do_change_user());
+    } else {
+#ifdef HAVE_PF_RING
+      try {
+	iface = new PF_RINGInterface(ifName, prefs->do_change_user());
+      } catch (int) {
+#endif
+	iface = new PcapInterface(ifName, prefs->do_change_user());
+#ifdef HAVE_PF_RING
       }
-
-      strncpy(script, ifName, len);
-      script[len] = '\0';
-      endpoint = &at[1];
-    } else
-      script = strdup("nprobe-collector.lua"), endpoint = ifName;
-
-    iface = new CollectorInterface(endpoint, script, prefs->do_change_user());
-  } else {
-#ifdef HAVE_PF_RING
-    try {
-      iface = new PF_RINGInterface(ifName, prefs->do_change_user());
-    } catch (int) {
 #endif
-      iface = new PcapInterface(ifName, prefs->do_change_user());
-#ifdef HAVE_PF_RING
     }
-#endif
+
+    if(prefs->get_cpu_affinity() >= 0)
+      iface->set_cpu_affinity(prefs->get_cpu_affinity());
+
+    if(prefs->get_packet_filter() != NULL)
+      iface->set_packet_filter(prefs->get_packet_filter());
+
+    ntop->registerInterface(iface);
   }
 
   if(prefs->daemonize_ntopng())
@@ -144,17 +155,10 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  if (prefs->get_cpu_affinity() >= 0)
-    iface->set_cpu_affinity(prefs->get_cpu_affinity());
-
-
-  if(prefs->get_packet_filter() != NULL)
-    iface->set_packet_filter(prefs->get_packet_filter());
-
-  ntop->registerInterface(iface);
   ntop->loadGeolocation(prefs->get_docs_dir());
-  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(), 
-						  prefs->get_docs_dir(), prefs->get_scripts_dir()));
+  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(),
+						  prefs->get_docs_dir(),
+						  prefs->get_scripts_dir()));
 
   /*
     We have created the network interface and thus changed user. Let's not check
@@ -181,15 +185,15 @@ int main(int argc, char *argv[])
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
 
   if(prefs->get_categorization_key() != NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, 
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
 				 "Host categorization is not enabled: using default key");
     ntop->setCategorization(new Categorization(prefs->get_categorization_key()));
     prefs->enable_categorization();
   }
 
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Working directory: %s", 
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Working directory: %s",
 			       ntop->get_working_dir());
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Scripts/HTML pages directory: %s", 
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Scripts/HTML pages directory: %s",
 			       ntop->get_install_dir());
 
   signal(SIGINT, sigproc);
@@ -204,20 +208,13 @@ int main(int argc, char *argv[])
   #endif
 
   ntop->start();
-  iface->startPacketPolling();
-
-  while(iface->isRunning()) {
-    sleep(2);
-    /* TODO - Do all this for all registered interfaces */
-    iface->runHousekeepingTasks();
-  }
 
   sigproc(0);
-  //delete ntop;
+  delete ntop;
 
   return(0);
 }
- 
+
 #ifdef WIN32
 }
 #endif

@@ -6,11 +6,6 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
-ifname = _GET["if"]
-if(ifname == nil) then
-   ifname = "any"
-end
-
 hostname = _GET["name"]
 
 interface.find(ifname)

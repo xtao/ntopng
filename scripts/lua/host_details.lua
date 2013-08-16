@@ -8,13 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
-page = _GET["page"]
-
-ifname = _GET["interface"]
-if(ifname == nil) then
-   ifname = "any"
-end
-
+page    = _GET["page"]
 host_ip = _GET["host"]
 
 active_page = "hosts"
@@ -40,7 +34,7 @@ if(host == nil) then
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
       print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
    else
-      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?interface="..ifname.."&host="..host_ip))
+      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?host="..host_ip))
    end
    return
 else
@@ -149,7 +143,7 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
 
    if(host["ip"] ~= nil) then
-      -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?interface=" .. ifname .. "&host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
+      -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
       print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
       print("<tr><th>IP Address</th><td>" .. host["ip"])
    else
@@ -214,7 +208,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { if: "any", host: ]]
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifname) print ('", host: ')
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -256,7 +250,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { if: "any", host: ]]
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifname) print [[" , host: ]]
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -433,7 +427,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
+      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
    else
       url = k
    end
@@ -452,7 +446,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)   
    v = host["contacts"]["server"][k]
    if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?interface="..ifname.."&host="..k.."\">"..name["name"].."</A>"
+      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
    else
       url = k
    end
@@ -495,18 +489,16 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
-		    data: { if: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
+		    data: { ifname: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
 		    error: function(content) { alert("JSON Error"); },
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);
 			$('#first_seen').html(epoch2Seen(host["seen.first"]));
 			$('#last_seen').html(epoch2Seen(host["seen.last"]));
-
-
 			$('#pkts_sent').html(formatPackets(host["pkts.sent"]));
 			$('#pkts_rcvd').html(formatPackets(host["pkts.rcvd"]));
-			$('#bytes_sent').html(bytesToSize(host["bytes.sent"]));
-			$('#bytes_rcvd').html(bytesToSize(host["bytes.rcvd"]));
+			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
+			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
 			$('#name').html(host["name"]);
 			/*
 			$('#throughput').html(rsp.throughput);

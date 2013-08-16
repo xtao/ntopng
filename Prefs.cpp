@@ -25,7 +25,7 @@
 
 Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop;
-  ifName = NULL, local_networks = strdup(CONST_DEFAULT_HOME_NET);
+  local_networks = strdup(CONST_DEFAULT_HOME_NET);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
@@ -47,6 +47,9 @@ Prefs::Prefs(Ntop *_ntop) {
   logFd = NULL;
   pid_path = NULL;
   packet_filter = NULL;
+  disable_host_persistency = false;
+  num_interfaces = 0;
+  memset(ifNames, 0, sizeof(ifNames));
 
 #ifdef WIN32
   daemonize = true;
@@ -77,7 +80,7 @@ void usage() {
 	 "[-g <core>] "
 #endif
 	 "[-n mode] [-i <iface|pcap file>]\n"
-	 "              [-w <http port>] [-p <protos>] [-d <path>]\n"
+	 "              [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
 	 "              [-l] [-U <sys user>] [-s] [-v]\n"
 	 "              [-B <filter>]\n"
@@ -114,6 +117,7 @@ void usage() {
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
 	 "                                    | (eg. protos.txt)\n"
+	 "[--disable-host-persistency|-P]     | Disable host persistency\n"
 	 "[--redis|-r] <redis host[:port]>    | Redis host[:port]\n"
 #ifdef linux
 	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
@@ -163,6 +167,7 @@ static const struct option long_options[] = {
   { "http-port",                         required_argument, NULL, 'w' },
   { "local-networks",                    required_argument, NULL, 'm' },
   { "ndpi-protocols",                    required_argument, NULL, 'p' },
+  { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "redis",                             required_argument, NULL, 'r' },
   { "core-affinity",                     required_argument, NULL, 'g' },
   { "dont-change-user",                  no_argument,       NULL, 's' },
@@ -237,12 +242,19 @@ int Prefs::setOption(int optkey, char *optarg) {
     ntop->setCustomnDPIProtos(ndpi_proto_path);
     break;
 
+  case 'P':
+    disable_host_persistency = true;
+    break;
+
   case 'h':
     help();
     break;
 
   case 'i':
-    ifName = strdup(optarg);
+    if(num_interfaces < (MAX_NUM_INTERFACES-1))
+      ifNames[num_interfaces++] = strdup(optarg);
+    else
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many interfaces: discarded %s", optarg);
     break;
 
   case 'w':
@@ -436,7 +448,15 @@ int Prefs::save() {
   }
 
   if(dns_mode != 0)       fprintf(fd, "dns-mode=%d\n", dns_mode);
-  if(ifName)              fprintf(fd, "interface=%s\n", ifName);
+  
+  if(num_interfaces > 0) {
+    fprintf(fd, "interface=");
+
+    for(int i=0; i<num_interfaces; i++)
+      fprintf(fd, "%s%s", (i > 0) ? "," : "", ifNames[i]);
+
+    fprintf(fd, "\n");
+  }
   if(data_dir)            fprintf(fd, "data-dir=%s\n", data_dir);
   if(categorization_key)  fprintf(fd, "categorization-key=%s\n", categorization_key);
   if(local_networks)      fprintf(fd, "local-networks=%s\n", local_networks);
@@ -549,6 +569,4 @@ int Prefs::saveUsersToFile() {
 
   return(rc);
 }
-
-/* ******************************************* */
 

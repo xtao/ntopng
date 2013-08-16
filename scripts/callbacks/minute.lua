@@ -12,7 +12,6 @@ when = os.time()
 
 -- Dump topTalkers every minute
 
-ifname = "any"
 talkers = getTopTalkers(ifname)
 basedir = dirs.workingdir .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", when)
 if(not(ntop.exists(basedir))) then   
@@ -43,7 +42,7 @@ if(enable_minute_debug == 0) then
    end
 end
 
-interface.find("any")
+interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 for key, value in pairs(hosts_stats) do
    if(enable_minute_debug == 1) then print ("[" .. key .. "][" .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]) .. "]\n") end

@@ -14,7 +14,6 @@ print [[
     "results": [
 ]]
 
-   if(ifname == nil) then ifname = "any" end
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()
    num = 0

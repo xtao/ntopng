@@ -40,14 +40,16 @@ Host::Host(NetworkInterface *_iface, char *jsonString) : GenericHost(_iface) {
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], 
+	   u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
   ip = new IpAddress(_ip);
   initialize(mac, _vlanId, true);
 }
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : GenericHost(_iface) {
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6], 
+	   u_int16_t _vlanId) : GenericHost(_iface) {
   ip = NULL;
   initialize(mac, _vlanId, true);
 }
@@ -55,33 +57,26 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId) : Gener
 /* *************************************** */
 
 Host::~Host() {
-#if 0
-  if(ndpiStats) {
-    ndpiStats->print(iface);
-    //printf("%s\n", ndpiStats->serialize());
-    ndpiStats->deserialize(ndpiStats->serialize());        
-    //ndpiStats->serialize());
-  }
-#endif
+  char key[128], *k;
 
-  if(0) {
-    char *s = getJSON();
-
-    
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", s);
-    free(s);
+  k = get_string_key(key, sizeof(key));
+  
+  if(localHost) {  
+    if(ip != NULL) {
+      snprintf(key, sizeof(key), "%s.client", k);
+      ntop->getRedis()->del(key);
+      
+      snprintf(key, sizeof(key), "%s.server", k);
+      ntop->getRedis()->del(key);
+    }
   }
 
-  if(localHost && (ip != NULL)) {
-    char key[128], buf[64], *k;
-
-    k = ip->print(buf, sizeof(buf));
-
-    snprintf(key, sizeof(key), "%s.client", k);
-    ntop->getRedis()->del(key);
-
-    snprintf(key, sizeof(key), "%s.server", k);
-    ntop->getRedis()->del(key);
+  if(ntop->getPrefs()->is_host_persistency_enabled()) {
+    char *json = serialize();
+    snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
+    ntop->getRedis()->set(key, json, 3600 /* 1 hour */);
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
+    free(json);
   }
 
   if(symbolic_name) free(symbolic_name);
@@ -95,6 +90,8 @@ Host::~Host() {
 /* *************************************** */
 
 void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
+  char key[128], json[4096], *k;
+
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
   category[0] = '\0';
@@ -103,6 +100,16 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   m = new Mutex();
   localHost = false, asn = 0, asname = NULL, country = NULL, city = NULL;
 
+  k = get_string_key(key, sizeof(key));
+  snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
+
+  if(ntop->getPrefs()->is_host_persistency_enabled()
+     && (!ntop->getRedis()->get(key, json, sizeof(json)))) {
+    /* Found saved copy of the host so let's start from the previous state */
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
+    deserialize(json);
+  }
+  
   if(init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
@@ -154,6 +161,17 @@ char* Host::get_mac(char *buf, u_int buf_len) {
 	   mac_address[4] & 0xFF, mac_address[5] & 0xFF);
 
   return(buf);
+}
+
+/* *************************************** */
+
+void Host::set_mac(char *m) {
+  u_int8_t mac[6] = { 0 };
+
+  sscanf(m, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+         &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
+  
+  memcpy(mac_address, mac, 6);
 }
 
 /* *************************************** */
@@ -230,6 +248,14 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     if(verbose) {
       if(ndpiStats) ndpiStats->lua(iface, vm);    
       //if(localHost) getHostContacts(vm);
+    }
+
+    if(false) {
+      char *s = serialize();
+            
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", s);
+      deserialize(s);
+      free(s);
     }
 
     if(!returnHost) {
@@ -353,6 +379,7 @@ void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
 void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 		    u_int64_t sent_packets, u_int64_t sent_bytes,
 		    u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
+
   if(sent_packets || rcvd_packets) {
     ((GenericHost*)this)->incStats(l4_proto, ndpi_proto, sent_packets,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
@@ -392,18 +419,84 @@ char* Host::get_string_key(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
-char* Host::getJSON() {
-  JSONObject root;
-  JSONValue *value;
+char* Host::serialize() {
+  json_object *my_object, *o[32];
+  char *rsp, buf[32];
+  int n = 0;
+
+  my_object = json_object_new_object();
+   
+  json_object_object_add(my_object, "mac_address", json_object_new_string(get_mac(buf, sizeof(buf))));
   
-  char *rsp;
+  json_object_object_add(my_object, "asn", json_object_new_int(asn));
+  if(symbolic_name)       json_object_object_add(my_object, "symbolic_name", json_object_new_string(symbolic_name));
+  if(country)             json_object_object_add(my_object, "country", json_object_new_string(country));
+  if(city)                json_object_object_add(my_object, "city", json_object_new_string(city));
+  if(asname)              json_object_object_add(my_object, "asname", json_object_new_string(asname));
+  if(category[0] != '\0') json_object_object_add(my_object, "category", json_object_new_string(category));
+  if(vlan_id != 0)        json_object_object_add(my_object, "vlan_id", json_object_new_int(vlan_id));
+  if(latitude)            json_object_object_add(my_object, "latitude", json_object_new_double(latitude));
+  if(longitude)           json_object_object_add(my_object, "longitude", json_object_new_double(longitude));
+  if(ip)                  json_object_object_add(my_object, "ip", o[n++] = ip->getJSONObject());
+  json_object_object_add(my_object, "localHost", json_object_new_boolean(localHost));
+  json_object_object_add(my_object, "tcp_sent", o[n++]      = tcp_sent.getJSONObject());
+  json_object_object_add(my_object, "tcp_rcvd", o[n++]      = tcp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "udp_sent", o[n++]      = udp_sent.getJSONObject());
+  json_object_object_add(my_object, "udp_rcvd", o[n++]      = udp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "icmp_sent", o[n++]     = icmp_sent.getJSONObject());
+  json_object_object_add(my_object, "icmp_rcvd", o[n++]     = icmp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "other_ip_sent", o[n++] = other_ip_sent.getJSONObject());
+  json_object_object_add(my_object, "other_ip_rcvd", o[n++] = other_ip_rcvd.getJSONObject());
 
-  root[L"mac_address"] = new JSONValue(mac_address);
-  root[L"asn"]         = new JSONValue((double)asn);
+  /* Generic Host */
+  json_object_object_add(my_object, "sent", o[n++]      = sent.getJSONObject());
+  json_object_object_add(my_object, "rcvd", o[n++]      = rcvd.getJSONObject());
+  json_object_object_add(my_object, "ndpiStats", o[n++] = ndpiStats->getJSONObject(iface));
 
-  value = new JSONValue(root);
-  rsp = strdup((char*)value->Stringify().c_str());
-  delete value;
+  rsp = strdup(json_object_to_json_string(my_object));
+
+  /* Free memory */
+  json_object_put(my_object);
+  for(int i=0; i<n; i++) json_object_put(o[i]);
 
   return(rsp);
+}
+
+/* *************************************** */
+
+bool Host::deserialize(char *json_str) {
+  json_object *o, *obj;
+
+  if((o = json_tokener_parse(json_str)) == NULL) return(false);
+  
+  if(json_object_object_get_ex(o, "mac_address", &obj)) set_mac((char*)json_object_get_string(obj));
+  if(json_object_object_get_ex(o, "asn", &obj)) asn = json_object_get_int(obj);
+
+  if(json_object_object_get_ex(o, "symbolic_name", &obj))  { if(symbolic_name) free(symbolic_name); symbolic_name = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "country", &obj))  { if(country) free(country); country = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "city", &obj))  { if(city) free(city); city = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "asname", &obj))  { if(asname) free(asname); asname = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "category", &obj))  { snprintf(category, sizeof(category), "%s", json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "vlan_id", &obj))  vlan_id = json_object_get_int(obj);
+  if(json_object_object_get_ex(o, "latitude", &obj))  latitude  = json_object_get_double(obj);
+  if(json_object_object_get_ex(o, "longitude", &obj)) longitude = json_object_get_double(obj);
+  if(json_object_object_get_ex(o, "ip", &obj))  { if(ip == NULL) ip = new IpAddress(); if(ip) ip->deserialize(obj); }
+  if(json_object_object_get_ex(o, "localHost", &obj)) localHost = json_object_get_boolean(obj);
+  if(json_object_object_get_ex(o, "tcp_sent", &obj))  tcp_sent.deserialize(obj);
+  if(json_object_object_get_ex(o, "tcp_rcvd", &obj))  tcp_rcvd.deserialize(obj);
+  if(json_object_object_get_ex(o, "udp_sent", &obj))  udp_sent.deserialize(obj);
+  if(json_object_object_get_ex(o, "udp_rcvd", &obj))  udp_rcvd.deserialize(obj);
+  if(json_object_object_get_ex(o, "icmp_sent", &obj))  icmp_sent.deserialize(obj);
+  if(json_object_object_get_ex(o, "icmp_rcvd", &obj))  icmp_rcvd.deserialize(obj);
+  if(json_object_object_get_ex(o, "other_ip_sent", &obj))  other_ip_sent.deserialize(obj);
+  if(json_object_object_get_ex(o, "other_ip_rcvd", &obj))  other_ip_rcvd.deserialize(obj);
+
+  if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
+  if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
+  if(ndpiStats) { free(ndpiStats); ndpiStats = NULL; }
+  if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
+
+  json_object_put(o);
+
+  return(true);
 }

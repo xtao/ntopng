@@ -7,11 +7,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-ifname = _GET["if"]
-if(ifname == nil) then
-   ifname = "any"
-end
-
 host_ip = _GET["host"]
 
 interface.find(ifname)

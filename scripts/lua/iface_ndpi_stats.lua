@@ -9,8 +9,7 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ifname = _GET["if"]
-interface.find("any")
+interface.find(ifname)
 
 if(_GET["host"] == nil) then
    stats = interface.getNdpiStats()

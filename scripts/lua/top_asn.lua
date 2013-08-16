@@ -10,4 +10,4 @@ require "top_talkers"
 
 sendHTTPHeader('text/html')
 
-print(getTopASs(_GET["if"]))
+print(getTopASs(ifname))

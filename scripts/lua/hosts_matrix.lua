@@ -33,10 +33,6 @@ function getTraffic(stats, host_a, host_b)
    return(rc)
 end
 
-if(ifname == nil) then	  
-  ifname = "any"
-end
-
 interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 flows_stats = interface.getFlowsInfo()
@@ -65,7 +61,7 @@ else
    print("</tr>\n")
 
    for row_key, row_value in pairs(localhosts) do
-      print("<tr><th><A HREF=\"/lua/host_details.lua?interface=any&host="..localhosts[row_key]["name"].."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
+      print("<tr><th><A HREF=\"/lua/host_details.lua?host="..localhosts[row_key]["name"].."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
       for column_key, column_value in pairs(localhosts) do	
 	 val = "&nbsp;"
 	 if(row_key ~= column_key) then

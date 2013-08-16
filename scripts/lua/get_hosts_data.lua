@@ -8,7 +8,6 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-ifname          = _GET["if"]
 currentPage     = _GET["currentPage"]
 perPage         = _GET["perPage"]
 sortColumn      = _GET["sortColumn"]
@@ -29,10 +28,6 @@ if(perPage == nil) then
    perPage = 5
 else
    perPage = tonumber(perPage)
-end
-
-if(ifname == nil) then	  
-  ifname = "any"
 end
 
 interface.find(ifname)
@@ -105,7 +100,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	 print ("{ \"column_ip\" : \"<A HREF='/lua/")
 	 if(aggregated ~= nil) then print("aggregated_") end
-	 print("host_details.lua?interface=".. ifname .. "&host=" .. key .. "'>" .. key .. " ")
+	 print("host_details.lua?host=" .. key .. "'>" .. key .. " ")
 
 	 print("</A>\", \"column_name\" : \"")
 	 print(value["name"])

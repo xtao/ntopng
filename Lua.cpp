@@ -44,6 +44,11 @@ extern "C" {
 #ifdef HAVE_GEOIP
   extern const char * GeoIP_lib_version(void);
 #endif
+
+#ifdef HAVE_EJDB
+#include "./third-party/ejdb-v1.1.17/luaejdb/luaejdb.c"
+#include "./third-party/ejdb-v1.1.17/luaejdb/luabson.c"
+#endif
 };
 
 /* ******************************* */
@@ -106,13 +111,61 @@ static int ntop_dump_file(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_default_interface_name(lua_State* vm) {
+  lua_pushstring(vm, ntop->getInterfaceId(0)->get_name());
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_set_active_interface_id(lua_State* vm) {
+  NetworkInterface *iface;
+  u_int32_t id;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(0);
+  id = (u_int32_t)lua_tonumber(vm, 1);
+
+  iface = ntop->getInterfaceId(id);
+
+  if(iface != NULL) {
+    lua_pushstring(vm, iface->get_name());
+  } else {
+    lua_pushnil(vm);
+  }
+
+  return(1);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_names(lua_State* vm) {
+  lua_newtable(vm);
+
+  for(int i=0; i<ntop->get_num_interfaces(); i++) {
+    char num[8];
+
+    snprintf(num, sizeof(num), "%d", i);
+    lua_push_str_table_entry(vm, num, ntop->getInterfaceId(i)->get_name());
+  }
+
+  /*
+  lua_pushstring(vm, "names");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+  */
+
+  return(1);
+}
+
+/* ****************************************** */
+
 static int ntop_find_interface(lua_State* vm) {
   char *ifname;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   ifname = (char*)lua_tostring(vm, 1);
 
-  lua_pushlightuserdata(vm, (char*)ntop->get_NetworkInterface(ifname));
+  lua_pushlightuserdata(vm, (char*)ntop->getNetworkInterface(ifname));
   lua_setglobal(vm, "ntop_interface");
 
   return(1);
@@ -127,13 +180,16 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getnDPIStats(&stats);
+  if(ntop_interface) {
+    ntop_interface->getnDPIStats(&stats);
 
-  lua_newtable(vm);
-  stats.lua(ntop_interface, vm);
+    lua_newtable(vm);
+    stats.lua(ntop_interface, vm);
+  }
 
   return(1);
 }
@@ -146,11 +202,12 @@ static int ntop_get_interface_hosts(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getActiveHostsList(vm, false);
-
+  if(ntop_interface) ntop_interface->getActiveHostsList(vm, false);
+  
   return(1);
 }
 
@@ -162,10 +219,11 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getActiveHostsList(vm, true);
+  if(ntop_interface) ntop_interface->getActiveHostsList(vm, true);
 
   return(1);
 }
@@ -178,10 +236,11 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    // return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getActiveAggregatedHostsList(vm);
+  if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm);
 
   return(1);
 }
@@ -194,10 +253,11 @@ static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
+  if(ntop_interface) lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
 
   return(1);
 }
@@ -291,69 +351,6 @@ static int ntop_delete_redis_key(lua_State* vm) {
 
 /* ****************************************** */
 
-#if 0
-static int ntop_get_keyval(lua_State* vm) {
-  //struct stat buf;
-  char *path, *k;
-  int rc;
-
-  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
-  if((path = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
-
-  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
-  if((k = (char*)lua_tostring(vm, 2)) == NULL)         return(-1);
-
-#if 0
-  if(stat(path, &buf) != 0)        return(luaL_error(vm, "The specified DB %s does not exist", path));
-  if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open DB %s", path));
-
-  key.data = k, key.len = strlen(k);
-  if(db_get(db, &key, &value) == 1) {
-    lua_pushlstring(vm, value.data,value.len);
-    free(value.data);
-    rc = 1;
-  } else
-    rc = 0;
-
-  db_close(db);
-#endif
-
-  return(rc);
-}
-#endif
-
-/* ****************************************** */
-
-#if 0
-static int ntop_set_keyval(lua_State* vm) {
-  //struct stat buf;
-  char *path, *k, *v;
-  int rc;
-
-  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(-1);
-  if((path = (char*)lua_tostring(vm, 1)) == NULL)  return(-1);
-
-  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(-1);
-  if((k = (char*)lua_tostring(vm, 2)) == NULL)         return(-1);
-
-  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(-1);
-  if((v = (char*)lua_tostring(vm, 3)) == NULL)         return(-1);
-
-#if 0
-  if((db = db_open(path)) == NULL) return(luaL_error(vm, "Unable to open/create DB %s", path));
-
-  key.data = k, key.len = strlen(k);
-  rc = db_add(db, &key, &value);
-  lua_pushboolean(vm, rc);
-  db_close(db);
-#endif
-
-  return(rc);
-}
-#endif
-
-/* ****************************************** */
-
 static int ntop_zmq_disconnect(lua_State* vm) {
   void *context, *subscriber;
 
@@ -396,7 +393,8 @@ static int ntop_zmq_receive(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
   item.socket = subscriber;
@@ -434,10 +432,11 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getActiveFlowsList(vm);
+  if(ntop_interface) ntop_interface->getActiveFlowsList(vm);
 
   return(1);
 }
@@ -458,10 +457,11 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
-
-  if(!ntop_interface->getHostInfo(vm, host_ip, vlan_id))
+ 
+  if((!ntop_interface) || !ntop_interface->getHostInfo(vm, host_ip, vlan_id))
     return(0);
   else
     return(1);
@@ -479,10 +479,11 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  if(!ntop_interface->getAggregatedHostInfo(vm, host_name))
+  if((!ntop_interface) || (!ntop_interface->getAggregatedHostInfo(vm, host_name)))
     return(0);
   else
     return(1);
@@ -502,10 +503,11 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    //return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->getFlowPeersList(vm, host_name);
+  if(ntop_interface) ntop_interface->getFlowPeersList(vm, host_name);
 
   return(1);
 }
@@ -523,9 +525,13 @@ static int ntop_get_interface_flow_by_key(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(false);
-  } else
-    f = ntop_interface->findFlowByKey(key);
+    //return(false);
+    ntop_interface = ntop->getInterfaceId(0);
+  }
+
+  if(!ntop_interface) return(false);
+
+  f = ntop_interface->findFlowByKey(key);
 
   if(f == NULL)
     return(false);
@@ -544,12 +550,14 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(false);
+    // return(false);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  endpoint = ntop_interface->getEndpoint();
-
-  lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
+  if(ntop_interface) {
+    endpoint = ntop_interface->getEndpoint();    
+    lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
+  }
 
   return(true);
 }
@@ -562,8 +570,11 @@ static int ntop_interface_is_running(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(false);
+    // return(false);
+    ntop_interface = ntop->getInterfaceId(0);
   }
+
+  if(!ntop_interface) return(false);
 
   return(ntop_interface->isRunning());
 }
@@ -829,14 +840,16 @@ static int ntop_process_flow(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(false);
+    // return(false);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->flow_processing(smac, dmac, &src_ip, &dst_ip, src_port, dst_port,
-				  vlan_id, proto_id, l4_proto, tcp_flags,
-				  in_pkts, in_bytes, out_pkts, out_bytes, 
-				  first_switched, last_switched,
-				  additional_fields_json);
+  if(ntop_interface)
+    ntop_interface->flow_processing(smac, dmac, &src_ip, &dst_ip, src_port, dst_port,
+				    vlan_id, proto_id, l4_proto, tcp_flags,
+				    in_pkts, in_bytes, out_pkts, out_bytes,
+				    first_switched, last_switched,
+				    additional_fields_json);
 
   return(true);
 }
@@ -958,10 +971,11 @@ static int ntop_get_interface_stats(lua_State* vm) {
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    return(0);
+    // return(0);
+    ntop_interface = ntop->getInterfaceId(0);
   }
 
-  ntop_interface->lua(vm);
+  if(ntop_interface) ntop_interface->lua(vm);
 
   return(1);
 }
@@ -1028,32 +1042,13 @@ static int ntop_get_resolved_address(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
-  char *dir, path[MAX_PATH];
-  int permission = 0777, i, rc;
+  char *dir;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(0);
   if((dir = (char*)lua_tostring(vm, 1)) == NULL)       return(-1);
   if(dir[0] == '\0')                                   return(1); /* Nothing to do */
 
-  snprintf(path, sizeof(path), "%s", dir);
-  ntop->fixPath(path);
-
-  /* Start at 1 to skip the root */
-  for(i=1; path[i] != '\0'; i++)
-    if(path[i] == CONST_PATH_SEP) {
-#ifdef WIN32
-      /* Do not create devices directory */
-      if((i > 1) && (path[i-1] == ':')) continue;
-#endif
-
-      path[i] = '\0';
-      rc = ntop_mkdir(path, permission);
-      path[i] = CONST_PATH_SEP;
-    }
-
-  rc = ntop_mkdir(path, permission);
-
-  return(rc == 0 ? 1 : -1);
+  return(Utils::mkdir_tree(dir));
 }
 
 /* ****************************************** */
@@ -1164,6 +1159,9 @@ typedef struct {
 } ntop_class_reg;
 
 static const luaL_Reg ntop_interface_reg[] = {
+  { "getDefaultIfName",       ntop_get_default_interface_name },
+  { "setActiveInterfaceId",   ntop_set_active_interface_id },
+  { "getIfNames",             ntop_get_interface_names },
   { "find",                   ntop_find_interface },
   { "getStats",               ntop_get_interface_stats },
   { "getNdpiStats",           ntop_get_ndpi_interface_stats },
@@ -1195,10 +1193,6 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
   { "deleteKey",      ntop_delete_redis_key },
-#if 0
-  { "getKeyVal",      ntop_get_keyval  },
-  { "setKeyVal",      ntop_set_keyval  },
-#endif
 
   /* RRD */
   { "rrd_create",     ntop_rrd_create },
@@ -1234,6 +1228,8 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
   ntop_class_reg ntop[] = {
     { "interface", ntop_interface_reg },
     { "ntop",      ntop_reg },
+    // { "luaejdb",      ejdb_reg },
+
     {NULL,    NULL}
   };
 
@@ -1250,10 +1246,6 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
     /* metatable.__index = class_methods */
     lua_newtable(L), luaL_register(L, NULL, ntop[i].class_methods);
     lua_setfield(L, meta_id, "__index");
-
-    /* metatable.__metatable = _meta */
-    //luaL_newlib(L, _meta);
-    //lua_setfield(L, meta_id, "__metatable");
 
     /* class.__metatable = metatable */
     lua_setmetatable(L, lib_id);
@@ -1321,12 +1313,18 @@ int Lua::run_script(char *script_path) {
 
 /* ****************************************** */
 
-int Lua::handle_script_request(struct mg_connection *conn, 
+int Lua::handle_script_request(struct mg_connection *conn,
 			       const struct mg_request_info *request_info, char *script_path) {
-  char buf[64];
+  char buf[64], key[64], val[64];
 
   luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
+
+#ifdef HAVE_EJDB
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): luaopen_luaejdb()", __FUNCTION__);
+  luaopen_luaejdb(L);
+  lua_setglobal(L, "luaejdb");
+#endif
 
   lua_pushlightuserdata(L, (char*)conn);
   lua_setglobal(L, HTTP_CONN);
@@ -1368,10 +1366,26 @@ int Lua::handle_script_request(struct mg_connection *conn,
   /* Put the _SESSION params into the environment */
   lua_newtable(L);
 
-  mg_get_cookie(conn, "user", buf, sizeof(buf)); 
+  mg_get_cookie(conn, "user", buf, sizeof(buf));
   lua_push_str_table_entry(L, "user", buf);
-  mg_get_cookie(conn, "session", buf, sizeof(buf)); 
+  mg_get_cookie(conn, "session", buf, sizeof(buf));
   lua_push_str_table_entry(L, "session", buf);
+
+  snprintf(key, sizeof(key), "sessions.%s.ifname", buf);
+  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
+  set_default_if_name_in_session:
+    snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
+    lua_push_str_table_entry(L, "ifname", val);
+    ntop->getRedis()->set(key, val, 3600 /* 1h */);
+  } else {
+    if(ntop->getInterface(val) != NULL) {
+      /* The specified interface still exists */
+      lua_push_str_table_entry(L, "ifname", val);
+      ntop->getRedis()->expire(key, 3600); /* Extend session */
+    } else {
+      goto set_default_if_name_in_session;
+    }
+  }
 
   lua_setglobal(L, "_SESSION"); /* Like in php */
 

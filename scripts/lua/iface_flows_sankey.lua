@@ -11,8 +11,7 @@ sendHTTPHeader('application/json')
 
 tracked_host = _GET["host"]
 
-ifname = _GET["if"]
-interface.find("any")
+interface.find(ifname)
 peers = interface.getFlowPeers()
 
 max_num_links = 32

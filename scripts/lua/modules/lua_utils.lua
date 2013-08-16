@@ -2,6 +2,11 @@
 -- (C) 2013 - ntop.org
 --
 
+ifname = _GET["ifname"]
+if(ifname == nil) then	  
+  ifname = _SESSION["ifname"]
+end
+
 l4_keys = {
    { "TCP", "tcp" },
    { "UDP", "udp" },
@@ -10,8 +15,20 @@ l4_keys = {
 }
 
 
+function sendHTTPHeaderIfName(mime, ifname, maxage)
+   print('HTTP/1.1 200 OK\r\n')
+   print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; http-only\r\n')
+   if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '\r\n') end
+   print('Content-Type: '.. mime ..'\r\n')
+   print('\r\n')
+end
+
+function sendHTTPHeaderLogout(mime)
+   sendHTTPHeaderIfName(mime, nil, 0)
+end
+
 function sendHTTPHeader(mime)
-   print('HTTP/1.1 200 OK\r\nContent-Type: '..mime..'\r\n\r\n')
+   sendHTTPHeaderIfName(mime, nil, 3600)
 end
 
 function findString(str, tofind)

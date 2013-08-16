@@ -46,6 +46,12 @@
 #define	ETHERTYPE_ARP		0x0806	/* Address Resolution Protocol */
 #endif
 
+/* BSD AF_ values. */
+#define BSD_AF_INET             2
+#define BSD_AF_INET6_BSD        24      /* OpenBSD (and probably NetBSD), BSD/OS */
+#define BSD_AF_INET6_FREEBSD    28
+#define BSD_AF_INET6_DARWIN     30
+
 /* ***************************************************** */
 
 #define NTOP_SVN_REVISION         "$Revision$"
@@ -55,6 +61,7 @@
 #define NDPI_MIN_NUM_PACKETS      10
 #define GTP_U_V1_PORT             2152
 #define MAX_NUM_INTERFACE_HOSTS   65536
+#define MAX_NUM_INTERFACES        16
 
 #define FLOW_PURGE_FREQUENCY      1 /* sec */
 #define HOST_PURGE_FREQUENCY      1 /* sec */
@@ -115,6 +122,7 @@
 #define CONST_DEFAULT_WRITABLE_DIR  "/var/tmp"
 #define CONST_DEFAULT_INSTALL_DIR   "/usr/local/share/ntopng"
 #define CONST_DEFAULT_NTOP_USER     "nobody"
+#define CONST_TOO_EARLY             "(Too Early)"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"

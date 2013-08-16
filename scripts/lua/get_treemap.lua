@@ -9,11 +9,6 @@ require "lua_utils"
 
 sendHTTPHeader('application/json')
 
-ifname          = _GET["if"]
-if(ifname == nil) then	  
-  ifname = "any"
-end
-
 interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 

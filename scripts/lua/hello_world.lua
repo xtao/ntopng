@@ -18,8 +18,6 @@ for key, value in pairs(_GET) do
    print(key.."="..value.."<p>\n")
 end
 
-
-iface = interface.find("any") -- put real interface name here
 stats = interface.getStats()
 
 print(stats["packets"])

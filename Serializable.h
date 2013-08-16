@@ -29,8 +29,9 @@ class Serializable {
  protected:
   inline Serializable()                     { ; }
   virtual inline ~Serializable()            { ; }
-  virtual const char* serialize()           { return(NULL); };
+  virtual char* serialize()                 { return(NULL); };
   virtual void  deserialize(const char *)   { ;             };
+  virtual json_object* getJSONObject()      { return(NULL); };
 };
 
 #endif /* _SERIALIZABLE_H_ */

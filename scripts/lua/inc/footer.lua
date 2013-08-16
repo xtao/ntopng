@@ -18,7 +18,7 @@ print [[ - <A HREF="http://www.ntop.org">ntop.org</A> <br><font color=lightgray>
 info = ntop.getInfo()
 
 print ("v."..info["version"].." for user ")
-print(_SESSION["user"])
+print(_SESSION["user"].. " and interface " .. ifname)
 print [[</font></div>
   <div class="span1"> <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
   <div class="span6"><div id="network-load"></div></div></div>
@@ -155,7 +155,7 @@ setInterval(function() {
 		  $.ajax({
 			    type: 'GET',
 			    url: '/lua/network_load.lua',
-			    data: { if: "any" },
+			    data: { },
 			    success: function(content) {
 					   var rsp = jQuery.parseJSON(content);
 					   if(prev_bytes > 0) {
@@ -177,7 +177,9 @@ setInterval(function() {
 					   pps = packets_diff / epoch_diff;
 
 					   $('#network-load').html(""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+addCommas(rsp.num_hosts)+" hosts]["+addCommas(rsp.num_flows)+" flows][uptime "+rsp.uptime+"]");
-   					}
+   					} else {
+					/* $('#network-load').html("[No traffic (yet)]"); */
+					 }
 					   prev_bytes = rsp.bytes;
 					   prev_packets  = rsp.packets;
 					   prev_epoch = rsp.epoch;

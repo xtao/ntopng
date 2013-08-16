@@ -25,22 +25,22 @@
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol,
-	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
+	   u_int8_t cli_mac[6], IpAddress *_cli_ip, u_int16_t _cli_port,
+	   u_int8_t srv_mac[6], IpAddress *_srv_ip, u_int16_t _srv_port,
 	   time_t _first_seen, time_t _last_seen) : GenericHashEntry(_iface) {
-  vlanId = _vlanId, protocol = _protocol, src_port = _src_port, dst_port = _dst_port;
+  vlanId = _vlanId, protocol = _protocol, cli_port = _cli_port, srv_port = _srv_port;
   cli2srv_packets = 0, cli2srv_bytes = 0, srv2cli_packets = 0, srv2cli_bytes = 0, cli2srv_last_packets = 0,
     cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
 
   detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
-  ndpi_flow = NULL, src_id = dst_id = NULL;
+  ndpi_flow = NULL, cli_id = srv_id = NULL;
   json_info = strdup("{}");
   tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
 
-  iface->findFlowHosts(_vlanId, src_mac, _src_ip, &src_host, dst_mac, _dst_ip, &dst_host);
-  if(src_host) { src_host->incUses(); if(dst_host) src_host->incrContact(dst_host, true);  }
-  if(dst_host) { dst_host->incUses(); if(src_host) dst_host->incrContact(src_host, false); }
+  iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
+  if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
+  if(srv_host) { srv_host->incUses(); if(cli_host) srv_host->incrContact(cli_host, false); }
   first_seen = _first_seen;
   last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
@@ -51,12 +51,12 @@ Flow::Flow(NetworkInterface *_iface,
 
 Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol,
-	   u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
-	   u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port) : GenericHashEntry(_iface) {
+	   u_int8_t cli_mac[6], IpAddress *_cli_ip, u_int16_t _cli_port,
+	   u_int8_t srv_mac[6], IpAddress *_srv_ip, u_int16_t _srv_port) : GenericHashEntry(_iface) {
   time_t last_recvd = iface->getTimeLastPktRcvd();
 
-  Flow(_iface, _vlanId, _protocol, src_mac, _src_ip, _src_port,
-       dst_mac, _dst_ip, _dst_port, last_recvd, last_recvd);
+  Flow(_iface, _vlanId, _protocol, cli_mac, _cli_ip, _cli_port,
+       srv_mac, _srv_ip, _srv_port, last_recvd, last_recvd);
 }
 
 /* *************************************** */
@@ -65,10 +65,10 @@ void Flow::allocFlowMemory() {
   if((ndpi_flow = (ndpi_flow_struct*)calloc(1, iface->get_flow_size())) == NULL)
     throw "Not enough memory";
 
-  if((src_id = calloc(1, iface->get_size_id())) == NULL)
+  if((cli_id = calloc(1, iface->get_size_id())) == NULL)
     throw "Not enough memory";
 
-  if((dst_id = calloc(1, iface->get_size_id())) == NULL)
+  if((srv_id = calloc(1, iface->get_size_id())) == NULL)
     throw "Not enough memory";
 }
 
@@ -76,15 +76,21 @@ void Flow::allocFlowMemory() {
 
 void Flow::deleteFlowMemory() {
   if(ndpi_flow) { free(ndpi_flow); ndpi_flow = NULL; }
-  if(src_id)    { free(src_id);    src_id = NULL;    }
-  if(dst_id)    { free(dst_id);    dst_id = NULL;    }
+  if(cli_id)    { free(cli_id);    cli_id = NULL;    }
+  if(srv_id)    { free(srv_id);    srv_id = NULL;    }
 }
 
 /* *************************************** */
 
 Flow::~Flow() {
-  if(src_host) src_host->decUses();
-  if(dst_host) dst_host->decUses();
+#ifdef HAVE_SQLITE
+  DB *db = ntop->get_db();
+
+  if(db) db->dumpFlow(last_seen, this);
+#endif
+
+  if(cli_host) cli_host->decUses();
+  if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
   if(json_info) free(json_info);
 
@@ -96,7 +102,7 @@ Flow::~Flow() {
 void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
   if(ndpi_flow != NULL) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
-      u_int16_t sport = htons(src_port), dport = htons(dst_port);
+      u_int16_t sport = htons(cli_port), dport = htons(srv_port);
 
       detected_protocol = proto_id;
 
@@ -131,7 +137,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
 	    host->updateSeen();
 
-	    host->incrContact(src_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
+	    host->incrContact(cli_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
 	  }
 	}
 	break;
@@ -140,7 +146,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
       case NDPI_PROTOCOL_HTTP:
 	if(ndpi_flow->host_server_name[0] != '\0') {
 	  char buf[64], *doublecol, delimiter = ':';
-	  Host *svr = (sport < dport) ? src_host : dst_host;
+	  Host *svr = (sport < dport) ? cli_host : srv_host;
 
 	  /* if <host>:<port> We need to remove ':' */
 	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
@@ -164,8 +170,8 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 
       /* We can guess the protocol */
       detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							 ntohl(src_host->get_ip()->get_ipv4()), ntohs(src_port),
-							 ntohl(dst_host->get_ip()->get_ipv4()), ntohs(dst_port));
+							 ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
+							 ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
     }
 
     if(detection_completed) {
@@ -187,10 +193,10 @@ int Flow::compare(Flow *fb) {
   int c;
 
   if(vlanId < fb->vlanId) return(-1); else { if(vlanId > fb->vlanId) return(1); }
-  c = src_host->compare(fb->get_src_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
-  if(src_port < fb->src_port) return(-1); else { if(src_port > fb->src_port) return(1); }
-  c = dst_host->compare(fb->get_dst_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
-  if(dst_port < fb->dst_port) return(-1); else { if(dst_port > fb->dst_port) return(1); }
+  c = cli_host->compare(fb->get_cli_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
+  if(cli_port < fb->cli_port) return(-1); else { if(cli_port > fb->cli_port) return(1); }
+  c = srv_host->compare(fb->get_srv_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
+  if(srv_port < fb->srv_port) return(-1); else { if(srv_port > fb->srv_port) return(1); }
   if(protocol < fb->protocol) return(-1); else { if(protocol > fb->protocol) return(1); }
 
   return(0);
@@ -306,23 +312,23 @@ u_int64_t Flow::get_current_bytes_srv2cli() {
 
 void Flow::print_peers(lua_State* vm) {
   char buf1[64], buf2[64], buf[256];
-  Host *src = get_src_host(), *dst = get_dst_host();
+  Host *src = get_cli_host(), *dst = get_srv_host();
 
   if((src == NULL) || (dst == NULL)) return;
 
   lua_newtable(vm);
 
-  lua_push_str_table_entry(vm, "client", get_src_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_float_table_entry(vm, "client.latitude", get_src_host()->get_latitude());
-  lua_push_float_table_entry(vm, "client.longitude", get_src_host()->get_longitude());
-  lua_push_str_table_entry(vm, "client.city", get_src_host()->get_city() ? get_src_host()->get_city() : (char*)"");
-  lua_push_str_table_entry(vm, "client.country", get_src_host()->get_country() ? get_src_host()->get_country() : (char*)"");
+  lua_push_str_table_entry(vm, "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
+  lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
+  lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
+  lua_push_str_table_entry(vm, "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
 
-  lua_push_str_table_entry(vm, "server", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_float_table_entry(vm, "server.latitude", get_dst_host()->get_latitude());
-  lua_push_float_table_entry(vm, "server.longitude", get_dst_host()->get_longitude());
-  lua_push_str_table_entry(vm, "server.city", get_dst_host()->get_city() ? get_dst_host()->get_city() : (char*)"");
-  lua_push_str_table_entry(vm, "server.country", get_dst_host()->get_country() ? get_dst_host()->get_country() : (char*)"");
+  lua_push_str_table_entry(vm, "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
+  lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
+  lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
+  lua_push_str_table_entry(vm, "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
 
   lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
@@ -336,8 +342,8 @@ void Flow::print_peers(lua_State* vm) {
 
   /*
   snprintf(buf, sizeof(buf), "%s %s",
-           intoaV4(ntohl(get_src_ipv4()), buf1, sizeof(buf1)),
-           intoaV4(ntohl(get_dst_ipv4()), buf2, sizeof(buf2)));
+           intoaV4(ntohl(get_cli_ipv4()), buf1, sizeof(buf1)),
+           intoaV4(ntohl(get_srv_ipv4()), buf2, sizeof(buf2)));
   */
   lua_pushstring(vm, buf);
   lua_insert(vm, -2);
@@ -351,8 +357,8 @@ void Flow::print() {
 
   printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
 	 ipProto2Name(protocol),
-	 src_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(src_port),
-	 dst_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(dst_port),
+	 cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
+	 srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
 	 detected_protocol,
 	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
 	 cli2srv_packets, srv2cli_packets,
@@ -375,11 +381,11 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   prev_srv2cli_last_bytes = srv2cli_last_bytes;
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
 
-  if(src_host)
-    src_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes,
+  if(cli_host)
+    cli_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes,
 		       diff_rcvd_packets, diff_rcvd_bytes);
-  if(dst_host)
-    dst_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
+  if(srv_host)
+    srv_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
 		       diff_sent_packets, diff_sent_bytes);
   
   if(last_update_time.tv_sec > 0) {
@@ -392,18 +398,18 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
 /* *************************************** */
 
-bool Flow::equal(IpAddress *_src_ip, IpAddress *_dst_ip, u_int16_t _src_port,
-		 u_int16_t _dst_port, u_int16_t _vlanId, u_int8_t _protocol,
-		 bool *src2dst_direction) {
+bool Flow::equal(IpAddress *_cli_ip, IpAddress *_srv_ip, u_int16_t _cli_port,
+		 u_int16_t _srv_port, u_int16_t _vlanId, u_int8_t _protocol,
+		 bool *src2srv_direction) {
   if((_vlanId != vlanId) || (_protocol != protocol)) return(false);
 
-  if(src_host && src_host->equal(_src_ip) && dst_host && dst_host->equal(_dst_ip)
-     && (_src_port == src_port) && (_dst_port == dst_port)) {
-    *src2dst_direction = true;
+  if(cli_host && cli_host->equal(_cli_ip) && srv_host && srv_host->equal(_srv_ip)
+     && (_cli_port == cli_port) && (_srv_port == srv_port)) {
+    *src2srv_direction = true;
     return(true);
-  } else if(dst_host && dst_host->equal(_src_ip) && src_host && src_host->equal(_dst_ip)
-	    && (_dst_port == src_port) && (_src_port == dst_port)) {
-    *src2dst_direction = false;
+  } else if(srv_host && srv_host->equal(_cli_ip) && cli_host && cli_host->equal(_srv_ip)
+	    && (_srv_port == cli_port) && (_cli_port == srv_port)) {
+    *src2srv_direction = false;
     return(true);
   } else
     return(false);
@@ -416,25 +422,25 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   lua_newtable(vm);
 
-  if(get_src_host()) {
-    lua_push_str_table_entry(vm, "src.host", get_src_host()->get_name(buf, sizeof(buf), false));
-    lua_push_str_table_entry(vm, "src.ip", get_src_host()->get_ip()->print(buf, sizeof(buf)));
+  if(get_cli_host()) {
+    lua_push_str_table_entry(vm, "cli.host", get_cli_host()->get_name(buf, sizeof(buf), false));
+    lua_push_str_table_entry(vm, "cli.ip", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
-    lua_push_nil_table_entry(vm, "src.host");
-    lua_push_nil_table_entry(vm, "src.ip");
+    lua_push_nil_table_entry(vm, "cli.host");
+    lua_push_nil_table_entry(vm, "cli.ip");
   }
 
-  lua_push_int_table_entry(vm, "src.port", ntohs(get_src_port()));
+  lua_push_int_table_entry(vm, "cli.port", ntohs(get_cli_port()));
 
-  if(get_dst_host()) {
-    lua_push_str_table_entry(vm, "dst.host", get_dst_host()->get_name(buf, sizeof(buf), false));
-    lua_push_str_table_entry(vm, "dst.ip", get_dst_host()->get_ip()->print(buf, sizeof(buf)));
+  if(get_srv_host()) {
+    lua_push_str_table_entry(vm, "srv.host", get_srv_host()->get_name(buf, sizeof(buf), false));
+    lua_push_str_table_entry(vm, "srv.ip", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
-    lua_push_nil_table_entry(vm, "dst.host");
-    lua_push_nil_table_entry(vm, "dst.ip");
+    lua_push_nil_table_entry(vm, "srv.host");
+    lua_push_nil_table_entry(vm, "srv.ip");
   }
 
-  lua_push_int_table_entry(vm, "dst.port", ntohs(get_dst_port()));
+  lua_push_int_table_entry(vm, "srv.port", ntohs(get_srv_port()));
   lua_push_int_table_entry(vm, "vlan", get_vlan_id());
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
 
@@ -442,7 +448,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   else
-    lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+    lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
   lua_push_int_table_entry(vm, "bytes.last", get_current_bytes_cli2srv() + get_current_bytes_srv2cli());
@@ -472,10 +478,10 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 /* *************************************** */
 
 u_int32_t Flow::key() {
-  u_int32_t k = src_port+dst_port+vlanId+protocol;
+  u_int32_t k = cli_port+srv_port+vlanId+protocol;
 
-  if(src_host) k += src_host->key();
-  if(dst_host) k += dst_host->key();
+  if(cli_host) k += cli_host->key();
+  if(srv_host) k += srv_host->key();
 
   return(k);
 }
@@ -499,10 +505,10 @@ bool Flow::idle() {
 bool Flow::isFlowPeer(char *numIP) {
   char s_buf[32], *ret;
 
-  ret = src_host->get_ip()->print(s_buf, sizeof(s_buf));
+  ret = cli_host->get_ip()->print(s_buf, sizeof(s_buf));
   if(strcmp(ret, numIP) == 0) return(true);
 
-  ret = dst_host->get_ip()->print(s_buf, sizeof(s_buf));
+  ret = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
   if(strcmp(ret, numIP) == 0) return(true);
 
   return(false);
@@ -531,4 +537,66 @@ void Flow::sumStats(NdpiStats *stats) {
   stats-> incStats(detected_protocol,
 		   cli2srv_packets, cli2srv_bytes,
 		   srv2cli_packets, srv2cli_bytes);
+}
+
+/* *************************************** */
+
+char* Flow::serialize() {
+  json_object *my_object, *inner, *o[32];
+  char *rsp, buf[64];
+  int n = 0;
+
+  my_object = json_object_new_object();
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "ip",   json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(inner, "port", json_object_new_int(cli_port));
+  json_object_object_add(my_object, "client", inner);
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "ip",   json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(inner, "port", json_object_new_int(srv_port));
+  json_object_object_add(my_object, "server", inner);
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen)); 
+  json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
+  json_object_object_add(my_object, "seen", inner);
+ 
+  if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "l4", json_object_new_int(protocol)); 
+  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+    json_object_object_add(inner, "ndpi", json_object_new_string(get_detected_protocol_name()));
+  json_object_object_add(my_object, "proto", inner);
+			 
+  if(protocol == IPPROTO_TCP) {
+    inner = json_object_new_object(); o[n++] = inner;
+    json_object_object_add(inner, "flags", json_object_new_int(tcp_flags));
+    json_object_object_add(my_object, "tcp", inner);
+  }
+
+  if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
+  if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "packets", json_object_new_int64(cli2srv_packets));
+  json_object_object_add(inner, "bytes", json_object_new_int64(cli2srv_bytes));
+  json_object_object_add(my_object, "cli2srv", inner);
+
+  inner = json_object_new_object(); o[n++] = inner;
+  json_object_object_add(inner, "packets", json_object_new_int64(srv2cli_packets));
+  json_object_object_add(inner, "bytes", json_object_new_int64(srv2cli_bytes));
+  json_object_object_add(my_object, "srv2cli", inner);
+
+  /* JSON string */
+  rsp = strdup(json_object_to_json_string(my_object));
+
+  /* Free memory */
+  json_object_put(my_object);
+  for(int i=0; i<n; i++) json_object_put(o[i]);
+
+  return(rsp);
 }

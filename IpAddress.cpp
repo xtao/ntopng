@@ -176,3 +176,54 @@ bool IpAddress::isLocalHost() {
     return(ntop->isLocalAddress(AF_INET6, (void*)&addr.ipType.ipv6));
   }
 }
+
+/* ******************************************* */
+
+char* IpAddress::serialize() {
+  json_object *my_object, *ipo;
+  char *rsp, buf[64];
+
+  my_object = json_object_new_object();
+  
+  json_object_object_add(my_object, "ipVersion", json_object_new_int(addr.ipVersion));
+  json_object_object_add(my_object, "localHost", json_object_new_boolean(addr.localHost));
+  json_object_object_add(my_object, "ip", ipo = json_object_new_string(print(buf, sizeof(buf))));
+			 
+  rsp = strdup(json_object_to_json_string(my_object));
+  
+  /* Free memory */
+  json_object_put(my_object);
+  json_object_put(ipo);
+
+  return(rsp);
+}
+
+/* ******************************************* */
+
+void IpAddress::deserialize(json_object *o) {
+  json_object *obj;
+
+  if(!o) return;
+
+  /* Reset all */
+  memset(&addr, 0, sizeof(addr));
+  
+  if(json_object_object_get_ex(o, "ipVersion", &obj))
+    addr.ipVersion = json_object_get_int(obj);
+  
+  if(json_object_object_get_ex(o, "localHost", &obj))
+    addr.localHost = json_object_get_boolean(obj);
+  
+  if(json_object_object_get_ex(o, "ip", &obj))
+    set_from_string((char*)json_object_get_string(obj));
+}
+
+/* ******************************************* */
+
+json_object* IpAddress::getJSONObject() {
+  char *s = serialize();
+  json_object *o = json_tokener_parse(s);
+
+  free(s);
+  return(o);
+}

@@ -12,7 +12,5 @@ sendHTTPHeader('text/html')
 
 tracked_host = _GET["host"]
 
-ifname = _GET["if"]
-
-print(getTopTalkers(_GET["if"]))
+print(getTopTalkers(ifname))
 

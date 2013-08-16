@@ -33,3 +33,51 @@ void TrafficStats::printStats() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "%llu Bytes/%llu Packets",
 				      numBytes, numPkts);
 }
+
+/* *************************************** */
+
+char* TrafficStats::serialize() {
+  json_object *my_object;
+  char *rsp;
+
+  my_object = json_object_new_object();
+
+  json_object_object_add(my_object, "packets", json_object_new_int64(numPkts));
+  json_object_object_add(my_object, "bytes", json_object_new_int64(numBytes));
+  
+  rsp = strdup(json_object_to_json_string(my_object));
+
+  /* Free memory */
+  json_object_put(my_object);
+
+  return(rsp);
+
+}
+
+/* ******************************************* */
+
+void TrafficStats::deserialize(json_object *o) {
+  json_object *obj;
+
+  if(!o) return;
+
+  if(json_object_object_get_ex(o, "packets", &obj))
+    numPkts = json_object_get_int64(obj);
+  else
+    numPkts = 0;
+  
+  if(json_object_object_get_ex(o, "bytes", &obj))
+    numBytes = json_object_get_int64(obj);
+  else
+    numBytes = 0;
+}
+
+/* ******************************************* */
+
+json_object* TrafficStats::getJSONObject() {
+  char *s = serialize();
+  json_object *o = json_tokener_parse(s);
+
+  free(s);
+  return(o);
+}

@@ -2,13 +2,20 @@
 -- (C) 2013 - ntop.org
 --
 
+dirs = ntop.getDirs()
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+
+require "lua_utils"
+
+names = interface.getIfNames()
+num_ifaces = 0
+for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
+
 print [[
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
    ]]
 
-ifname = _GET["if"]
-if(ifname == nil) then ifname = "any" end
 interface.find(ifname)
 
 if active_page == "home" or active_page == "about" then
@@ -66,6 +73,65 @@ print [[
 
    ]]
 
+-- Interfaces
+if active_page == "if_stats" then
+  print [[ <li class="dropdown active"> ]]
+else
+  print [[ <li class="dropdown"> ]]
+end
+
+print [[
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">Interfaces <b class="caret"></b>
+      </a>
+      <ul class="dropdown-menu">
+]]
+
+if(num_ifaces == 1) then
+print [[
+    <li class=disabled><a href="#" data-toggle="tooltip" data-original-title="You can specify multiple interfaces by repeating the -i &lt;iface&gt; CLI option" >
+    <small>Available Interfaces</small></a></li>
+   ]]
+else
+print('<li class=disabled><a href="#"><small>Available Interfaces</small></a></li>')
+end
+
+for k,v in pairs(names) do
+    print("<li");
+    if(v ~= ifname) then print(" class=\"disabled\"") end
+    print("><a href=/lua/if_stats.lua> " .. v .. " </a></li>")
+end
+
+
+
+if(num_ifaces > 1) then
+
+print [[
+<li class="divider"></li>
+<li class="dropdown-submenu">
+    <a tabindex="-1" href="#">Switch Interfaces</a>
+    <ul class="dropdown-menu">
+]]
+
+for k,v in pairs(names) do
+    print("<li");
+    if(v == ifname) then print(" class=\"disabled\"") end
+    print("><a tabindex=\"-1\" href=\"/lua/set_active_interface.lua?id="..k.."\"> " .. v .. " </a></li>")
+end
+
+print [[
+    </ul>
+  </li>
+]]
+
+end
+
+
+print [[
+</ul>
+</li>
+]]
+
+-- Admin
 if active_page == "admin" then
   print [[ <li class="dropdown active"> ]]
 else
@@ -79,6 +145,11 @@ print [[
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="icon-user"></i> Manage Users</a></li>
       <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
+
+]]
+
+
+print [[
     </ul>
   </li>
 
@@ -88,7 +159,12 @@ dofile(dirs.installdir .. "/scripts/lua/inc/search_host_box.lua")
 
 print [[
   </ul>
+
         <h3 class="muted"><A href=http://www.ntop.org><img src="/img/logo.png"></A></h3>
       </div>
+
+<script>
+$(document).ready(function () { $("a").tooltip({ 'selector': '', 'placement': 'bottom'  });});
+</script>
    ]]
 

@@ -8,7 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "persistence"
 
 function getTopTalkers(ifname, mode, epoch)
-   if(ifname == nil) then ifname = "any" end
+   -- if(ifname == nil) then ifname = "any" end
 
    if(epoch ~= nil) then
       rsp = getHistoricalTopTalkers(ifname, mode, epoch)
@@ -60,14 +60,14 @@ function getActualTopTalkers(ifname, mode, epoch)
    _rcvd = {}
 
    for _key, value in pairs(hosts_stats) do
-      key = hosts_stats[_key]["src.ip"]
+      key = hosts_stats[_key]["cli.ip"]
       if(key ~= nil) then
 	 old = _sent[key]
 	 if(old == nil) then old = 0 end
 	 _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
       end
 
-      key = hosts_stats[_key]["dst.ip"]
+      key = hosts_stats[_key]["srv.ip"]
       if(key ~= nil) then
 	 old = _rcvd[key]
 	 if(old == nil) then old = 0 end
@@ -76,13 +76,13 @@ function getActualTopTalkers(ifname, mode, epoch)
 
       -- ###########################
 
-      key = hosts_stats[_key]["dst.ip"]
+      key = hosts_stats[_key]["srv.ip"]
       if(key ~= nil) then
 	 old = _sent[key]	
 	 if(old == nil) then old = 0 end
 	 _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
 
-	 key = hosts_stats[_key]["src.ip"]
+	 key = hosts_stats[_key]["cli.ip"]
 	 if(key ~= nil) then
 	    old = _rcvd[key]
 	    if(old == nil) then old = 0 end
@@ -233,7 +233,7 @@ function getTopASs(ifname)
    max_num_entries = 10
    rsp = ""
 
-   if(ifname == nil) then ifname = "any" end
+   --if(ifname == nil) then ifname = "any" end
 
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()

@@ -25,10 +25,6 @@
 #include <shlobj.h> /* SHGetFolderPath() */
 #endif
 
-/* Trick to include it once */
-#include "third-party/SimpleJSON/src/JSON.cpp"
-#include "third-party/SimpleJSON/src/JSONValue.cpp"
-
 Ntop *ntop;
 
 /* ******************************************* */
@@ -49,7 +45,7 @@ Ntop::Ntop(char *appName) {
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
-    strcpy(working_dir, "C:\\Windows\\Temp"); // Fallback: it should never happen
+    strcpy(working_dir, "C:\\Windows\\Temp\\ntopng"); // Fallback: it should never happen
   }
 
   // Get the full path and filename of this program
@@ -66,7 +62,9 @@ Ntop::Ntop(char *appName) {
 #else
   struct stat statbuf;
 
-  strcpy(working_dir, CONST_DEFAULT_WRITABLE_DIR);
+  snprintf(working_dir, sizeof(working_dir), "%s/ntopng", CONST_DEFAULT_WRITABLE_DIR);
+  mkdir(working_dir, 0777);
+
   getcwd(startup_dir, sizeof(startup_dir));
 
   if(stat(CONST_DEFAULT_INSTALL_DIR, &statbuf) == 0)
@@ -78,6 +76,10 @@ Ntop::Ntop(char *appName) {
 #endif
 
   // printf("--> %s [%s]\n", startup_dir, appName);
+
+#ifdef HAVE_SQLITE
+  db = new DB();
+#endif
 }
 
 /* ******************************************* */
@@ -108,10 +110,10 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
   /*
     RFC 1918 - Private Address Space
-    
+
     The Internet Assigned Numbers Authority (IANA) has reserved the
     following three blocks of the IP address space for private internets:
-    
+
     10.0.0.0        -   10.255.255.255  (10/8 prefix)
     172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
     192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
@@ -127,12 +129,17 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
 /* ******************************************* */
 
 Ntop::~Ntop() {
-  for(int i=0; i<num_defined_interfaces; i++)
+  for(int i=0; i<num_defined_interfaces; i++) {
+    iface[i]->shutdown();
     delete(iface[i]);
+  }
 
   if(httpd) delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
+#ifdef HAVE_SQLITE
+  if(db) delete(db);
+#endif
   delete rrd_lock;
   delete address;
   delete pa;
@@ -150,6 +157,14 @@ void Ntop::start() {
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
+
+  for(int i=0; i<num_defined_interfaces; i++)
+    iface[i]->startPacketPolling();
+
+  while(!globals->isShutdown()) {
+    sleep(2);
+    runHousekeepingTasks();
+  }
 }
 
 /* ******************************************* */
@@ -231,8 +246,6 @@ void Ntop::getUsers(lua_State* vm) {
 
 // Return 1 if username/password is allowed, 0 otherwise.
 int Ntop::checkUserPassword(const char *user, const char *password) {
-  // In production environment we should ask an authentication system
-  // to authenticate the user.
   char key[64], val[64];
   char password_hash[33];
 
@@ -417,10 +430,10 @@ void Ntop::setLocalNetworks(char *nets) {
 
 /* ******************************************* */
 
-NetworkInterface* Ntop::get_NetworkInterface(const char *name) {
+NetworkInterface* Ntop::getNetworkInterface(const char *name) {
   for(int i=0; i<num_defined_interfaces; i++)
     if(strcmp(iface[i]->get_name(), name) == 0)
-      return(iface[i]); 
+      return(iface[i]);
 
   /* FIX: remove this for at some point, when endpoint is passed */
   for(int i=0; i<num_defined_interfaces; i++) {
@@ -438,7 +451,27 @@ NetworkInterface* Ntop::get_NetworkInterface(const char *name) {
 
 /* ******************************************* */
 
-void Ntop::registerInterface(NetworkInterface *_if) {  
+NetworkInterface* Ntop::getInterface(char *name) {
+  for(int i=0; i<num_defined_interfaces; i++) {
+    if(strcmp(iface[i]->get_name(), name) == 0) {
+      return(iface[i]);
+    }
+  }
+
+  return(NULL);
+}
+
+/* ******************************************* */
+
+void Ntop::registerInterface(NetworkInterface *_if) {
+  for(int i=0; i<num_defined_interfaces; i++) {
+    if(strcmp(iface[i]->get_name(), _if->get_name()) == 0) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Skipping duplicated interface %s", _if->get_name());
+      delete _if;
+      return;
+    }
+  }
+
   if(num_defined_interfaces < MAX_NUM_DEFINED_INTERFACES) {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Registered interface %s [id: %d]",
 				 _if->get_name(), num_defined_interfaces);
@@ -448,3 +481,24 @@ void Ntop::registerInterface(NetworkInterface *_if) {
 
   ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many networks defined");
 };
+
+/* ******************************************* */
+
+void Ntop::runHousekeepingTasks() {
+  if(globals->isShutdown()) return;
+
+  for(int i=0; i<num_defined_interfaces; i++)
+    iface[i]->runHousekeepingTasks();
+}
+
+/* ******************************************* */
+
+void Ntop::shutdown() {
+  for(int i=0; i<num_defined_interfaces; i++) {
+    EthStats *stats = iface[i]->getStats();
+    
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s", iface[i]->get_name());
+    stats->print();
+    iface[i]->shutdown();
+  }
+}

@@ -24,16 +24,16 @@
 
 #include "ntop_includes.h"
 
-class Flow : public GenericHashEntry {
+class Flow : public GenericHashEntry, Serializable {
  private:
-  Host *src_host, *dst_host;  
-  u_int16_t src_port, dst_port;
+  Host *cli_host, *srv_host;  
+  u_int16_t cli_port, srv_port;
   u_int16_t vlanId;
   u_int8_t protocol, tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
   bool detection_completed;
   u_int16_t detected_protocol;
-  void *src_id, *dst_id;
+  void *cli_id, *srv_id;
   char *json_info;
   struct {
     char *category;
@@ -58,17 +58,18 @@ class Flow : public GenericHashEntry {
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol,
-       u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
-       u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port);
+       u_int8_t cli_mac[6], IpAddress *_cli_ip, u_int16_t _cli_port,
+       u_int8_t srv_mac[6], IpAddress *_srv_ip, u_int16_t _srv_port);
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol, 
-       u_int8_t src_mac[6], IpAddress *_src_ip, u_int16_t _src_port,
-       u_int8_t dst_mac[6], IpAddress *_dst_ip, u_int16_t _dst_port,
+       u_int8_t cli_mac[6], IpAddress *_cli_ip, u_int16_t _cli_port,
+       u_int8_t srv_mac[6], IpAddress *_srv_ip, u_int16_t _srv_port,
        time_t _first_seen, time_t _last_seen);
   ~Flow();
 
   char *getDomainCategory();
   void allocFlowMemory();
+  char* serialize();
   inline u_int8_t getTcpFlags()              { return(tcp_flags);  };
   inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; };
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
@@ -80,19 +81,19 @@ class Flow : public GenericHashEntry {
     else cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; };
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
-  inline void* get_src_id()                       { return(src_id);    };
-  inline void* get_dst_id()                       { return(dst_id);    };
-  inline u_int32_t get_src_ipv4()                 { return(src_host->get_ip()->get_ipv4());  };
-  inline u_int32_t get_dst_ipv4()                 { return(dst_host->get_ip()->get_ipv4());  };
-  inline u_int16_t get_src_port()                 { return(src_port);  };
-  inline u_int16_t get_dst_port()                 { return(dst_port);  };
+  inline void* get_cli_id()                       { return(cli_id);    };
+  inline void* get_srv_id()                       { return(srv_id);    };
+  inline u_int32_t get_cli_ipv4()                 { return(cli_host->get_ip()->get_ipv4());  };
+  inline u_int32_t get_srv_ipv4()                 { return(srv_host->get_ip()->get_ipv4());  };
+  inline u_int16_t get_cli_port()                 { return(cli_port);  };
+  inline u_int16_t get_srv_port()                 { return(srv_port);  };
   inline u_int16_t get_vlan_id()                  { return(vlanId);    };
   inline u_int8_t  get_protocol()                 { return(protocol);  };
   inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol)); };
   inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
   inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
-  inline Host* get_src_host()                     { return(src_host); };
-  inline Host* get_dst_host()                     { return(dst_host); };
+  inline Host* get_cli_host()                     { return(cli_host); };
+  inline Host* get_srv_host()                     { return(srv_host); };
   inline char* get_json_info()			  { return(json_info); }
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
@@ -103,10 +104,10 @@ class Flow : public GenericHashEntry {
   void print_peers(lua_State* vm);
   u_int32_t key();
   void lua(lua_State* vm, bool detailed_dump);
-  bool equal(IpAddress *_src_ip, IpAddress *_dst_ip,
-	     u_int16_t _src_port, u_int16_t _dst_port,
+  bool equal(IpAddress *_cli_ip, IpAddress *_srv_ip,
+	     u_int16_t _cli_port, u_int16_t _srv_port,
 	     u_int16_t _vlanId, u_int8_t _protocol,
-	     bool *src2dst_direction);
+	     bool *src2srv_direction);
   void sumStats(NdpiStats *stats);
 };
 

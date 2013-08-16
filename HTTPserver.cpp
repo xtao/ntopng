@@ -130,9 +130,10 @@ static int is_authorized(const struct mg_connection *conn,
 static void redirect_to_login(struct mg_connection *conn,
                               const struct mg_request_info *request_info) {
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
-      "Set-Cookie: original_url=%s\r\n"
-      "Location: %s\r\n\r\n",
-      request_info->uri, LOGIN_URL);
+	    "Set-Cookie: original_url=%s\r\n"
+	    "Set-Cookie: session=; max-age=0; http-only\r\n"  // Session ID
+	    "Location: %s\r\n\r\n",
+	    request_info->uri, LOGIN_URL);
 }
 
 static void get_qsvar(const struct mg_request_info *request_info,
@@ -167,7 +168,10 @@ static void authorize(struct mg_connection *conn,
     // Secure application must use HTTPS all the time.
 
     snprintf(random, sizeof(random), "%d", rand());
+
     generate_session_id(session_id, random, user);
+
+    // ntop->getTrace()->traceEvent(TRACE_ERROR, "==> %s\t%s", random, session_id);
 
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	      "Set-Cookie: session=%s; max-age=3600; http-only\r\n"  // Session ID
@@ -179,7 +183,10 @@ static void authorize(struct mg_connection *conn,
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     ntop->getRedis()->set(key, user, 3600 /* 1h */);
-    
+
+    snprintf(key, sizeof(key), "sessions.%s.ifname", session_id);
+    ntop->getRedis()->del(key);
+
     // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Sending session %s", session_id);
   } else {
     // Authentication failure, redirect to login.
@@ -234,11 +241,11 @@ static int handle_lua_request(struct mg_connection *conn) {
     snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(),
 	     (strlen(request_info->uri) == 1) ? "/lua/index.lua" : request_info->uri);
     
-	 ntop->fixPath(path);
+    ntop->fixPath(path);
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       Lua *l = new Lua();
       
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", request_info->uri, path);
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", request_info->uri, path);
       
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
