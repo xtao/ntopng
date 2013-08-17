@@ -8,6 +8,7 @@ In case you want to add new protocols
 
 Prerequisites
 - glib2
+- GNU autotools
 - libgeoip
 - libpcap or PF_RING (optional but recommended)
 - redis (redis server) 2.2 or newer
