@@ -122,9 +122,9 @@ GEOIP_DEP=""
 fi
 
 AC_CHECK_LIB([sqlite3], [sqlite3_open], sqlite=true)
-AC_DEFINE_UNQUOTED([HAVE_SQLITE], 1, [We have sqlite])
 if test x$sqlite = xtrue
 then
+  AC_DEFINE_UNQUOTED([HAVE_SQLITE], 1, [We have sqlite])
   SQLITE_LIB="-lsqlite3"
 fi
 

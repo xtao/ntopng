@@ -3718,13 +3718,13 @@ if test "x$ac_cv_lib_sqlite3_sqlite3_open" = xyes; then :
   sqlite=true
 fi
 
+if test x$sqlite = xtrue
+then
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_SQLITE 1
 _ACEOF
 
-if test x$sqlite = xtrue
-then
   SQLITE_LIB="-lsqlite3"
 fi
 
