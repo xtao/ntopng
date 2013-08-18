@@ -20,11 +20,13 @@ function create_rrd(name, ds)
    end
 end
 
-ifname = "any"
+ifnames = interface.getIfNames()
+for _,ifname in pairs(ifnames) do
+
 interface.find(ifname)
 ifstats = interface.getStats()
 dirs = ntop.getDirs()
-basedir = dirs.workingdir .. "/rrd/interface."..ifname
+basedir = dirs.workingdir .. "/" .. ifname .. "/rrd"
 
 if(not(ntop.exists(basedir))) then
    if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
@@ -41,3 +43,5 @@ name =  basedir .. "/" .. "packets.rrd"
 create_rrd(name,"packets")
 ntop.rrd_update(name, "N:".. ifstats.stats_packets)
 if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end
+
+end -- for _,ifname in pairs(ifnames) do

@@ -15,9 +15,9 @@ function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
 end
 
 
-function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
+function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
    dirs = ntop.getDirs()
-   rrdname = dirs.workingdir .. "/rrd/" .. host .. "/" .. rrdFile
+   rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/"
    names =  {}
    series = {}
    vals = {
@@ -34,6 +34,12 @@ function drawRRD(host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpo
       { "6m",  "now-6mon", 60*60*24*31*6 },
       { "1y",  "now-1y",   60*60*24*366 }
    }
+
+   if(host ~= nil) then
+     rrdname = rrdname .. host .. "/"
+   end
+
+   rrdname = rrdname  .. rrdFile
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -195,7 +201,7 @@ if(show_timeseries == 1) then
 print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
 print('<li class="divider"></li>\n')
 dirs = ntop.getDirs()
-rrds = ntop.readdir(dirs.workingdir .. "/rrd/" .. host)
+rrds = ntop.readdir(dirs.workingdir .. "/" .. ifname .. "/rrd/" .. host)
 
 for k,v in pairsByKeys(rrds, asc) do
    proto = string.gsub(rrds[k], ".rrd", "")

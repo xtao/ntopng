@@ -46,7 +46,7 @@ else
       host_ip = host["ip"]
    end
 
-   rrdname = dirs.workingdir .. "/rrd/" .. host_ip .. "/bytes.rrd"
+   rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/" .. host_ip .. "/bytes.rrd"
 print [[
 <div class="bs-docs-example">
             <div class="navbar">
@@ -468,7 +468,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1, _GET["epoch"])
+drawRRD(ifname, host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1, _GET["epoch"])
 else
    print(page)
 end

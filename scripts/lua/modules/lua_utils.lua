@@ -2,9 +2,12 @@
 -- (C) 2013 - ntop.org
 --
 
-ifname = _GET["ifname"]
-if(ifname == nil) then	  
-  ifname = _SESSION["ifname"]
+-- Note that ifname can be set by Lua.cpp so don't touch it if already defined
+if((ifname == nil) and (_GET ~= nil)) then	
+ ifname = _GET["ifname"]	
+ if(ifname == nil) then	  
+   ifname = _SESSION["ifname"]
+ end
 end
 
 l4_keys = {

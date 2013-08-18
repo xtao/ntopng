@@ -66,7 +66,7 @@ void PeriodicActivities::runScript(char *path) {
 
     // ntop->getTrace()->traceEvent(TRACE_INFO, "Running script %s", path);
 
-    l->run_script(path);
+    l->run_script(path, NULL);
     delete l;
   } else
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Missing script %s", path);

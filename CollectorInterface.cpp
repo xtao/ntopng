@@ -29,8 +29,27 @@
 
 CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user)
   : NetworkInterface(_endpoint, change_user) {
-
+  char *slash;
+  
   endpoint = (char*)_endpoint, script_name = strdup(_script_name);
+  
+  /*
+    We need to cleanup the interface name 
+    
+    Format <tcp|udp>://<host>:<port>
+  */
+
+  if((slash = strchr(ifname, '/')) != NULL) {
+    char buf[64];
+    int i = 1;
+
+    while(slash[i] == '/') i++;
+
+    snprintf(buf, sizeof(buf), "collector@%s", &slash[i]);
+    free(ifname);
+
+    ifname = strdup(buf);
+  }
 
   l = new Lua();
 
@@ -62,7 +81,7 @@ void CollectorInterface::run_collector_script() {
     exit(0);
   } else {
     ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s.. [%s]", ifname, script);    
-    l->run_script(script);
+    l->run_script(script, ifname);
   }
 }
 

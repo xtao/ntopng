@@ -124,6 +124,12 @@
 #define CONST_DEFAULT_NTOP_USER     "nobody"
 #define CONST_TOO_EARLY             "(Too Early)"
 
+#define CONST_HTTP_CONN             "http.conn"
+#define CONST_LUA_OK                1
+#define CONST_LUA_ERROR             0
+#define CONST_LUA_PARAM_ERROR       -1
+
+
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"

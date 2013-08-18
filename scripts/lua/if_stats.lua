@@ -17,7 +17,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
-rrdname = dirs.workingdir .. "/rrd/interface."..ifname.."/bytes.rrd"
+rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
 
 url= '/lua/if_stats.lua?ifname=' .. ifname
 
@@ -28,7 +28,7 @@ print [[
 <ul class="nav">
 ]]
 
-
+-- print("<li><a href=\"#\">Interface " .. ifname .."</a></li>\n")
 
 if((page == "overview") or (page == nil)) then
   print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")
@@ -82,7 +82,7 @@ if((page == "overview") or (page == nil)) then
    print("</div></td></tr>\n")
    print("</table>\n")
 else
-   drawRRD('interface.'..ifname, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
+   drawRRD(ifname, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 

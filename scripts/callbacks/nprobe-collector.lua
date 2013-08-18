@@ -3,11 +3,12 @@
 --
 
 package.path = "./scripts/lua/modules/?.lua;" .. package.path
+
 require "lua_utils"
 require "template"
 local json = require ("dkjson")
 
-local debug_collector = 0
+local debug_collector = ntop.verboseTrace()
 
 local handled_fields = { 
 [template.IN_SRC_MAC]     = true,
@@ -33,38 +34,50 @@ local handled_fields = {
 [template.FIRST_SWITCHED] = true, 
 [template.LAST_SWITCHED]  = true
 }
- 
-interface.find("nprobe-collector.lua") -- FIX this should be replaced with the actual endpoint
+
+print("Starting ZMQ collector on "..ifname) 
+interface.find(ifname)
 local endpoint = interface.getEndpoint()
 ntop.zmq_connect(endpoint, "flow")
 
-print("ZMQ Collector connected to " .. endpoint .. "\n")
+print("ZMQ Collector connected to " .. endpoint .. "\n") 
+
 
 while(interface.isRunning) do
   flowjson = ntop.zmq_receive()
 
+  if(debug_collector) then print("[ZMQ] "..flowjson) end
   local flow, pos, err = json.decode(flowjson, 1, nil)
   if err then
     print("JSON parser error: " .. err)
   else
 
+    if(false) then 
+        for key,value in pairs(flow) do
+	  print(key.."="..value) 
+	end
+    end
+
     local unhandled_fields = {}
 
-    for key,value in pairs(flow) do
-      if not handled_fields[key] then
+    -- Flows can be sent with numeric ("PROTOCOL":6) or symbolic keys ("4":6)
+    -- so we need to convert all of them, this to make sure they are uniform
+
+    for _key,value in pairs(flow) do
+        val = template[_key]
+    	if(val ~= nil) then
+	  key = val -- This was a symbolic key we convert to numeric
+	  flow[key] = value
+	else
+	  key = _key
+	end
+
+      if not handled_fields[key] then	
         if rtemplate[key] ~= nil then
           unhandled_fields[rtemplate[key]] = value
         else
           unhandled_fields['"'..key..'"'] = value
         end
-      end
-
-      if debug_collector == 1 then
-        if rtemplate[key] ~= nil then
-	  print(rtemplate[key] .. " = " .. value)
-        else
-          print("unknown field id " .. key .. " = " .. value)
-	end
       end
     end
 
@@ -75,7 +88,7 @@ while(interface.isRunning) do
       flow[template.OUT_DST_MAC]    or "00:00:00:00:00:00",
       flow[template.IPV4_SRC_ADDR]  or flow[template.IPV6_SRC_ADDR] or "0.0.0.0",
       flow[template.IPV4_DST_ADDR]  or flow[template.IPV6_DST_ADDR] or "0.0.0.0", 
-      flow[template.L4_SRC_PORT]    or 0, 
+      flow[template.L4_SRC_PORT]    or flow['L4_SRC_PORT'] or 0, 
       flow[template.L4_DST_PORT]    or 0, 
       flow[template.SRC_VLAN]       or flow[template.DST_VLAN] or 0, 
       flow[template.L7_PROTO]       or 0, 
@@ -91,11 +104,9 @@ while(interface.isRunning) do
     )
 
     if debug_collector == 1 then
-      print("unhandled fields: " .. unhandled_fields_json)
-      print("---")
+      print("Unhandled fields: " .. unhandled_fields_json)
     end
   end
 end
 
 ntop.zmq_disconnect()
-

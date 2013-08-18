@@ -2,6 +2,7 @@
 -- (C) 2013 - ntop.org
 --
 
+
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
@@ -10,16 +11,23 @@ require "top_talkers"
 
 when = os.time()
 
+local verbose = ntop.verboseTrace()
+
+ifnames = interface.getIfNames()
+num_ifaces = 0
+for _,ifname in pairs(ifnames) do
+
+if(verbose) then print("[minute.lua] Processing interface " .. ifname) end
 -- Dump topTalkers every minute
 
 talkers = getTopTalkers(ifname)
-basedir = dirs.workingdir .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", when)
+basedir = dirs.workingdir .. "/" .. ifname .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when)
 if(not(ntop.exists(basedir))) then   
   ntop.mkdir(basedir)
 end
 filename = basedir .. os.date("/%M.json", when)
 
--- io.write(filename)
+if(verbose) then print("[minute.lua] Creating "..filename) end
 
 f = io.open(filename, "w")
 if(f) then
@@ -34,9 +42,7 @@ diff = when % 300
 -- io.write('Diff: '..diff..'\n')
 
 -- Toggle debug
-local enable_minute_debug = 0
-
-if(enable_minute_debug == 0) then
+if(verbose == 0) then
    if(diff > 30) then
       return
    end
@@ -45,20 +51,20 @@ end
 interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 for key, value in pairs(hosts_stats) do
-   if(enable_minute_debug == 1) then print ("[" .. key .. "][" .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]) .. "]\n") end
+   if(verbose == 1) then print ("[" .. key .. "][" .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]) .. "]\n") end
 
    if(hosts_stats[key]["localhost"] == true) then
-      basedir = dirs.workingdir .. "/rrd/" .. key
+      basedir = dirs.workingdir .. "/" .. ifname .. "/rrd/" .. key
 
       if(not(ntop.exists(basedir))) then
-	 if(enable_minute_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
+	 if(verbose == 1) then io.write('Creating base directory ', basedir, '\n') end
 	 ntop.mkdir(basedir)
       end
 
       -- Traffic stats
       name = basedir .. "/bytes.rrd"
       if(not(ntop.exists(name))) then
-	 if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
+	 if(verbose == 1) then io.write('Creating RRD ', name, '\n') end
 	 ntop.rrd_create(
 	    name,
 	    '--start', 'now',
@@ -72,7 +78,7 @@ for key, value in pairs(hosts_stats) do
 	 
       end
       ntop.rrd_update(name, "N:"..hosts_stats[key]["bytes.sent"] .. ":" .. hosts_stats[key]["bytes.rcvd"])
-      if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
+      if(verbose == 1) then io.write('Updating RRD '..name..'\n') end
 
       -- L4 Protocols
       host = interface.getHostInfo(key)
@@ -80,11 +86,11 @@ for key, value in pairs(hosts_stats) do
 	 for id, _ in ipairs(l4_keys) do
 	    k = l4_keys[id][2]
 
-	    if(enable_minute_debug == 1) then print("\t"..k.."\n") end
+	    if(verbose == 1) then print("\t"..k.."\n") end
 
 	    name = basedir .. "/".. k .. ".rrd"
 	    if(not(ntop.exists(name))) then
-	       if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
+	       if(verbose == 1) then io.write('Creating RRD ', name, '\n') end
 	       ntop.rrd_create(
 		  name,
 		  '--start', 'now',
@@ -98,7 +104,7 @@ for key, value in pairs(hosts_stats) do
 	    end
 
 	    ntop.rrd_update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
-	    if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
+	    if(verbose == 1) then io.write('Updating RRD '..name..'\n') end
 	 end
       end
 
@@ -108,7 +114,7 @@ for key, value in pairs(hosts_stats) do
 	 for k in pairs(host["ndpi"]) do
 	    name = basedir .. "/".. k .. ".rrd"
 	    if(not(ntop.exists(name))) then
-	       if(enable_minute_debug == 1) then io.write('Creating RRD ', name, '\n') end
+	       if(verbose == 1) then io.write('Creating RRD ', name, '\n') end
 	       ntop.rrd_create(
 		  name,
 		  '--start', 'now',
@@ -122,10 +128,11 @@ for key, value in pairs(hosts_stats) do
 	    end
 
 	    ntop.rrd_update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
-	    if(enable_minute_debug == 1) then io.write('Updating RRD '..name..'\n') end
+	    if(verbose == 1) then io.write('Updating RRD '..name..'\n') end
 	 end
       end
 
    end -- if
 end -- for
 
+end -- for ifname,_ in pairs(ifnames) do

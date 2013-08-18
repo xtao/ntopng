@@ -25,7 +25,7 @@ end
 function getHistoricalTopTalkers(ifname, mode, epoch)
    epoch = epoch - (epoch % 60)
    dirs = ntop.getDirs()
-   filename = dirs.workingdir .. "/top_talkers/" .. ifname .. os.date("/%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch)
+   filename = dirs.workingdir .. ifname .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch)
 
    if(ntop.exists(filename)) then
       f = io.open(filename, "r")
@@ -100,7 +100,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    -- io.write("Hello\n")
    if((mode == nil) or (mode == "senders")) then
-      talkers_dir = dirs.workingdir .. "/top_talkers/" .. ifname
+      talkers_dir = dirs.workingdir .. ifname .. "/top_talkers"
       if(not(ntop.exists(talkers_dir))) then   
 	 ntop.mkdir(talkers_dir)
       end
@@ -164,7 +164,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    if((mode == nil) or (mode == "receivers")) then
       -- Read the lastdump
-      lastdump = dirs.workingdir .. "/top_talkers/" .. ifname .. "/.rcvd_lastdump"
+      lastdump = dirs.workingdir .. ifname .. "/top_talkers/.rcvd_lastdump"
       last = nil
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)

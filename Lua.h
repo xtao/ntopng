@@ -36,7 +36,7 @@ class Lua {
   Lua();
   ~Lua();
 
-  int run_script(char *script_path);
+  int run_script(char *script_path, char *ifname);
   int handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path);
 };
 
