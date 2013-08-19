@@ -39,6 +39,8 @@ DB::~DB() {
 /* ******************************************* */
 
 void DB::termDB() {
+  if(!ntop->getPrefs()->do_dump_flows_on_db()) return;
+
   if(db) { 
     execSQL((char*)"COMMIT;");
     sqlite3_close(db);
@@ -52,6 +54,8 @@ void DB::termDB() {
 
 void DB::initDB(time_t when, const char *create_sql_string) {
   char path[MAX_PATH];
+
+  if(!ntop->getPrefs()->do_dump_flows_on_db()) return;
 
   if(db != NULL) {
     if(when < end_dump)
@@ -85,43 +89,50 @@ void DB::initDB(time_t when, const char *create_sql_string) {
 /* ******************************************* */
 
 bool DB::dumpFlow(time_t when, Flow *f) {
-  const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, srv_ip string KEY, srv_port number, proto number, json string);";
-  char sql[4096], cli_str[64], srv_str[64], *json;
-  
-  initDB(when, create_flows_db);
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, srv_ip string KEY, srv_port number, proto number, json string);";
+    char sql[4096], cli_str[64], srv_str[64], *json;
+    
+    initDB(when, create_flows_db);
+    
+    json = f->serialize();
+    snprintf(sql, sizeof(sql), "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %u, '%s');",
+	     f->get_vlan_id(), 
+	     f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), f->get_cli_port(),
+	     f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), f->get_srv_port(),
+	     f->get_protocol(), json ? json : "");	   
+    
+    if(json) free(json);
+    execSQL(sql);
+    return(true);
+  }
 
-  json = f->serialize();
-  snprintf(sql, sizeof(sql), "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %u, '%s');",
-	   f->get_vlan_id(), 
-	   f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), f->get_cli_port(),
-	   f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), f->get_srv_port(),
-	   f->get_protocol(), json ? json : "");	   
-
-  if(json) free(json);
-  execSQL(sql);
   return(false);
 }
 
 /* ******************************************* */
 
 bool DB::execSQL(char* sql) {
-  int rc;
-  char *zErrMsg = 0;
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    int rc;
+    char *zErrMsg = 0;
 
-  if(db == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] NULL DB handler [%s]", sql);
-    return(false);
-  }
+    if(db == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] NULL DB handler [%s]", sql);
+      return(false);
+    }
 
-  ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", sql);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", sql);
 
-  rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-  if(rc != SQLITE_OK) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
-    sqlite3_free(zErrMsg);    
-    return(false);
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    if(rc != SQLITE_OK) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
+      sqlite3_free(zErrMsg);    
+      return(false);
+    } else
+      return(true);
   } else
-    return(true);
+    return(false);
 }
 
 /* ******************************************* */

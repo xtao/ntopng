@@ -49,6 +49,7 @@ Prefs::Prefs(Ntop *_ntop) {
   packet_filter = NULL;
   disable_host_persistency = false;
   num_interfaces = 0;
+  dump_flows_on_db = false;
   memset(ifNames, 0, sizeof(ifNames));
 
 #ifdef WIN32
@@ -82,7 +83,11 @@ void usage() {
 	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "              [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-U <sys user>] [-s] [-v]\n"
+	 "              [-l] [-U <sys user>] [-s] [-v]"
+#ifdef HAVE_SQLITE
+	 " [-F]"
+#endif
+	 "\n"
 	 "              [-B <filter>]\n"
 	 "\n"
 	 "Options:\n"
@@ -135,6 +140,9 @@ void usage() {
 #endif
 
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
+#ifdef HAVE_SQLITE
+	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
+#endif
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
@@ -175,6 +183,9 @@ static const struct option long_options[] = {
   { "users-file",                        required_argument, NULL, 'u' },
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
+#ifdef HAVE_SQLITE
+  { "dump-flows",                        no_argument,       NULL, 'F' },
+#endif
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
@@ -311,6 +322,12 @@ int Prefs::setOption(int optkey, char *optarg) {
     ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
     break;
 
+#ifdef HAVE_SQLITE
+  case 'F':
+    dump_flows_on_db = true;
+    break;
+#endif
+
 #ifndef WIN32
   case 'G':
     pid_path = strdup(optarg);
@@ -367,7 +384,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:B:G:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:B:FG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

@@ -37,6 +37,7 @@ class Prefs {
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
   u_int8_t num_interfaces;
+  bool dump_flows_on_db;
   char *ifNames[MAX_NUM_INTERFACES], *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
@@ -72,6 +73,7 @@ class Prefs {
   inline bool do_change_user()                          { return(change_user);            };
   inline char* get_user()                               { return(user);                   };
   inline u_int8_t get_num_interfaces()                  { return(num_interfaces);         };
+  inline bool  do_dump_flows_on_db()                    { return(dump_flows_on_db);       };
   inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id] : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
