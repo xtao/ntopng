@@ -53,7 +53,6 @@ class NetworkInterface {
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
   bool running;
 
-  void dropPrivileges();
   void deleteDataStructures();
   Flow* getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
   		IpAddress *src_ip, IpAddress *dst_ip,
@@ -66,7 +65,7 @@ class NetworkInterface {
 
  public:
   NetworkInterface();
-  NetworkInterface(const char *name, bool change_user);
+  NetworkInterface(const char *name);
   virtual ~NetworkInterface();
 
   virtual void startPacketPolling();

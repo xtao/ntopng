@@ -335,6 +335,12 @@ void Flow::print_peers(lua_State* vm) {
   lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
 
+  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+    lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+  else
+    lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+
   // Key
   snprintf(buf, sizeof(buf), "%s %s",
 	   src->Host::get_name(buf1, sizeof(buf1), false),

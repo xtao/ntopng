@@ -27,8 +27,8 @@
 
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user)
-  : NetworkInterface(_endpoint, change_user) {
+CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name)
+  : NetworkInterface(_endpoint) {
   char *slash;
   
   endpoint = (char*)_endpoint, script_name = strdup(_script_name);
@@ -52,8 +52,6 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_scrip
   }
 
   l = new Lua();
-
-  if(change_user) dropPrivileges();
 }
 
 /* **************************************************** */

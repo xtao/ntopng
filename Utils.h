@@ -39,6 +39,7 @@ class Utils {
   static u_int32_t hashString(char *s);
   static float timeval2ms(struct timeval *tv);
   static bool mkdir_tree(char *path);
+  static void dropPrivileges();
 };
 
 

@@ -33,7 +33,7 @@ class CollectorInterface : public NetworkInterface {
   char *endpoint;
 
  public:
-  CollectorInterface(const char *_endpoint, const char *_script_name, bool change_user);
+  CollectorInterface(const char *_endpoint, const char *_script_name);
   ~CollectorInterface();
 
   char *getScriptName() { return script_name; }

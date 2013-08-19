@@ -29,8 +29,8 @@
 
 /* **************************************************** */
 
-PF_RINGInterface::PF_RINGInterface(const char *name, bool change_user)
-  : NetworkInterface(name, change_user) {
+PF_RINGInterface::PF_RINGInterface(const char *name)
+  : NetworkInterface(name) {
 
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),
 				  ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {
@@ -47,8 +47,6 @@ PF_RINGInterface::PF_RINGInterface(const char *name, bool change_user)
   pcap_datalink_type = DLT_EN10MB;
 
   pfring_set_application_name(pfring_handle, (char*)"ntopng");
-
-  if(change_user) dropPrivileges();
 }
 
 /* **************************************************** */

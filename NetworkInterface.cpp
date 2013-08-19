@@ -56,7 +56,7 @@ NetworkInterface::NetworkInterface() {
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(const char *name, bool change_user) {
+NetworkInterface::NetworkInterface(const char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
   u_int32_t num_hashes;
@@ -806,41 +806,6 @@ u_int NetworkInterface::purgeIdleAggregatedHosts() {
     next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(n);
   }
-}
-
-/* **************************************************** */
-
-void NetworkInterface::dropPrivileges() {
-#ifndef WIN32
-  struct passwd *pw = NULL;
-  const char *username;
-
-  if(getgid() && getuid()) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Privileges are not dropped as we're not superuser");
-    return;
-  }
-
-  username = ntop->getPrefs()->get_user();
-  pw = getpwnam(username);
-
-  if(pw == NULL) {
-    username = "anonymous";
-    pw = getpwnam(username);
-  }
-
-  if(pw != NULL) {
-    /* Drop privileges */
-    if((setgid(pw->pw_gid) != 0) || (setuid(pw->pw_uid) != 0)) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to drop privileges [%s]",
-				   strerror(errno));
-    } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "User changed to %s", username);
-  } else {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate user %s", username);
-  }
-
-  umask(0);
-#endif
 }
 
 /* *************************************** */

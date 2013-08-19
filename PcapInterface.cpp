@@ -27,7 +27,7 @@
 
 /* **************************************************** */
 
-PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterface(name, change_user) {
+PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),
@@ -53,8 +53,6 @@ PcapInterface::PcapInterface(const char *name, bool change_user) : NetworkInterf
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
-
-  if(change_user) dropPrivileges();
 }
 
 /* **************************************************** */

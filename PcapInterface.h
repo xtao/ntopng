@@ -29,7 +29,7 @@ class PcapInterface : public NetworkInterface {
   pcap_t *pcap_handle;
 
  public:
-  PcapInterface(const char *name, bool change_user);
+  PcapInterface(const char *name);
   ~PcapInterface();
 
   inline pcap_t* get_pcap_handle() { return(pcap_handle); };

@@ -120,14 +120,14 @@ int main(int argc, char *argv[])
       } else
 	script = strdup("nprobe-collector.lua"), endpoint = ifName;
 
-      iface = new CollectorInterface(endpoint, script, prefs->do_change_user());
+      iface = new CollectorInterface(endpoint, script);
     } else {
 #ifdef HAVE_PF_RING
       try {
-	iface = new PF_RINGInterface(ifName, prefs->do_change_user());
+	iface = new PF_RINGInterface(ifName);
       } catch (int) {
 #endif
-	iface = new PcapInterface(ifName, prefs->do_change_user());
+	iface = new PcapInterface(ifName);
 #ifdef HAVE_PF_RING
       }
 #endif
@@ -141,6 +141,9 @@ int main(int argc, char *argv[])
 
     ntop->registerInterface(iface);
   }
+
+  if(prefs->do_change_user())
+    Utils::dropPrivileges();
 
   if(prefs->daemonize_ntopng())
     ntop->daemonize();

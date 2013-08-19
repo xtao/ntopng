@@ -63,6 +63,8 @@ Ntop::Ntop(char *appName) {
   struct stat statbuf;
 
   snprintf(working_dir, sizeof(working_dir), "%s/ntopng", CONST_DEFAULT_WRITABLE_DIR);
+
+  umask (0);
   mkdir(working_dir, 0777);
 
   getcwd(startup_dir, sizeof(startup_dir));
