@@ -119,8 +119,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       if(localHost || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
 	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
 	  symbolic_name = strdup(rsp);
-	else
-	  ntop->getRedis()->queueHostToResolve(host, false, localHost);
+	// else ntop->getRedis()->queueHostToResolve(host, false, localHost);
       }
 
       ntop->getGeolocation()->getAS(ip, &asn, &asname);
@@ -199,9 +198,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       /* We resolve immediately the IP address by queueing on the top of address queue */
 
       ntop->getRedis()->queueHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
+      lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
     }
-
-    lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "asn", asn);
@@ -264,7 +262,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       lua_settable(vm, -3);
     }
   } else {
-    lua_pushstring(vm,  get_name(buf, sizeof(buf), false));
+    lua_pushstring(vm, get_name(buf, sizeof(buf), false));
     lua_pushinteger(vm, (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
     lua_settable(vm, -3);
   }

@@ -164,6 +164,7 @@ if((page == "overview") or (page == nil)) then
    if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
 
    if(host["ip"] ~= nil) then
+      if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
       print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>")
 
       if(host["ip"] ==  host["name"]) then

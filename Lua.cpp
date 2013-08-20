@@ -1092,6 +1092,17 @@ static int ntop_lua_http_print(lua_State* vm) {
   }
 
   switch(t = lua_type(vm, 1)) {
+  case LUA_TNIL:
+    mg_printf(conn, "%s", "nil");
+    break;
+
+  case LUA_TBOOLEAN:
+    {
+      int v = lua_toboolean(vm, 1);
+      mg_printf(conn, "%s", v ? "true" : "false");
+    }
+    break;
+
   case LUA_TSTRING:
     {
       char *str = (char*)lua_tostring(vm, 1);

@@ -73,6 +73,7 @@
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
+#define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
 
 #ifndef TH_FIN
 #define	TH_FIN	0x01

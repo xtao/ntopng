@@ -103,6 +103,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print("host_details.lua?host=" .. key .. "'>" .. key .. " ")
 
 	 print("</A>\", \"column_name\" : \"")
+	 if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	 print(value["name"])
          print("</div>")
 

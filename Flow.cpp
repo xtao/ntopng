@@ -122,6 +122,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
 
       case NDPI_PROTOCOL_WHOIS_DAS:
+#if 0
 	if(ndpi_flow->host_server_name[0] != '\0') {
 	  StringHost *host;
 
@@ -140,6 +141,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    host->incrContact(cli_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
 	  }
 	}
+#endif
 	break;
 
       case NDPI_PROTOCOL_SSL:
@@ -327,20 +329,21 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
 
-  if(verbose) {
-    lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
-    lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
-    lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
-    lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
-    lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
-    lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
-  }
 
-  if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
-    lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
-  else
-    lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+  lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
+  lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
+  lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
+  lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
+  lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
+  lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
+  
+  if(verbose) {
+    if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+       || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+      lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+    else
+      lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+  }
 
   // Key
   /* Too slow */
@@ -432,7 +435,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_newtable(vm);
 
   if(get_cli_host()) {
-    lua_push_str_table_entry(vm, "cli.host", get_cli_host()->get_name(buf, sizeof(buf), false));
+    if(detailed_dump) lua_push_str_table_entry(vm, "cli.host", get_cli_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "cli.ip", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
     lua_push_nil_table_entry(vm, "cli.host");
@@ -442,7 +445,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "cli.port", ntohs(get_cli_port()));
 
   if(get_srv_host()) {
-    lua_push_str_table_entry(vm, "srv.host", get_srv_host()->get_name(buf, sizeof(buf), false));
+    if(detailed_dump) lua_push_str_table_entry(vm, "srv.host", get_srv_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "srv.ip", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
   } else {
     lua_push_nil_table_entry(vm, "srv.host");
@@ -464,15 +467,19 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());
   lua_push_int_table_entry(vm, "seen.last", get_last_seen());
   lua_push_int_table_entry(vm, "duration", get_duration());
-  lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
+
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
-  lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
+
+  if(detailed_dump) {
+    lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
+    lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
+    lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
+  }
 
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
 
-  lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
 
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index

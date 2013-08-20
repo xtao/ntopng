@@ -20,8 +20,10 @@ print [[
    query = _GET["query"]
 --   query = "192"
 
+   if(query ~= nil) then 
    for _key, value in pairs(hosts_stats) do
       found = 0 
+      if(hosts_stats[_key]["name"] == nil) then hosts_stats[_key]["name"] = ntop.getResolvedAddress(hosts_stats[_key]["ip"]) end
       what = hosts_stats[_key]["name"]
       if(starts(what, query)) then 
 	 found = 1
@@ -43,6 +45,7 @@ print [[
    aggregated_hosts_stats = interface.getAggregatedHostsInfo()
    for _key, value in pairs(aggregated_hosts_stats) do
       found = 0 
+      if(aggregated_hosts_stats[_key]["name"] == nil) then aggregated_hosts_stats[_key]["name"] = ntop.getResolvedAddress(aggregated_hosts_stats[_key]["ip"]) end
       what = aggregated_hosts_stats[_key]["name"]
       if(starts(what, query)) then 
 	 found = 1
@@ -54,6 +57,7 @@ print [[
 	 num = num + 1
       end
    end
+end
    
 print [[
 

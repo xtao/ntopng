@@ -123,36 +123,38 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ",\n"
 	 end
 
-	 name = value["cli.host"]
-	 if(name == "") then
-	    name = value["cli.ip"]
+	 srv_name = value["srv.host"]
+	 if((srv_name == "") or (srv_name == nil)) then
+	    srv_name = value["srv.ip"]
 	 end
+	 srv_name = ntop.getResolvedAddress(srv_name)
 
-	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
+	 cli_name = value["cli.host"]
+	 if((cli_name == "") or (cli_name == nil)) then
+	    cli_name = value["cli.ip"]
+	 end
+	 cli_name = ntop.getResolvedAddress(cli_name)
+
+	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "'>".. abbreviateString(cli_name, 20) .."</A>"
 	 if(value["cli.port"] > 0) then
   	   src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
          else
 	   src_port=""
          end
 
-	 name = value["srv.host"]
-	 if(name == "") then
-	    name = value["srv.ip"]
-	 end
-
-	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "'>".. abbreviateString(name, 20) .."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "'>".. abbreviateString(srv_name, 20) .."</A>"
 	 if(value["srv.port"] > 0) then
   	   dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
          else
 	   dst_port=""
          end
 
-	 descr=value["cli.host"]..":"..value["cli.port"].." &lt;-&gt; "..value["srv.host"]..":"..value["srv.port"]
+	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
 	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
-	 print ("\", \"column_category\" : \"" .. getCategory(value["category"]))
+	 if(value["category"] ~= nil) then print ("\", \"column_category\" : \"" .. getCategory(value["category"])) end
 	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
 	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])

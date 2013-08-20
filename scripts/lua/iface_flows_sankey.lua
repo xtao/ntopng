@@ -41,7 +41,7 @@ while(num == 0) do
 
 	 --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
 	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
-	    --print("[" .. key .. "][" .. tracked_host .. "]\n")
+	    -- print("[" .. key .. "][" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
 	       if(num >= max_num_hosts) then
@@ -55,7 +55,7 @@ while(num == 0) do
 		     print ",\n"
 		  end
 		  -- 3. print nodes
-		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\"}")
+		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\", \"ip\": \"" .. word .. "\"}")
 		  num = num + 1
 	       end
 	    end
