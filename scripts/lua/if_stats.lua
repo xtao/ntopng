@@ -22,10 +22,9 @@ rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
 url= '/lua/if_stats.lua?ifname=' .. ifname
 
 print [[
-<div class="bs-docs-example">
             <div class="navbar">
               <div class="navbar-inner">
-<ul class="nav">
+	      <ul class="nav">
 ]]
 
 -- print("<li><a href=\"#\">Interface " .. ifname .."</a></li>\n")
@@ -46,7 +45,6 @@ end
 
 print [[
 </ul>
-</div>
 </div>
 </div>
    ]]

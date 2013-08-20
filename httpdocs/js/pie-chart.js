@@ -261,7 +261,7 @@ function do_pie(name, update_url, url_params, units, refresh) {
 }
 
 function create_pie_chart(name, units) {
-    var w = 440; //380
+    var w = 600; //380 - Please keep in sync with pie-chart.css
     var h = 325; //280
     var ir = 52; //45
     var textOffset = 14;
