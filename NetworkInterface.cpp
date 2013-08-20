@@ -723,7 +723,7 @@ static void flow_peers_walker(GenericHashEntry *h, void *user_data) {
   struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
   if((info->numIP == NULL) || flow->isFlowPeer(info->numIP))
-    flow->print_peers(info->vm);
+    flow->print_peers(info->vm, (info->numIP == NULL) ? false : true);
 }
 
 /* **************************************************** */

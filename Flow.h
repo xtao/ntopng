@@ -101,7 +101,7 @@ class Flow : public GenericHashEntry, Serializable {
   int compare(Flow *fb);
   void print();
   void update_hosts_stats(struct timeval *tv);
-  void print_peers(lua_State* vm);
+  void print_peers(lua_State* vm, bool verbose);
   u_int32_t key();
   void lua(lua_State* vm, bool detailed_dump);
   bool equal(IpAddress *_cli_ip, IpAddress *_srv_ip,

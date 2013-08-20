@@ -55,7 +55,7 @@ while(num == 0) do
 		     print ",\n"
 		  end
 		  -- 3. print nodes
-		  print ("\t{\"name\": \"" .. word .. "\"}")
+		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\"}")
 		  num = num + 1
 	       end
 	    end

@@ -310,7 +310,7 @@ u_int64_t Flow::get_current_bytes_srv2cli() {
 
 /* *************************************** */
 
-void Flow::print_peers(lua_State* vm) {
+void Flow::print_peers(lua_State* vm, bool verbose) {
   char buf1[64], buf2[64], buf[256];
   Host *src = get_cli_host(), *dst = get_srv_host();
 
@@ -319,21 +319,22 @@ void Flow::print_peers(lua_State* vm) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
-  lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
-  lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
   lua_push_str_table_entry(vm, "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
-
   lua_push_str_table_entry(vm, "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
-  lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
-  lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
   lua_push_str_table_entry(vm, "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
-
   lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
   lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
+
+  if(verbose) {
+    lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
+    lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
+    lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
+    lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
+    lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
+    lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
+  }
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
@@ -342,15 +343,17 @@ void Flow::print_peers(lua_State* vm) {
     lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
 
   // Key
+  /* Too slow */
+#if 0
   snprintf(buf, sizeof(buf), "%s %s",
 	   src->Host::get_name(buf1, sizeof(buf1), false),
 	   dst->Host::get_name(buf2, sizeof(buf2), false));
-
-  /*
+#else
   snprintf(buf, sizeof(buf), "%s %s",
            intoaV4(ntohl(get_cli_ipv4()), buf1, sizeof(buf1)),
            intoaV4(ntohl(get_srv_ipv4()), buf2, sizeof(buf2)));
-  */
+#endif
+
   lua_pushstring(vm, buf);
   lua_insert(vm, -2);
   lua_settable(vm, -3);
