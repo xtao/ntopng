@@ -101,8 +101,13 @@ void PF_RINGInterface::shutdown() {
 u_int PF_RINGInterface::getNumDroppedPackets() {
   pfring_stat stats;
  
-  if(pfring_stats(pfring_handle, &stats) >= 0)
+  if(pfring_stats(pfring_handle, &stats) >= 0) {
+#if 0
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][Rcvd: %llu][Drops: %llu][DroppedByFilter: %u]", 
+				 ifname, stats.recv, stats.drop, stats.droppedbyfilter);
+#endif
     return(stats.drop);
+  }
 
   return(0);
 }

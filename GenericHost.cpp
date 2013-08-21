@@ -67,6 +67,8 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 void GenericHost::incrContact(char *peer, bool contacted_peer_as_client) {
   char buf[64], *keyname;
 
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(%s)", __FUNCTION__, peer);
+
   keyname = get_string_key(buf, sizeof(buf));
   if(keyname[0] != '\0') {
     char key[96];

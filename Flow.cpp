@@ -122,7 +122,6 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
 
       case NDPI_PROTOCOL_WHOIS_DAS:
-#if 0
 	if(ndpi_flow->host_server_name[0] != '\0') {
 	  StringHost *host;
 
@@ -141,7 +140,6 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    host->incrContact(cli_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
 	  }
 	}
-#endif
 	break;
 
       case NDPI_PROTOCOL_SSL:

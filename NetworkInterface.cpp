@@ -814,6 +814,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "name", ifname);
 
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
   lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
