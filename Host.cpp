@@ -182,9 +182,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     char *ipaddr = NULL;
 
     lua_newtable(vm);
-
     lua_push_bool_table_entry(vm, "localhost", isLocalHost());
-
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
 
     if(ip)
@@ -245,7 +243,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
     if(verbose) {
       if(ndpiStats) ndpiStats->lua(iface, vm);    
-      //if(localHost) getHostContacts(vm);
+      if(localHost) getHostContacts(vm);
     }
 
     if(false) {
@@ -365,10 +363,7 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(localHost && (_peer->get_ip() != NULL)) {
-    char d_buf[32], *peer;
-
-    peer = _peer->get_ip()->print(d_buf, sizeof(d_buf));
-    ((GenericHost*)this)->incrContact(peer, contacted_peer_as_client);
+    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);
   }
 }
 

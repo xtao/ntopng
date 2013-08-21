@@ -24,10 +24,17 @@
 
 #include "ntop_includes.h"
 
+typedef struct {
+  IpAddress *host;
+  u_int32_t num_contacts;
+} HostContacts;
+
 class GenericHost : public GenericHashEntry {
  protected:
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
+  HostContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
+  void incrHostContacts(IpAddress *peer, HostContacts *contacts);
 
  public:
   GenericHost(NetworkInterface *_iface);
@@ -37,6 +44,7 @@ class GenericHost : public GenericHashEntry {
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
   void incrContact(char *peer, bool contacted_peer_as_client);
+  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client) { incrHostContacts(peer, contacted_peer_as_client ? clientContacts : serverContacts); }
   void getHostContacts(lua_State* vm);
 };
 

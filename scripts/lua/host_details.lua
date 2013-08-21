@@ -428,7 +428,8 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
+      if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
+      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
    else
       url = k
    end
@@ -447,7 +448,8 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)   
    v = host["contacts"]["server"][k]
    if(name ~= nil) then
-      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
+      if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
+      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
    else
       url = k
    end

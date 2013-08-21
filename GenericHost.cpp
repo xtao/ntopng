@@ -24,7 +24,9 @@
 /* *************************************** */
 
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
-  ndpiStats = new NdpiStats();  
+  ndpiStats = new NdpiStats();
+  memset(clientContacts, 0, sizeof(HostContacts)*MAX_NUM_HOST_CONTACTS);
+  memset(serverContacts, 0, sizeof(HostContacts)*MAX_NUM_HOST_CONTACTS);
 }
 
 /* *************************************** */
@@ -35,10 +37,10 @@ GenericHost::~GenericHost() {
   keyname = get_string_key(buf, sizeof(buf));
   if(keyname[0] != '\0') {
     char key[64];
-    
+
     snprintf(key, sizeof(key), "%s.client", keyname);
     ntop->getRedis()->del(key);
-    
+
     snprintf(key, sizeof(key), "%s.server", keyname);
     ntop->getRedis()->del(key);
   }
@@ -49,17 +51,42 @@ GenericHost::~GenericHost() {
 
 /* *************************************** */
 
-void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto, 
+void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 			   u_int64_t sent_packets, u_int64_t sent_bytes,
-			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) { 
+			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
   if(sent_packets || rcvd_packets) {
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
 
     if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
-      ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);      
- 
+      ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
+
     updateSeen();
   }
+}
+
+/* *************************************** */
+
+void GenericHost::incrHostContacts(IpAddress *peer, HostContacts *contacts) {
+  int8_t    least_idx = -1;
+  u_int32_t least_value = 0;
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(contacts[i].host == NULL) {
+      /* Empty slot */
+      contacts[i].host = new IpAddress(peer), contacts[i].num_contacts = 1;
+      return;
+    } else if(contacts[i].host->compare(peer) == 0) {
+      contacts[i].num_contacts++;
+      return;
+    } else {
+      if((least_idx == -1) || (least_value > contacts[i].num_contacts))
+	least_idx = i, least_value = contacts[i].num_contacts;
+    }
+  } /* for */
+
+  /* No room found: let's discard the item with lowest score */
+  delete contacts[least_idx].host;
+  contacts[least_idx].host = new IpAddress(peer), contacts[least_idx].num_contacts = 1;
 }
 
 /* *************************************** */
@@ -75,13 +102,14 @@ void GenericHost::incrContact(char *peer, bool contacted_peer_as_client) {
 
     snprintf(key, sizeof(key), "%s.%s",
 	     keyname, contacted_peer_as_client ? "client" : "server");
-    
+
     ntop->getRedis()->zincrbyAndTrim(key, peer, 1 /* +1 */, MAX_NUM_HOST_CONTACTS);
   }
 }
 
 /* *************************************** */
 
+#if 0
 void GenericHost::getHostContacts(lua_State* vm) {
   char _key[64], *key;
 
@@ -106,4 +134,47 @@ void GenericHost::getHostContacts(lua_State* vm) {
   lua_insert(vm, -2);
   lua_settable(vm, -3);
 }
+
+#else
+
+void GenericHost::getHostContacts(lua_State* vm) {
+  char _key[64], *key;
+
+  key = get_string_key(_key, sizeof(_key));
+  if(key[0] == '\0') return;
+
+  lua_newtable(vm);
+
+  /* client */
+  lua_newtable(vm);
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {    
+    if(clientContacts[i].host != NULL)
+      lua_push_int_table_entry(vm, 
+			       clientContacts[i].host->print(_key, sizeof(_key)), 
+			       clientContacts[i].num_contacts);
+  }
+  lua_pushstring(vm, "client");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  /* server */
+  lua_newtable(vm);
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {    
+    if(serverContacts[i].host != NULL)
+      lua_push_int_table_entry(vm, 
+			       serverContacts[i].host->print(_key, sizeof(_key)), 
+			       serverContacts[i].num_contacts);
+  }
+  lua_pushstring(vm, "server");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  lua_pushstring(vm, "contacts");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+}
+#endif
+
+
+
 
