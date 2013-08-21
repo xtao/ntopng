@@ -45,6 +45,11 @@ GenericHost::~GenericHost() {
     ntop->getRedis()->del(key);
   }
 
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].host != NULL) delete clientContacts[i].host;
+    if(serverContacts[i].host != NULL) delete serverContacts[i].host;
+  }
+
   if(ndpiStats)
     delete ndpiStats;
 }
