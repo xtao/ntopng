@@ -93,7 +93,6 @@ class NetworkInterface {
   inline int isRunning()	   { return running; };
   inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
   void printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
-
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 
 		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
@@ -125,6 +124,7 @@ class NetworkInterface {
   void getActiveFlowsList(lua_State* v);
   void getFlowPeersList(lua_State* vm, char *numIP);
 
+  void purgeIdle(time_t when);
   u_int purgeIdleFlows();
   u_int purgeIdleHosts();
   u_int purgeIdleAggregatedHosts();

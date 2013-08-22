@@ -68,17 +68,24 @@ PcapInterface::~PcapInterface() {
 
 /* **************************************************** */
 
-static void pcap_packet_callback(u_char *args, const struct pcap_pkthdr *h, const u_char *packet) {
-  NetworkInterface *iface = (NetworkInterface *) args;
-  iface->packet_dissector(h, packet);
-}
-
-/* **************************************************** */
-
 static void* packetPollLoop(void* ptr) {
   PcapInterface *iface = (PcapInterface*)ptr;
+  pcap_t  *pd = iface->get_pcap_handle();
 
-  pcap_loop(iface->get_pcap_handle(), -1, &pcap_packet_callback, (u_char*)iface);
+  /* Wait until the initialization competes */
+  while(!iface->isRunning()) sleep(1);
+
+  while(iface->isRunning()) {
+    const u_char *pkt;
+    struct pcap_pkthdr hdr;
+
+    if((pkt = pcap_next(pd, &hdr)) != NULL)
+      iface->packet_dissector(&hdr, pkt);
+    else
+      iface->purgeIdle(time(NULL));    
+  } /* while */
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Terminated packet polling for %s", iface->get_name());
   return(NULL);
 }
 

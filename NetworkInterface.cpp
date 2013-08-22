@@ -278,8 +278,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   } else {
     /* non tcp/udp protocols */
 
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
-    return;
+    src_port = dst_port = 0;
   }
 
   if(iph != NULL) {
@@ -346,6 +345,26 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
 /* **************************************************** */
 
+void NetworkInterface::purgeIdle(time_t when) {
+  u_int n;
+
+  last_pkt_rcvd = when;
+
+  if((n = purgeIdleFlows()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
+				 n, getNumFlows());
+  
+  if((n = purgeIdleHosts()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
+				 n, getNumHosts());
+  
+  if((n = purgeIdleAggregatedHosts()) > 0)
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
+				 n, getNumHosts());
+}
+
+/* **************************************************** */
+
 void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
   struct ndpi_ethhdr *ethernet, dummy_ethernet;
   struct ndpi_iphdr *iph;
@@ -354,7 +373,6 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   u_int16_t eth_type, ip_offset, vlan_id = 0;
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution(), null_type;
   int pcap_datalink_type = get_datalink();
-  u_int n;
 
   setTimeLastPktRcvd(h->ts.tv_sec);
 
@@ -477,17 +495,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     break;
   }
 
-  if((n = purgeIdleFlows()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
-				 n, getNumFlows());
-
-  if((n = purgeIdleHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
-				 n, getNumHosts());
-
-  if((n = purgeIdleAggregatedHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
-				 n, getNumHosts());
+  purgeIdle(last_pkt_rcvd);
 }
 
 /* **************************************************** */
@@ -758,7 +766,7 @@ u_int NetworkInterface::purgeIdleFlows() {
     /* Time to purge flows */
     u_int n;
 
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle flows");
+    // ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle flows");
     n = flows_hash->purgeIdle();
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
     return(n);
@@ -782,7 +790,7 @@ u_int NetworkInterface::purgeIdleHosts() {
     /* Time to purge hosts */
     u_int n;
 
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
+    // ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle hosts");
     n = hosts_hash->purgeIdle();
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(n);
@@ -801,7 +809,7 @@ u_int NetworkInterface::purgeIdleAggregatedHosts() {
     /* Time to purge hosts */
     u_int n;
 
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle aggregated hosts");
+    // ntop->getTrace()->traceEvent(TRACE_INFO, "Purging idle aggregated hosts");
     n = strings_hash->purgeIdle();
     next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(n);

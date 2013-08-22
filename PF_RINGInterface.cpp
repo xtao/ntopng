@@ -62,18 +62,36 @@ PF_RINGInterface::~PF_RINGInterface() {
 
 /* **************************************************** */
 
-static void pfring_packet_callback(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes) {
-  NetworkInterface *iface = (NetworkInterface *) user_bytes;
-  iface->packet_dissector((const struct pcap_pkthdr *) h, p);
-}
-
-/* **************************************************** */
-
 static void* packetPollLoop(void* ptr) {
   PF_RINGInterface *iface = (PF_RINGInterface*)ptr;
+  pfring  *pd = iface->get_pfring_handle();
+  int fd = pfring_get_selectable_fd(pd);
 
-  pfring_loop(iface->get_pfring_handle(), pfring_packet_callback, (u_char*) iface, 1 /* wait mode */);
+  /* Wait until the initialization competes */
+  while(!iface->isRunning()) sleep(1);
+  pfring_enable_ring(pd);
 
+  while(iface->isRunning()) {
+    if(pfring_is_pkt_available(pd)) {
+      u_char *buffer; 
+      struct pfring_pkthdr hdr;
+
+      if(pfring_recv(pd, &buffer, 0, &hdr, 0 /* wait_for_packet */) > 0)
+	iface->packet_dissector((const struct pcap_pkthdr *) &hdr, buffer);
+    } else {
+      struct timeval timeout;
+      fd_set fdset;
+      
+      FD_ZERO(&fdset);
+      FD_SET(fd, &fdset);
+      timeout.tv_sec = 1, timeout.tv_usec = 0;
+      
+      if(select(fd+1, &fdset, NULL, NULL, &timeout) == 0)
+	iface->purgeIdle(time(NULL));
+    }
+  }
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Terminated packet polling for %s", iface->get_name());
   return(NULL);
 }
 

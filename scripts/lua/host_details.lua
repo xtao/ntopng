@@ -514,7 +514,7 @@ setInterval(function() {
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
 		    data: { ifname: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
-		    error: function(content) { alert("JSON Error: host purged due to inactivity?"); },
+		    error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); },
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);
 			$('#first_seen').html(epoch2Seen(host["seen.first"]));
