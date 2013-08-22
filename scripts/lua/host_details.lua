@@ -189,8 +189,8 @@ end
       print("</td></tr>\n")
    end
 
-   print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span></td></tr>\n")
-   print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span></td></tr>\n")
+   print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
+   print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
    print("</table>\n")
 
@@ -503,12 +503,18 @@ print [[
 
 //var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 
+]]
+
+print("var last_pkts_sent = " .. host["pkts.sent"] .. ";")
+print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";")
+
+print [[
 setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
 		    data: { ifname: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
-		    error: function(content) { alert("JSON Error"); },
+		    error: function(content) { alert("JSON Error: host purged due to inactivity?"); },
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);
 			$('#first_seen').html(epoch2Seen(host["seen.first"]));
@@ -518,6 +524,26 @@ setInterval(function() {
 			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
 			$('#name').html(host["name"]);
+
+			/* **************************************** */
+
+			if(last_pkts_sent == host["pkts.sent"]) {
+			   $('#sent_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#sent_trend').html("<i class=icon-arrow-up></i>");
+			}
+			
+			if(last_pkts_rcvd == host["pkts.rcvd"]) {
+			   $('#rcvd_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#rcvd_trend').html("<i class=icon-arrow-up></i>");
+			}
+			
+			last_pkts_sent = host["pkts.sent"];
+			last_pkts_rcvd = host["pkts.rcvd"];
+			
+			/* **************************************** */
+
 			/*
 			$('#throughput').html(rsp.throughput);
 

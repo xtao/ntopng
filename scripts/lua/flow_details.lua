@@ -55,7 +55,7 @@ else
    print("<tr><th width=30%>First Seen</th><td colspan=2><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td></tr>\n")
    print("<tr><th width=30%>Last Seen</th><td colspan=2><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th width=30%>Total Traffic Volume</th><td colspan=2><div id=volume>" .. bytesToSize(flow["bytes"]) .. "</div></td></tr>\n")
+   print("<tr><th width=30%>Total Traffic Volume</th><td colspan=2><span id=volume>" .. bytesToSize(flow["bytes"]) .. "</span> <span id=volume_trend></span></td></tr>\n")
 
    print("<tr><th width=30%>Client vs Server Traffic Breakdown</th><td colspan=2>")
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
@@ -64,11 +64,11 @@ else
    print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["cli.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["srv.ip"] .. '</div></div>')
    print("</td></tr>\n")
 
-   print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><div id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</div></td></tr>\n")
-   print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><div id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</div></td></tr>\n")
+   print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
+   print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
    
-   print("<div id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</div>")
+   print("<span id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</span> <span id=throughput_trend></span>")
    print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
 
    print("</td></tr>\n")
@@ -105,6 +105,14 @@ print [[
 
 var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 
+]]
+
+print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
+print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
+print("var throughput = " .. flow["throughput"] .. ";")
+print("var bytes = " .. flow["bytes"] .. ";")
+
+print [[
 setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
@@ -118,6 +126,41 @@ setInterval(function() {
 			$('#cli2srv').html(addCommas(rsp["cli2srv.packets"])+" Pkts / "+bytesToVolume(rsp["cli2srv.bytes"]));
 			$('#srv2cli').html(addCommas(rsp["srv2cli.packets"])+" Pkts / "+bytesToVolume(rsp["srv2cli.bytes"]));
 			$('#throughput').html(rsp.throughput);
+
+			/* **************************************** */
+
+			if(cli2srv_packets == rsp["cli2srv.packets"]) {
+			   $('#sent_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#sent_trend').html("<i class=icon-arrow-up></i>");
+			}
+			
+			if(srv2cli_packets == rsp["srv2cli.packets"]) {
+			   $('#rcvd_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#rcvd_trend').html("<i class=icon-arrow-up></i>");
+			}
+
+			if(bytes == rsp["bytes"]) {
+			   $('#volume_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#volume_trend').html("<i class=icon-arrow-up></i>");
+			}
+
+			if(throughput > rsp["throughput"]) {
+			   $('#throughput_trend').html("<i class=icon-arrow-down></i>");
+			} else if(throughput < rsp["throughput"]) {
+			   $('#throughput_trend').html("<i class=icon-arrow-up></i>");
+			} else {
+			   $('#throughput_trend').html("<i class=icon-minus></i>");
+			}
+
+			cli2srv_packets = rsp["cli2srv.packets"];
+			srv2cli_packets = rsp["srv2cli.packets"];
+			throughput = rsp["throughput"];
+			bytes = rsp["bytes"];
+
+			/* **************************************** */
 
 			var values = thptChart.text().split(",");
 			values.shift();
