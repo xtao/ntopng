@@ -222,7 +222,7 @@ static int handle_lua_request(struct mg_connection *conn) {
     }
   }
 
-  // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s", request_info->uri);
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s", request_info->uri);
 
   if(strstr(request_info->uri, "//")
      || strstr(request_info->uri, "&&")

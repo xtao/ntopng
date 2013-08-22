@@ -35,7 +35,7 @@ Host::Host(NetworkInterface *_iface, char *jsonString) : GenericHost(_iface) {
   initialize(NULL, 0, false);
 
   /* TODO */
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "%s() IS MISSING", __FUNCTION__);
+
 }
 
 /* *************************************** */
@@ -450,6 +450,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "ndpiStats", o[n++] = ndpiStats->getJSONObject(iface));
   json_object_object_add(my_object, "contacts", o[n++]  = contacts.getJSONObject());
 
+  //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
@@ -490,7 +491,7 @@ bool Host::deserialize(char *json_str) {
 
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
-  if(ndpiStats) { free(ndpiStats); ndpiStats = NULL; }
+  if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
   if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
   if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(obj);
 
