@@ -242,8 +242,12 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_str_table_entry(vm, "category", get_category());
 
     if(verbose) {
+      char *rsp = serialize();
+
       if(ndpiStats) ndpiStats->lua(iface, vm);    
-      if(localHost) getHostContacts(vm);
+      getHostContacts(vm);
+      lua_push_str_table_entry(vm, "json", rsp);
+      free(rsp);
     }
 
     if(false) {
@@ -362,9 +366,8 @@ u_int32_t Host::key() {
 /* *************************************** */
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
-  if(localHost && (_peer->get_ip() != NULL)) {
-    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);
-  }
+  if(_peer->get_ip() != NULL)
+    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);  
 }
 
 /* *************************************** */
@@ -445,6 +448,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "sent", o[n++]      = sent.getJSONObject());
   json_object_object_add(my_object, "rcvd", o[n++]      = rcvd.getJSONObject());
   json_object_object_add(my_object, "ndpiStats", o[n++] = ndpiStats->getJSONObject(iface));
+  json_object_object_add(my_object, "contacts", o[n++]  = contacts.getJSONObject());
 
   rsp = strdup(json_object_to_json_string(my_object));
 
@@ -488,6 +492,7 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
   if(ndpiStats) { free(ndpiStats); ndpiStats = NULL; }
   if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
+  if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(obj);
 
   json_object_put(o);
 

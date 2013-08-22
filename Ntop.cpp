@@ -121,7 +121,7 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
     192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
   */
 
-  local_nets = strdup((char*)"0.0.0.0/32,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,224.0.0.0/8,239.0.0.0/8");
+  local_nets = strdup((char*)CONST_DEFAULT_LOCAL_NETS);
   setLocalNetworks(local_nets);
   free(local_nets);
 

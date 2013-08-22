@@ -24,6 +24,13 @@
 
 #include "ntop_includes.h"
 
+typedef enum {
+  trend_unknown = 0,
+  trend_up = 1,
+  trend_down = 2,
+  trend_stable = 3
+} ValueTrend;
+
 class Flow : public GenericHashEntry, Serializable {
  private:
   Host *cli_host, *srv_host;  
@@ -47,6 +54,7 @@ class Flow : public GenericHashEntry, Serializable {
   /* Counter values at last host update */
   struct timeval last_update_time;
   float bytes_thpt;
+  ValueTrend bytes_thpt_trend;
   u_int64_t cli2srv_last_packets, srv2cli_last_packets;
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  

@@ -44,6 +44,7 @@ Flow::Flow(NetworkInterface *_iface,
   first_seen = _first_seen;
   last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
+  bytes_thpt_trend = trend_unknown;
   allocFlowMemory();
 }
 
@@ -131,13 +132,11 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_WHOIS_DAS, true);
 
 	  if(host != NULL) {
-	    char s_buf[64];
-
 	    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
 	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
 	    host->updateSeen();
 
-	    host->incrContact(cli_host->get_ip()->print(s_buf, sizeof(s_buf)), true);
+	    host->incrContact(cli_host->get_ip(), true);
 	  }
 	}
 	break;
@@ -400,7 +399,14 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   
   if(last_update_time.tv_sec > 0) {
     float tdiff = (tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000;
-    bytes_thpt = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff;
+
+    tdiff = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff;
+
+    if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
+    else if(bytes_thpt > tdiff) bytes_thpt_trend = trend_down;
+    else                        bytes_thpt_trend = trend_stable;
+
+    bytes_thpt = tdiff;
   }
 
   memcpy(&last_update_time, tv, sizeof(struct timeval));
@@ -477,6 +483,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
+  lua_push_float_table_entry(vm, "throughput_trend", bytes_thpt_trend);
 
 
   if(!detailed_dump) {

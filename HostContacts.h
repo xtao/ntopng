@@ -19,26 +19,30 @@
  *
  */
 
-#ifndef _GENERIC_HOST_H_
-#define _GENERIC_HOST_H_
+#ifndef _HOST_CONTACTS_H_
+#define _HOST_CONTACTS_H_
 
 #include "ntop_includes.h"
 
-class GenericHost : public GenericHashEntry {
+typedef struct {
+  IpAddress *host;
+  u_int32_t num_contacts;
+} IPContacts;
+
+class HostContacts : public Serializable {
  protected:
-  NdpiStats *ndpiStats;
-  TrafficStats sent, rcvd;
-  HostContacts contacts;
+  IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
+  void incrIPContacts(IpAddress *peer, IPContacts *contacts, u_int32_t value);
 
  public:
-  GenericHost(NetworkInterface *_iface);
-  ~GenericHost();
+  HostContacts();
+  ~HostContacts();
 
-  inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
-  void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
-		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
-  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client) { contacts.incrContact(peer, contacted_peer_as_client); }
-  void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm); };
+  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { incrIPContacts(peer, contacted_peer_as_client ? clientContacts : serverContacts, value); }
+  void getIPContacts(lua_State* vm);
+  char* serialize();
+  void deserialize(json_object *o);
+  json_object* getJSONObject();
 };
 
-#endif /* _GENERIC_HOST_H_ */
+#endif /* _HOST_CONTACTS_H_ */

@@ -10,7 +10,7 @@ print [[
 --        print('<a class="btn" href="#"><i class="icon-bell"></i></a>')
 
 print [[
-	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead">
+	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead"></input>
 
 	 </form>
 

@@ -130,7 +130,7 @@
 #define CONST_LUA_ERROR             0
 #define CONST_LUA_PARAM_ERROR       -1
 
-
+#define CONST_DEFAULT_LOCAL_NETS    "0.0.0.0/32,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32"
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"

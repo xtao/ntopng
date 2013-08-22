@@ -81,10 +81,10 @@ else
 end
 
 if(page == "flows") then
-  print("<li class=\"active\"><a href=\"#\">Active Flows</a></li>\n")
+  print("<li class=\"active\"><a href=\"#\">Flows</a></li>\n")
 else
    if(host["ip"] ~= nil) then
-      print("<li><a href=\""..url.."&page=flows\">Active Flows</a></li>")
+      print("<li><a href=\""..url.."&page=flows\">Flows</a></li>")
    end
 end
 
@@ -104,31 +104,34 @@ else
    end
 end
 
-num = 0
+cnum = 0
+snum = 0
 if(host.contacts ~= nil) then
    if(host["contacts"]["client"] ~= nil) then
-      for k,v in pairs(host["contacts"]["client"]) do num = num + 1 end
+      for k,v in pairs(host["contacts"]["client"]) do cnum = cnum + 1 end
    end
 
    if(host["contacts"]["server"] ~= nil) then
-      for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
+      for k,v in pairs(host["contacts"]["server"]) do snum = snum + 1 end
    end
 end
 
+num = cnum + snum
+
 if(num > 0) then 
    if(page == "contacts") then
-      print("<li class=\"active\"><a href=\"#\">Host Contacts</a></li>\n")
+      print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=contacts\">Host Contacts</a></li>")
+      print("<li><a href=\""..url.."&page=contacts\">Contacts</a></li>")
    end
 end
 
 
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
-  print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
+  print("<li class=\"active\"><a href=\"#\">Historical</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
+  print("<li><a href=\""..url.."&page=historical\">Historical</a></li>")
 end
 end
 
@@ -144,7 +147,7 @@ if((page == "overview") or (page == nil)) then
 
    if(host["ip"] ~= nil) then
       -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
-      print("<tr><th>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+      print("<tr><th width=35%>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
       print("<tr><th>IP Address</th><td>" .. host["ip"])
    else
       if(host["mac"] ~= nil) then
@@ -168,7 +171,7 @@ if((page == "overview") or (page == nil)) then
       print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>")
 
       if(host["ip"] ==  host["name"]) then
-	 print("<i class=\"icon-refresh\"></i> ")
+	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\"> ")
       end
 
       print(host["name"] .. "</span></A> ")
@@ -188,6 +191,7 @@ end
 
    print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span></td></tr>\n")
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span></td></tr>\n")
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
    print("</table>\n")
 
    elseif((page == "traffic")) then
@@ -414,11 +418,15 @@ elseif(page == "contacts") then
 
 if(num > 0) then
 print("<table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Client Contacts (Initiator)</th><th>Server Contacts (Receiver)</th></tr>\n")
+print("<tr><th width=50%>Client Contacts (Initiator)</th><th width=50%>Server Contacts (Receiver)</th></tr>\n")
 
 print("<tr>")
+
+if(cnum  == 0) then
+   print("<td>No client contacts so far</td>")
+else
 print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Server Address</th><th>Contacts</th></tr>\n")
+print("<tr><th width=75%>Server Address</th><th>Contacts</th></tr>\n")
 
 -- Client
 sortTable = {}
@@ -436,9 +444,13 @@ for _v,k in pairsByKeys(sortTable, rev) do
    print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
 end
 print("</table></td>\n")
+end
 
+if(snum  == 0) then
+   print("<td>No server contacts so far</td>")
+else
 print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Client Address</th><th>Contacts</th></tr>\n")
+print("<tr><th width=75%>Client Address</th><th>Contacts</th></tr>\n")
 
 -- Server
 sortTable = {}
@@ -455,7 +467,10 @@ for _v,k in pairsByKeys(sortTable, rev) do
    end
    print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
 end
-print("</table></td></tr>\n")
+print("</table></td>\n")
+end
+
+print("</tr>\n")
 
 
 print("</table>\n")

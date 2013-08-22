@@ -107,7 +107,7 @@ void usage() {
 	 "                                    | Default: %s\n"
 	 "[--daemon|-e]                       | Daemonize ntopng\n"
 #endif
-	 "[--httpdocs-dir|-1] <path>          | Http documents root directory.\n"
+	 "[--httpdocs-dir|-1] <path>          | HTTP documents root directory.\n"
 	 "                                    | Default: %s\n"
 	 "[--scripts-dir|-2] <path>           | Scripts directory.\n"
 	 "                                    | Default: %s\n"
