@@ -80,6 +80,7 @@ char* Utils::l4proto2name(u_int8_t proto) {
   case 2: return((char*)"IGMP");
   case 6: return((char*)"TCP");
   case 17: return((char*)"UDP");
+  case 47: return((char*)"GRE");
   default:
     snprintf(proto_string, sizeof(proto_string), "%u", proto);
     return(proto_string);

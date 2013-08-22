@@ -26,7 +26,7 @@
 
 struct ipAddress {
   u_int8_t ipVersion:3 /* Either 4 or 6 */, 
-    localHost:1,
+    localHost:1, privateIP:1,
     notUsed:4 /* Future use */;
 
   union {
@@ -43,6 +43,7 @@ class IpAddress : Serializable {
 
   char* _intoaV4(unsigned int addr, char* buf, u_short bufLen);
   char* _intoa(char* buf, u_short bufLen);
+  void checkPrivate();
 
  public:
   IpAddress();
@@ -58,13 +59,13 @@ class IpAddress : Serializable {
   inline struct ipAddress* getIP()                    { return(&addr); };
   inline bool equal(u_int32_t ipv4_addr)              { if((addr.ipVersion == 4) && (addr.ipType.ipv4 == ipv4_addr)) return(true); else return(false); };
   inline bool equal(struct ndpi_in6_addr *ip6_addr)   { if((addr.ipVersion == 6) && (memcmp(&addr.ipType.ipv6, ip6_addr, sizeof(struct ndpi_in6_addr)) == 0)) return(true); else return(false); };
-  inline bool equal(IpAddress *_ip)                    { return(this->compare(_ip) == 0); };
+  inline bool equal(IpAddress *_ip)                   { return(this->compare(_ip) == 0); };
 
   void set_from_string(char *string);
   int compare(IpAddress *ip);
   u_int key();
   void dump(struct sockaddr *sa);
-  bool islocalAddress();
+  inline bool isPrivateAddress()                       { return(addr.privateIP); };
   char* print(char *str, u_int str_len);
   bool isLocalHost();
 

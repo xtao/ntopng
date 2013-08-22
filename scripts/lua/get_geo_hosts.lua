@@ -34,7 +34,10 @@ for key, values in pairs(peers) do
    t = values["sent"]+values["rcvd"]
    pctg = (t*100)/maxval
 
-   if(not(isBroadMulticast(values["client"])) and not(isBroadMulticast(values["server"]))) then
+   if(not(values["client.private"])
+      and not(values["server.private"])
+      and not(isBroadMulticast(values["client"])) 
+      and not(isBroadMulticast(values["server"]))) then
       if(pctg >= min_threshold) then 
 	 if(num > 0) then print(",") end
 	 print('{\n"host":\n[	\n{\n')

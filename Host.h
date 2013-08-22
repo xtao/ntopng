@@ -64,6 +64,7 @@ class Host : public GenericHost, Serializable {
   inline char* get_category()                  { refreshCategory(); return(category); }
   inline u_int32_t get_asn()                   { return(asn);           }
   inline bool isLocalHost()                    { return(localHost);     }
+  inline bool isPrivateHost()                  { return((ip && ip->isPrivateAddress()) ? true : false); }
   inline float get_latitude()                  { return(latitude);      }
   inline float get_longitude()                 { return(longitude);     }
   char* get_mac(char *buf, u_int buf_len);

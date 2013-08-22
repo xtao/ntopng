@@ -317,14 +317,16 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
   lua_newtable(vm);
 
-  lua_push_str_table_entry(vm, "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_str_table_entry(vm, "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
-  lua_push_str_table_entry(vm, "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_str_table_entry(vm, "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
-  lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
-  lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
-  lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
-  lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
+  lua_push_str_table_entry(vm,  "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_bool_table_entry(vm, "client.private", get_cli_host()->get_ip()->isPrivateAddress());
+  lua_push_str_table_entry(vm,  "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
+  lua_push_str_table_entry(vm,  "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_bool_table_entry(vm, "server.private", get_srv_host()->get_ip()->isPrivateAddress());
+  lua_push_str_table_entry(vm,  "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
+  lua_push_int_table_entry(vm,  "sent", cli2srv_bytes);
+  lua_push_int_table_entry(vm,  "rcvd", srv2cli_bytes);
+  lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());
+  lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
 
 
   lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());

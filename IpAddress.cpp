@@ -24,31 +24,35 @@
 /* ******************************************* */
 
 IpAddress::IpAddress() {
-  ;
+  checkPrivate();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(char *string) {
   set_from_string(string);
+checkPrivate();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(IpAddress *ip) {
   memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
+  checkPrivate();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(u_int32_t _ipv4) {
   set_ipv4(_ipv4);
+  checkPrivate();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
   set_ipv6(_ipv6);
+  addr.privateIP = false;
 }
 
 /* ******************************************* */
@@ -64,6 +68,33 @@ void IpAddress::set_from_string(char *string) {
       addr.ipVersion = 6, addr.localHost = 0;
     }
   }
+}
+
+/* ******************************************* */
+
+void IpAddress::checkPrivate() {
+  u_int32_t a;
+
+  addr.privateIP = false; /* Default */
+
+  if(addr.ipVersion != 4) return;
+
+  /*
+    RFC 1918 - Private Address Space
+
+    The Internet Assigned Numbers Authority (IANA) has reserved the
+    following three blocks of the IP address space for private internets:
+
+    10.0.0.0        -   10.255.255.255  (10/8 prefix)
+    172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
+    192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
+  */
+  a = ntohl(addr.ipType.ipv4);
+
+  if(((a & 0xFF000000) == 0x0A000000 /* 10.0.0.0/8 */)
+     || ((a & 0xFFF00000) == 0xAC100000 /* 172.16.0.0/12 */)
+     || ((a & 0xFFFF0000) == 0xC0A80000 /* 192.168.0.0/16 */))
+    addr.privateIP = true;
 }
 
 /* ******************************************* */

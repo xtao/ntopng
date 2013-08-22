@@ -81,7 +81,7 @@ function secondsToTime(seconds) {
    msg = ""
 
    if(days > 0) {
-      years = Mathfloor(days/365)
+      years = Math.floor(days/365)
 
       if(years > 0) {
 	 days = days % 365

@@ -99,7 +99,7 @@ end
 if(page == "geomap") then
   print("<li class=\"active\"><a href=\"#\">Geomap</a></li>\n")
 else
-   if(host["ip"] ~= nil) then
+   if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
       print("<li><a href=\""..url.."&page=geomap\">Geomap</a></li>")
    end
 end
@@ -176,7 +176,8 @@ if((page == "overview") or (page == nil)) then
 
       print(host["name"] .. "</span></A> ")
       
-   if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
+      if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
+      if(host["privatehost"] == true) then print(' <span class="label label-success">Private IP</span>') end
    print("</td></tr>\n")
 end
 

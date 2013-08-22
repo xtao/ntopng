@@ -88,8 +88,8 @@ Ntop::Ntop(char *appName) {
 
 void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   struct stat statbuf;
-  char *local_nets;
-
+  char *local_nets, buf[512];
+  
   prefs = _prefs, redis = _redis;
 
   if(stat(prefs->get_data_dir(), &statbuf)
@@ -110,18 +110,8 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
 
   /* Add defaults */
   /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
-  /*
-    RFC 1918 - Private Address Space
-
-    The Internet Assigned Numbers Authority (IANA) has reserved the
-    following three blocks of the IP address space for private internets:
-
-    10.0.0.0        -   10.255.255.255  (10/8 prefix)
-    172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
-    192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
-  */
-
-  local_nets = strdup((char*)CONST_DEFAULT_LOCAL_NETS);
+  snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS, CONST_DEFAULT_LOCAL_NETS);
+  local_nets = strdup(buf);
   setLocalNetworks(local_nets);
   free(local_nets);
 
