@@ -74,7 +74,7 @@ if(page == "overview") then
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Contacts Received</th><td><div id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</id></td></tr>\n")
+   print("<tr><th>Contacts Received</th><td><span id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
    print("</table>\n")
 
 elseif(page == "contacts") then
@@ -112,8 +112,10 @@ else
 end
 end
 
+
+print("<script>\nvar contacts = " .. host["pkts.rcvd"] .. ";") 
 print [[
-<script>
+
 setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
@@ -123,6 +125,14 @@ setInterval(function() {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
 			$('#contacts').html(addCommas(rsp.num_contacts));
+			
+			if(contacts == rsp.num_contacts) {
+			   $('#contacts_trend').html("<i class=icon-minus></i>");
+			} else {
+			   $('#contacts_trend').html("<i class=icon-arrow-up></i>");
+			}
+			contacts = rsp.num_contacts;
+
 			for (var i = 0; i < rsp.contacts.length; i++) {
 			   var key = '#'+rsp.contacts[i].key.replace(/\./g, '_');
 			   $(key).html(addCommas(rsp.contacts[i].value));
