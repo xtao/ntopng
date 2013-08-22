@@ -505,8 +505,8 @@ print [[
 
 ]]
 
-print("var last_pkts_sent = " .. host["pkts.sent"] .. ";")
-print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";")
+print("var last_pkts_sent = " .. host["pkts.sent"] .. ";\n")
+print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";\n")
 
 print [[
 setInterval(function() {

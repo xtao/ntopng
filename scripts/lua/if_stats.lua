@@ -65,8 +65,8 @@ if((page == "overview") or (page == nil)) then
 	 </td></tr>
    ]]
 
-   print("<tr><th>Received Packets</th><td><div id=if_pkts>" .. formatPackets(ifstats.stats_packets) .. "</div></td></tr>\n")
-   print("<tr><th>Dropped Packets</th><td><div id=if_drops>")
+   print("<tr><th>Received Packets</th><td><span id=if_pkts>" .. formatPackets(ifstats.stats_packets) .. "</span> <span id=pkts_trend></span></td></tr>\n")
+   print("<tr><th>Dropped Packets</th><td><span id=if_drops>")
 
    if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
    print(formatPackets(ifstats.stats_drops))
@@ -77,7 +77,7 @@ if((page == "overview") or (page == nil)) then
    end
 
    if(ifstats.stats_drops > 0) then print('</span>') end
-   print("</div></td></tr>\n")
+   print("</span>  <span id=drops_trend></span></td></tr>\n")
    print("</table>\n")
 else
    drawRRD(ifname, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
@@ -86,9 +86,11 @@ end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 
-print [[
-<script>
+print("<script>\n")
+print("var last_pkts  = " .. ifstats.stats_packets .. ";\n")
+print("var last_drops = " .. ifstats.stats_drops .. ";\n")
 
+print [[
 setInterval(function() {
 		  $.ajax({
 			    type: 'GET',
@@ -100,6 +102,19 @@ setInterval(function() {
 				$('#if_pkts').html(addCommas(rsp.packets)+" Pkts");
 				var pctg = 0;
 				var drops = "";
+
+				if(last_pkts == rsp.packets) {
+				   $('#pkts_trend').html("<i class=icon-minus></i>");
+				} else {
+				   $('#pkts_trend').html("<i class=icon-arrow-up></i>");
+				}
+				if(last_drops == rsp.drops) {
+				   $('#drops_trend').html("<i class=icon-minus></i>");
+				} else {
+				   $('#drops_trend').html("<i class=icon-arrow-up></i>");
+				}
+				last_pkts = rsp.packets;
+				last_drops == rsp.drops;
 
 				if((rsp.packets+rsp.drops) > 0)	{ pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
 				if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
