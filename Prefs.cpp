@@ -430,6 +430,10 @@ int Prefs::loadFromFile(const char *path) {
     key = Utils::trim(key);
     
     value = strrchr(line, '=');
+
+    /* Fallback to space */
+    if(value == NULL) value = strrchr(line, ' ');
+      
     if(value == NULL)
       value = &line[strlen(line)]; /* empty */
     else
