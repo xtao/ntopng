@@ -157,6 +157,7 @@ AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(SVN_RELEASE)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(packages/ntopng.spec)
+AC_CONFIG_FILES(packages/ntopng-data.spec)
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT
