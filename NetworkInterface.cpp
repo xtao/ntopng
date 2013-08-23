@@ -25,6 +25,7 @@
 #include <uuid/uuid.h>
 #endif
 
+static bool help_printed = false;
 
 /* **************************************** */
 
@@ -67,7 +68,7 @@ NetworkInterface::NetworkInterface(const char *name) {
 #endif
 
   if(name == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
+    if(!help_printed) ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
     printAvailableInterfaces(false, 0, NULL, 0);
 
     name = pcap_lookupdev(pcap_error_buffer);
@@ -887,6 +888,8 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   char ebuf[256];
   int i, numInterfaces = 0;
   pcap_if_t *devpointer;
+
+  if(help_printed) return; else help_printed = true;
 
   ebuf[0] = '\0';
 

@@ -45,13 +45,16 @@ void sigproc(int sig) {
 #if 0
   /* For the time being preferences are not saved. In the future this might change */
 
-  if (ntop->getPrefs()->save() < 0)
+  if(ntop->getPrefs()->save() < 0)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Error saving preferences");
 #endif
 
 #ifndef WIN32
-  if (ntop->getPrefs()->get_pid_path() != NULL)
-    unlink(ntop->getPrefs()->get_pid_path());
+  if(ntop->getPrefs()->get_pid_path() != NULL) {
+    int rc = unlink(ntop->getPrefs()->get_pid_path());
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Deleted PID %s [rc: %d]", 
+				 ntop->getPrefs()->get_pid_path(), rc);
+  }
 #endif
 
   delete ntop;
@@ -149,12 +152,15 @@ int main(int argc, char *argv[])
     ntop->daemonize();
 
 #ifndef WIN32
-  if (prefs->get_pid_path() != NULL) {
+  if(prefs->get_pid_path() != NULL) {
     FILE *fd = fopen(prefs->get_pid_path(), "w");
     if(fd != NULL) {
       fprintf(fd, "%u\n", getpid());
       fclose(fd);
-    } else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", prefs->get_pid_path());
+      chmod(prefs->get_pid_path(), 0777);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "PID stored in file %s", prefs->get_pid_path());
+    } else
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", prefs->get_pid_path());
   }
 #endif
 
@@ -162,7 +168,6 @@ int main(int argc, char *argv[])
   ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(),
 						  prefs->get_docs_dir(),
 						  prefs->get_scripts_dir()));
-
   /*
     We have created the network interface and thus changed user. Let's not check
     if we can write on the data directory

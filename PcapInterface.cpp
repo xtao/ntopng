@@ -99,12 +99,12 @@ void PcapInterface::startPacketPolling() {
 /* **************************************************** */
 
 void PcapInterface::shutdown() {
-  void *res;
-
   if(running) {
+    void *res;
+
+    NetworkInterface::shutdown();
     if(pcap_handle) pcap_breakloop(pcap_handle);
     pthread_join(pollLoop, &res);
-    NetworkInterface::shutdown();
   }
 }
 

@@ -68,7 +68,7 @@
 #define MAX_TCP_FLOW_IDLE         3 /* sec */
 #define PURGE_FRACTION           32 /* check 1/32 of hashes per iteration */
 #define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
-
+#define DEFAULT_PID_PATH        "/var/tmp/ntopng.pid"
 #define DOMAIN_CATEGORY         "domain.category"
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"

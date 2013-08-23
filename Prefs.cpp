@@ -45,7 +45,7 @@ Prefs::Prefs(Ntop *_ntop) {
   redis_port = 6379;
   dns_mode = 0;
   logFd = NULL;
-  pid_path = NULL;
+  pid_path = strdup(DEFAULT_PID_PATH);
   packet_filter = NULL;
   disable_host_persistency = false;
   num_interfaces = 0;
@@ -61,6 +61,14 @@ Prefs::Prefs(Ntop *_ntop) {
 
 Prefs::~Prefs() {
   if(logFd) fclose(logFd);
+  if(data_dir) free(data_dir);
+  if(docs_dir) free(docs_dir);
+  if(scripts_dir) free(scripts_dir);
+  if(callbacks_dir) free(callbacks_dir);
+  if(users_file_path) free(users_file_path);
+  if(config_file_path) free(config_file_path);
+  if(user) free(user);
+  if(pid_path) free(pid_path);
 }
 
 /* ******************************************* */
