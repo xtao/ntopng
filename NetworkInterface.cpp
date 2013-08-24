@@ -628,6 +628,8 @@ struct host_find_info {
   StringHost *s;
 };
 
+/* **************************************************** */
+
 static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
@@ -639,6 +641,8 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
     info->h = host;
 }
 
+/* **************************************************** */
+
 static void find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   StringHost *host            = (StringHost*)h;
@@ -648,6 +652,22 @@ static void find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
      && info->host_to_find
      && (!strcmp(host->host_key(), info->host_to_find)))
     info->s = host;
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::restoreHost(char *host_ip) {
+  Host *h = new Host(this, host_ip);
+
+  if(!h) return(false);
+
+  if(!hosts_hash->add(h)) {
+    //ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many hosts in interface %s", ifname);
+    delete h;
+    return(false);
+  }
+  
+  return(true);
 }
 
 /* **************************************************** */

@@ -30,12 +30,9 @@ Host::Host(NetworkInterface *_iface) : GenericHost(_iface) {
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, char *jsonString) : GenericHost(_iface) {
-  ip = new IpAddress();
+Host::Host(NetworkInterface *_iface, char *ipAddress) : GenericHost(_iface) {
+  ip = new IpAddress(ipAddress);
   initialize(NULL, 0, false);
-
-  /* TODO */
-
 }
 
 /* *************************************** */
@@ -71,7 +68,7 @@ Host::~Host() {
     }
   }
 
-  if(ntop->getPrefs()->is_host_persistency_enabled()) {
+  if(localHost && ntop->getPrefs()->is_host_persistency_enabled()) {
     char *json = serialize();
     snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
     ntop->getRedis()->set(key, json, 3600 /* 1 hour */);

@@ -464,6 +464,28 @@ static int ntop_get_interface_host_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_restore_interface_host(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *host_ip;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  host_ip = (char*)lua_tostring(vm, 1);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
+    //return(CONST_LUA_ERROR);
+    ntop_interface = ntop->getInterfaceId(0);
+  }
+ 
+  if((!ntop_interface) || !ntop_interface->restoreHost(host_ip))
+    return(CONST_LUA_ERROR);
+  else
+    return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
@@ -1049,7 +1071,7 @@ static int ntop_mkdir_tree(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_redis(lua_State* vm) {
-  char *key, *value, rsp[256];
+  char *key, *value, rsp[4096];
   Redis *redis = ntop->getRedis();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
@@ -1176,6 +1198,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },
   { "getNumAggregatedHosts",  ntop_get_interface_num_aggregated_hosts },
   { "getHostInfo",            ntop_get_interface_host_info },
+  { "restoreHost",            ntop_restore_interface_host },
   { "getAggregatedHostInfo",  ntop_get_interface_aggregated_host_info },
   { "getFlowsInfo",           ntop_get_interface_flows_info },
   { "getFlowPeers",           ntop_get_interface_flows_peers },

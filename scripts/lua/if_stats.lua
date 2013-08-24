@@ -83,7 +83,6 @@ else
    drawRRD(ifname, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
-
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 
 print("<script>\n")

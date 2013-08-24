@@ -24,15 +24,39 @@ end
 interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
+restoreFailed = false
+if((host == nil) and (_GET["mode"] == "restore")) then
+   interface.restoreHost(host_ip)
+   host = interface.getHostInfo(host_ip)
+   restoreFailed = true
+end
+
 if(host == nil) then
    -- We need to check if this is an aggregated host
    host = interface.getAggregatedHostInfo(host_ip)
 
    if(host == nil) then
+      stats = interface.getIfNames()
+      for id, name in pairs(stats) do 
+	 if(name == ifname) then
+	    ifId = id
+	    break
+	 end
+      end
+      
+      if(not(restoreFailed)) then json = ntop.getCache(host_ip.. "." .. ifId .. ".json") end
       sendHTTPHeader('text/html')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found (expired ?)</div>")
+      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found.")
+      if((json ~= nil) and (json ~= "")) then 
+	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?host='..host_ip..'&mode=restore">here</A> to restore it from cache.\n')
+      else
+	 print('<p>Perhaps this host has been previously purged from memory or it has never been observed by this ntopng instance.</p>\n')
+      end
+      
+      print("</div>")
+      dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
    else
       print(ntop.httpRedirect("/lua/aggregated_host_details.lua?host="..host_ip))
    end

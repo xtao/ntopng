@@ -92,6 +92,7 @@ class NetworkInterface {
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return running; };
   inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
+  bool restoreHost(char *host_ip);
   void printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 

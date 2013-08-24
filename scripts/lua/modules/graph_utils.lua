@@ -193,6 +193,7 @@ font-family: Arial, Helvetica, sans-serif;
 if(show_timeseries == 1) then
    print [[
 
+
 <div class="btn-group">
   <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
   <ul class="dropdown-menu">
@@ -215,11 +216,13 @@ end
 print [[
   </ul>
 </div><!-- /btn-group -->
+
+
 ]]
 
 end
 
-print('&nbsp; <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
+print('&nbsp;Timeframe:  <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
 
 for k,v in ipairs(vals) do
    print('<a class="btn btn-small ')
@@ -234,9 +237,12 @@ end
 print [[
 </div>
 </div>
+
 <br />
+<p>
 <div style="margin-left: 10px">
 <div id="chart_container">
+<p><font color=lightgray><small>NOTE: Click on the graph to zoom.</small></font>
    <div id="y_axis"></div>
    <div id="chart" style="margin-right: 10px"></div>
 
@@ -256,7 +262,7 @@ print('   <tr><th>Average</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*
 print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes)..  '</td></tr>\n')
 
 print('   <tr><th>Selection Time</th><td colspan=2><div id=when></div></td></tr>\n')
-print('   <tr><th>Top Talkers</th><td colspan=2><div id=talkers></div></td></tr>\n')
+print('   <tr><th>Minute<br>Top Talkers</th><td colspan=2><div id=talkers></div></td></tr>\n')
 
 
 print [[
