@@ -83,7 +83,7 @@ class Flow : public GenericHashEntry, Serializable {
   void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
   void setJSONInfo(char *json);
   bool isFlowPeer(char *numIP);
-  inline void incStats(bool cli2srv_direction, u_int pkt_len) { updateSeen(); if(cli2srv_direction) cli2srv_packets++, cli2srv_bytes += pkt_len; else srv2cli_packets++, srv2cli_bytes += pkt_len; };
+  void incStats(bool cli2srv_direction, u_int pkt_len);
   inline void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen) { updateSeen(last_seen); 
     if (cli2srv_direction) cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
     else cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; };

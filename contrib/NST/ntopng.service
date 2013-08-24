@@ -1,0 +1,11 @@
+[Unit]
+Description=ntopng Service
+After=syslog.target network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/ntopng
+WorkingDirectory=/usr/share/ntopng
+ExecStart=/usr/bin/ntopng $OPTIONS
+
+[Install]
+WantedBy=multi-user.target

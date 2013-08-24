@@ -335,7 +335,7 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
   lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
   lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
-  
+
   if(verbose) {
     if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
        || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
@@ -398,7 +398,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   if(srv_host)
     srv_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
 		       diff_sent_packets, diff_sent_bytes);
-  
+
   if(last_update_time.tv_sec > 0) {
     float tdiff = (tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000;
 
@@ -512,12 +512,12 @@ u_int32_t Flow::key() {
 /* *************************************** */
 
 bool Flow::idle() {
-  /* If this flow is idle for at least MAX_TCP_FLOW_IDLE */  
+  /* If this flow is idle for at least MAX_TCP_FLOW_IDLE */
   if((protocol == IPPROTO_TCP)
      && ((tcp_flags & TH_FIN) || (tcp_flags & TH_RST))
      && isIdle(MAX_TCP_FLOW_IDLE /* sec */)) {
     /* ntop->getTrace()->traceEvent(TRACE_NORMAL, "[TCP] Early flow expire"); */
-    return(true);  
+    return(true);
   }
 
   return(isIdle(ntop->getPrefs()->get_host_max_idle()));
@@ -582,19 +582,19 @@ char* Flow::serialize() {
   json_object_object_add(my_object, "server", inner);
 
   inner = json_object_new_object(); o[n++] = inner;
-  json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen)); 
+  json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen));
   json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
   json_object_object_add(my_object, "seen", inner);
- 
+
   if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
 
   inner = json_object_new_object(); o[n++] = inner;
-  json_object_object_add(inner, "l4", json_object_new_int(protocol)); 
+  json_object_object_add(inner, "l4", json_object_new_int(protocol));
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     json_object_object_add(inner, "ndpi", json_object_new_string(get_detected_protocol_name()));
   json_object_object_add(my_object, "proto", inner);
-			 
+
   if(protocol == IPPROTO_TCP) {
     inner = json_object_new_object(); o[n++] = inner;
     json_object_object_add(inner, "flags", json_object_new_int(tcp_flags));
@@ -623,3 +623,17 @@ char* Flow::serialize() {
 
   return(rsp);
 }
+
+/* *************************************** */
+
+void Flow::incStats(bool cli2srv_direction, u_int pkt_len) {
+  updateSeen();
+
+  if(cli2srv_direction) {
+    cli2srv_packets++, cli2srv_bytes += pkt_len;
+    cli_host->get_sent_stats()->incStats(pkt_len), srv_host->get_recv_stats()->incStats(pkt_len);
+  } else {
+    srv2cli_packets++, srv2cli_bytes += pkt_len;
+    cli_host->get_recv_stats()->incStats(pkt_len), srv_host->get_sent_stats()->incStats(pkt_len);
+  }
+};

@@ -38,7 +38,8 @@ class Host : public GenericHost, Serializable {
   TrafficStats udp_sent, udp_rcvd;
   TrafficStats icmp_sent, icmp_rcvd;
   TrafficStats other_ip_sent, other_ip_rcvd;
-  
+  PacketStats sent_stats, recv_stats;
+
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
   void refreshCategory();
@@ -50,6 +51,8 @@ class Host : public GenericHost, Serializable {
   Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip);
   ~Host();
 
+  inline PacketStats* get_sent_stats() { return(&sent_stats); };
+  inline PacketStats* get_recv_stats() { return(&recv_stats); };
   inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4);   }
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
   u_int32_t key();

@@ -94,6 +94,7 @@ extern "C" {
 #include "IpAddress.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"
+#include "PacketStats.h"
 #include "ProtoStats.h"
 #include "EthStats.h"
 #include "GenericHashEntry.h"

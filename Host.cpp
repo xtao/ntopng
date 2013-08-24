@@ -246,16 +246,11 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       getHostContacts(vm);
       lua_push_str_table_entry(vm, "json", rsp);
       free(rsp);
-    }
 
-    if(false) {
-      char *s = serialize();
-            
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", s);
-      deserialize(s);
-      free(s);
+      sent_stats.lua(vm, "pktStats.sent");
+      recv_stats.lua(vm, "pktStats.recv");
     }
-
+    
     if(!returnHost) {
       lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
       lua_insert(vm, -2);
@@ -378,6 +373,10 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     ((GenericHost*)this)->incStats(l4_proto, ndpi_proto, sent_packets,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
 
+
+    if(sent_packets == 1) sent_stats.incStats(sent_bytes);    
+    if(rcvd_packets == 1) recv_stats.incStats(rcvd_bytes);
+
     switch(l4_proto) {
     case 0:
       /* Unknown protocol */
@@ -441,6 +440,8 @@ char* Host::serialize() {
   json_object_object_add(my_object, "icmp_rcvd", o[n++]     = icmp_rcvd.getJSONObject());
   json_object_object_add(my_object, "other_ip_sent", o[n++] = other_ip_sent.getJSONObject());
   json_object_object_add(my_object, "other_ip_rcvd", o[n++] = other_ip_rcvd.getJSONObject());
+  json_object_object_add(my_object, "pktStats.sent", o[n++] = sent_stats.getJSONObject());
+  json_object_object_add(my_object, "pktStats.recv", o[n++] = recv_stats.getJSONObject());
 
   /* Generic Host */
   json_object_object_add(my_object, "sent", o[n++]      = sent.getJSONObject());
@@ -492,6 +493,8 @@ bool Host::deserialize(char *json_str) {
   if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
   if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
   if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(obj);
+  if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
+  if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);
 
   json_object_put(o);
 
