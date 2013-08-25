@@ -24,7 +24,7 @@
 /* ******************************************* */
 
 IpAddress::IpAddress() {
-  checkPrivate();
+  memset(&addr, 0, sizeof(addr));
 }
 
 /* ******************************************* */
@@ -211,20 +211,11 @@ bool IpAddress::isLocalHost() {
 /* ******************************************* */
 
 char* IpAddress::serialize() {
-  json_object *my_object, *ipo;
-  char *rsp, buf[64];
-
-  my_object = json_object_new_object();
-  
-  json_object_object_add(my_object, "ipVersion", json_object_new_int(addr.ipVersion));
-  json_object_object_add(my_object, "localHost", json_object_new_boolean(addr.localHost));
-  json_object_object_add(my_object, "ip", ipo = json_object_new_string(print(buf, sizeof(buf))));
-			 
-  rsp = strdup(json_object_to_json_string(my_object));
+  json_object *my_object = getJSONObject();
+  char *rsp = strdup(json_object_to_json_string(my_object));
   
   /* Free memory */
   json_object_put(my_object);
-  json_object_put(ipo);
 
   return(rsp);
 }
@@ -252,9 +243,14 @@ void IpAddress::deserialize(json_object *o) {
 /* ******************************************* */
 
 json_object* IpAddress::getJSONObject() {
-  char *s = serialize();
-  json_object *o = json_tokener_parse(s);
+  json_object *my_object;
+  char buf[64];
 
-  free(s);
-  return(o);
+  my_object = json_object_new_object();
+  
+  json_object_object_add(my_object, "ipVersion", json_object_new_int(addr.ipVersion));
+  json_object_object_add(my_object, "localHost", json_object_new_boolean(addr.localHost));
+  json_object_object_add(my_object, "ip", json_object_new_string(print(buf, sizeof(buf))));
+			 
+  return(my_object);
 }
