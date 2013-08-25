@@ -96,6 +96,14 @@ else
    end
 end
 
+if(page == "packets") then
+   print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
+else
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+   end
+end
+
 if(page == "ndpi") then
   print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
 else
@@ -218,6 +226,30 @@ end
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
    print("</table>\n")
+
+   elseif((page == "packets")) then
+      print [[
+
+      <table class="table table-bordered table-striped">
+      	<tr><th class="text-center">Send Distribution</th><td colspan=5><div class="pie-chart" id="sizeSentDistro"></div></td></tr>
+      	<tr><th class="text-center">Receive Distribution</th><td colspan=5><div class="pie-chart" id="sizeRecvDistro"></div></td></tr>
+      </table>
+
+        <script type='text/javascript'>
+	       window.onload=function() {
+		   var refresh = 3000 /* ms */;
+		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifname) print ('", host: ')
+	print("\""..host_ip.."\" }, \"\", refresh); \n")
+	print [[
+		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifname) print ('", host: ')
+
+	print("\""..host_ip.."\" }, \"\", refresh); \n")
+	print [[
+
+		}
+
+	    </script><p>
+	]]
 
    elseif((page == "traffic")) then
      total = 0

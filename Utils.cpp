@@ -75,12 +75,14 @@ char* Utils::l4proto2name(u_int8_t proto) {
   static char proto_string[8];
 
   switch(proto) {
-  case 0: return((char*)"IP");
-  case 1: return((char*)"ICMP");
-  case 2: return((char*)"IGMP");
-  case 6: return((char*)"TCP");
-  case 17: return((char*)"UDP");
-  case 47: return((char*)"GRE");
+  case 0:   return((char*)"IP");
+  case 1:   return((char*)"ICMP");
+  case 2:   return((char*)"IGMP");
+  case 6:   return((char*)"TCP");
+  case 17:  return((char*)"UDP");
+  case 47:  return((char*)"GRE");
+  case 112: return((char*)"VRRP");
+
   default:
     snprintf(proto_string, sizeof(proto_string), "%u", proto);
     return(proto_string);

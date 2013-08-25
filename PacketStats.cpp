@@ -48,29 +48,13 @@ void PacketStats::incStats(u_int pkt_len) {
 /* *************************************** */
 
 char* PacketStats::serialize() {
-  json_object *my_object;
-  char *rsp;
-
-  my_object = json_object_new_object();
-
-  json_object_object_add(my_object, "upTo64", json_object_new_int64(upTo64));
-  json_object_object_add(my_object, "upTo128", json_object_new_int64(upTo128));
-  json_object_object_add(my_object, "upTo256", json_object_new_int64(upTo256));
-  json_object_object_add(my_object, "upTo512", json_object_new_int64(upTo512));
-  json_object_object_add(my_object, "upTo1024", json_object_new_int64(upTo1024));
-  json_object_object_add(my_object, "upTo1518", json_object_new_int64(upTo1518));
-  json_object_object_add(my_object, "upTo2500", json_object_new_int64(upTo2500));
-  json_object_object_add(my_object, "upTo6500", json_object_new_int64(upTo6500));
-  json_object_object_add(my_object, "upTo9000", json_object_new_int64(upTo9000));
-  json_object_object_add(my_object, "above9000", json_object_new_int64(above9000));
-  
-  rsp = strdup(json_object_to_json_string(my_object));
+  json_object *my_object = getJSONObject();
+  char *rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
   json_object_put(my_object);
 
   return(rsp);
-
 }
 
 /* ******************************************* */
@@ -95,11 +79,22 @@ void PacketStats::deserialize(json_object *o) {
 /* ******************************************* */
 
 json_object* PacketStats::getJSONObject() {
-  char *s = serialize();
-  json_object *o = json_tokener_parse(s);
+  json_object *my_object;
 
-  free(s);
-  return(o);
+  my_object = json_object_new_object();
+
+  if(upTo64 > 0) json_object_object_add(my_object, "upTo64", json_object_new_int64(upTo64));
+  if(upTo128 > 0) json_object_object_add(my_object, "upTo128", json_object_new_int64(upTo128));
+  if(upTo256 > 0) json_object_object_add(my_object, "upTo256", json_object_new_int64(upTo256));
+  if(upTo512 > 0) json_object_object_add(my_object, "upTo512", json_object_new_int64(upTo512));
+  if(upTo1024 > 0) json_object_object_add(my_object, "upTo1024", json_object_new_int64(upTo1024));
+  if(upTo1518 > 0) json_object_object_add(my_object, "upTo1518", json_object_new_int64(upTo1518));
+  if(upTo2500 > 0) json_object_object_add(my_object, "upTo2500", json_object_new_int64(upTo2500));
+  if(upTo6500 > 0) json_object_object_add(my_object, "upTo6500", json_object_new_int64(upTo6500));
+  if(upTo9000 > 0) json_object_object_add(my_object, "upTo9000", json_object_new_int64(upTo9000));
+  if(above9000 > 0) json_object_object_add(my_object, "above9000", json_object_new_int64(above9000));
+  
+  return(my_object);
 }
 
 /* ******************************************* */

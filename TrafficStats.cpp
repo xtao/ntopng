@@ -37,21 +37,13 @@ void TrafficStats::printStats() {
 /* *************************************** */
 
 char* TrafficStats::serialize() {
-  json_object *my_object;
-  char *rsp;
-
-  my_object = json_object_new_object();
-
-  json_object_object_add(my_object, "packets", json_object_new_int64(numPkts));
-  json_object_object_add(my_object, "bytes", json_object_new_int64(numBytes));
-  
-  rsp = strdup(json_object_to_json_string(my_object));
+  json_object *my_object = getJSONObject();
+  char *rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
   json_object_put(my_object);
 
   return(rsp);
-
 }
 
 /* ******************************************* */
@@ -75,9 +67,12 @@ void TrafficStats::deserialize(json_object *o) {
 /* ******************************************* */
 
 json_object* TrafficStats::getJSONObject() {
-  char *s = serialize();
-  json_object *o = json_tokener_parse(s);
+  json_object *my_object;
 
-  free(s);
-  return(o);
+  my_object = json_object_new_object();
+
+  json_object_object_add(my_object, "packets", json_object_new_int64(numPkts));
+  json_object_object_add(my_object, "bytes", json_object_new_int64(numBytes));
+  
+  return(my_object);
 }
