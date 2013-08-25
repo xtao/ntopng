@@ -18,6 +18,18 @@ if((type == nil) or (type == "size")) then
    what = ifstats["pktSizeDistribution"]
 end
 
+local pkt_distribution = {
+   ['upTo64'] = '<= 64',
+   ['upTo128'] = '64 <= 128',
+   ['upTo256'] = '128 <= 256',
+   ['upTo512'] = '256 <= 512',
+   ['upTo1024'] = '512 <= 1024',
+   ['upTo1518'] = '1024 <= 1518',
+   ['upTo2500'] = '1518 <= 2500',
+   ['upTo6500'] = '2500 <= 6500',
+   ['upTo9000'] = '6500 <= 9000',
+   ['above9000'] = '> 9000'
+}
 
 
 print "[\n"
@@ -28,7 +40,7 @@ for key, value in pairs(what) do
 	 print ",\n"
       end
    
-      print("\t { \"label\": \"" .. key .."\", \"value\": ".. value .." }") 
+      print("\t { \"label\": \"" .. pkt_distribution[key] .."\", \"value\": ".. value .." }") 
       num = num + 1
    end
 end
