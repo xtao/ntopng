@@ -101,9 +101,9 @@ elseif((page == "packets")) then
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(ifname)
+		   do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(ifname.."\"")
 	print [[
-	         ", }, "", refresh);
+	         , }, "", refresh);
 		}
 
 	    </script><p>
