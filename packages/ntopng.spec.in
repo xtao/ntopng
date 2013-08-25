@@ -31,6 +31,18 @@ PATH=/usr/bin:/bin:/usr/sbin:/sbin
 if [ -d $RPM_BUILD_ROOT ]; then
 	\rm -rf $RPM_BUILD_ROOT
 fi
+#
+# "T.J. Yang" <tjyang2001@gmail.com>
+#
+mkdir -p $RPM_BUILD_ROOT/etc/ntopng
+cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.conf <<_EOT_
+-G=/var/tmp/ntopng.gid
+_EOT_
+cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.start <<_EOT_
+--local-networks “192.168.1.0”
+--interface 0
+_EOT_
+
 mkdir -p $RPM_BUILD_ROOT/usr/local/bin $RPM_BUILD_ROOT/usr/local/share/ntopng $RPM_BUILD_ROOT/usr/local/man/man8 
 mkdir -p $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d
 cp ntopng $RPM_BUILD_ROOT/usr/local/bin
