@@ -42,7 +42,7 @@ class NetworkInterface {
   pthread_t pollLoop;
   int cpu_affinity;
   NdpiStats ndpiStats;
-
+  PacketStats pktStats;
   FlowHash *flows_hash;
   /* Hosts */
   HostHash *hosts_hash;
@@ -86,6 +86,7 @@ class NetworkInterface {
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len) { 
     ethStats.incStats(eth_proto, 1, pkt_len);
     ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 
+    pktStats.incStats(pkt_len);
   };
   inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }
   inline EthStats* getStats()      { return(&ethStats);          };

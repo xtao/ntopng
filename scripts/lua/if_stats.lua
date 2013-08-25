@@ -35,6 +35,18 @@ else
   print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
 end
 
+if(page == "packets") then
+  print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
+else
+  print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+end
+
+if(page == "ndpi") then
+  print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
+else
+   print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
+end
+
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
   print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
@@ -79,6 +91,57 @@ if((page == "overview") or (page == nil)) then
    if(ifstats.stats_drops > 0) then print('</span>') end
    print("</span>  <span id=drops_trend></span></td></tr>\n")
    print("</table>\n")
+elseif((page == "packets")) then
+      print [[
+
+      <table class="table table-bordered table-striped">
+      	<tr><th class="text-center">Size Distribution</th><td colspan=5><div class="pie-chart" id="sizeDistro"></div></td></tr>
+      </table>
+
+        <script type='text/javascript'>
+	       window.onload=function() {
+		   var refresh = 3000 /* ms */;
+		   do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(ifname)
+	print [[
+	         ", }, "", refresh);
+		}
+
+	    </script><p>
+	]]
+elseif(page == "ndpi") then
+      print [[
+
+      <table class="table table-bordered table-striped">
+      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+	</div>
+
+        <script type='text/javascript'>
+	       window.onload=function() {
+				   var refresh = 3000 /* ms */;
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(ifname) print [[" }, "", refresh);
+				}
+
+	    </script><p>
+	]]
+
+     print("<tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th>Percentage</th></tr>\n")
+
+      total = ifstats["stats_bytes"]
+
+      vals = {}
+      for k in pairs(ifstats["ndpi"]) do
+	 vals[k] = k
+      end
+      table.sort(vals)
+
+      for _k in pairsByKeys(vals , desc) do
+	 k = vals[_k]
+	 print("<tr><th>"..k)
+	 t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
+	 print("</th><td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+      end
+
+      print("</table>\n")
 else
    drawRRD(ifname, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end

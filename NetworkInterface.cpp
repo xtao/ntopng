@@ -851,6 +851,8 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
 
   ethStats.lua(vm);
+  ndpiStats.lua(this, vm);
+  pktStats.lua(vm, "pktSizeDistribution");
 
   lua_pushinteger(vm, 0); //  Index
   lua_insert(vm, -2);

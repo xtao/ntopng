@@ -11,7 +11,9 @@ sendHTTPHeader('text/html')
 
 interface.find(ifname)
 
-if(_GET["host"] == nil) then
+if(_GET["mode"] == "sinceStartup") then
+   stats = interface.getStats()
+elseif(_GET["host"] == nil) then
    stats = interface.getNdpiStats()
 else
    stats = interface.getHostInfo(_GET["host"])
