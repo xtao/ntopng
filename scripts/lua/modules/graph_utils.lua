@@ -14,6 +14,16 @@ function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
    end
 end
 
+function percentageBar(total, value, valueLabel)
+   if(total > 0) then
+      pctg = round((value * 100) / total, 0)
+      print('<div class="progress"><div class="bar bar-warning" style="width: ' .. pctg.. '%;">'..valueLabel)
+      print('</div></div>')
+   else
+      print('&nbsp;')
+   end
+end
+
 
 function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
    dirs = ntop.getDirs()

@@ -124,7 +124,7 @@ elseif(page == "ndpi") then
 	    </script><p>
 	]]
 
-     print("<tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th>Percentage</th></tr>\n")
+     print("<tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th colspan=2>Percentage</th></tr>\n")
 
       total = ifstats["stats_bytes"]
 
@@ -138,7 +138,11 @@ elseif(page == "ndpi") then
 	 k = vals[_k]
 	 print("<tr><th>"..k)
 	 t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
-	 print("</th><td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+	 print("</th><td class=\"text-right\">" .. bytesToSize(t).. "</td>")
+         print("<td>")
+         percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], k)
+         print("</td>\n")
+	 print("<td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
       print("</table>\n")

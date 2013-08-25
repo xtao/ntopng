@@ -140,7 +140,6 @@ char* NdpiStats::serialize(NetworkInterface *iface) {
 	json_object_object_add(inner1, "rcvd", json_object_new_int64(counters[proto_id]->bytes.rcvd));
 	json_object_object_add(inner, "bytes", inner1);
 
-
 	o[n++] = (inner1 = json_object_new_object());
 	json_object_object_add(inner1, "sent", json_object_new_int64(counters[proto_id]->packets.sent));
 	json_object_object_add(inner1, "rcvd", json_object_new_int64(counters[proto_id]->packets.rcvd));
