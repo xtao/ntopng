@@ -569,26 +569,26 @@ char* Flow::serialize() {
   char *rsp, buf[64];
   int n = 0;
 
-  my_object = json_object_new_object();
+  o[n++] = (my_object = json_object_new_object());
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "ip",   json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
   json_object_object_add(inner, "port", json_object_new_int(cli_port));
   json_object_object_add(my_object, "client", inner);
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "ip",   json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
   json_object_object_add(inner, "port", json_object_new_int(srv_port));
   json_object_object_add(my_object, "server", inner);
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen));
   json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
   json_object_object_add(my_object, "seen", inner);
 
   if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "l4", json_object_new_int(protocol));
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
@@ -596,7 +596,7 @@ char* Flow::serialize() {
   json_object_object_add(my_object, "proto", inner);
 
   if(protocol == IPPROTO_TCP) {
-    inner = json_object_new_object(); o[n++] = inner;
+    o[n++] = (inner = json_object_new_object());
     json_object_object_add(inner, "flags", json_object_new_int(tcp_flags));
     json_object_object_add(my_object, "tcp", inner);
   }
@@ -604,12 +604,12 @@ char* Flow::serialize() {
   if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
   if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "packets", json_object_new_int64(cli2srv_packets));
   json_object_object_add(inner, "bytes", json_object_new_int64(cli2srv_bytes));
   json_object_object_add(my_object, "cli2srv", inner);
 
-  inner = json_object_new_object(); o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "packets", json_object_new_int64(srv2cli_packets));
   json_object_object_add(inner, "bytes", json_object_new_int64(srv2cli_bytes));
   json_object_object_add(my_object, "srv2cli", inner);
@@ -618,7 +618,6 @@ char* Flow::serialize() {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  json_object_put(my_object);
   for(int i=0; i<n; i++) json_object_put(o[i]);
 
   return(rsp);

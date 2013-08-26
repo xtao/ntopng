@@ -121,7 +121,7 @@ char* NdpiStats::serialize(NetworkInterface *iface) {
   json_object *my_object, *o[MAX_NDPI_PROTOS];
   int n = 0;
   
-  my_object = json_object_new_object();
+  o[n++] = (my_object = json_object_new_object());
 
   for(int proto_id=0; proto_id<MAX_NDPI_PROTOS; proto_id++) {
     if(counters[proto_id] != NULL) {
@@ -130,8 +130,7 @@ char* NdpiStats::serialize(NetworkInterface *iface) {
       if((proto_id > 0) && (name == unknown)) break;
 
       if(name != NULL) {
-	json_object *inner = json_object_new_object();
-	json_object *inner1 = json_object_new_object();
+	json_object *inner, *inner1;
 
 	o[n++] = (inner = json_object_new_object());
 
@@ -153,7 +152,6 @@ char* NdpiStats::serialize(NetworkInterface *iface) {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  json_object_put(my_object);
   for(int i=0; i<n; i++) json_object_put(o[i]);
 
   return(rsp);

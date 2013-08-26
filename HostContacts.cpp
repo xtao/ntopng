@@ -106,12 +106,11 @@ char* HostContacts::serialize() {
   json_object *inner;
   char *rsp;
 
-  my_object = json_object_new_object();
+  o[n++] = (my_object = json_object_new_object());
 
   /* *************************************** */
 
-  inner = json_object_new_object();
-  o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].host != NULL) {
@@ -126,8 +125,7 @@ char* HostContacts::serialize() {
   
   /* *************************************** */
 
-  inner = json_object_new_object();
-  o[n++] = inner;
+  o[n++] = (inner = json_object_new_object());
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(serverContacts[i].host != NULL) {
@@ -147,7 +145,6 @@ char* HostContacts::serialize() {
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", rsp);
   
   /* Free memory */
-  json_object_put(my_object);
   for(int i=0; i<n; i++) json_object_put(o[i]);
 
   return(rsp);

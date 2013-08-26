@@ -417,7 +417,7 @@ char* Host::serialize() {
   char *rsp, buf[32];
   int n = 0;
 
-  my_object = json_object_new_object();
+  o[n++] = (my_object = json_object_new_object());
    
   json_object_object_add(my_object, "mac_address", json_object_new_string(get_mac(buf, sizeof(buf))));
   
@@ -453,7 +453,6 @@ char* Host::serialize() {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  json_object_put(my_object);
   for(int i=0; i<n; i++) json_object_put(o[i]);
 
   return(rsp);
