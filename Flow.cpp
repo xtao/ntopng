@@ -618,7 +618,7 @@ char* Flow::serialize() {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  for(int i=0; i<n; i++) json_object_put(o[i]);
+  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
 
   return(rsp);
 }

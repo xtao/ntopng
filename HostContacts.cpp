@@ -145,7 +145,7 @@ char* HostContacts::serialize() {
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", rsp);
   
   /* Free memory */
-  for(int i=0; i<n; i++) json_object_put(o[i]);
+  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
 
   return(rsp);
 }

@@ -423,12 +423,12 @@ char* Host::serialize() {
   
   json_object_object_add(my_object, "asn", json_object_new_int(asn));
   if(symbolic_name)       json_object_object_add(my_object, "symbolic_name", json_object_new_string(symbolic_name));
-  if(country)             json_object_object_add(my_object, "country", json_object_new_string(country));
-  if(city)                json_object_object_add(my_object, "city", json_object_new_string(city));
-  if(asname)              json_object_object_add(my_object, "asname", json_object_new_string(asname));
-  if(category[0] != '\0') json_object_object_add(my_object, "category", json_object_new_string(category));
-  if(vlan_id != 0)        json_object_object_add(my_object, "vlan_id", json_object_new_int(vlan_id));
-  if(latitude)            json_object_object_add(my_object, "latitude", json_object_new_double(latitude));
+  if(country)             json_object_object_add(my_object, "country",   json_object_new_string(country));
+  if(city)                json_object_object_add(my_object, "city",      json_object_new_string(city));
+  if(asname)              json_object_object_add(my_object, "asname",    json_object_new_string(asname));
+  if(category[0] != '\0') json_object_object_add(my_object, "category",  json_object_new_string(category));
+  if(vlan_id != 0)        json_object_object_add(my_object, "vlan_id",   json_object_new_int(vlan_id));
+  if(latitude)            json_object_object_add(my_object, "latitude",  json_object_new_double(latitude));
   if(longitude)           json_object_object_add(my_object, "longitude", json_object_new_double(longitude));
   if(ip)                  json_object_object_add(my_object, "ip", o[n++] = ip->getJSONObject());
   json_object_object_add(my_object, "localHost", json_object_new_boolean(localHost));
@@ -453,7 +453,7 @@ char* Host::serialize() {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  for(int i=0; i<n; i++) json_object_put(o[i]);
+  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
 
   return(rsp);
 }
@@ -469,11 +469,11 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "asn", &obj)) asn = json_object_get_int(obj);
 
   if(json_object_object_get_ex(o, "symbolic_name", &obj))  { if(symbolic_name) free(symbolic_name); symbolic_name = strdup(json_object_get_string(obj)); }
-  if(json_object_object_get_ex(o, "country", &obj))  { if(country) free(country); country = strdup(json_object_get_string(obj)); }
-  if(json_object_object_get_ex(o, "city", &obj))  { if(city) free(city); city = strdup(json_object_get_string(obj)); }
-  if(json_object_object_get_ex(o, "asname", &obj))  { if(asname) free(asname); asname = strdup(json_object_get_string(obj)); }
-  if(json_object_object_get_ex(o, "category", &obj))  { snprintf(category, sizeof(category), "%s", json_object_get_string(obj)); }
-  if(json_object_object_get_ex(o, "vlan_id", &obj))  vlan_id = json_object_get_int(obj);
+  if(json_object_object_get_ex(o, "country", &obj))        { if(country) free(country); country = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "city", &obj))           { if(city) free(city); city = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "asname", &obj))         { if(asname) free(asname); asname = strdup(json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "category", &obj))       { snprintf(category, sizeof(category), "%s", json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "vlan_id", &obj))   vlan_id = json_object_get_int(obj);
   if(json_object_object_get_ex(o, "latitude", &obj))  latitude  = json_object_get_double(obj);
   if(json_object_object_get_ex(o, "longitude", &obj)) longitude = json_object_get_double(obj);
   if(json_object_object_get_ex(o, "ip", &obj))  { if(ip == NULL) ip = new IpAddress(); if(ip) ip->deserialize(obj); }

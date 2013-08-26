@@ -78,16 +78,21 @@ void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
 
   for(int i=0; i<MAX_NDPI_PROTOS; i++)
     if(counters[i] != NULL) {
-      if(counters[i]->packets.sent || counters[i]->packets.rcvd) {
-	lua_newtable(vm);
-	lua_push_int_table_entry(vm, "packets.sent", counters[i]->packets.sent);
-	lua_push_int_table_entry(vm, "packets.rcvd", counters[i]->packets.rcvd);
-	lua_push_int_table_entry(vm, "bytes.sent", counters[i]->bytes.sent);
-	lua_push_int_table_entry(vm, "bytes.rcvd", counters[i]->bytes.rcvd);
-
-	lua_pushstring(vm, iface->get_ndpi_proto_name(i)); // Index
-	lua_insert(vm, -2);
-	lua_settable(vm, -3);
+      char *name = iface->get_ndpi_proto_name(i);
+      
+      if(name != NULL) {
+	if(counters[i]->packets.sent || counters[i]->packets.rcvd) {
+	  lua_newtable(vm);
+	  
+	  lua_push_int_table_entry(vm, "packets.sent", counters[i]->packets.sent);
+	  lua_push_int_table_entry(vm, "packets.rcvd", counters[i]->packets.rcvd);
+	  lua_push_int_table_entry(vm, "bytes.sent", counters[i]->bytes.sent);
+	  lua_push_int_table_entry(vm, "bytes.rcvd", counters[i]->bytes.rcvd);
+	  
+	  lua_pushstring(vm, name);
+	  lua_insert(vm, -2);
+	  lua_settable(vm, -3);
+	}
       }
     }
 
@@ -118,7 +123,7 @@ void NdpiStats::incStats(u_int proto_id,
 
 char* NdpiStats::serialize(NetworkInterface *iface) {
   char *rsp, *unknown = iface->get_ndpi_proto_name(NDPI_PROTOCOL_UNKNOWN);
-  json_object *my_object, *o[MAX_NDPI_PROTOS];
+  json_object *my_object, *o[3*MAX_NDPI_PROTOS+1];
   int n = 0;
   
   o[n++] = (my_object = json_object_new_object());
@@ -152,7 +157,7 @@ char* NdpiStats::serialize(NetworkInterface *iface) {
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  for(int i=0; i<n; i++) json_object_put(o[i]);
+  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
 
   return(rsp);
 }
