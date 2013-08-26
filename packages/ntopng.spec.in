@@ -66,6 +66,8 @@ rm -fr $RPM_BUILD_ROOT
 /etc/init/ntopng.conf
 /etc/init.d/ntopng
 /usr/local/share/ntopng
+/etc/ntopng/ntopng.conf
+/etc/ntopng/ntopng.start
 
 # Set the default attributes of all of the files specified to have an
 # owner and group of root and to inherit the permissions of the file
