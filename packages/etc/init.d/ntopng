@@ -73,6 +73,26 @@ stop_ntopng() {
     return 0
 }
 
+status_ntopng() {
+    if [ ! -d "/etc/ntopng" ]; then
+	echo "Configuration directory /etc/ntopng does not exist: quitting..."
+	return 0
+    fi
+
+    PID_FILE=$(cat /etc/ntopng/ntopng.conf | grep '\-G='|cut -d '=' -f 2)
+    if [ -f $PID_FILE ]; then
+	PID=$(cat $PID_FILE)
+	if [ $PID -gt 0 ]; then
+	    echo "ntopng running as ${PID}"
+	else
+	    echo "No running ntopng pid [$PID] in [$PID_FILE]"
+	fi
+    fi
+    
+    return 0
+}
+
+
 ########
 
 logger "ntopng $1"
@@ -94,6 +114,10 @@ case "$1" in
        	stop_ntopng;
 	;;
 
+  status)
+	status_ntopng;
+	;;
+
   restart)
         stop_ntopng;
 	sleep 5
@@ -101,7 +125,7 @@ case "$1" in
 	;;
 
   *)
-	echo "Usage: /etc/init.d/ntopng {start|force-start|stop|restart}]"
+	echo "Usage: /etc/init.d/ntopng {start|force-start|stop|restart|status}]"
 	exit 1
 esac
 
