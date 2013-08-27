@@ -17,7 +17,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 
-max_num = 50
+max_num = 25
 localhosts = {}
 found = false
 num = 0
@@ -89,12 +89,14 @@ for k,v in pairs(localhosts) do sortTable[v]=k end
 
 num = 0
 for _v,k in pairsByKeys(sortTable, rev) do key = k   
-   print('var host'..num..' = fetchData("' .. key ..'");\n');
-   num = num+1
-   if(num == max_num) then break end
+   if(num < max_num) then
+      print('var host'..num..' = fetchData("' .. key ..'");\n');
+      num = num+1
+   end
 end
 
 print [[
+
 d3.select("#tophosts").call(function(div) {
     div.append("div")
       .attr("class", "axis")
@@ -104,13 +106,12 @@ d3.select("#tophosts").call(function(div) {
 ]]
 
 num = 0
-
-
 for value,key in pairs(localhosts) do
+   if(num < max_num) then
    if(num > 0) then print(",") end
    print(' host'..num)
    num = num+1
-   if(num == max_num) then break end
+   end
 end
 
 print [[
