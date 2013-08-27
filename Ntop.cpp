@@ -106,14 +106,16 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
     exit(-1);
   }
 
-  setLocalNetworks(prefs->get_local_networks());
-
-  /* Add defaults */
-  /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
-  snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS, CONST_DEFAULT_LOCAL_NETS);
-  local_nets = strdup(buf);
-  setLocalNetworks(local_nets);
-  free(local_nets);
+  if(prefs->get_local_networks())
+    setLocalNetworks(prefs->get_local_networks());
+  else {
+    /* Add defaults */
+    /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
+    snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS, CONST_DEFAULT_LOCAL_NETS);
+    local_nets = strdup(buf);
+    setLocalNetworks(local_nets);
+    free(local_nets);
+  }
 
   memset(iface, 0, sizeof(iface));
 }
