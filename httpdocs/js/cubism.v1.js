@@ -1,7 +1,8 @@
 (function(exports){
 var cubism = exports.cubism = {version: "1.2.0"};
 var cubism_id = 0;
-function cubism_identity(d) { return d; }
+    function cubism_title(d) { return("&nbsp;<A HREF=\"/lua/host_details.lua?host="+d+"\">"+d+"</A>"); }
+    function cubism_identity(d) { return(d); }
 cubism.option = function(name, defaultValue) {
   var values = cubism.options(name);
   return values.length ? values[0] : defaultValue;
@@ -320,7 +321,7 @@ cubism_contextPrototype.metric = function(request, name) {
     var start0 = new Date(stop - steps * step);
     request(start0, stop, step, function(error, data) {
       fetching = false;
-      if (error) return console.warn(error);
+	if (error) return console.warn(error);
       var i = isFinite(start) ? Math.round((start0 - start) / step) : 0;
       for (var j = 0, m = data.length; j < m; ++j) values[j + i] = data[j];
       event.change.call(metric, start, stop);
@@ -463,7 +464,7 @@ cubism_contextPrototype.horizon = function() {
       scale = d3.scale.linear().interpolate(d3.interpolateRound),
       metric = cubism_identity,
       extent = null,
-      title = cubism_identity,
+      title = cubism_title,
       format = d3.format(".2s"),
       colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
 
@@ -479,10 +480,10 @@ cubism_contextPrototype.horizon = function() {
 
     selection.append("span")
         .attr("class", "title")
-        .text(title);
+        .html(title);
 
-    selection.append("span")
-        .attr("class", "value");
+    // Hide value
+    // selection.append("span") .attr("class", "value");
 
     selection.each(function(d, i) {
       var that = this,

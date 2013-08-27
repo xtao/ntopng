@@ -57,6 +57,7 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
+	 <li><a href="/lua/top_hosts.lua"><i class="icon-signal"></i> Top Hosts (Local)</a></li>
    ]]
 
 if(interface.getNumAggregatedHosts() > 0) then

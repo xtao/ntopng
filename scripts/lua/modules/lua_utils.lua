@@ -69,6 +69,8 @@ function shortHostName(name)
 	 return(token)
       end
    end
+
+   return(name)
 end
 
 
