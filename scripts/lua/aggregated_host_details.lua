@@ -92,6 +92,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
+      if(name["name"] == nil) then name["name"] = ntop.getResolvedAddress(name["ip"]) end
       url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
    else
       url = k
@@ -121,6 +122,7 @@ setInterval(function() {
 		    type: 'GET',
 		    url: '/lua/get_aggregated_host_info.lua',
 		    data: { ifname: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
+		    error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); },
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
@@ -136,8 +138,6 @@ setInterval(function() {
 			for (var i = 0; i < rsp.contacts.length; i++) {
 			   var key = '#'+rsp.contacts[i].key.replace(/\./g, '_');
 			   $(key).html(addCommas(rsp.contacts[i].value));
-			   $("#192.165.67.166").html('9');
-
 			}
 		     }
 	           });

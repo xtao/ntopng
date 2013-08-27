@@ -17,7 +17,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 
-max_num = 15
+max_num = 50
 localhosts = {}
 found = false
 num = 0
@@ -25,7 +25,7 @@ for key, value in pairs(hosts_stats) do
    --print(hosts_stats[key]["name"].."<p>\n")
 
    if(hosts_stats[key]["localhost"] == true) then
-      localhosts[key] = hosts_stats[key]
+      localhosts[key] = hosts_stats[key]["pkts.sent"]+hosts_stats[key]["pkts.rcvd"]
       found = true
       num = num + 1
    end
@@ -36,7 +36,7 @@ if(found) then
 print [[
 
 <hr>
-<h2>Top Hosts</H2>
+<h2>Top Hosts (Local)</H2>
 
 <script src="/js/cubism.v1.js"></script>
 <div id="tophosts"></div>
@@ -78,14 +78,17 @@ var width = 800;
 var context = cubism.context()
 .serverDelay(0)
 .clientDelay(0) // specifies how long a delay we are prepared to wait before querying the server for new data points
-.step(1e3)
+.step(3000)
 .size(width);
 
 
 ]]
 
+sortTable = {}
+for k,v in pairs(localhosts) do sortTable[v]=k end
+
 num = 0
-for key, value in pairs(localhosts) do
+for _v,k in pairsByKeys(sortTable, rev) do key = k   
    print('var host'..num..' = fetchData("' .. key ..'");\n');
    num = num+1
    if(num == max_num) then break end
@@ -101,7 +104,9 @@ d3.select("#tophosts").call(function(div) {
 ]]
 
 num = 0
-for key, value in pairs(localhosts) do
+
+
+for value,key in pairs(localhosts) do
    if(num > 0) then print(",") end
    print(' host'..num)
    num = num+1
