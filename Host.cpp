@@ -119,7 +119,11 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	// else ntop->getRedis()->queueHostToResolve(host, false, localHost);
       }
 
+      if(asname) { free(asname); asname = NULL; }
       ntop->getGeolocation()->getAS(ip, &asn, &asname);
+
+      if(country) { free(country); country = NULL; }
+      if(city)    { free(city); city = NULL; }
       ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);      
     } else {
       char buf[32];
@@ -309,13 +313,18 @@ char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_foun
     rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), 
 				      force_resolution_if_not_found);
 
-    if(rc == 0) {
+    if(rc == 0)
       setName(redis_buf, false);
-      return(symbolic_name);
-    } else {
-      symbolic_name = strdup(addr);
-      return(addr);
+    else {
+      if(symbolic_name != NULL) { 
+	free(symbolic_name); 
+	symbolic_name = NULL; 
+      }
+
+      symbolic_name = strdup(addr);    
     }
+
+    return(symbolic_name);
   }
 }
 

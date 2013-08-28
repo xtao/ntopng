@@ -140,6 +140,7 @@ Ntop::~Ntop() {
   delete geo;
   delete redis;
   delete globals;
+  delete prefs;
 }
 
 /* ******************************************* */

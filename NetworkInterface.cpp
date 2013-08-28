@@ -139,6 +139,7 @@ void NetworkInterface::deleteDataStructures() {
 /* **************************************************** */
 
 NetworkInterface::~NetworkInterface() {
+  deleteDataStructures();
 }
 
 /* **************************************************** */
