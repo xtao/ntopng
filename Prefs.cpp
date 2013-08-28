@@ -197,6 +197,8 @@ static const struct option long_options[] = {
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
+  { "max-num-flows",                     required_argument, NULL, 'X' },
+  { "max-num-hosts",                     required_argument, NULL, 'x' },
   { "user",                              required_argument, NULL, 'U' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
@@ -440,13 +442,13 @@ int Prefs::loadFromFile(const char *path) {
       value[0] = 0, value = &value[1];
     value = Utils::trim(value);
 
-    if (strlen(key) > 2) key = &key[2];
+    if(strlen(key) > 2) key = &key[2];
     else key = &key[1];
 
     opt = long_options;
     while (opt->name != NULL) {
-      if (strcmp(opt->name, key) == 0 ||
-          (strlen(key) == 1 && opt->val == key[0])) {
+      if((strcmp(opt->name, key) == 0)
+	  || ((key[1] == '\0') && (opt->val == key[0]))) {
         setOption(opt->val, value);
         break;
       }
@@ -466,7 +468,7 @@ int Prefs::save() {
 
   saveUsersToFile();
 
-  if (config_file_path == NULL)
+  if(config_file_path == NULL)
     return(-1);
 
   fd = fopen(config_file_path, "w");
@@ -513,7 +515,7 @@ int Prefs::loadUsersFromFile() {
   FILE *fd;
   int i;
 
-  if (users_file_path == NULL)
+  if(users_file_path == NULL)
     return(-1);
 
   snprintf(path, sizeof(path), "%s/%s", ntop->get_working_dir(), users_file_path);
@@ -548,7 +550,7 @@ int Prefs::loadUsersFromFile() {
     value = Utils::trim(value);
 
     /* inserting all users info into redis */
-    if (strncmp(key, "user.", 5) == 0) {
+    if(strncmp(key, "user.", 5) == 0) {
       if(ntop->getRedis()->set(key, value, 0) < 0)
         ntop->getTrace()->traceEvent(TRACE_WARNING, "Error setting '%s' = '%s'", key, value);
     }
@@ -567,7 +569,7 @@ int Prefs::saveUsersToFile() {
   int rc, i;
   FILE *fd;
 
-  if (users_file_path == NULL)
+  if(users_file_path == NULL)
     return(-1);
 
   snprintf(path, sizeof(path), "%s/%s", data_dir, users_file_path);
@@ -583,7 +585,7 @@ int Prefs::saveUsersToFile() {
   /* wrinting users */
   if((rc = ntop->getRedis()->keys("user.*", &keys)) > 0) {
     for (i = 0; i < rc; i++) {
-      if (keys[i] == NULL) continue; /* safety check */
+      if(keys[i] == NULL) continue; /* safety check */
 
       if(ntop->getRedis()->get(keys[i], val, sizeof(val)) >= 0)
         fprintf(fd, "%s=%s\n", keys[i], val);
