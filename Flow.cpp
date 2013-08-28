@@ -136,7 +136,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
 	    host->updateSeen();
 
-	    host->incrContact(cli_host->get_ip(), true);
+	    if(cli_host) host->incrContact(cli_host->get_ip(), true);
 	  }
 	}
 	break;
@@ -164,7 +164,9 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
       } /* switch */
       detection_completed = true;
-    } else if((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS) {
+    } else if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+	      && (cli_host != NULL)
+	      && (srv_host != NULL)) {
       detection_completed = true; /* We give up */
 
       /* We can guess the protocol */
@@ -190,6 +192,8 @@ void Flow::setJSONInfo(char *json) {
 
 int Flow::compare(Flow *fb) {
   int c;
+
+  if((cli_host == NULL) || (srv_host == NULL)) return(-1);
 
   if(vlanId < fb->vlanId) return(-1); else { if(vlanId > fb->vlanId) return(1); }
   c = cli_host->compare(fb->get_cli_host()); if(c < 0) return(-1); else { if(c > 0) return(1); }
@@ -328,7 +332,6 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
 
-
   lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
   lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
   lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
@@ -365,6 +368,8 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
 void Flow::print() {
   char buf1[32], buf2[32];
+
+  if((cli_host == NULL) || (srv_host == NULL)) return;
 
   printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
 	 ipProto2Name(protocol),
@@ -627,6 +632,8 @@ char* Flow::serialize() {
 
 void Flow::incStats(bool cli2srv_direction, u_int pkt_len) {
   updateSeen();
+
+  if((cli_host == NULL) || (srv_host == NULL)) return;
 
   if(cli2srv_direction) {
     cli2srv_packets++, cli2srv_bytes += pkt_len;
