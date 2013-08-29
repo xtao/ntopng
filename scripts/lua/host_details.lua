@@ -196,7 +196,7 @@ if((page == "overview") or (page == nil)) then
    if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
    if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>"..host["asn"].." [ " .. host.asname .. " ] </td></tr>\n") end
 
-   if(host["category"] ~= "") then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
+   if((host["category"] ~= nil) and (host["category"] ~= "")) then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
 
    if(host["ip"] ~= nil) then
       if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end

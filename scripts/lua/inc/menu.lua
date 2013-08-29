@@ -146,6 +146,8 @@ print [[
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="icon-user"></i> Manage Users</a></li>
       <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
+      <li class="divider"></li>
+      <li><a href="/lua/export_data.lua"><i class="icon-share"></i> Export Data</a></li>
 
 ]]
 
@@ -164,8 +166,5 @@ print [[
         <h3 class="muted"><A href=http://www.ntop.org><img src="/img/logo.png"></A></h3>
       </div>
 
-<script>
-$(document).ready(function () { $("a").tooltip({ 'selector': '', 'placement': 'bottom'  });});
-</script>
-   ]]
+]]
 

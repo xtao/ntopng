@@ -202,15 +202,16 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     }
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
-    lua_push_int_table_entry(vm, "asn", asn);
-    lua_push_str_table_entry(vm, "asname", asname);
 
+    lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
+    lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)""); 
+    
     if(verbose) {
       lua_push_float_table_entry(vm, "latitude", latitude);
       lua_push_float_table_entry(vm, "longitude", longitude);
       lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
     }
-
+    
     lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
 
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
@@ -218,30 +219,34 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
     lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
 
-    lua_push_int_table_entry(vm, "udp.pkts.sent",  udp_sent.getNumPkts());
-    lua_push_int_table_entry(vm, "udp.bytes.sent", udp_sent.getNumBytes());
-    lua_push_int_table_entry(vm, "udp.pkts.rcvd",  udp_rcvd.getNumPkts());
-    lua_push_int_table_entry(vm, "udp.bytes.rcvd", udp_rcvd.getNumBytes());
+    if(ip) {
+      lua_push_int_table_entry(vm, "udp.pkts.sent",  udp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "udp.bytes.sent", udp_sent.getNumBytes());
+      lua_push_int_table_entry(vm, "udp.pkts.rcvd",  udp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "udp.bytes.rcvd", udp_rcvd.getNumBytes());
 
-    lua_push_int_table_entry(vm, "tcp.pkts.sent",  tcp_sent.getNumPkts());
-    lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
-    lua_push_int_table_entry(vm, "tcp.pkts.rcvd",  tcp_rcvd.getNumPkts());
-    lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());
+      lua_push_int_table_entry(vm, "tcp.pkts.sent",  tcp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
+      lua_push_int_table_entry(vm, "tcp.pkts.rcvd",  tcp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());
  
-    lua_push_int_table_entry(vm, "icmp.pkts.sent",  icmp_sent.getNumPkts());
-    lua_push_int_table_entry(vm, "icmp.bytes.sent", icmp_sent.getNumBytes());
-    lua_push_int_table_entry(vm, "icmp.pkts.rcvd",  icmp_rcvd.getNumPkts());
-    lua_push_int_table_entry(vm, "icmp.bytes.rcvd", icmp_rcvd.getNumBytes());
+      lua_push_int_table_entry(vm, "icmp.pkts.sent",  icmp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "icmp.bytes.sent", icmp_sent.getNumBytes());
+      lua_push_int_table_entry(vm, "icmp.pkts.rcvd",  icmp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "icmp.bytes.rcvd", icmp_rcvd.getNumBytes());
 
-    lua_push_int_table_entry(vm, "other_ip.pkts.sent",  other_ip_sent.getNumPkts());
-    lua_push_int_table_entry(vm, "other_ip.bytes.sent", other_ip_sent.getNumBytes());
-    lua_push_int_table_entry(vm, "other_ip.pkts.rcvd",  other_ip_rcvd.getNumPkts());
-    lua_push_int_table_entry(vm, "other_ip.bytes.rcvd", other_ip_rcvd.getNumBytes());
+      lua_push_int_table_entry(vm, "other_ip.pkts.sent",  other_ip_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "other_ip.bytes.sent", other_ip_sent.getNumBytes());
+      lua_push_int_table_entry(vm, "other_ip.pkts.rcvd",  other_ip_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "other_ip.bytes.rcvd", other_ip_rcvd.getNumBytes());
+    }
 
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
-    lua_push_str_table_entry(vm, "category", get_category());
+
+
+    if(ip) lua_push_str_table_entry(vm, "category", get_category());
 
     if(verbose) {
       char *rsp = serialize();

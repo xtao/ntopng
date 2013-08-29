@@ -176,7 +176,33 @@ setInterval(function() {
 
 					   pps = packets_diff / epoch_diff;
 
-					   $('#network-load').html(""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]["+addCommas(rsp.num_hosts)+" hosts]["+addCommas(rsp.num_flows)+" flows][uptime "+rsp.uptime+"]");
+					   msg = ""+bytesToSize((bytes_diff*8)/epoch_diff)+" [" + addCommas(pps) + " pps]<br>";
+					   msg += "<i class=\"icon-time\"></i> Uptime: "+rsp.uptime+"<br>";
+
+					   var alarm_threshold_low = 60;  /* 60% */
+					   var alarm_threshold_high = 90; /* 90% */
+
+					   if(rsp.hosts_pctg < alarm_threshold_low) {
+					      msg += "<span class=\"label\">";
+					   } else if(rsp.hosts_pctg < alarm_threshold_high) {
+					      msg += "<span class=\"label label-warning\">";
+					   } else {
+					      msg += "<span class=\"label label-important\">";
+					   }
+
+					   msg += addCommas(rsp.num_hosts)+" hosts</span> ";
+
+					   if(rsp.flows_pctg < alarm_threshold_low) {
+					      msg += "<span class=\"label\">";
+					   } else if(rsp.flows_pctg < alarm_threshold_high) {
+					      msg += "<span class=\"label label-warning\">";
+					   } else {
+					      msg += "<span class=\"label label-important\">";
+					   }
+
+					   msg += addCommas(rsp.num_flows)+" flows ";
+					   
+					   $('#network-load').html(msg);
    					} else {
 					/* $('#network-load').html("[No traffic (yet)]"); */
 					 }
@@ -186,6 +212,8 @@ setInterval(function() {
 					}
 				     });
 			 }, 1000)
+
+$(document).ready(function () { $("a").tooltip({ 'selector': '', 'placement': 'bottom'  });});
 
 </script>
 

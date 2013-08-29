@@ -86,25 +86,31 @@ for key, value in pairs(hosts_stats) do
 	 for id, _ in ipairs(l4_keys) do
 	    k = l4_keys[id][2]
 
-	    if(verbose == 1) then print("\t"..k.."\n") end
-
-	    name = basedir .. "/".. k .. ".rrd"
-	    if(not(ntop.exists(name))) then
-	       if(verbose == 1) then io.write('Creating RRD ', name, '\n') end
-	       ntop.rrd_create(
-		  name,
-		  '--start', 'now',
-		  '--step', '300',
-		  'DS:sent:DERIVE:600:U:U',
-		  'DS:rcvd:DERIVE:600:U:U',
-		  'RRA:AVERAGE:0.5:1:50400',  -- raw: 7 days = 7 * 24 = 168 * 300 sec = 50400
-		  'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
-		  'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
-		  'RRA:HWPREDICT:1440:0.1:0.0035:20')
+	    if((host[k..".bytes.sent"] ~= nil) and (host[k..".bytes.rcvd"] ~= nil)) then
+	       if(verbose == 1) then print("\t"..k.."\n") end
+	       
+	       name = basedir .. "/".. k .. ".rrd"
+	       if(not(ntop.exists(name))) then
+		  if(verbose == 1) then io.write('Creating RRD ', name, '\n') end
+		  ntop.rrd_create(
+		     name,
+		     '--start', 'now',
+		     '--step', '300',
+		     'DS:sent:DERIVE:600:U:U',
+		     'DS:rcvd:DERIVE:600:U:U',
+		     'RRA:AVERAGE:0.5:1:50400',  -- raw: 7 days = 7 * 24 = 168 * 300 sec = 50400
+		     'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
+		     'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
+		     'RRA:HWPREDICT:1440:0.1:0.0035:20')
+	       end
+	       	       
+	       -- io.write(name.."="..host[k..".bytes.sent"].."|".. host[k..".bytes.rcvd"] .. "\n")
+	       ntop.rrd_update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
+	       if(verbose == 1) then io.write('Updating RRD '..name..'\n') end
+	    else
+	       -- L2 host
+	       --io.write("Discarding "..k.."@"..key.."\n")
 	    end
-
-	    ntop.rrd_update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
-	    if(verbose == 1) then io.write('Updating RRD '..name..'\n') end
 	 end
       end
 
