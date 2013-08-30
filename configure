@@ -620,6 +620,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+SVN_WC_DB
 SVN_DATE
 GMAKE
 SQLITE_LIB
@@ -2967,6 +2968,11 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 PACKAGE_VERSION="${NTOPNG_VERS}_${SVN_RELEASE}"
+
+if test -f ".svn/wc.db"; then
+   SVN_WC_DB=".svn/wc.db"
+fi
+
 MACHINE=`uname -m`
 SYSTEM=`uname -s`
 
@@ -3757,6 +3763,7 @@ _ACEOF
 cat >>confdefs.h <<_ACEOF
 #define PACKAGE_MACHINE "$MACHINE"
 _ACEOF
+
 
 
 

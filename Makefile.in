@@ -142,3 +142,9 @@ install: ntopng geoip
 	cp -r ./scripts /usr/local/share/ntopng
 	find /usr/local/share/ntopng -name "*~"   | xargs /bin/rm -f
 	find /usr/local/share/ntopng -name ".svn" | xargs /bin/rm -rf
+
+Makefile: @SVN_WC_DB@
+	@echo ""
+	@echo "Re-running configure as the SVN release has changed"
+	@echo ""
+	./configure
