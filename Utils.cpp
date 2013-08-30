@@ -94,7 +94,7 @@ char* Utils::l4proto2name(u_int8_t proto) {
 bool Utils::isIPAddress(char *ip) {
   struct in_addr addr4;
   struct in6_addr addr6;
-  
+
   if(strchr(ip, ':') != NULL) { /* IPv6 */
     if(inet_pton(AF_INET6, ip, &addr6) == 1)
       return(true);
@@ -141,10 +141,10 @@ char *Utils::trim(char *s) {
 
 u_int32_t Utils::hashString(char *key) {
   u_int32_t hash = 0, len = strlen(key);
-  
+
   for(u_int32_t i=0; i<len; i++)
     hash += ((u_int32_t)key[i])*i;
-  
+
   return(hash);
 }
 
@@ -187,10 +187,6 @@ bool Utils::mkdir_tree(char *path) {
 
 const char* Utils::trend2str(ValueTrend t) {
   switch(t) {
-  case trend_unknown:
-    return("Unknown");
-    break;
-
   case trend_up:
     return("Up");
     break;
@@ -201,6 +197,11 @@ const char* Utils::trend2str(ValueTrend t) {
 
   case trend_stable:
     return("Stable");
+    break;
+
+  default:
+  case trend_unknown:
+    return("Unknown");
     break;
   }
 }
