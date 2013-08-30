@@ -127,13 +127,20 @@ NetworkInterface::NetworkInterface(const char *name) {
 /* **************************************************** */
 
 void NetworkInterface::deleteDataStructures() {
-  delete flows_hash;
-  delete hosts_hash;
-  delete strings_hash;
+  if(flows_hash) { delete flows_hash; flows_hash = NULL; }
+  if(hosts_hash) { delete hosts_hash; hosts_hash = NULL; }
+  if(strings_hash) { delete strings_hash; strings_hash = NULL; }
 
-  ndpi_exit_detection_module(ndpi_struct, free_wrapper);
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
-  free(ifname);
+  if(ndpi_struct) {
+    ndpi_exit_detection_module(ndpi_struct, free_wrapper);
+    ndpi_struct = NULL;
+  }
+
+  if(ifname) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
+    free(ifname);
+    ifname = NULL;
+  }
 }
 
 /* **************************************************** */
@@ -205,7 +212,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 
   /* Updating Flow */
 
-  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port, 
+  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port,
 		 l4_proto, &src2dst_direction, first_switched, last_switched);
 
   if(flow == NULL) return;
@@ -311,7 +318,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 #endif
 
   /* Updating Flow */
-  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port, 
+  flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port,
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) {
@@ -336,7 +343,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
-							    ip, ipsize, (u_int32_t)time, 
+							    ip, ipsize, (u_int32_t)time,
 							    cli, srv),
 			      l4_proto);
   } else {
@@ -355,11 +362,11 @@ void NetworkInterface::purgeIdle(time_t when) {
   if((n = purgeIdleFlows()) > 0)
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
 				 n, getNumFlows());
-  
+
   if((n = purgeIdleHosts()) > 0)
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
 				 n, getNumHosts());
-  
+
   if((n = purgeIdleAggregatedHosts()) > 0)
     ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
 				 n, getNumHosts());
@@ -385,7 +392,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
   if(pcap_datalink_type == DLT_NULL) {
     memcpy(&null_type, packet, sizeof(u_int32_t));
-    
+
     switch(null_type) {
     case BSD_AF_INET:
       eth_type = ETHERTYPE_IP;
@@ -402,7 +409,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
     memset(&dummy_ethernet, 0, sizeof(dummy_ethernet));
     ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
-    ip_offset = 4;    
+    ip_offset = 4;
   } else if(pcap_datalink_type == DLT_EN10MB) {
     ethernet = (struct ndpi_ethhdr *) packet;
     ip_offset = sizeof(struct ndpi_ethhdr);
@@ -440,7 +447,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       } else
 	frag_off = ntohs(iph->frag_off);
 
-      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP) 
+      if(ntop->getGlobals()->decode_tunnels() && (iph->protocol == IPPROTO_UDP)
 	 && ((frag_off & 0x3FFF /* IP_MF | IP_OFFSET */ ) == 0)) {
 	u_short ip_len = ((u_short)iph->ihl * 4);
 	struct ndpi_udphdr *udp = (struct ndpi_udphdr *)&packet[ip_offset+ip_len];
@@ -677,7 +684,7 @@ bool NetworkInterface::restoreHost(char *host_ip) {
     delete h;
     return(false);
   }
-  
+
   return(true);
 }
 
@@ -723,7 +730,7 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
 
   memset(&info, 0, sizeof(info));
   info.host_to_find = host_name;
-  strings_hash->walk(find_aggregated_host_by_name, (void*)&info);  
+  strings_hash->walk(find_aggregated_host_by_name, (void*)&info);
 
   if(info.s != NULL) {
     lua_newtable(vm);

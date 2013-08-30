@@ -37,7 +37,7 @@ Host::Host(NetworkInterface *_iface, char *ipAddress) : GenericHost(_iface) {
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], 
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 	   u_int16_t _vlanId, IpAddress *_ip) : GenericHost(_iface) {
   ip = new IpAddress(_ip);
   initialize(mac, _vlanId, true);
@@ -45,7 +45,7 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 
 /* *************************************** */
 
-Host::Host(NetworkInterface *_iface, u_int8_t mac[6], 
+Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 	   u_int16_t _vlanId) : GenericHost(_iface) {
   ip = NULL;
   initialize(mac, _vlanId, true);
@@ -57,12 +57,12 @@ Host::~Host() {
   char key[128], *k;
 
   k = get_string_key(key, sizeof(key));
-  
-  if(localHost) {  
+
+  if(localHost) {
     if(ip != NULL) {
       snprintf(key, sizeof(key), "%s.client", k);
       ntop->getRedis()->del(key);
-      
+
       snprintf(key, sizeof(key), "%s.server", k);
       ntop->getRedis()->del(key);
     }
@@ -108,16 +108,18 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
     deserialize(json);
   }
-  
+
   if(init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
-      
+
       updateLocal();
 
       if(localHost || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
-	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0)
+	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0) {
+	  if(symbolic_name) free(symbolic_name);
 	  symbolic_name = strdup(rsp);
+	}
 	// else ntop->getRedis()->queueHostToResolve(host, false, localHost);
       }
 
@@ -126,14 +128,15 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
       if(country) { free(country); country = NULL; }
       if(city)    { free(city); city = NULL; }
-      ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);      
+      ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
     } else {
       char buf[32];
 
       snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
-	       mac_address[0], mac_address[1], mac_address[2], 
+	       mac_address[0], mac_address[1], mac_address[2],
 	       mac_address[3], mac_address[4], mac_address[5]);
-      
+
+      if(symbolic_name) free(symbolic_name);
       symbolic_name = strdup(buf);
       localHost = true;
     }
@@ -144,11 +147,11 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
 void Host::updateLocal() {
   localHost = ip->isLocalHost();
-  
+
   if(0) {
     char buf[64];
-    
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s", 
+
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s is %s",
 				 ip->print(buf, sizeof(buf)), localHost ? "local" : "remote");
   }
 }
@@ -172,7 +175,7 @@ void Host::set_mac(char *m) {
 
   sscanf(m, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
          &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
-  
+
   memcpy(mac_address, mac, 6);
 }
 
@@ -206,14 +209,14 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
 
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
-    lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)""); 
-    
+    lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
+
     if(verbose) {
       lua_push_float_table_entry(vm, "latitude", latitude);
       lua_push_float_table_entry(vm, "longitude", longitude);
       lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
     }
-    
+
     lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
 
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
@@ -231,7 +234,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
       lua_push_int_table_entry(vm, "tcp.pkts.rcvd",  tcp_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());
- 
+
       lua_push_int_table_entry(vm, "icmp.pkts.sent",  icmp_sent.getNumPkts());
       lua_push_int_table_entry(vm, "icmp.bytes.sent", icmp_sent.getNumBytes());
       lua_push_int_table_entry(vm, "icmp.pkts.rcvd",  icmp_rcvd.getNumPkts());
@@ -254,7 +257,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     if(verbose) {
       char *rsp = serialize();
 
-      if(ndpiStats) ndpiStats->lua(iface, vm);    
+      if(ndpiStats) ndpiStats->lua(iface, vm);
       getHostContacts(vm);
       lua_push_str_table_entry(vm, "json", rsp);
       free(rsp);
@@ -262,7 +265,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       sent_stats.lua(vm, "pktStats.sent");
       recv_stats.lua(vm, "pktStats.recv");
     }
-    
+
     if(!returnHost) {
       lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
       lua_insert(vm, -2);
@@ -286,13 +289,14 @@ void Host::setName(char *name, bool update_categorization) {
 
   m->lock(__FILE__, __LINE__);
   if((symbolic_name == NULL) || (symbolic_name && strcmp(symbolic_name, name))) {
+    if(symbolic_name) free(symbolic_name);
     symbolic_name = strdup(name);
     to_categorize = true;
   }
   m->unlock(__FILE__, __LINE__);
 
   if(to_categorize && ntop->get_categorization())
-    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), 
+    ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category),
 					     update_categorization);
 }
 
@@ -314,22 +318,19 @@ char* Host::get_name(char *buf, u_int buf_len, bool force_resolution_if_not_foun
     int rc;
 
     addr = ip->print(buf, buf_len);
-    
+
     if((symbolic_name != NULL) && strcmp(symbolic_name, addr))
       return(symbolic_name);
 
-    rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf), 
+    rc = ntop->getRedis()->getAddress(addr, redis_buf, sizeof(redis_buf),
 				      force_resolution_if_not_found);
 
     if(rc == 0)
       setName(redis_buf, false);
     else {
-      if(symbolic_name != NULL) { 
-	free(symbolic_name); 
-	symbolic_name = NULL; 
-      }
+      if(symbolic_name != NULL) free(symbolic_name);
 
-      symbolic_name = strdup(addr);    
+      symbolic_name = strdup(addr);
     }
 
     return(symbolic_name);
@@ -348,27 +349,27 @@ int Host::compare(Host *h) {
 /* ***************************************** */
 
 bool Host::isIdle(u_int max_idleness) {
-  return(((num_uses == 0) 
-	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness))) 
+  return(((num_uses == 0)
+	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness)))
 	 ? true : false);
 }
 
 /* ***************************************** */
 
 bool Host::idle() {
-  return(isIdle(ntop->getPrefs()->get_host_max_idle())); 
+  return(isIdle(ntop->getPrefs()->get_host_max_idle()));
 };
 
 /* ***************************************** */
 
-u_int32_t Host::key() { 
+u_int32_t Host::key() {
   if(ip)
-    return(ip->key());    
+    return(ip->key());
   else {
     u_int32_t hash = 0;
-    
+
     for(int i=0; i<6; i++) hash += mac_address[i] << (i+1);
-    
+
     return(hash);
   }
 }
@@ -377,7 +378,7 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(_peer->get_ip() != NULL)
-    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);  
+    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);
 }
 
 /* *************************************** */
@@ -391,7 +392,7 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
 
 
-    if(sent_packets == 1) sent_stats.incStats(sent_bytes);    
+    if(sent_packets == 1) sent_stats.incStats(sent_bytes);
     if(rcvd_packets == 1) recv_stats.incStats(rcvd_bytes);
 
     switch(l4_proto) {
@@ -407,7 +408,7 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 	tcp_sent.incStats(sent_packets, sent_bytes);
       break;
     case IPPROTO_ICMP:
-      icmp_rcvd.incStats(rcvd_packets, rcvd_bytes), 
+      icmp_rcvd.incStats(rcvd_packets, rcvd_bytes),
 	icmp_sent.incStats(sent_packets, sent_bytes);
       break;
     default:
@@ -433,7 +434,7 @@ void Host::updateStats(struct timeval *tv) {
   if(last_update_time.tv_sec > 0) {
     float tdiff = (tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000;
     u_int64_t new_bytes = sent.getNumBytes()+rcvd.getNumBytes();
-    
+
     tdiff = ((float)((new_bytes-last_bytes)*1000))/tdiff;
 
     if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
@@ -449,14 +450,13 @@ void Host::updateStats(struct timeval *tv) {
 /* *************************************** */
 
 char* Host::serialize() {
-  json_object *my_object, *o[32];
+  json_object *my_object;
   char *rsp, buf[32];
-  int n = 0;
 
-  o[n++] = (my_object = json_object_new_object());
-   
+  my_object = json_object_new_object();
+
   json_object_object_add(my_object, "mac_address", json_object_new_string(get_mac(buf, sizeof(buf))));
-  
+
   json_object_object_add(my_object, "asn", json_object_new_int(asn));
   if(symbolic_name)       json_object_object_add(my_object, "symbolic_name", json_object_new_string(symbolic_name));
   if(country)             json_object_object_add(my_object, "country",   json_object_new_string(country));
@@ -466,32 +466,32 @@ char* Host::serialize() {
   if(vlan_id != 0)        json_object_object_add(my_object, "vlan_id",   json_object_new_int(vlan_id));
   if(latitude)            json_object_object_add(my_object, "latitude",  json_object_new_double(latitude));
   if(longitude)           json_object_object_add(my_object, "longitude", json_object_new_double(longitude));
-  if(ip)                  json_object_object_add(my_object, "ip", o[n++] = ip->getJSONObject());
+  if(ip)                  json_object_object_add(my_object, "ip", ip->getJSONObject());
   json_object_object_add(my_object, "localHost", json_object_new_boolean(localHost));
-  json_object_object_add(my_object, "tcp_sent", o[n++]      = tcp_sent.getJSONObject());
-  json_object_object_add(my_object, "tcp_rcvd", o[n++]      = tcp_rcvd.getJSONObject());
-  json_object_object_add(my_object, "udp_sent", o[n++]      = udp_sent.getJSONObject());
-  json_object_object_add(my_object, "udp_rcvd", o[n++]      = udp_rcvd.getJSONObject());
-  json_object_object_add(my_object, "icmp_sent", o[n++]     = icmp_sent.getJSONObject());
-  json_object_object_add(my_object, "icmp_rcvd", o[n++]     = icmp_rcvd.getJSONObject());
-  json_object_object_add(my_object, "other_ip_sent", o[n++] = other_ip_sent.getJSONObject());
-  json_object_object_add(my_object, "other_ip_rcvd", o[n++] = other_ip_rcvd.getJSONObject());
-  json_object_object_add(my_object, "pktStats.sent", o[n++] = sent_stats.getJSONObject());
-  json_object_object_add(my_object, "pktStats.recv", o[n++] = recv_stats.getJSONObject());
+  json_object_object_add(my_object, "tcp_sent", tcp_sent.getJSONObject());
+  json_object_object_add(my_object, "tcp_rcvd", tcp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "udp_sent", udp_sent.getJSONObject());
+  json_object_object_add(my_object, "udp_rcvd", udp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "icmp_sent", icmp_sent.getJSONObject());
+  json_object_object_add(my_object, "icmp_rcvd", icmp_rcvd.getJSONObject());
+  json_object_object_add(my_object, "other_ip_sent", other_ip_sent.getJSONObject());
+  json_object_object_add(my_object, "other_ip_rcvd", other_ip_rcvd.getJSONObject());
+  json_object_object_add(my_object, "pktStats.sent", sent_stats.getJSONObject());
+  json_object_object_add(my_object, "pktStats.recv", recv_stats.getJSONObject());
   json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
   json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
   /* Generic Host */
-  json_object_object_add(my_object, "sent", o[n++]      = sent.getJSONObject());
-  json_object_object_add(my_object, "rcvd", o[n++]      = rcvd.getJSONObject());
-  json_object_object_add(my_object, "ndpiStats", o[n++] = ndpiStats->getJSONObject(iface));
-  json_object_object_add(my_object, "contacts", o[n++]  = contacts.getJSONObject());
+  json_object_object_add(my_object, "sent", sent.getJSONObject());
+  json_object_object_add(my_object, "rcvd", rcvd.getJSONObject());
+  json_object_object_add(my_object, "ndpiStats", ndpiStats->getJSONObject(iface));
+  json_object_object_add(my_object, "contacts", contacts.getJSONObject());
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
 
   /* Free memory */
-  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
+  json_object_put(my_object);
 
   return(rsp);
 }
@@ -502,7 +502,7 @@ bool Host::deserialize(char *json_str) {
   json_object *o, *obj;
 
   if((o = json_tokener_parse(json_str)) == NULL) return(false);
-  
+
   if(json_object_object_get_ex(o, "mac_address", &obj)) set_mac((char*)json_object_get_string(obj));
   if(json_object_object_get_ex(o, "asn", &obj)) asn = json_object_get_int(obj);
 

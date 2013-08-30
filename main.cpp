@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
   char *ifName;
   int rc;
 
-
   if((ntop = new Ntop(argv[0])) == NULL) exit(0);
   if((prefs = new Prefs(ntop)) == NULL) exit(0);
 

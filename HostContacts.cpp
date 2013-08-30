@@ -101,16 +101,15 @@ void HostContacts::getIPContacts(lua_State* vm) {
 /* *************************************** */
 
 char* HostContacts::serialize() {
-  json_object *my_object, *o[2*MAX_NUM_HOST_CONTACTS];
-  int n = 0;
+  json_object *my_object;
   json_object *inner;
   char *rsp;
 
-  o[n++] = (my_object = json_object_new_object());
+  my_object = json_object_new_object();
 
   /* *************************************** */
 
-  o[n++] = (inner = json_object_new_object());
+  inner = json_object_new_object();
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].host != NULL) {
@@ -125,7 +124,7 @@ char* HostContacts::serialize() {
   
   /* *************************************** */
 
-  o[n++] = (inner = json_object_new_object());
+  inner = json_object_new_object();
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(serverContacts[i].host != NULL) {
@@ -145,7 +144,7 @@ char* HostContacts::serialize() {
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", rsp);
   
   /* Free memory */
-  for(int i=n-1; i>=0; i--) json_object_put(o[i]);
+  json_object_put(my_object);
 
   return(rsp);
 }
