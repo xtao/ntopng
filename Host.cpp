@@ -346,7 +346,7 @@ int Host::compare(Host *h) {
 
 bool Host::isIdle(u_int max_idleness) {
   return(((num_uses == 0) 
-	  && (iface->getTimeLastPktRcvd() > (last_seen+max_idleness))) 
+	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness))) 
 	 ? true : false);
 }
 

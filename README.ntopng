@@ -2,17 +2,22 @@ For ntopng Developers
 ---------------------
 In case you want to add new protocols
 
-# autoreconf -ivf
+# ./autogen.sh
 # ./configure
 # make
 
 Prerequisites
 - glib2
-- GNU autotools
+- GNU autotools/libtool
 - libgeoip
 - libpcap or PF_RING (optional but recommended)
 - redis (redis server) 2.2 or newer
 - GeoIP (optional) 1.4.8 or newer
+- wget (for 'make geoip')
+
+On Fedora
+- yum groupinstall "Development tools"
+- yum install autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget
 
 On Mac OSX please install macports and do
 - port install XXX

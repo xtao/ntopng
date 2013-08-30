@@ -48,7 +48,18 @@ static void* dayStartLoop(void* ptr)    {  ((PeriodicActivities*)ptr)->dayActivi
 /* ******************************************* */
 
 void PeriodicActivities::startPeriodicActivitiesLoop() {
+  struct stat buf;
+
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started periodic activities loop...");
+
+  if(stat(ntop->get_callbacks_dir(), &buf) != 0) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to read directory %s", ntop->get_callbacks_dir());
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Possible cause:\n");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "The current user cannot access %s.", ntop->get_callbacks_dir());
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Please fix the directory right or add --dont-change-user to");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "the ntopng command line.");
+    exit(0);
+  }
 
   pthread_create(&secondLoop, NULL, secondStartLoop, (void*)this);
   pthread_create(&minuteLoop, NULL, minuteStartLoop, (void*)this);

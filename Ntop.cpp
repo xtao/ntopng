@@ -147,7 +147,7 @@ Ntop::~Ntop() {
 
 void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
-			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION);
+			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
 
   pa->startPeriodicActivitiesLoop();
   address->startResolveAddressLoop();

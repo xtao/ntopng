@@ -153,7 +153,7 @@ void usage() {
 #endif
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
-	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOP_SVN_REVISION,
+	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE,
 #ifndef WIN32
 	 CONST_DEFAULT_DATA_DIR,
 #endif

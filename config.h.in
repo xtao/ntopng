@@ -51,6 +51,12 @@
 /* ZMQ is present */
 #undef HAVE_ZMQ
 
+/* Last SVN change */
+#undef NTOPNG_SVN_DATE
+
+/* SVN Release */
+#undef NTOPNG_SVN_RELEASE
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
