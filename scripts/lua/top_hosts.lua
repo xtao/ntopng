@@ -95,6 +95,8 @@ for _v,k in pairsByKeys(sortTable, rev) do key = k
    end
 end
 
+num_local_hosts = num
+
 print [[
 
 d3.select("#tophosts").call(function(div) {
@@ -105,13 +107,10 @@ d3.select("#tophosts").call(function(div) {
     .data([
 ]]
 
-num = 0
-for value,key in pairs(localhosts) do
-   if(num < max_num) then
+for num=0,num_local_hosts-1 do
    if(num > 0) then print(",") end
    print(' host'..num)
    num = num+1
-   end
 end
 
 print [[
