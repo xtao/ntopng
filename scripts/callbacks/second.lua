@@ -2,6 +2,9 @@
 -- (C) 2013 - ntop.org
 --
 
+dirs = ntop.getDirs()
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+
 -- Toggle debug
 local enable_second_debug = 0
 
