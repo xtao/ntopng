@@ -56,40 +56,48 @@ else
    -- Header
    print("<tr><th>&nbsp;</th>")
    for key, value in pairs(localhosts) do
-      print("<th>"..shortHostName(ntop.getResolvedAddress(localhosts[key]["ip"])).."</th>\n")
+      if(localhosts[key]["ip"] ~= nil) then
+	 if(localhosts[key]["name"] == nil) then
+	    localhosts[key]["name"] = ntop.getResolvedAddress(localhosts[key]["ip"])
+	 end
+
+	 print("<th>"..shortHostName(localhosts[key]["name"]).."</th>\n")
+      end
    end
    print("</tr>\n")
 
    for row_key, row_value in pairs(localhosts) do
-      if(localhosts[row_key]["name"] == nil) then
-	 localhosts[row_key]["name"] = ntop.getResolvedAddress(localhosts[row_key]["ip"])
-      end
+      if(localhosts[row_key]["ip"] ~= nil) then
 
-      print("<tr><th><A HREF=\"/lua/host_details.lua?host="..localhosts[row_key]["name"].."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
-      for column_key, column_value in pairs(localhosts) do	
-	 val = "&nbsp;"
-	 if(row_key ~= column_key) then
-	    rsp = getTraffic(flows_stats, row_key, column_key)
-
-	    if(localhosts[row_key]["name"] == nil) then
-	       localhosts[row_key]["name"] = ntop.getResolvedAddress(localhosts[row_key]["ip"])
-	    end
-	    if(localhosts[column_key]["name"] == nil) then
-	       localhosts[column_key]["name"] = ntop.getResolvedAddress(localhosts[column_key]["ip"])
-	    end
-
-	    if((rsp[1] > 0) or (rsp[2] > 0)) then	       
-	       val = ""
-	       if(rsp[1] > 0) then val = val .. '<span class="label label-warning" data-toggle="tooltip" data-placement="top" title="'..localhosts[row_key]["name"]..' -> ' .. localhosts[column_key]["name"] .. '\">'..bytesToSize(rsp[1]) .. '</span> ' end
-	       if(rsp[2] > 0) then val = val .. '<span class="label label-info" data-toggle="tooltip" data-placement="bottom" title="'..localhosts[column_key]["name"]..' -> ' .. localhosts[row_key]["name"]..'\">'..bytesToSize(rsp[2]) .. '</span> ' end
-	    end
+	 if(localhosts[row_key]["name"] == nil) then
+	    localhosts[row_key]["name"] = ntop.getResolvedAddress(localhosts[row_key]["ip"])
 	 end
-	 
-	 print("<td align=center>" .. val .. "</td>\n")
+
+	 print("<tr><th><A HREF=\"/lua/host_details.lua?host="..localhosts[row_key]["name"].."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
+	 for column_key, column_value in pairs(localhosts) do	
+	    val = "&nbsp;"
+	    if(row_key ~= column_key) then
+	       rsp = getTraffic(flows_stats, row_key, column_key)
+
+	       if(localhosts[row_key]["name"] == nil) then
+		  localhosts[row_key]["name"] = ntop.getResolvedAddress(localhosts[row_key]["ip"])
+	       end
+	       if(localhosts[column_key]["name"] == nil) then
+		  localhosts[column_key]["name"] = ntop.getResolvedAddress(localhosts[column_key]["ip"])
+	       end
+
+	       if((rsp[1] > 0) or (rsp[2] > 0)) then	       
+		  val = ""
+		  if(rsp[1] > 0) then val = val .. '<span class="label label-warning" data-toggle="tooltip" data-placement="top" title="'..localhosts[row_key]["name"]..' -> ' .. localhosts[column_key]["name"] .. '\">'..bytesToSize(rsp[1]) .. '</span> ' end
+		  if(rsp[2] > 0) then val = val .. '<span class="label label-info" data-toggle="tooltip" data-placement="bottom" title="'..localhosts[column_key]["name"]..' -> ' .. localhosts[row_key]["name"]..'\">'..bytesToSize(rsp[2]) .. '</span> ' end
+	       end
+	    end
+	    
+	    print("<td align=center>" .. val .. "</td>\n")
+	 end
+	 print("</tr>\n")
       end
-      print("</tr>\n")
    end
-   
 
 
    print("</table>\n")
@@ -97,10 +105,10 @@ end
 
 -- Activate tooltips
 print [[
- <script type="text/javascript">
-   $(document).ready(function () { $("span").tooltip({ 'selector': '', 'placement': 'bottom'  });});
- </script>
-</script>
-]]
+	 <script type="text/javascript">
+	 $(document).ready(function () { $("span").tooltip({ 'selector': '', 'placement': 'bottom'  });});
+			   </script>
+			      </script>
+			]]
 
-dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
+		     dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

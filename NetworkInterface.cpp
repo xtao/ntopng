@@ -575,11 +575,21 @@ static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
 
 /* **************************************************** */
 
+static void host_update_hosts_stats(GenericHashEntry *node, void *user_data) {
+  Host *host = (Host*)node;
+  struct timeval *tv = (struct timeval*)user_data;
+
+  host->updateStats(tv);
+}
+
+/* **************************************************** */
+
 void NetworkInterface::updateHostStats() {
   struct timeval tv;
 
   gettimeofday(&tv, NULL);
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
+  hosts_hash->walk(host_update_hosts_stats, (void*)&tv);
 }
 
 /* **************************************************** */

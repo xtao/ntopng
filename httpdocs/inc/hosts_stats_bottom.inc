@@ -7,6 +7,14 @@
 			     }
 				 },
 			     {
+			     title: "Throughput",
+				 field: "column_thpt",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'right'
+			     }
+				 },
+			     {
 			     title: "Traffic",
 				 field: "column_traffic",
 				 sortable: true,

@@ -19,29 +19,14 @@
  *
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef _NTOP_TYPEDEFS_H_
+#define _NTOP_TYPEDEFS_H_
 
-#include "ntop_includes.h"
+typedef enum {
+  trend_unknown = 0,
+  trend_up = 1,
+  trend_down = 2,
+  trend_stable = 3
+} ValueTrend;
 
-/* ******************************* */
-
-class Utils {
- private:
-
- public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
-  static char* l4proto2name(u_int8_t proto);
-  static bool  isIPAddress(char *name);
-  static void  setThreadAffinity(pthread_t thread, int core_id);
-  static char* trim(char *s);
-  static u_int32_t hashString(char *s);
-  static float timeval2ms(struct timeval *tv);
-  static bool mkdir_tree(char *path);
-  static const char* trend2str(ValueTrend t);
-  static void dropPrivileges();
-};
-
-
-#endif /* _UTILS_H_ */
+#endif /* _NTOP_TYPEDEFS_H_ */

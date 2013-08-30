@@ -24,13 +24,6 @@
 
 #include "ntop_includes.h"
 
-typedef enum {
-  trend_unknown = 0,
-  trend_up = 1,
-  trend_down = 2,
-  trend_stable = 3
-} ValueTrend;
-
 class Flow : public GenericHashEntry, Serializable {
  private:
   Host *cli_host, *srv_host;  

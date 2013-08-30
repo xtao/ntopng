@@ -185,6 +185,28 @@ bool Utils::mkdir_tree(char *path) {
 
 /* **************************************************** */
 
+const char* Utils::trend2str(ValueTrend t) {
+  switch(t) {
+  case trend_unknown:
+    return("Unknown");
+    break;
+
+  case trend_up:
+    return("Up");
+    break;
+
+  case trend_down:
+    return("Down");
+    break;
+
+  case trend_stable:
+    return("Stable");
+    break;
+  }
+}
+
+/* **************************************************** */
+
 void Utils::dropPrivileges() {
 #ifndef WIN32
   struct passwd *pw = NULL;

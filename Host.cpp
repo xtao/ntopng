@@ -91,7 +91,9 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
-  category[0] = '\0';
+  category[0] = '\0', last_bytes = 0;
+  bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
+  last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
@@ -244,7 +246,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
-
+    lua_push_float_table_entry(vm, "throughput", bytes_thpt);
+    lua_push_float_table_entry(vm, "throughput_trend", bytes_thpt_trend);
 
     if(ip) lua_push_str_table_entry(vm, "category", get_category());
 
@@ -426,6 +429,25 @@ char* Host::get_string_key(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
+void Host::updateStats(struct timeval *tv) {
+  if(last_update_time.tv_sec > 0) {
+    float tdiff = (tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000;
+    u_int64_t new_bytes = sent.getNumBytes()+rcvd.getNumBytes();
+    
+    tdiff = ((float)((new_bytes-last_bytes)*1000))/tdiff;
+
+    if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
+    else if(bytes_thpt > tdiff) bytes_thpt_trend = trend_down;
+    else                        bytes_thpt_trend = trend_stable;
+
+    bytes_thpt = tdiff, last_bytes = new_bytes;
+  }
+
+  memcpy(&last_update_time, tv, sizeof(struct timeval));
+}
+
+/* *************************************** */
+
 char* Host::serialize() {
   json_object *my_object, *o[32];
   char *rsp, buf[32];
@@ -456,6 +478,8 @@ char* Host::serialize() {
   json_object_object_add(my_object, "other_ip_rcvd", o[n++] = other_ip_rcvd.getJSONObject());
   json_object_object_add(my_object, "pktStats.sent", o[n++] = sent_stats.getJSONObject());
   json_object_object_add(my_object, "pktStats.recv", o[n++] = recv_stats.getJSONObject());
+  json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
+  json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
   /* Generic Host */
   json_object_object_add(my_object, "sent", o[n++]      = sent.getJSONObject());

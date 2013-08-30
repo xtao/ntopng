@@ -84,6 +84,7 @@ extern "C" {
 
 #include "mongoose.h"
 #include "ntop_defines.h"
+#include "ntop_typedefs.h"
 #include "patricia.h"
 #include "Trace.h"
 #include "Utils.h"

@@ -492,7 +492,6 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput_trend", bytes_thpt_trend);
 
-
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index
     lua_insert(vm, -2);
@@ -592,6 +591,9 @@ char* Flow::serialize() {
   json_object_object_add(my_object, "seen", inner);
 
   if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
+
+  json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
+  json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
   o[n++] = (inner = json_object_new_object());
   json_object_object_add(inner, "l4", json_object_new_int(protocol));

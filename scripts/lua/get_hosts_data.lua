@@ -127,6 +127,19 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	 print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
 
+	 if(value["throughput_trend"] > 0) then 
+	    print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
+
+	    if(value["throughput_trend"] == 1) then 
+	       print("<i class=icon-arrow-up></i>")
+	       elseif(value["throughput_trend"] == 2) then
+	       print("<i class=icon-arrow-down></i>")
+	       elseif(value["throughput_trend"] == 3) then
+	       print("<i class=icon-minus></i>")
+	    end
+	    print("\",")
+	 end
+
 	 if(aggregated ~= nil) then  
 	 	 print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]))
 	 else
