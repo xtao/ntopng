@@ -31,7 +31,6 @@ class NtopGlobals {
   u_int8_t promiscuousMode;
   Trace *trace;
   u_int32_t detection_tick_resolution;
-  char tmp_file_path[256];
   Mutex *mutex;
   u_int16_t file_id;
 
