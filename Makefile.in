@@ -39,6 +39,7 @@ PLATFORM = `uname -p`
 REVISION = @SVN_RELEASE@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 RPM_PKG = $(TARGET)-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
+RPM_DATA_PKG = $(TARGET)-data-$(PACKAGE_VERSION)-0.$(PLATFORM).rpm
 ######
 
 ifeq ($(OS),Linux)
@@ -115,6 +116,7 @@ maketar:
 	rm -rf ntopng-data-@PACKAGE_VERSION@
 	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
 	cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
 	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
 
 
@@ -134,12 +136,13 @@ build-rpm: maketar
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
 	#
+	cd $(HOME)/rpmbuild/SOURCES;tar xvfz  $(HOME)/rpmbuild/SOURCES/ntopng-data-1.0.1_6743.tgz
 	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
-	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
 	@echo ""
 	@echo "Package contents:"
-	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
-	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
+	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
+	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)"
 	-rm -rf ntopng-data-@PACKAGE_VERSION@ ntopng-data_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
 
 
