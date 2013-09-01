@@ -293,6 +293,20 @@ static int ntop_list_dir_files(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_gettimemsec(lua_State* vm) {
+  struct timeval tp;
+  double ret;
+
+  gettimeofday(&tp, NULL);
+
+  ret = (((double)tp.tv_usec) / (double)1000) + tp.tv_sec;
+
+  lua_pushnumber(vm, ret);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_zmq_connect(lua_State* vm) {
   char *endpoint, *topic;
   void *context, *subscriber;
@@ -1225,6 +1239,9 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
+
+  /* Time */
+  { "gettimemsec",    ntop_gettimemsec },
 
   /* Trace */
   { "verboseTrace",   ntop_verbose_trace },

@@ -11,6 +11,7 @@
     <script src="/js/jquery.peity.min.js"></script>
     <script src="/js/rickshaw.min.js"></script>
     <script src="/js/pie-chart.js"></script>
+    <script src="/js/gauge.min.js"></script>
     <link href="/css/flags.css" rel="stylesheet">
     <link href="/css/pie-chart.css" rel="stylesheet">
     <link href="/css/rickshaw.min.css" rel="stylesheet">
