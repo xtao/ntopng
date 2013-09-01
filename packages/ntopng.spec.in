@@ -78,4 +78,7 @@ rm -fr $RPM_BUILD_ROOT
 * Sun Jun 30 2013 Luca Deri <deri@ntop.org> 1.0
 - Current package version
 
+%post
+echo 'Setting up redis auto startup'
+/sbin/chkconfig redis on
 
