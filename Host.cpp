@@ -535,5 +535,10 @@ bool Host::deserialize(char *json_str) {
 
   json_object_put(o);
 
+  /* We need to update too the stats for traffic */
+  bytes_thpt = 0, last_bytes = sent.getNumBytes()+rcvd.getNumBytes(), 
+    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = time(NULL), 
+    last_update_time.tv_usec = 0;
+
   return(true);
 }

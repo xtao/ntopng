@@ -39,7 +39,7 @@ class Host : public GenericHost, Serializable {
   TrafficStats icmp_sent, icmp_rcvd;
   TrafficStats other_ip_sent, other_ip_rcvd;
   PacketStats sent_stats, recv_stats;
-  u_int32_t last_bytes;
+  u_int64_t last_bytes;
   float bytes_thpt;
   struct timeval last_update_time;
   ValueTrend bytes_thpt_trend;
