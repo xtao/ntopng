@@ -111,6 +111,12 @@ maketar:
 	find ntopng-@PACKAGE_VERSION@ -name ".svn" | xargs /bin/rm -rf
 	cd ntopng-@PACKAGE_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
 	tar cvfz ntopng-@PACKAGE_VERSION@.tgz ntopng-@PACKAGE_VERSION@
+	#
+	rm -rf ntopng-data-@PACKAGE_VERSION@
+	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
+
 
 build-rpm: maketar
 # Do NOT build package as root (http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment)
@@ -118,6 +124,8 @@ build-rpm: maketar
 #	echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	cp ntopng-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
+	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
+	#
 	rpmbuild -bb ./packages/ntopng.spec --define "buildnumber $(REVISION)"
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	@echo ""
@@ -125,6 +133,15 @@ build-rpm: maketar
 	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
+	#
+	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
+	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	@echo ""
+	@echo "Package contents:"
+	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
+	-rm -rf ntopng-data-@PACKAGE_VERSION@ ntopng-data_@PACKAGE_VERSION@_$(SVN_RELEASE).tgz
+
 
 install: ntopng geoip
 	@echo "While we provide you an install make target, we encourage you"
