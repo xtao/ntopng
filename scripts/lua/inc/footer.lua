@@ -28,12 +28,14 @@ print [[</font></div>
   <div class="span1">
    ]]
 
-maxSpeed = ntop.getCache('ntopng.prefs'..ifname..'.speed')
-if((res == "") or (res == nil)) then
-   maxSpeed = 1000000000 -- 1 Gbit
+key = 'ntopng.prefs.'..ifname..'.speed'
+maxSpeed = ntop.getCache(key)
+if((maxSpeed == "") or (maxSpeed == nil)) then
+   maxSpeed = 3000000000 -- 1 Gbit
+else
+   maxSpeed = tonumber(maxSpeed)*1000000
 end
 
-maxSpeed = 7*1000*1000; -- 7 Mbit
 addGauge('gauge', '/lua/set_if_prefs.lua', maxSpeed, 100, 50)
 
 print [[

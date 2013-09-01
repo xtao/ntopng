@@ -15,7 +15,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 print('<hr><h2>'..ifname..' Preferences</H2>\n')
 
-key = 'ntopng.prefs'..ifname..'.speed'
+key = 'ntopng.prefs.'..ifname..'.speed'
 if(_GET["ifSpeed"] ~= nil) then
    ifSpeed = _GET["ifSpeed"]
    if(ifSpeed ~= nil) then ifSpeed = tonumber(ifSpeed) end
