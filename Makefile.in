@@ -45,10 +45,6 @@ ifeq ($(OS),Linux)
 LIBS += -lrt
 endif
 
-ifeq ($(OS),Darwin)
-CPPFLAGS += -DDARWIN
-endif
-
 .PHONY: default all clean
 
 default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) $(TARGET)

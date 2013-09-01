@@ -23,7 +23,7 @@
 
 #ifdef HAVE_PF_RING
 
-#ifdef DARWIN
+#ifdef __APPLE__
 #include <uuid/uuid.h>
 #endif
 

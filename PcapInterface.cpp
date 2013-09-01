@@ -21,7 +21,7 @@
 
 #include "ntop_includes.h"
 
-#ifdef DARWIN
+#ifdef __APPLE__
 #include <uuid/uuid.h>
 #endif
 
