@@ -46,7 +46,7 @@ print [[
 var beginning =  (new Date).getTime();
 var prev = {};
 
-function fetchData(name) {
+function fetchData(name, symname) {
 	var value = 0,
 	values = [],	
 	i = 0,
@@ -71,7 +71,7 @@ function fetchData(name) {
 	      }	     
 	    }
 	    callback(null, values = values.slice((start - stop) / step));
-	  }, name);
+	  }, symname);
       }
 
 var width = 800;
@@ -90,7 +90,8 @@ for k,v in pairs(localhosts) do sortTable[v]=k end
 num = 0
 for _v,k in pairsByKeys(sortTable, rev) do key = k   
    if(num < max_num) then
-      print('var host'..num..' = fetchData("' .. key ..'");\n');
+      symname = ntop.getResolvedAddress(key)
+      print('var host'..num..' = fetchData("' .. key ..'", "'.. symname .. '");\n');
       num = num+1
    end
 end
