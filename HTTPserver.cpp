@@ -196,6 +196,32 @@ static void authorize(struct mg_connection *conn,
 
 /* ****************************************** */
 
+static void uri_encode(const char *src, char *dst, u_int dst_len) {
+  u_int i = 0, j = 0;
+
+  memset(dst, 0, dst_len);
+
+  while(src[i] != '\0') {
+    if(src[i] == '<') {
+      dst[j++] = '&'; if(j == (dst_len-1)) break;
+      dst[j++] = 'l'; if(j == (dst_len-1)) break;
+      dst[j++] = 't'; if(j == (dst_len-1)) break;
+      dst[j++] = ';'; if(j == (dst_len-1)) break;
+    } else if(src[i] == '>') {
+      dst[j++] = '&'; if(j == (dst_len-1)) break;
+      dst[j++] = 'g'; if(j == (dst_len-1)) break;
+      dst[j++] = 't'; if(j == (dst_len-1)) break;
+      dst[j++] = ';'; if(j == (dst_len-1)) break;
+    } else {
+      dst[j++] = src[i]; if(j == (dst_len-1)) break;
+    }
+
+    i++;
+  }
+}
+
+/* ****************************************** */
+
 static int handle_lua_request(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   u_int len = strlen(request_info->uri);
@@ -235,7 +261,7 @@ static int handle_lua_request(struct mg_connection *conn) {
   if((strncmp(request_info->uri, "/lua/", 5) == 0)
      || (strcmp(request_info->uri, "/") == 0)) {
     /* Lua Script */
-    char path[255] = { 0 };
+    char path[255] = { 0 }, uri[2048];
     struct stat buf;
 
     snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(),
@@ -257,7 +283,9 @@ static int handle_lua_request(struct mg_connection *conn) {
       }
     }
     
-    return(send_error(conn, 404, "Not Found", PAGE_NOT_FOUND, request_info->uri));
+    uri_encode(request_info->uri, uri, sizeof(uri)-1);
+    
+    return(send_error(conn, 404, "Not Found", PAGE_NOT_FOUND, uri));
   } else
     return(0); /* This is a static document so let mongoose handle it */
 }
