@@ -82,6 +82,8 @@ extern "C" {
 #endif
 };
 
+#include <fstream>
+
 #include "mongoose.h"
 #include "ntop_defines.h"
 #include "ntop_typedefs.h"
@@ -93,6 +95,7 @@ extern "C" {
 #include "Mutex.h"
 #include "Serializable.h"
 #include "IpAddress.h"
+#include "TrendStats.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"
 #include "PacketStats.h"

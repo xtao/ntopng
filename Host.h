@@ -39,10 +39,6 @@ class Host : public GenericHost, Serializable {
   TrafficStats icmp_sent, icmp_rcvd;
   TrafficStats other_ip_sent, other_ip_rcvd;
   PacketStats sent_stats, recv_stats;
-  u_int64_t last_bytes;
-  float bytes_thpt;
-  struct timeval last_update_time;
-  ValueTrend bytes_thpt_trend;
 
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
@@ -79,7 +75,6 @@ class Host : public GenericHost, Serializable {
   char* get_string_key(char *buf, u_int buf_len);
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
-  void update_stats(struct timeval *tv);
   bool idle();
   void lua(lua_State* vm, bool host_details, bool verbose, bool returnHost);
   void resolveHostName();
@@ -88,7 +83,6 @@ class Host : public GenericHost, Serializable {
   inline bool equal(IpAddress *_ip)  { return(ip->equal(_ip)); };
   bool isIdle(u_int max_idleness);
   void incrContact(Host *peer, bool contacted_peer_as_client);
-  void updateStats(struct timeval *tv);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, 
 		u_int64_t sent_packets, u_int64_t sent_bytes,
 		u_int64_t rcvd_packets, u_int64_t rcvd_bytes);

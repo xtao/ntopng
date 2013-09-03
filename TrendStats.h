@@ -19,31 +19,29 @@
  *
  */
 
-#ifndef _STRING_HOST_H_
-#define _STRING_HOST_H_
+#ifndef _TREND_STATS_H_
+#define _TREND_STATS_H_
 
 #include "ntop_includes.h"
 
-class StringHost : public GenericHost {
+/*
+  Statistics for 1 day (86400 sec) 
+*/
+
+class TrendStats {
  private:
-  char *keyname;
-  u_int16_t family_id;
-
+  time_t begin_time, end_time;
+  void *_bitset;
+    
  public:
-  StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
-  ~StringHost();
+  TrendStats(time_t _begin_time, u_int _duration_sec);
+  ~TrendStats();
 
-  inline char* host_key()          { return(keyname);   };
-  inline u_int16_t get_family_id() { return(family_id); };
-  bool idle();
-  void lua(lua_State* vm, bool returnHost);
-  inline u_int32_t key()  { return(Utils::hashString(keyname)); };
-  char* get_string_key(char *buf, u_int buf_len);
-  void updateStats(struct timeval *tv);
-
-  /* Throughput */
-  float bytes_thpt;
-  ValueTrend bytes_thpt_trend;
+  void reset();
+  void set(time_t when);
+  std::stringstream* getDump();
+  void setDump(std::stringstream* dump);
+  void print();
 };
 
-#endif /* _STRING_HOST_H_ */
+#endif /* _TREND_STATS_H_ */

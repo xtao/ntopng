@@ -582,11 +582,16 @@ static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
 
 /* **************************************************** */
 
-static void host_update_hosts_stats(GenericHashEntry *node, void *user_data) {
-  Host *host = (Host*)node;
+static void update_hosts_stats(GenericHashEntry *node, void *user_data) {
+  GenericHost *host = (GenericHost*)node;
   struct timeval *tv = (struct timeval*)user_data;
-
+  
   host->updateStats(tv);
+  /*
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "Updated: %s [%d]", 
+			       ((StringHost*)node)->host_key(),
+			       host->getThptTrend());
+  */
 }
 
 /* **************************************************** */
@@ -596,7 +601,8 @@ void NetworkInterface::updateHostStats() {
 
   gettimeofday(&tv, NULL);
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
-  hosts_hash->walk(host_update_hosts_stats, (void*)&tv);
+  hosts_hash->walk(update_hosts_stats, (void*)&tv);
+  strings_hash->walk(update_hosts_stats, (void*)&tv);
 }
 
 /* **************************************************** */

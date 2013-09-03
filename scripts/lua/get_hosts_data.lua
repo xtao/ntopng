@@ -15,7 +15,7 @@ sortOrder       = _GET["sortOrder"]
 aggregated      = _GET["aggregated"]
 
 if(sortColumn == nil) then
-  sortColumn = "column_"
+   sortColumn = "column_"
 end
 
 if(currentPage == nil) then
@@ -50,30 +50,30 @@ num = 0
 --for k,v in pairs(hosts_stats) do io.write(k.."\n") end
 
 for key, value in pairs(hosts_stats) do
-    num = num + 1
-    postfix = string.format("0.%04u", num)
+   num = num + 1
+   postfix = string.format("0.%04u", num)
 
    --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
    if(sortColumn == "column_ip") then
       vals[key] = key
-   elseif(sortColumn == "column_name") then
-     vals[hosts_stats[key]["name"]..postfix] = key
-   elseif(sortColumn == "column_since") then
-   vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
-   elseif(sortColumn == "column_last") then
-   vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
-   elseif(sortColumn == "column_category") then
-     vals[hosts_stats[key]["category"]..postfix] = key
-   elseif(sortColumn == "column_asn") then
-     vals[hosts_stats[key]["asn"]..postfix] = key
-   elseif(sortColumn == "column_2") then
-     vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
-  else
-     -- io.write(key.."\n")
-     -- io.write(hosts_stats[key].."\n")
-     -- for k,v in pairs(hosts_stats[key]) do io.write(k.."\n") end
+      elseif(sortColumn == "column_name") then
+      vals[hosts_stats[key]["name"]..postfix] = key
+      elseif(sortColumn == "column_since") then
+      vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
+      elseif(sortColumn == "column_last") then
+      vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
+      elseif(sortColumn == "column_category") then
+      vals[hosts_stats[key]["category"]..postfix] = key
+      elseif(sortColumn == "column_asn") then
+      vals[hosts_stats[key]["asn"]..postfix] = key
+      elseif(sortColumn == "column_2") then
+      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
+   else
+      -- io.write(key.."\n")
+      -- io.write(hosts_stats[key].."\n")
+      -- for k,v in pairs(hosts_stats[key]) do io.write(k.."\n") end
 
-     vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
+      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
    end
 end
 
@@ -129,22 +129,22 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	 if(value["throughput_trend"] > 0) then 
 	    print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
+	    print("\",")
+	 end
 
+	 if(aggregated ~= nil) then  
+	    print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
+	    
 	    if(value["throughput_trend"] == 1) then 
 	       print("<i class=icon-arrow-up></i>")
 	       elseif(value["throughput_trend"] == 2) then
 	       print("<i class=icon-arrow-down></i>")
 	       elseif(value["throughput_trend"] == 3) then
 	       print("<i class=icon-minus></i>")
-	    end
-	    print("\",")
-	 end
-
-	 if(aggregated ~= nil) then  
-	 	 print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]))
+	    end		 
 	 else
-	 	 print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
-	end
+	    print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	 end
 
 	 if(value["localhost"] ~= nil) then 
 	    print ("\", \"column_location\" : \"")

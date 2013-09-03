@@ -52,7 +52,7 @@ void demoSerialization() {
 }
 
 int main(void) {
-    EWAHBoolArray<uint32_t> bitset1;
+  EWAHBoolArray<uint32_t> bitset1;
     bitset1.set(1);
     bitset1.set(2);
     bitset1.set(1000);

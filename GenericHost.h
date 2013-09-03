@@ -29,6 +29,11 @@ class GenericHost : public GenericHashEntry {
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   HostContacts contacts;
+  /* Throughput */
+  float bytes_thpt;
+  ValueTrend bytes_thpt_trend;
+  u_int64_t last_bytes;
+  struct timeval last_update_time;
 
  public:
   GenericHost(NetworkInterface *_iface);
@@ -39,6 +44,8 @@ class GenericHost : public GenericHashEntry {
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
   inline void incrContact(IpAddress *peer, bool contacted_peer_as_client) { contacts.incrContact(peer, contacted_peer_as_client); }
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm); };
+  void updateStats(struct timeval *tv);
+  inline ValueTrend getThptTrend() { return(bytes_thpt_trend); }
 };
 
 #endif /* _GENERIC_HOST_H_ */

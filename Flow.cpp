@@ -490,7 +490,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
-  lua_push_float_table_entry(vm, "throughput_trend", bytes_thpt_trend);
+  lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
 
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index
