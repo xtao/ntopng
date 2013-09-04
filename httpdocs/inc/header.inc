@@ -15,6 +15,10 @@
     <link href="/css/flags.css" rel="stylesheet">
     <link href="/css/pie-chart.css" rel="stylesheet">
     <link href="/css/rickshaw.min.css" rel="stylesheet">
+    <!-- http://kamisama.github.io/cal-heatmap/v2/ -->
+    <script src="/js/cal-heatmap.min.js"></script>
+    <link href="/css/cal-heatmap.css" rel="stylesheet">
+
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>

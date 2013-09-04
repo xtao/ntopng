@@ -696,7 +696,7 @@ bool NetworkInterface::restoreHost(char *host_ip) {
 
 /* **************************************************** */
 
-bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id) {
+Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
   struct in_addr  a4;
   struct in6_addr a6;
   Host *h = NULL;
@@ -719,6 +719,14 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_
       delete ip;
     }
   }
+
+  return(h);
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id) {
+  Host *h = getHost(host_ip, vlan_id);
 
   if(h) {
     lua_newtable(vm);

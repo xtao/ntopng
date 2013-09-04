@@ -57,11 +57,17 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 			   u_int64_t sent_packets, u_int64_t sent_bytes,
 			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
   if(sent_packets || rcvd_packets) {
+    time_t when = iface->getTimeLastPktRcvd();
+    
+    /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
+    when -= when % CONST_TREND_TIME_GRANULARITY;
+    activityStats.set(when);
+
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);
 
     if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
       ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
-
+    
     updateSeen();
   }
 }

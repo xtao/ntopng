@@ -95,7 +95,7 @@ extern "C" {
 #include "Mutex.h"
 #include "Serializable.h"
 #include "IpAddress.h"
-#include "TrendStats.h"
+#include "ActivityStats.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"
 #include "PacketStats.h"

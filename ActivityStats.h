@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef _TREND_STATS_H_
-#define _TREND_STATS_H_
+#ifndef _ACTIVITY_STATS_H_
+#define _ACTIVITY_STATS_H_
 
 #include "ntop_includes.h"
 
@@ -28,20 +28,22 @@
   Statistics for 1 day (86400 sec) 
 */
 
-class TrendStats {
+class ActivityStats {
  private:
-  time_t begin_time, end_time;
+  time_t wrap_time;
   void *_bitset;
     
  public:
-  TrendStats(time_t _begin_time, u_int _duration_sec);
-  ~TrendStats();
+  ActivityStats();
+  ~ActivityStats();
 
   void reset();
   void set(time_t when);
   std::stringstream* getDump();
   void setDump(std::stringstream* dump);
-  void print();
+  json_object* getJSONObject();
+  char* serialize();  
+  void deserialize(json_object *o);
 };
 
-#endif /* _TREND_STATS_H_ */
+#endif /* _ACTIVITY_STATS_H_ */

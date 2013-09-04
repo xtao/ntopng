@@ -108,9 +108,9 @@ void PF_RINGInterface::shutdown() {
   void *res;
 
   if(running) { 
+    NetworkInterface::shutdown();
     if(pfring_handle) pfring_breakloop(pfring_handle);
     pthread_join(pollLoop, &res);
-    NetworkInterface::shutdown();
   }
 }
 

@@ -372,15 +372,15 @@ int Prefs::checkOptions() {
     logFd = fopen(path, "w");
   }
 
-  data_dir       = ntop->get_install_dir();
-  docs_dir       = ntop->getValidPath(docs_dir);
-  scripts_dir    = ntop->getValidPath(scripts_dir);
-  callbacks_dir  = ntop->getValidPath(callbacks_dir);
-
-  if(!data_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir");      return(-1); }
-  if(!docs_dir)      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir");      return(-1); }
-  if(!scripts_dir)   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir");   return(-1); }
-  if(!callbacks_dir) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
+  free(data_dir); data_dir = strdup(ntop->get_install_dir());
+  docs_dir      = ntop->getValidPath(docs_dir);
+  scripts_dir   = ntop->getValidPath(scripts_dir);
+  callbacks_dir = ntop->getValidPath(callbacks_dir);
+  
+  if(!data_dir)         { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir");      return(-1); }
+  if(!docs_dir[0])      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir");      return(-1); }
+  if(!scripts_dir[0])   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir");   return(-1); }
+  if(!callbacks_dir[0]) { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate callbacks dir"); return(-1); }
 
   ntop->removeTrailingSlash(docs_dir);
   ntop->removeTrailingSlash(scripts_dir);

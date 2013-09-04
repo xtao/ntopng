@@ -88,6 +88,7 @@ class Host : public GenericHost, Serializable {
 		u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
 
   char* serialize();
+  inline char* getJsonActivityMap()      { return(activityStats.serialize()); };
   bool deserialize(char *json_str);
 };
 

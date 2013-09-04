@@ -225,6 +225,37 @@ end
    print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
+
+   if(true) then
+   print [[
+	    <tr><th>Activity Map</th><td>
+	    <table border=0>
+	    <tr><td><button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-left"></i></button></td>
+	    <td><span id="sentHeatmap"></span></td>
+	    <td><button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-right"></i></button></td></tr>
+	    </table></td></tr>
+
+	    <script type="text/javascript">
+
+	 var sent_calendar = new CalHeatMap();
+        sent_calendar.init({
+		       itemSelector: "#sentHeatmap",
+		       data: "]]
+     print("/lua/get_host_activitymap.lua?host="..host_ip..'",\n')
+     print("\t\tstart: new Date("..((os.time()-5*3600)*1000).."),\n") -- now-3h
+		     print [[ 
+   		       domain : "hour",
+		       range : 6,
+		       nextSelector: "#sent-heatmap-next-selector",
+		       previousSelector: "#sent-heatmap-prev-selector"		       
+		    });
+
+   </script>
+
+	    </td></tr>
+      ]]
+end
+
    print("</table>\n")
 
    elseif((page == "packets")) then

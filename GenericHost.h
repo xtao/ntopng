@@ -28,6 +28,7 @@ class GenericHost : public GenericHashEntry {
  protected:
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
+  ActivityStats activityStats;
   HostContacts contacts;
   /* Throughput */
   float bytes_thpt;

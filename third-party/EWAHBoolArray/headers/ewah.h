@@ -669,6 +669,7 @@ public:
 
 template<class uword>
 void EWAHBoolArray<uword>::set(size_t i) {
+  if(i < sizeinbits) return; // deri@ntop.org - The bit was already set
     assert(i >= sizeinbits);
     const size_t dist = (i + wordinbits) / wordinbits - (sizeinbits
             + wordinbits - 1) / wordinbits;

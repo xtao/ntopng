@@ -72,7 +72,7 @@ Host::~Host() {
     char *json = serialize();
     snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
     ntop->getRedis()->set(key, json, 3600 /* 1 hour */);
-    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
+    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
     free(json);
   }
 
@@ -465,6 +465,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "rcvd", rcvd.getJSONObject());
   json_object_object_add(my_object, "ndpiStats", ndpiStats->getJSONObject(iface));
   json_object_object_add(my_object, "contacts", contacts.getJSONObject());
+  json_object_object_add(my_object, "activityStats", activityStats.getJSONObject());
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
@@ -506,12 +507,17 @@ bool Host::deserialize(char *json_str) {
 
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
+
   if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
   if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
+
+  activityStats.reset();
+  if(json_object_object_get_ex(o, "activityStats", &obj)) activityStats.deserialize(obj);
+
   if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);
-
+  
   json_object_put(o);
 
   /* We need to update too the stats for traffic */
@@ -521,3 +527,4 @@ bool Host::deserialize(char *json_str) {
 
   return(true);
 }
+

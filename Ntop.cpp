@@ -159,6 +159,7 @@ void Ntop::start() {
   while(!globals->isShutdown()) {
     sleep(2);
     runHousekeepingTasks();
+    // break;
   }
 }
 
@@ -365,7 +366,7 @@ char* Ntop::getValidPath(char *__path) {
     }
   }
 
-  return(NULL);
+  return(strdup(""));
 }
 
 /* ******************************************* */
@@ -492,8 +493,8 @@ void Ntop::shutdown() {
   for(int i=0; i<num_defined_interfaces; i++) {
     EthStats *stats = iface[i]->getStats();
     
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s", iface[i]->get_name());
     stats->print();
     iface[i]->shutdown();
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s [running: %d]", iface[i]->get_name(), iface[i]->isRunning());    
   }
 }

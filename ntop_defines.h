@@ -122,11 +122,12 @@
 #define CONST_DEFAULT_NTOP_USER     "nobody"
 #define CONST_TOO_EARLY             "(Too Early)"
 
-#define CONST_HTTP_CONN             "http.conn"
-#define CONST_LUA_OK                1
-#define CONST_LUA_ERROR             0
-#define CONST_LUA_PARAM_ERROR       -1
+#define CONST_HTTP_CONN                "http.conn"
+#define CONST_LUA_OK                   1
+#define CONST_LUA_ERROR                0
+#define CONST_LUA_PARAM_ERROR         -1
 
+#define CONST_TREND_TIME_GRANULARITY   5 /* sec */
 #define CONST_DEFAULT_PRIVATE_NETS  "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
 #define CONST_DEFAULT_LOCAL_NETS    "0.0.0.0/32,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32"
 
