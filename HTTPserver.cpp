@@ -297,6 +297,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   static char ports[32];
   
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
+  httpserver = this;
 
 #ifdef HAVE_SSL
   snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
@@ -332,7 +333,6 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   /* ***************************** */
 
-  httpserver = this;
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
 				      port, docs_dir, scripts_dir);
 };

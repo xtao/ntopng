@@ -34,6 +34,7 @@ ActivityStats::ActivityStats() {
   wrap_time = time(NULL);
   wrap_time -= (wrap_time % MAX_DURATION);
   wrap_time += MAX_DURATION;
+  last_set_time = 0;
 }
 
 /* *************************************** */
@@ -49,6 +50,7 @@ ActivityStats::~ActivityStats() {
 void ActivityStats::reset() {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
   bitset->reset();
+  last_set_time = 0;
 }
 
 /* *************************************** */
@@ -63,7 +65,12 @@ void ActivityStats::set(time_t when) {
 
   when %= MAX_DURATION;
 
+  if(when == last_set_time) return;
+  
+  m.lock(__FILE__, __LINE__);
   bitset->set(when);
+  m.unlock(__FILE__, __LINE__);
+  last_set_time = when;
 };
 
 /* *************************************** */
@@ -84,10 +91,12 @@ json_object* ActivityStats::getJSONObject() {
 
   my_object = json_object_new_object();
 
+  m.lock(__FILE__, __LINE__);
   for(EWAHBoolArray<u_int32_t>::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
     snprintf(buf, sizeof(buf), "%lu", (begin_time+(*i)));
     json_object_object_add(my_object, buf, json_object_new_int(1));
   }
+  m.unlock(__FILE__, __LINE__);
 
   return(my_object);
 }
