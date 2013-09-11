@@ -3746,6 +3746,12 @@ _ACEOF
   SQLITE_LIB="-lsqlite3"
 fi
 
+
+cat >>confdefs.h <<_ACEOF
+#define _CRT_SECURE_NO_WARNINGS 1
+_ACEOF
+
+
 GMAKE=`which gmake`
 if test x$GMAKE = x
 then
