@@ -58,6 +58,16 @@ Host::~Host() {
 
   k = get_string_key(key, sizeof(key));
 
+  if(k && (k[0] != '\0')) {
+    char key[64];
+
+    snprintf(key, sizeof(key), "%s.client", k);
+    ntop->getRedis()->del(key);
+
+    snprintf(key, sizeof(key), "%s.server", k);
+    ntop->getRedis()->del(key);
+  }
+
   if(localHost) {
     if(ip != NULL) {
       snprintf(key, sizeof(key), "%s.client", k);

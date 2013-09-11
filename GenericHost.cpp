@@ -34,19 +34,6 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
 /* *************************************** */
 
 GenericHost::~GenericHost() {
-  char buf[64], *keyname;
-
-  keyname = get_string_key(buf, sizeof(buf));
-  if(keyname[0] != '\0') {
-    char key[64];
-
-    snprintf(key, sizeof(key), "%s.client", keyname);
-    ntop->getRedis()->del(key);
-
-    snprintf(key, sizeof(key), "%s.server", keyname);
-    ntop->getRedis()->del(key);
-  }
-
   if(ndpiStats)
     delete ndpiStats;
 }
