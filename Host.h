@@ -33,7 +33,6 @@ class Host : public GenericHost, Serializable {
   float latitude, longitude;
   IpAddress *ip;
   Mutex *m;
-  bool localHost;
   TrafficStats tcp_sent, tcp_rcvd;
   TrafficStats udp_sent, udp_rcvd;
   TrafficStats icmp_sent, icmp_rcvd;
@@ -66,7 +65,6 @@ class Host : public GenericHost, Serializable {
   inline char* get_city()                      { return(city);          }
   inline char* get_category()                  { refreshCategory(); return(category); }
   inline u_int32_t get_asn()                   { return(asn);           }
-  inline bool isLocalHost()                    { return(localHost);     }
   inline bool isPrivateHost()                  { return((ip && ip->isPrivateAddress()) ? true : false); }
   inline float get_latitude()                  { return(latitude);      }
   inline float get_longitude()                 { return(longitude);     }

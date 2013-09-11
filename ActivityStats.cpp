@@ -83,6 +83,27 @@ void ActivityStats::setDump(stringstream* dump) {
 
 /* *************************************** */
 
+bool ActivityStats::dump(char* path) {
+  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+
+  try {
+    ofstream dumpFile(path);
+    stringstream ss;
+    
+    m.lock(__FILE__, __LINE__);
+    bitset->write(ss);
+    m.unlock(__FILE__, __LINE__);
+
+    dumpFile << ss.str();
+    dumpFile.close();
+    return(true);
+  } catch(...) {
+    return(false);
+  }
+}
+
+/* *************************************** */
+
 json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];

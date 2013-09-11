@@ -242,7 +242,18 @@ end
 		       itemSelector: "#sentHeatmap",
 		       data: "]]
      print("/lua/get_host_activitymap.lua?host="..host_ip..'",\n')
-     print("\t\tstart: new Date("..((os.time()-5*3600)*1000).."),\n") -- now-3h
+
+     timezone = get_timezone()
+
+     now = ((os.time()-5*3600)*1000)
+     today = os.time()
+     today = today - (today % 86400) - 2*3600
+     today = today * 1000
+     
+     print("/* "..timezone.." */\n")
+     print("\t\tstart:   new Date("..now.."),\n") -- now-3h
+     print("\t\tminDate: new Date("..today.."),\n")
+     print("\t\tmaxDate: new Date("..(os.time()*1000).."),\n")
 		     print [[ 
    		       domain : "hour",
 		       range : 6,

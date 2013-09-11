@@ -26,8 +26,8 @@
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ndpiStats = new NdpiStats();
   
-  last_bytes = 0;
-  bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
+  localHost = false;
+  last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
 }
 
@@ -61,6 +61,22 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     
     /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
     when -= when % CONST_TREND_TIME_GRANULARITY;
+
+    if(localHost && (when > activityStats.get_wrap_time())) {
+      /* (Daily) Wrap */
+      char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
+      time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
+
+      host_key = get_string_key(buf, sizeof(buf));
+      
+      strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s", ntop->get_working_dir(), daybuf);
+      Utils::mkdir_tree(dump_path);
+
+      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
+      activityStats.dump(dump_path);
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", dump_path);
+    } 
     activityStats.set(when);
 
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);

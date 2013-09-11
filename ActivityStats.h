@@ -42,9 +42,11 @@ class ActivityStats {
   void set(time_t when);
   std::stringstream* getDump();
   void setDump(std::stringstream* dump);
+  bool dump(char* path);
   json_object* getJSONObject();
   char* serialize();  
   void deserialize(json_object *o);
+  inline time_t get_wrap_time() { return(wrap_time); };
 };
 
 #endif /* _ACTIVITY_STATS_H_ */

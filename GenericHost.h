@@ -26,6 +26,7 @@
 
 class GenericHost : public GenericHashEntry {
  protected:
+  bool localHost;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   ActivityStats activityStats;
@@ -40,6 +41,7 @@ class GenericHost : public GenericHashEntry {
   GenericHost(NetworkInterface *_iface);
   ~GenericHost();
 
+  inline bool isLocalHost()          { return(localHost); };
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
@@ -47,6 +49,7 @@ class GenericHost : public GenericHashEntry {
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm); };
   void updateStats(struct timeval *tv);
   inline ValueTrend getThptTrend() { return(bytes_thpt_trend); }
+  virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL); }
 };
 
 #endif /* _GENERIC_HOST_H_ */

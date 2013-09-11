@@ -630,3 +630,9 @@ print('var '..name..' = new Gauge(target).setOptions(opts);\n')
 print(name..'.maxValue = '..maxValue..'; // set max gauge value\n')
 print("</script>\n")
 end
+
+-- Compute the difference in seconds between local time and UTC.
+function get_timezone()
+   local now = os.time()
+   return os.difftime(now, os.time(os.date("!*t", now)))
+end
