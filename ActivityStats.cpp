@@ -68,7 +68,7 @@ void ActivityStats::set(time_t when) {
   if(when == last_set_time) return;
   
   m.lock(__FILE__, __LINE__);
-  bitset->set(when);
+  bitset->set((size_t)when);
   m.unlock(__FILE__, __LINE__);
   last_set_time = when;
 };

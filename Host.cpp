@@ -400,8 +400,8 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
 
 
-    if(sent_packets == 1) sent_stats.incStats(sent_bytes);
-    if(rcvd_packets == 1) recv_stats.incStats(rcvd_bytes);
+    if(sent_packets == 1) sent_stats.incStats((u_int)sent_bytes);
+    if(rcvd_packets == 1) recv_stats.incStats((u_int)rcvd_bytes);
 
     switch(l4_proto) {
     case 0:
@@ -502,10 +502,10 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "asname", &obj))         { if(asname) free(asname); asname = strdup(json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "category", &obj))       { snprintf(category, sizeof(category), "%s", json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "vlan_id", &obj))   vlan_id = json_object_get_int(obj);
-  if(json_object_object_get_ex(o, "latitude", &obj))  latitude  = json_object_get_double(obj);
-  if(json_object_object_get_ex(o, "longitude", &obj)) longitude = json_object_get_double(obj);
+  if(json_object_object_get_ex(o, "latitude", &obj))  latitude  = (float)json_object_get_double(obj);
+  if(json_object_object_get_ex(o, "longitude", &obj)) longitude = (float)json_object_get_double(obj);
   if(json_object_object_get_ex(o, "ip", &obj))  { if(ip == NULL) ip = new IpAddress(); if(ip) ip->deserialize(obj); }
-  if(json_object_object_get_ex(o, "localHost", &obj)) localHost = json_object_get_boolean(obj);
+  if(json_object_object_get_ex(o, "localHost", &obj)) localHost = (json_object_get_boolean(obj) ? true : false);
   if(json_object_object_get_ex(o, "tcp_sent", &obj))  tcp_sent.deserialize(obj);
   if(json_object_object_get_ex(o, "tcp_rcvd", &obj))  tcp_rcvd.deserialize(obj);
   if(json_object_object_get_ex(o, "udp_sent", &obj))  udp_sent.deserialize(obj);
@@ -532,7 +532,7 @@ bool Host::deserialize(char *json_str) {
 
   /* We need to update too the stats for traffic */
   bytes_thpt = 0, last_bytes = sent.getNumBytes()+rcvd.getNumBytes(), 
-    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = time(NULL), 
+    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = (long)time(NULL), 
     last_update_time.tv_usec = 0;
 
   return(true);

@@ -27,15 +27,18 @@
 #include <ws2tcpip.h>
 #include <process.h>
 #include <io.h>
+#include <stdio.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 #include <getopt.h> /* getopt from: http://www.pwilson.net/sample.html. */
+#ifdef __cplusplus
 }
+#endif
 
 #include <process.h> /* for getpid() and the exec..() family */
 #include <direct.h>  /* mkdir */
-
-
 
 /* Values for the second argument to access. These may be OR'd together.  */
 #define R_OK    4       /* Test for read permission.  */
@@ -49,13 +52,25 @@ extern "C" {
 typedef HANDLE pthread_mutex_t;
 typedef HANDLE pthread_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int pthread_create(pthread_t *threadId, void* notUsed, void *(*__start_routine) (void *), void* userParm);
 extern void pthread_detach(pthread_t *threadId);
 extern int pthread_join(pthread_t thread, void **value_ptr);
-
-extern char *strtok_r(char *s, const char *delim, char **save_ptr);
-
+extern int pthread_mutex_lock(pthread_mutex_t *);
+extern int pthread_mutex_unlock(pthread_mutex_t *);
+extern int pthread_mutex_init(pthread_mutex_t *mutex, void *unused);
+extern void pthread_mutex_destroy(pthread_mutex_t *mutex);
+extern int gettimeofday(struct timeval * tp, struct timezone * tzp);
+extern char* strtok_r(char *s, const char *delim, char **save_ptr);
+extern int win_inet_pton(int af, const char *src, void *dst);
+#ifdef __cplusplus
+}
+#endif
 #define strdup(a) _strdup(a)
+
+#define inet_pton(a,b,c) win_inet_pton(a,b,c)
 
 /* mongoose.c */
 #define HAS_POLL

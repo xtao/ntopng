@@ -147,7 +147,7 @@ typedef long off_t;
 #define read(x, y, z) _read((x), (y), (unsigned) z)
 #define flockfile(x) EnterCriticalSection(&global_log_file_lock)
 #define funlockfile(x) LeaveCriticalSection(&global_log_file_lock)
-#define sleep(x) Sleep((x) * 1000)
+// #define sleep(x) Sleep((x) * 1000)
 #define va_copy(x, y) x = y
 
 #if !defined(fileno)
@@ -160,10 +160,8 @@ typedef struct {HANDLE signal, broadcast;} pthread_cond_t;
 typedef HANDLE pthread_mutex_t;
 typedef DWORD pthread_t;
 #define pid_t HANDLE // MINGW typedefs pid_t to int. Using #define here.
-
-static int pthread_mutex_lock(pthread_mutex_t *);
-static int pthread_mutex_unlock(pthread_mutex_t *);
 #endif
+
 static void to_unicode(const char *path, wchar_t *wbuf, size_t wbuf_len);
 struct file;
 static char *mg_fgets(char *buf, size_t size, struct file *filep, char **p);

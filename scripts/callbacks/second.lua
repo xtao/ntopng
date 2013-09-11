@@ -31,6 +31,10 @@ ifstats = interface.getStats()
 dirs = ntop.getDirs()
 basedir = dirs.workingdir .. "/" .. ifname .. "/rrd"
 
+-- Windows fixes for interfaces with "uncommon chars"
+basedir = string.gsub(basedir, "@", "_")
+basedir = string.gsub(basedir, ":", "_")
+
 if(not(ntop.exists(basedir))) then
    if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
    ntop.mkdir(basedir)

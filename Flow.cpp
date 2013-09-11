@@ -405,7 +405,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 		       diff_sent_packets, diff_sent_bytes);
 
   if(last_update_time.tv_sec > 0) {
-    float tdiff = (tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000;
+    float tdiff = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec))/(float)1000;
 
     tdiff = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff;
 

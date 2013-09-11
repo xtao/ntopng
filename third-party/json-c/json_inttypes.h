@@ -8,11 +8,15 @@
 
 /* Anything less than Visual Studio C++ 10 is missing stdint.h and inttypes.h */
 typedef __int32 int32_t;
+#ifndef INT32_MIN /* ntop */
 #define INT32_MIN    ((int32_t)_I32_MIN)
 #define INT32_MAX    ((int32_t)_I32_MAX)
+#endif
 typedef __int64 int64_t;
+#ifndef INT64_MIN /* ntop */
 #define INT64_MIN    ((int64_t)_I64_MIN)
 #define INT64_MAX    ((int64_t)_I64_MAX)
+#endif
 #define PRId64 "I64d"
 #define SCNd64 "I64d"
 

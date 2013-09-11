@@ -559,6 +559,91 @@ int64_t json_object_get_int64(struct json_object *jso)
   }
 }
 
+/* Luca Deri <deri@ntop.org> */
+#ifdef WIN32
+
+/* http://www.publicsource.apple.com/source/Libc/Libc-186/gen.subproj/ppc.subproj/isinf.c */
+
+#define EXPONENT_BIAS 1023
+
+#define SIGN_BITS 1
+#define EXPONENT_BITS 11
+#define FRACTION_BITS 52
+#define HI_FRACTION_BITS 20
+#define LO_FRACTION_BITS 32
+
+struct double_format {
+    unsigned sign: SIGN_BITS;
+    unsigned exponent: EXPONENT_BITS;
+    unsigned hi_fraction: HI_FRACTION_BITS;
+    unsigned lo_fraction: LO_FRACTION_BITS;
+};
+
+union dbl {
+    struct double_format s;
+    unsigned int u[2];
+    double value;
+};
+
+#define PlusInfinity	(1.0/0.0)
+#define MinusInfinity	(-1.0/0.0)
+
+#define not_a_number(x)		((x) != (x))
+#define positive_infinity(x)	((x) == PlusInfinity)
+#define negative_infinity(x)	((x) == MinusInfinity)
+
+
+int isinf(double value)
+{
+    union dbl d;
+
+    d.value = value;
+    if (d.u[0] == 0x7FF00000 && d.u[1] == 0)
+	return 1;
+    if (d.u[0] == 0xFFF00000 && d.u[1] == 0)
+	return -1;
+    return 0;
+}
+
+/* http://www.publicsource.apple.com/source/Libc/Libc-167/gen.subproj/isnan.c */
+typedef union
+{
+  double value;
+  struct
+  {
+#if defined(__BIG_ENDIAN__)
+    u_int32_t msw;
+    u_int32_t lsw;
+#else
+    unsigned int lsw;
+    unsigned int msw;
+#endif
+  } parts;
+} ieee_double_shape_type;
+/* Get two 32 bit ints from a double.  */
+
+#define EXTRACT_WORDS(ix0,ix1,d)				\
+do {								\
+  ieee_double_shape_type ew_u;					\
+  ew_u.value = (d);						\
+  (ix0) = ew_u.parts.msw;					\
+  (ix1) = ew_u.parts.lsw;					\
+} while (0)
+
+
+int isnan(double x) {
+	int32_t hx,lx;
+	EXTRACT_WORDS(hx,lx,x);
+	hx &= 0x7fffffff;
+	hx |= (unsigned int)(lx|(-lx))>>31;	
+	hx = 0x7ff00000 - hx;
+	return (int)((unsigned int)(hx))>>31;
+}
+
+#endif
+
+/* **************************************** */
+
 
 /* json_object_double */
 
