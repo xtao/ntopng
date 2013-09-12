@@ -260,7 +260,8 @@ links = 0
 for key, values in pairs(hosts_stats) do
    if(values["localhost"] ~= nil) then
       host = interface.getHostInfo(key)
-      
+
+      if(host ~= nil) then
       if(hosts_id[key] == nil) then
 	 hosts_id[key] = { }
 	 hosts_id[key]['count'] = 0
@@ -311,6 +312,7 @@ for key, values in pairs(hosts_stats) do
 	    if(links > 0) then print(",") end
 	    print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"server","linkName":""}')
 	    links = links + 1
+	 end
 	 end
       end
    end
