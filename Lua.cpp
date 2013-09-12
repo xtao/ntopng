@@ -849,15 +849,15 @@ static int ntop_process_flow(lua_State* vm) {
 
   id++;
   if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  src_port = (u_int32_t)lua_tonumber(vm, id);
+  src_port = htons((u_int16_t)lua_tonumber(vm, id));
 
   id++;
   if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  dst_port = (u_int32_t)lua_tonumber(vm, id);
+  dst_port = htons((u_int16_t)lua_tonumber(vm, id));
 
   id++;
   if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  vlan_id = (u_int32_t)lua_tonumber(vm, id);
+  vlan_id = htons((u_int16_t)lua_tonumber(vm, id));
 
   id++;
   if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
