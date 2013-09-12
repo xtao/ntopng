@@ -23,7 +23,10 @@
 #include "ewah.h"
 
 #define TIME_GRANULARITY          5 /* sec */
-#define MAX_DURATION          86400 /* wrap every day */
+//#define MAX_DURATION          86400 /* wrap every day */
+
+
+#define MAX_DURATION 60
 
 /* *************************************** */
 
@@ -35,6 +38,8 @@ ActivityStats::ActivityStats() {
   wrap_time -= (wrap_time % MAX_DURATION);
   wrap_time += MAX_DURATION;
   last_set_time = 0;
+
+  // ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
 }
 
 /* *************************************** */

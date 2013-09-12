@@ -33,9 +33,6 @@ extern "C" {
 
 static HTTPserver *httpserver;
 
-#define LOGIN_URL      "/login.html"
-#define AUTHORIZE_URL  "/authorize.html"
-
 bool enable_users_login = true;
 
 /* ****************************************** */
@@ -113,14 +110,17 @@ static int is_authorized(const struct mg_connection *conn,
   if(session_id[0] == '\0') return(0);
 
   mg_get_cookie(conn, "user", username, sizeof(username));
-  // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Received session %s/%s", session_id, username);
+  
+  // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Received session %s/%s", session_id, username);
 
   snprintf(key, sizeof(key), "sessions.%s", session_id);
   if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
-     || strcmp(user, username) /* Users don't match */)
+     || strcmp(user, username) /* Users don't match */) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Session %s/%s is expired or empty user", session_id, username);
     return(0);
-  else {
-    ntop->getRedis()->expire(key, 3600); /* Extend session */
+  } else {
+    ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Session %s is OK", session_id);
     return(1);
   }
 }
@@ -174,15 +174,15 @@ static void authorize(struct mg_connection *conn,
     // ntop->getTrace()->traceEvent(TRACE_ERROR, "==> %s\t%s", random, session_id);
 
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
-	      "Set-Cookie: session=%s; max-age=3600; http-only\r\n"  // Session ID
+	      "Set-Cookie: session=%s; max-age=%u; http-only\r\n"  // Session ID
 	      "Set-Cookie: user=%s\r\n"  // Set user, needed by Javascript code
 	      "Set-Cookie: original_url=/; max-age=0\r\n"  // Delete original_url
 	      "Location: /\r\n\r\n",
-	      session_id, user);
+	      session_id, HTTP_SESSION_DURATION, user);
     
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
-    ntop->getRedis()->set(key, user, 3600 /* 1h */);
+    ntop->getRedis()->set(key, user, HTTP_SESSION_DURATION);
 
     snprintf(key, sizeof(key), "sessions.%s.ifname", session_id);
     ntop->getRedis()->del(key);

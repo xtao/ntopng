@@ -54,6 +54,10 @@
 
 /* ***************************************************** */
 
+#define LOGIN_URL               "/login.html"
+#define AUTHORIZE_URL           "/authorize.html"
+#define HTTP_SESSION_DURATION   3600
+
 #define NO_NDPI_PROTOCOL          ((u_int)-1)
 #define NDPI_MIN_NUM_PACKETS      10
 #define GTP_U_V1_PORT             2152

@@ -74,6 +74,13 @@ var g_aSubPL = [];
 // Rome, Italy
 var default_latitude  = 41.9;
 var default_longitude = 12.4833333;
+var error_code        = "";
+var locating = 1;
+
+function createMap() {
+  createGoogleMap();
+  loadJSONData();
+}
 
 function displayError(error) {
   var errors = {
@@ -81,13 +88,23 @@ function displayError(error) {
   2: 'Position unavailable',
   3: 'Request timeout'
   };
-  // alert("Error: " + errors[error.code]);
+
+  error_code = errors[error.code];
+  locating = 0;
+  
+  $('#mylocation').html("Geolocation error ["+ error_code+"]. Using default location.");
+  createMap();
 }
+
 
 function displayPosition(position) {
   default_latitude = position.coords.latitude;
   default_longitude = position.coords.longitude;
-  // alert("Latitude: " + position.coords.latitude + ", Longitude: " + position.coords.longitude);
+    locating = 0;
+
+    $('#mylocation').html("Browser reported home map location <A HREF=\"http://maps.google.com/?q="+ default_latitude + "," + default_longitude+"\">[Latitude: " + default_latitude + ", Longitude: " + default_longitude+"]</A>");
+
+    createMap();
 }
 
 
@@ -104,14 +121,18 @@ function initialize() {
 					     displayError,
 					     { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
 					     );
+
+//	  sleep(1000);
+
+      // 
   }
   else {
-    // alert("Geolocation is not supported by this browser");
+      //alert("Geolocation is not supported by this browser");
+      $('#mylocation').html("Geolocation not supported by your browser or disabled. Using default location.");
     // We use the default location
+      createMap();
   }
 
-  createGoogleMap();
-  loadJSONData();
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);

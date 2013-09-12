@@ -493,12 +493,17 @@ print [[
      #map-canvas { width: 640px; height: 480px; }
    </style>
 
+</center>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span8">
       <div id="map-canvas"></div>
-<p>&nbsp;<p><small><b>NOTE</b>: HTML <A HREF=http://diveintohtml5.info/geolocation.html>browser geolocation</A> is used to place on map hosts with private IP addresses or unknown locations.</small>
+]]
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/geolocation_disclaimer.inc")
+
+print [[
 </div>
 </div>
 </div>
@@ -511,7 +516,7 @@ print [[
     <script type="text/javascript" src="/js/googleMapJson.js" ></script>
 ]]
 
-print("</center>")
+
 elseif(page == "contacts") then
 
 

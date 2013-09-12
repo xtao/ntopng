@@ -129,7 +129,7 @@ function secondsToTime(seconds) {
       if(hours > 1)
 	 msg = msg + "hour"
       else
-	 msg = msg + "hour"      
+	 msg = msg + "hour"
 
       if(hours > 1) { msg = msg + "s" }
       msg = msg + ", "
@@ -178,67 +178,76 @@ function epoch2Seen(epoch) {
    }
 
 setInterval(function() {
-		  $.ajax({
-			    type: 'GET',
-			    url: '/lua/network_load.lua',
-			    data: { },
-			    success: function(content) {
-					   var rsp = jQuery.parseJSON(content);
-					   if(prev_bytes > 0) {
-					   var values = updatingChart.text().split(",")
-   					   var bytes_diff = rsp.bytes-prev_bytes;
-   					   var packets_diff = rsp.packets-prev_packets;
-					   var epoch_diff = rsp.epoch - prev_epoch;
+    $.ajax({
+      type: 'GET',
+	  url: '/lua/network_load.lua',
+	  data: { },
+	  error: function(content) { /* console.log(content);  */ alert("JSON Error (session expired?): moving to home page"); window.location.replace("/");  },
+	  success: function(content) {
+	  var rsp;
 
-					   if(epoch_diff > 0) {
+	  try {
+	    rsp = jQuery.parseJSON(content);
 
-					   if(bytes_diff > 0) {
-					      values.shift();
-					      values.push(bytes_diff);
-					      updatingChart.text(values.join(",")).change();
-					   }
+	    if(prev_bytes > 0) {
+	      var values = updatingChart.text().split(",")
+		var bytes_diff = rsp.bytes-prev_bytes;
+	      var packets_diff = rsp.packets-prev_packets;
+	      var epoch_diff = rsp.epoch - prev_epoch;
 
-					   pps = Math.floor(packets_diff / epoch_diff);
-					   bps = Math.round((bytes_diff*8) / epoch_diff);
-					   msg = ""+bitsToSize(bps)+" [" + addCommas(pps) + " pps]<br>";
-					   msg += "<i class=\"icon-time\"></i> Uptime: "+rsp.uptime+"<br>";
+	      if(epoch_diff > 0) {
 
-					   var alarm_threshold_low = 60;  /* 60% */
-					   var alarm_threshold_high = 90; /* 90% */
+		if(bytes_diff > 0) {
+		  values.shift();
+		  values.push(bytes_diff);
+		  updatingChart.text(values.join(",")).change();
+		}
 
-					   if(rsp.hosts_pctg < alarm_threshold_low) {
-					      msg += "<span class=\"label\">";
-					   } else if(rsp.hosts_pctg < alarm_threshold_high) {
-					      msg += "<span class=\"label label-warning\">";
-					   } else {
-					      msg += "<span class=\"label label-important\">";
-					   }
+		pps = Math.floor(packets_diff / epoch_diff);
+		bps = Math.round((bytes_diff*8) / epoch_diff);
+		msg = ""+bitsToSize(bps)+" [" + addCommas(pps) + " pps]<br>";
+		msg += "<i class=\"icon-time\"></i> Uptime: "+rsp.uptime+"<br>";
 
-					   msg += addCommas(rsp.num_hosts)+" hosts</span> ";
+		var alarm_threshold_low = 60;  /* 60% */
+		var alarm_threshold_high = 90; /* 90% */
 
-					   if(rsp.flows_pctg < alarm_threshold_low) {
-					      msg += "<span class=\"label\">";
-					   } else if(rsp.flows_pctg < alarm_threshold_high) {
-					      msg += "<span class=\"label label-warning\">";
-					   } else {
-					      msg += "<span class=\"label label-important\">";
-					   }
+		if(rsp.hosts_pctg < alarm_threshold_low) {
+		  msg += "<span class=\"label\">";
+		} else if(rsp.hosts_pctg < alarm_threshold_high) {
+		  msg += "<span class=\"label label-warning\">";
+		} else {
+		  msg += "<span class=\"label label-important\">";
+		}
 
-					   msg += addCommas(rsp.num_flows)+" flows ";
-					   
-					   $('#network-load').html(msg);
-					   gauge.set(Math.min(bps, gauge.maxValue));
-					}
-   					} else {
-					/* $('#network-load').html("[No traffic (yet)]"); */
-					 }
+		msg += addCommas(rsp.num_hosts)+" hosts</span> ";
 
-					   prev_bytes   = rsp.bytes;
-					   prev_packets = rsp.packets;
-					   prev_epoch   = rsp.epoch;
-					}
-				     });
-			 }, 1000)
+		if(rsp.flows_pctg < alarm_threshold_low) {
+		  msg += "<span class=\"label\">";
+		} else if(rsp.flows_pctg < alarm_threshold_high) {
+		  msg += "<span class=\"label label-warning\">";
+		} else {
+		  msg += "<span class=\"label label-important\">";
+		}
+
+		msg += addCommas(rsp.num_flows)+" flows ";
+
+		$('#network-load').html(msg);
+		gauge.set(Math.min(bps, gauge.maxValue));
+	      }
+	    } else {
+	      /* $('#network-load').html("[No traffic (yet)]"); */
+	    }
+
+	    prev_bytes   = rsp.bytes;
+	    prev_packets = rsp.packets;
+	    prev_epoch   = rsp.epoch;
+
+	  } catch(e) {
+	    alert("JSON Error (session expired?): moving to home page"); window.location.replace("/");
+	  }
+	}
+      });
+  }, 1000)
 
 $(document).ready(function () { $("a").tooltip({ 'selector': '', 'placement': 'bottom'  });});
 
