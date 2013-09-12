@@ -66,6 +66,7 @@ end
 
 print [[
       <li class="divider"></li>
+      <li><a href="/lua/hosts_interaction.lua"><i class="icon-eye-open"></i> Interactions</a></li>
       <li><a href="/lua/hosts_geomap.lua"><i class="icon-map-marker"></i> Geo Map</a></li>
       <li><a href="/lua/hosts_treemap.lua"><i class="icon-th"></i> Tree Map</a></li>
       <li><a href="/lua/hosts_matrix.lua"><i class="icon-th-large"></i> Local Matrix</a></li>
