@@ -22,8 +22,6 @@
 #include "ntop_includes.h"
 #include "ewah.h"
 
-#define TIME_GRANULARITY          5 /* sec */
-
 /* *************************************** */
 
 /* Daily duration */
@@ -31,8 +29,8 @@ ActivityStats::ActivityStats() {
   _bitset = new EWAHBoolArray<u_int32_t>;
 
   wrap_time = time(NULL);
-  wrap_time -= (wrap_time % MAX_DURATION);
-  wrap_time += MAX_DURATION;
+  wrap_time -= (wrap_time % MAX_ACTIVITY_DURATION);
+  wrap_time += MAX_ACTIVITY_DURATION;
   last_set_time = 0;
 
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
@@ -61,10 +59,10 @@ void ActivityStats::set(time_t when) {
 
   if(when > wrap_time) {
     bitset->reset();
-    wrap_time += MAX_DURATION;
+    wrap_time += MAX_ACTIVITY_DURATION;
   }
 
-  when %= MAX_DURATION;
+  when %= MAX_ACTIVITY_DURATION;
 
   if(when == last_set_time) return;
   
@@ -109,7 +107,7 @@ json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
-  time_t begin_time = wrap_time - MAX_DURATION;
+  time_t begin_time = wrap_time - MAX_ACTIVITY_DURATION;
 
   my_object = json_object_new_object();
 
@@ -152,7 +150,7 @@ void ActivityStats::deserialize(json_object *o) {
     char *key  = (char*)json_object_iter_peek_name(&it);
     u_int32_t when = atol(key);
       
-    when %= MAX_DURATION;
+    when %= MAX_ACTIVITY_DURATION;
     bitset->set(when);
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, 1);
     
