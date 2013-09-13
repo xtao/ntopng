@@ -523,6 +523,8 @@ elseif(page == "contacts") then
 if(num > 0) then
 
 mode = "embed"
+if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
+name = host["name"]
 dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua") 
 
 print("<table class=\"table table-bordered table-striped\">\n")

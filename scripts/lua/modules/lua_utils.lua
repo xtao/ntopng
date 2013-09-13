@@ -645,7 +645,7 @@ function getTopInterfaceHosts(howmany, localHostsOnly)
    sortTable = {}
    n = 0
    for k,v in pairs(hosts_stats) do 
-      if((not localHostsOnly) or (v["localhost"] ~= nil)) then
+      if((not localHostsOnly) or ((v["localhost"] ~= nil) and (v["ip"] ~= nil))) then
 	 sortTable[v["bytes.sent"]+v["bytes.rcvd"]+n] = k
 	 n = n +0.01
       end

@@ -15,12 +15,18 @@ if(mode == nil) then
    mode  = _GET["mode"]
 end
 
+if(host_name == nil) then
+   host_name = _GET["name"]
+end
+
 if(mode ~= "embed") then
    sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    active_page = "hosts"
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 end
+
+num_top_hosts = 10
 
 if(host_ip ~= nil) then
    num = 1
@@ -34,12 +40,13 @@ else
 end
 
 if(num > 0) then
-
    if(mode ~= "embed") then
       if(host_ip == nil) then
-	 print("<hr><h2>Hosts Interaction</H2>")
+	 print("<hr><h2>Top Hosts Interaction</H2>")
       else
-	 print("<hr><h2>"..host_ip.." Contacts</H2>")
+	 name = host_name
+	 if(name == nil) then name = host_ip end
+	 print("<hr><h2>"..name.." Interactions</H2><i class=icon-chevron-left></i><small><A onClick=\"javascript:history.back()\">Back</A></small>")
       end
    end
 
@@ -82,8 +89,7 @@ sup, sub {
 height: 
 ]]
 
-if(host_ip == nil) then print("600") else print("300") end
-
+if(mode ~= "embed") then print("600") else print("300") end
 
 print [[
 px;
@@ -181,8 +187,12 @@ px;
 	 var data = inData.d3.data;
 	 var nodes = data.nodes;
 	 var links = data.links;
-	 var color = d3.scale.category20();
+	 var color = d3.scale.category10();
 
+	 color["local"]  = "#aec7e8";
+	 color["remote"] = "#bcbd22";
+	 color["sun"]    = "#fd8d3c";
+	 
 	 var force = d3.layout.force().nodes(nodes).links(links).size([width, height]).linkDistance(options.linkDistance).charge(options.charge).on("tick", tick).start();
 
 	 var svg = d3.select(divName).append("svg:svg").attr("width", width).attr("height", height);
@@ -213,7 +223,7 @@ px;
 	 var circle = svg.append("svg:g").selectAll("circle").data(force.nodes()).enter().append("svg:circle").attr("r", function(d) {
 	     return getRadius(d);
 	   }).style("fill", function(d) {
-	       return color(d.group);
+				  return color[d.group];
 	     }).call(force.drag);
 
 	 if (options.nodeLabel) {
@@ -222,7 +232,7 @@ px;
 	     });  	  
 	 }
 
-	       circle.on("click", function(d) { if(d.link.length > 0) { window.location.href = d.link; } } );
+         circle.on("click", function(d) { if(d.link.length > 0) { window.location.href = d.link; } } );
     
 	 if (options.linkName) {
 	   path.append("title").text(function(d) {
@@ -263,7 +273,7 @@ px;
        </script><script> 
 
 window['ntopData'] = {"d3":{"options":
-			    {"radius":"16","fontSize":"30","labelFontSize":"30","charge":"-600","nodeResize":"count","nodeLabel":"label","markerHeight":"6","markerWidth":"6","styleColumn":"styleColumn","linkName":"group"},
+			    {"radius":"16","fontSize":"30","labelFontSize":"30","charge":"-2000","nodeResize":"count","nodeLabel":"label","markerHeight":"6","markerWidth":"6","styleColumn":"styleColumn","linkName":"group"},
 		       "data":{"links":[
 
 ]]
@@ -273,7 +283,7 @@ window['ntopData'] = {"d3":{"options":
 interface.find(ifname)
 
 if(host_ip == nil) then
-   hosts_stats = getTopInterfaceHosts(5, true)
+   hosts_stats = getTopInterfaceHosts(num_top_hosts, true)
 else
    hosts_stats = {}
    hosts_stats[host_ip] = interface.getHostInfo(host_ip)
@@ -350,6 +360,7 @@ print [[
 
 -- Nodes
 
+min_size = 5
 maxval = 0
 for k,v in pairs(hosts_id) do 
    if(v['count'] > maxval) then maxval = v['count'] end
@@ -359,33 +370,36 @@ num = 0
 for i=0,tot_hosts-1 do
    k = ids[i]
    v = hosts_id[k]
-   key = k
 
-   host = interface.getHostInfo(key)
-   if(host ~= nil) then 
-      name = host["name"] 
-      if(host['localhost'] ~= nil) then label = "local" else label = "remote" end      
+   target_host = interface.getHostInfo(k)
+   if(target_host ~= nil) then 
+      name = target_host["name"] 
+      if(name ~= nil) then 
+	 name = name
+      else
+	 name = ntop.getResolvedAddress(k)
+      end
+      if(target_host['localhost'] ~= nil) then label = "local" else label = "remote" end      
    else
-      name = key
+      name = k
       label = "remote"
    end
-
-   if(name == key) then name = ntop.getResolvedAddress(k) end
-
+   
+   if((host_ip ~= nil) and (host_ip == k)) then label = "sun" end
+   -- f(name == k) then name = ntop.getResolvedAddress(k) end
    if(name == nil) then name = k end
    tot = math.floor(0.5+(v['count']*100)/maxval)
-   if(tot < 1) then tot = 1 end
+   if(tot < min_size) then tot = min_size end
 
    if(num > 0) then print(",") end
-   print('\n{"name":"'.. key ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'"')
+   print('\n{"name":"'.. k ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'"')
 
-   if(host ~= nil) then
-      -- Host still in memory
-      
-      if(host_ip == nil) then
-	 print(', "link": "/lua/hosts_interaction.lua?host='.. key.. '"}')
+   if(target_host ~= nil) then
+      -- Host still in memory      
+      if((host_ip == nil) or (k ~= host_ip)) then
+	 print(', "link": "/lua/hosts_interaction.lua?host='.. k.. '&name='.. name .. '"}')
       else
-	 print(', "link": "/lua/host_details.lua?host='.. key.. '"}')
+	 print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
       end
    else
       -- Host purged
@@ -414,8 +428,16 @@ print [[
 
 <p>&nbsp;<p><small><b>NOTE</b></small>
 <ol>
+]]
+
+if(host_ip ~= nil) then
+   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_ip.. '</font>. Clicking on this host you will visualize its details.</small></li>\n')
+else
+   print('<li><small>This map depicts the interactions of the top  '.. num_top_hosts .. ' hosts.</small></li>\n')
+end
+print [[
 <li> <small>Click is enabled only for hosts that have not been purged from memory.</small></li>
-</ul>
+</ol>
 
 <!-- http://ramblings.mcpher.com/Home/excelquirks/d3 -->
   <script type="text/javascript">

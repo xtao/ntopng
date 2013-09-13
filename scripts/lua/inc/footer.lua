@@ -243,7 +243,8 @@ setInterval(function() {
 	    prev_epoch   = rsp.epoch;
 
 	  } catch(e) {
-	    alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua"); 
+	     console.log(e);
+	     /* alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  */
 	  }
 	}
       });
