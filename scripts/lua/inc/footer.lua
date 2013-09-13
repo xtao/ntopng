@@ -182,7 +182,7 @@ setInterval(function() {
       type: 'GET',
 	  url: '/lua/network_load.lua',
 	  data: { },
-	  error: function(content) { /* console.log(content);  */ alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  },
+	  /* error: function(content) { alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  }, */
 	  success: function(content) {
 	  var rsp;
 
