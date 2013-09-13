@@ -182,7 +182,7 @@ setInterval(function() {
       type: 'GET',
 	  url: '/lua/network_load.lua',
 	  data: { },
-	  error: function(content) { /* console.log(content);  */ alert("JSON Error (session expired?): moving to home page"); window.location.replace("/");  },
+	  error: function(content) { /* console.log(content);  */ alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  },
 	  success: function(content) {
 	  var rsp;
 
@@ -243,7 +243,7 @@ setInterval(function() {
 	    prev_epoch   = rsp.epoch;
 
 	  } catch(e) {
-	    alert("JSON Error (session expired?): moving to home page"); window.location.replace("/");
+	    alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua"); 
 	  }
 	}
       });

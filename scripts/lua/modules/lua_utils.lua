@@ -636,3 +636,30 @@ function get_timezone()
    local now = os.time()
    return os.difftime(now, os.time(os.date("!*t", now)))
 end
+
+
+-- Return the first 'howmany' hosts 
+function getTopInterfaceHosts(howmany, localHostsOnly)
+   hosts_stats = interface.getHostsInfo()
+   ret = {}
+   sortTable = {}
+   n = 0
+   for k,v in pairs(hosts_stats) do 
+      if((not localHostsOnly) or (v["localhost"] ~= nil)) then
+	 sortTable[v["bytes.sent"]+v["bytes.rcvd"]+n] = k
+	 n = n +0.01
+      end
+   end
+
+   n = 0
+   for _v,k in pairsByKeys(sortTable, rev) do 
+      if(n < howmany) then 
+	 ret[k] = hosts_stats[k]
+	 n = n+1
+      else
+	 break
+      end
+   end
+
+   return(ret)
+end

@@ -250,7 +250,7 @@ window['ntopData'] = {"d3":{"options":
 -- Nodes
 
 interface.find(ifname)
-hosts_stats = interface.getHostsInfo()
+hosts_stats = getTopInterfaceHosts(10, true)
 
 hosts_id = {}
 ids = {}
