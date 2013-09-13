@@ -131,7 +131,7 @@ static void redirect_to_login(struct mg_connection *conn,
                               const struct mg_request_info *request_info) {
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: original_url=%s\r\n"
-	    "Set-Cookie: session=; max-age=0; http-only\r\n"  // Session ID
+	    "Set-Cookie: session=; path=/; max-age=0; HttpOnly\r\n"  // Session ID
 	    "Location: %s\r\n\r\n",
 	    request_info->uri, LOGIN_URL);
 }
@@ -173,12 +173,14 @@ static void authorize(struct mg_connection *conn,
 
     // ntop->getTrace()->traceEvent(TRACE_ERROR, "==> %s\t%s", random, session_id);
 
+    /* http://en.wikipedia.org/wiki/HTTP_cookie */
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
-	      "Set-Cookie: session=%s; max-age=%u; http-only\r\n"  // Session ID
-	      "Set-Cookie: user=%s\r\n"  // Set user, needed by Javascript code
+	      "Set-Cookie: session=%s; path=/; max-age=%u; HttpOnly\r\n"  // Session ID
+	      "Set-Cookie: user=%s; path=/; max-age=%u; HttpOnly\r\n"  // Set user, needed by Javascript code
 	      "Set-Cookie: original_url=/; max-age=0\r\n"  // Delete original_url
 	      "Location: /\r\n\r\n",
-	      session_id, HTTP_SESSION_DURATION, user);
+	      session_id, HTTP_SESSION_DURATION, 
+	      user, HTTP_SESSION_DURATION);
     
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);

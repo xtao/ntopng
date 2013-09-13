@@ -521,6 +521,10 @@ elseif(page == "contacts") then
 
 
 if(num > 0) then
+
+mode = "embed"
+dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua") 
+
 print("<table class=\"table table-bordered table-striped\">\n")
 print("<tr><th width=50%>Client Contacts (Initiator)</th><th width=50%>Server Contacts (Receiver)</th></tr>\n")
 

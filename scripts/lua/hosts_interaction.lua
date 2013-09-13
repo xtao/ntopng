@@ -7,32 +7,44 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-sendHTTPHeader('text/html')
-
-
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-active_page = "hosts"
-dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-
-interface.find(ifname)
-hosts_stats = interface.getHostsInfo()
-num = 0
-for key, value in pairs(hosts_stats) do
-    num = num + 1
+if(host_ip == nil) then
+   host_ip = _GET["host"]
 end
 
+if(mode == nil) then
+   mode  = _GET["mode"]
+end
+
+if(mode ~= "embed") then
+   sendHTTPHeader('text/html')
+   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+   active_page = "hosts"
+   dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+end
+
+if(host_ip ~= nil) then
+   num = 1
+else
+   interface.find(ifname)
+   hosts_stats = interface.getHostsInfo()
+   num = 0
+   for key, value in pairs(hosts_stats) do
+      num = num + 1
+   end
+end
 
 if(num > 0) then
+
+   if(mode ~= "embed") then
+      if(host_ip == nil) then
+	 print("<hr><h2>Hosts Interaction</H2>")
+      else
+	 print("<hr><h2>"..host_ip.." Contacts</H2>")
+      end
+   end
+
 print [[
-
-<hr>
-<h2>Hosts Interaction</H2>
-
-
-
 <style>
-
-
 svg {
  font: 10px sans-serif;
 }
@@ -67,7 +79,14 @@ sup, sub {
   </style>
   <style>
 #chart {
-height: 600px;
+height: 
+]]
+
+if(host_ip == nil) then print("600") else print("300") end
+
+
+print [[
+px;
 }
        .node rect {
     cursor: move;
@@ -198,10 +217,12 @@ height: 600px;
 	     }).call(force.drag);
 
 	 if (options.nodeLabel) {
-	   circle.append("title").text(function(d) {
+	   circle.append("title").html(function(d) {
 	       return d[options.nodeLabel];
-	     });
+	     });  	  
 	 }
+
+	       circle.on("click", function(d) { if(d.link.length > 0) { window.location.href = d.link; } } );
     
 	 if (options.linkName) {
 	   path.append("title").text(function(d) {
@@ -242,7 +263,7 @@ height: 600px;
        </script><script> 
 
 window['ntopData'] = {"d3":{"options":
-			    {"radius":"24","fontSize":"30","labelFontSize":"30","charge":"-600","nodeResize":"count","nodeLabel":"label","markerHeight":"6","markerWidth":"6","styleColumn":"styleColumn","linkName":"group"},
+			    {"radius":"16","fontSize":"30","labelFontSize":"30","charge":"-600","nodeResize":"count","nodeLabel":"label","markerHeight":"6","markerWidth":"6","styleColumn":"styleColumn","linkName":"group"},
 		       "data":{"links":[
 
 ]]
@@ -250,32 +271,35 @@ window['ntopData'] = {"d3":{"options":
 -- Nodes
 
 interface.find(ifname)
-hosts_stats = getTopInterfaceHosts(10, true)
+
+if(host_ip == nil) then
+   hosts_stats = getTopInterfaceHosts(5, true)
+else
+   hosts_stats = {}
+   hosts_stats[host_ip] = interface.getHostInfo(host_ip)
+end
 
 hosts_id = {}
 ids = {}
 
 num = 0
 links = 0
-for key, values in pairs(hosts_stats) do
-   if(values["localhost"] ~= nil) then
-      host = interface.getHostInfo(key)
+local host
 
-      if(host ~= nil) then
+for key, values in pairs(hosts_stats) do
+   host = interface.getHostInfo(key)
+
+   if(host ~= nil) then
       if(hosts_id[key] == nil) then
 	 hosts_id[key] = { }
 	 hosts_id[key]['count'] = 0
 	 hosts_id[key]['id'] = num
-	 hosts_id[key]['localhost'] = 1
 	 ids[num] = key
 	 key_id = num
 	 num = num + 1
-	 hosts_id[key]["name"] = host["name"]
-	 if(hosts_id[key]["name"] == nil) then hosts_id[key]["name"] = ntop.getResolvedAddress(key) end
       else
 	 key_id = hosts_id[key]['id']
       end
-
 
       if(host["contacts"]["client"] ~= nil) then
 	 for k,v in pairs(host["contacts"]["client"]) do 
@@ -310,9 +334,8 @@ for key, values in pairs(hosts_stats) do
 	    end
 	    hosts_id[key]['count'] = hosts_id[key]['count'] + v
 	    if(links > 0) then print(",") end
-	    print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"server","linkName":""}')
+	    print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"server"}')
 	    links = links + 1
-	 end
 	 end
       end
    end
@@ -337,17 +360,47 @@ for i=0,tot_hosts-1 do
    k = ids[i]
    v = hosts_id[k]
    key = k
-   name = v["name"]
+
+   host = interface.getHostInfo(key)
+   if(host ~= nil) then 
+      name = host["name"] 
+      if(host['localhost'] ~= nil) then label = "local" else label = "remote" end      
+   else
+      name = key
+      label = "remote"
+   end
+
+   if(name == key) then name = ntop.getResolvedAddress(k) end
+
    if(name == nil) then name = k end
    tot = math.floor(0.5+(v['count']*100)/maxval)
    if(tot < 1) then tot = 1 end
-   if(v['localhost'] ~= nil) then label = "local" else label = "remote" end
+
    if(num > 0) then print(",") end
-   print('\n{"name":"'.. key ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"' .. name ..'", "url" : "/lua/host_details.lua?host='.. key.. '"}')
+   print('\n{"name":"'.. key ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'"')
+
+   if(host ~= nil) then
+      -- Host still in memory
+      
+      if(host_ip == nil) then
+	 print(', "link": "/lua/hosts_interaction.lua?host='.. key.. '"}')
+      else
+	 print(', "link": "/lua/host_details.lua?host='.. key.. '"}')
+      end
+   else
+      -- Host purged
+      print(', "link": ""}')
+   end
+
    num = num + 1
 end
 
-
+if((num == 0) and (host_ip ~= nil)) then
+   tot = 1
+   label = ""
+   name = host_ip
+   print('\n{"name":"'.. host_ip ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. host_ip.. '"}')
+end
 
 print [[
 
@@ -355,24 +408,25 @@ print [[
 }}};
 
 
-</script></head><body>
-  <div id="chart">
+</script>
 
-  </div>
+<div id="chart"></div>
 
+<p>&nbsp;<p><small><b>NOTE</b></small>
+<ol>
+<li> <small>Click is enabled only for hosts that have not been purged from memory.</small></li>
+</ul>
 
 <!-- http://ramblings.mcpher.com/Home/excelquirks/d3 -->
   <script type="text/javascript">
        doTheTreeViz("#chart", ntopData);
   </script>
 
-
-
-
-
 ]]
 else
 print("<div class=\"alert alert-error\"><img src=/img/warning.png> No results found</div>")
 end
 
+if(mode ~= "embed") then
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
+end
