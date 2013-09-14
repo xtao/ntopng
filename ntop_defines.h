@@ -59,7 +59,7 @@
 #define HTTP_SESSION_DURATION   3600
 
 #define TIME_GRANULARITY          5 /* sec */
-#define MAX_ACTIVITY_DURATION  6400 /* sec */
+#define MAX_ACTIVITY_DURATION     86400 /* sec */
 
 #define NO_NDPI_PROTOCOL          ((u_int)-1)
 #define NDPI_MIN_NUM_PACKETS      10
