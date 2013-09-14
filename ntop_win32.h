@@ -22,6 +22,9 @@
 #ifndef _NTOP_WIN32_H_
 #define _NTOP_WIN32_H_
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1
+#endif
 
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <ws2tcpip.h>
@@ -33,6 +36,7 @@
 extern "C" {
 #endif
 #include <getopt.h> /* getopt from: http://www.pwilson.net/sample.html. */
+const char *win_inet_ntop(int af, const void *src, char *dst,socklen_t size);
 #ifdef __cplusplus
 }
 #endif
@@ -48,6 +52,9 @@ extern "C" {
 
 #define access _access
 #define ftruncate _chsize
+
+/* Damn XP */
+#define inet_ntop win_inet_ntop
 
 typedef HANDLE pthread_mutex_t;
 typedef HANDLE pthread_t;
