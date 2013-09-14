@@ -431,10 +431,13 @@ print [[
 ]]
 
 if(host_ip ~= nil) then
-   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_ip.. '</font>. Clicking on this host you will visualize its details.</small></li>\n')
+   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_ip)
+   if(host_name ~= nil) then print('('.. host_name .. ')') end
+   print('</font>. Clicking on this host you will visualize its details.</small></li>\n')
 else
    print('<li><small>This map depicts the interactions of the top  '.. num_top_hosts .. ' hosts.</small></li>\n')
 end
+   print('<li><small>Color map: <font color=#aec7e8><b>local</b></font>, <font color=#bcbd22><b>remote</b></font>, <font color=#fd8d3c><b>focus</b></font> host.</small></li>\n')
 print [[
 <li> <small>Click is enabled only for hosts that have not been purged from memory.</small></li>
 </ol>
