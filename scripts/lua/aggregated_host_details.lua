@@ -122,7 +122,7 @@ setInterval(function() {
 		    type: 'GET',
 		    url: '/lua/get_aggregated_host_info.lua',
 		    data: { ifname: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
-		    error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); },
+		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
