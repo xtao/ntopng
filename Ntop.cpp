@@ -348,8 +348,8 @@ char* Ntop::getValidPath(char *__path) {
   if((__path[0] == '/') || (__path[0] == '\\')) {
     /* Absolute paths */
 
-    if(stat(_path, &buf) == 0) {
-      return(strdup(_path));
+    if(stat(__path, &buf) == 0) {
+      return(strdup(__path));
     }
   } else
     snprintf(_path, MAX_PATH, "%s", __path);
