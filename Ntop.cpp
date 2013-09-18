@@ -82,6 +82,21 @@ Ntop::Ntop(char *appName) {
 #ifdef HAVE_SQLITE
   db = new DB();
 #endif
+
+  initTimezone();
+}
+
+/* ******************************************* */
+
+void Ntop::initTimezone() {
+  /* 
+     Setup timezone differences 
+
+     We call it all the time as daylight can change
+     during the night and thus we need to have it "fresh"
+  */
+  tzset(); 
+  time_offset = timezone - (daylight * 3600);
 }
 
 /* ******************************************* */

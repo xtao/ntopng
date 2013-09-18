@@ -27,13 +27,13 @@
 /* Daily duration */
 ActivityStats::ActivityStats() {
   _bitset = new EWAHBoolArray<u_int32_t>;
-
+ 
   wrap_time = time(NULL);
   wrap_time -= (wrap_time % MAX_ACTIVITY_DURATION);
-  wrap_time += MAX_ACTIVITY_DURATION;
+  wrap_time += MAX_ACTIVITY_DURATION + ntop->get_time_offset();
   last_set_time = 0;
 
-  // ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
+  //ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
 }
 
 /* *************************************** */
@@ -54,6 +54,7 @@ void ActivityStats::reset() {
 
 /* *************************************** */
 
+/* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
 
@@ -65,7 +66,7 @@ void ActivityStats::set(time_t when) {
   when %= MAX_ACTIVITY_DURATION;
 
   if(when == last_set_time) return;
-  
+    
   m.lock(__FILE__, __LINE__);
   bitset->set((size_t)when);
   m.unlock(__FILE__, __LINE__);
@@ -113,7 +114,11 @@ json_object* ActivityStats::getJSONObject() {
 
   m.lock(__FILE__, __LINE__);
   for(EWAHBoolArray<u_int32_t>::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
-    snprintf(buf, sizeof(buf), "%lu", (begin_time+(*i)));
+    /*
+      As the bitmap has the time set in UTC we need to remove the timezone in order
+      to represent the time as local time
+    */
+    snprintf(buf, sizeof(buf), "%lu", (begin_time+(*i)-ntop->get_time_offset()));
     json_object_object_add(my_object, buf, json_object_new_int(1));
   }
   m.unlock(__FILE__, __LINE__);

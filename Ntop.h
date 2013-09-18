@@ -42,6 +42,7 @@ class Ntop {
 #ifdef HAVE_SQLITE
   DB *db;
 #endif
+  long time_offset;
 
  public:
   Ntop(char *appName);
@@ -50,7 +51,8 @@ class Ntop {
 
   void setCustomnDPIProtos(char *path);
   inline char* getCustomnDPIProtos()                 { return(custom_ndpi_protos);                 };
-  
+  inline long get_time_offset()                      { return(time_offset);                        };
+  void initTimezone();
   char* getValidPath(char *path);
   void loadGeolocation(char *dir);
   void setLocalNetworks(char *nets);
