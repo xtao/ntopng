@@ -62,7 +62,7 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 
       snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
       activityStats.dump(dump_path);
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", dump_path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);
     } 
     activityStats.set(when);
 

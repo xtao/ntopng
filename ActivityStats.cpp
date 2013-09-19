@@ -25,12 +25,15 @@
 /* *************************************** */
 
 /* Daily duration */
-ActivityStats::ActivityStats() {
+ActivityStats::ActivityStats(time_t when) {
   _bitset = new EWAHBoolArray<u_int32_t>;
  
-  wrap_time = time(NULL);
-  wrap_time -= (wrap_time % MAX_ACTIVITY_DURATION);
-  wrap_time += MAX_ACTIVITY_DURATION + ntop->get_time_offset();
+  begin_time  = (when == 0) ? time(NULL) : when;
+  begin_time -= (begin_time % MAX_ACTIVITY_DURATION);
+  begin_time += ntop->get_time_offset();
+
+  wrap_time = begin_time + MAX_ACTIVITY_DURATION;
+
   last_set_time = 0;
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
@@ -48,8 +51,11 @@ ActivityStats::~ActivityStats() {
 
 void ActivityStats::reset() {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+
+  m.lock(__FILE__, __LINE__);
   bitset->reset();
   last_set_time = 0;
+  m.unlock(__FILE__, __LINE__);
 }
 
 /* *************************************** */
@@ -59,14 +65,22 @@ void ActivityStats::set(time_t when) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
 
   if(when > wrap_time) {
-    bitset->reset();
+    reset();
+
+    begin_time = wrap_time;
     wrap_time += MAX_ACTIVITY_DURATION;
+
+    ntop->getTrace()->traceEvent(TRACE_INFO,
+				 "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]", 
+				 when, begin_time, wrap_time);
   }
 
-  when %= MAX_ACTIVITY_DURATION;
+  when = (when - begin_time) % MAX_ACTIVITY_DURATION;
 
   if(when == last_set_time) return;
-    
+
+  // ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)when);
+
   m.lock(__FILE__, __LINE__);
   bitset->set((size_t)when);
   m.unlock(__FILE__, __LINE__);
@@ -108,8 +122,7 @@ json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
-  time_t begin_time = wrap_time - MAX_ACTIVITY_DURATION;
-
+  u_int num = 0, last_dump = 0;  
   my_object = json_object_new_object();
 
   m.lock(__FILE__, __LINE__);
@@ -118,8 +131,24 @@ json_object* ActivityStats::getJSONObject() {
       As the bitmap has the time set in UTC we need to remove the timezone in order
       to represent the time as local time
     */
-    snprintf(buf, sizeof(buf), "%lu", (begin_time+(*i)-ntop->get_time_offset()));
-    json_object_object_add(my_object, buf, json_object_new_int(1));
+
+    /* Aggregate events at minute granularity */
+    if(num == 0)
+      num = 1, last_dump = *i;
+    else {
+      if((last_dump+60 /* 1 min */) > *i)
+	num++;
+      else {
+	snprintf(buf, sizeof(buf), "%lu", begin_time+last_dump);
+	json_object_object_add(my_object, buf, json_object_new_int(num));
+	num = 1, last_dump = *i;
+      }
+    }
+  }
+
+  if(num > 0) {
+    snprintf(buf, sizeof(buf), "%lu", begin_time+last_dump);
+    json_object_object_add(my_object, buf, json_object_new_int(num));
   }
   m.unlock(__FILE__, __LINE__);
 

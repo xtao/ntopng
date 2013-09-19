@@ -116,7 +116,7 @@ static int is_authorized(const struct mg_connection *conn,
   snprintf(key, sizeof(key), "sessions.%s", session_id);
   if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
      || strcmp(user, username) /* Users don't match */) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Session %s/%s is expired or empty user", session_id, username);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", session_id, username);
     return(0);
   } else {
     ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
