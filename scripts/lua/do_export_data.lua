@@ -28,7 +28,7 @@ else
    for key, value in pairs(hosts_stats) do
       host = interface.getHostInfo(key)
       
-      if(host["json"] ~= nil) then
+      if((host ~= nil) and (host["json"] ~= nil)) then
 	 if(num > 0) then print(",\n") end
 	 print(host["json"])
 	 num = num + 1
