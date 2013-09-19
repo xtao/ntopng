@@ -359,7 +359,13 @@ for key, values in pairs(hosts_stats) do
 end
 
 aggregation_ids = {}
-aggregations = interface.getAggregationsForHost(host_ip)
+
+if(host_ip ~= nil) then
+   aggregations = interface.getAggregationsForHost(host_ip)
+else
+   aggregations = {}
+end
+
 for name,num_contacts in pairs(aggregations) do
    aggregation_ids[name] = num
 
