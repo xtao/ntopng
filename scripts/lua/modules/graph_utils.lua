@@ -414,7 +414,7 @@ if (xInfoURL) then
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if (items < 3)
-				      infoHTML += "<li>"+m.label+" ("+fbits((m.value*8)/60)+")</li>";
+				      infoHTML += "<li><a href='host_details.lua?host="+m.label+"'>"+m.label+"</a> ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
 				  infoHTML += "</ol></li>";
