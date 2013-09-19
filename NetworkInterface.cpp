@@ -654,6 +654,13 @@ struct host_find_info {
 
 /* **************************************************** */
 
+struct host_find_aggregation_info {
+  IpAddress *host_to_find;
+  lua_State* vm;
+};
+
+/* **************************************************** */
+
 static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
@@ -676,6 +683,19 @@ static void find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
      && info->host_to_find
      && (!strcmp(host->host_key(), info->host_to_find)))
     info->s = host;
+}
+
+/* **************************************************** */
+
+static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_data) {
+  struct host_find_aggregation_info *info = (host_find_aggregation_info*)user_data;
+  StringHost *host                        = (StringHost*)h;
+  u_int n;
+  
+  if(!info->host_to_find) return;
+
+  if((n = host->get_num_contacts_by(info->host_to_find)) > 0)
+    lua_push_int_table_entry(info->vm, host->host_key(), n);
 }
 
 /* **************************************************** */
@@ -753,6 +773,28 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
     return(true);
   } else
     return(false);
+}
+
+/* **************************************************** */
+
+/*
+  Returns all aggregations that have the given host as requestor
+
+  Example if we are looking at the DNS requests, it will return all DNS
+  names requested by host X (host_name)
+*/
+bool NetworkInterface::getAggregationsForHost(lua_State* vm, char *host_ip) {
+  struct host_find_aggregation_info info;
+  IpAddress *h = new IpAddress(host_ip);
+
+  memset(&info, 0, sizeof(info));
+  info.host_to_find = h, info.vm = vm;
+
+  lua_newtable(vm);
+  strings_hash->walk(find_aggregations_for_host_by_name, (void*)&info);
+  delete h;
+  
+  return(true);
 }
 
 /* **************************************************** */

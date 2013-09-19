@@ -40,7 +40,6 @@ class StringHost : public GenericHost {
   inline u_int32_t key()  { return(Utils::hashString(keyname)); };
   char* get_string_key(char *buf, u_int buf_len);
   void updateStats(struct timeval *tv);
-
   /* Throughput */
   float bytes_thpt;
   ValueTrend bytes_thpt_trend;

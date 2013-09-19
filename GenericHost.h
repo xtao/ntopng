@@ -46,7 +46,9 @@ class GenericHost : public GenericHashEntry {
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
   inline void incrContact(IpAddress *peer, bool contacted_peer_as_client) { contacts.incrContact(peer, contacted_peer_as_client); }
+  
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm); };
+  inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts.get_num_contacts_by(host_ip)); };
   void updateStats(struct timeval *tv);
   inline ValueTrend getThptTrend() { return(bytes_thpt_trend); }
   virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL); }

@@ -205,3 +205,18 @@ json_object* HostContacts::getJSONObject() {
   free(s);
   return(o);
 }
+
+/* *************************************** */
+
+u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
+  u_int num = 0;
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].num_contacts == 0) break;
+    
+    if(clientContacts[i].host->equal(host_ip))
+      num += clientContacts[i].num_contacts;
+  }
+
+  return(num);
+}

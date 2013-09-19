@@ -89,7 +89,13 @@ sup, sub {
 height: 
 ]]
 
-if(mode ~= "embed") then print("600") else print("300") end
+if(mode ~= "embed") then
+   print("600") 
+elseif(interface.getNumAggregatedHosts() > 0) then
+   print("400") 
+else
+   print("300") 
+end
 
 print [[
 px;
@@ -192,6 +198,7 @@ px;
 	 color["local"]  = "#aec7e8";
 	 color["remote"] = "#bcbd22";
 	 color["sun"]    = "#fd8d3c";
+	 color["aggregation"]    = "#008d3c";
 	 
 	 var force = d3.layout.force().nodes(nodes).links(links).size([width, height]).linkDistance(options.linkDistance).charge(options.charge).on("tick", tick).start();
 
@@ -351,6 +358,23 @@ for key, values in pairs(hosts_stats) do
    end
 end
 
+aggregation_ids = {}
+aggregations = interface.getAggregationsForHost(host_ip)
+for name,num_contacts in pairs(aggregations) do
+   aggregation_ids[name] = num
+
+   hosts_id[name] = { }
+   hosts_id[name]['count'] = num_contacts
+   hosts_id[name]['id'] = num
+   ids[num] = name
+
+   if(links > 0) then print(",") end
+   print('\n{"source":'..num..',"target": 0,"depth":6,"count":'..num_contacts..',"styleColumn":"aggregation"}')
+   links = links + 1
+
+   num = num + 1
+end
+
 tot_hosts = num
 
 print [[
@@ -382,7 +406,11 @@ for i=0,tot_hosts-1 do
       if(target_host['localhost'] ~= nil) then label = "local" else label = "remote" end      
    else
       name = k
-      label = "remote"
+      if(aggregations[k] ~= nil) then
+	 label = "aggregation"
+      else
+	 label = "remote"
+      end
    end
    
    if((host_ip ~= nil) and (host_ip == k)) then label = "sun" end
@@ -402,8 +430,13 @@ for i=0,tot_hosts-1 do
 	 print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
       end
    else
-      -- Host purged
-      print(', "link": ""}')
+      -- print('->>'..k..'<<-\n')
+      if(aggregations[k] ~= nil) then
+	 print(', "link": "/lua/aggregated_host_details.lua?host='.. k .. '"}')
+      else
+	 -- Host purged ?
+	 print(', "link": ""}')
+      end
    end
 
    num = num + 1
@@ -437,7 +470,7 @@ if(host_ip ~= nil) then
 else
    print('<li><small>This map depicts the interactions of the top  '.. num_top_hosts .. ' hosts.</small></li>\n')
 end
-   print('<li><small>Color map: <font color=#aec7e8><b>local</b></font>, <font color=#bcbd22><b>remote</b></font>, <font color=#fd8d3c><b>focus</b></font> host.</small></li>\n')
+   print('<li><small>Color map: <font color=#aec7e8><b>local</b></font>, <font color=#bcbd22><b>remote</b></font>, <font color=#008d3c><b>aggregation</b></font>, <font color=#fd8d3c><b>focus</b></font> host.</small></li>\n')
 print [[
 <li> <small>Click is enabled only for hosts that have not been purged from memory.</small></li>
 </ol>

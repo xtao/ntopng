@@ -32,7 +32,7 @@ else
 print [[
 <div class="bs-docs-example">
             <div class="navbar">
-              <div class="navbar-inner">
+            <div class="navbar-inner">
 <ul class="nav">
 ]]
 

@@ -519,69 +519,66 @@ print [[
 
 elseif(page == "contacts") then
 
-
 if(num > 0) then
-
-mode = "embed"
-if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
-name = host["name"]
-dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua") 
-
-print("<table class=\"table table-bordered table-striped\">\n")
-print("<tr><th width=50%>Client Contacts (Initiator)</th><th width=50%>Server Contacts (Receiver)</th></tr>\n")
-
-print("<tr>")
-
-if(cnum  == 0) then
-   print("<td>No client contacts so far</td>")
-else
-print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th width=75%>Server Address</th><th>Contacts</th></tr>\n")
-
--- Client
-sortTable = {}
-for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
-
-for _v,k in pairsByKeys(sortTable, rev) do 
-   name = interface.getHostInfo(k)
-   v = host["contacts"]["client"][k]
-   if(name ~= nil) then
-      if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
+   mode = "embed"
+   if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
+   name = host["name"]
+   dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua") 
+   
+   print("<table class=\"table table-bordered table-striped\">\n")
+   print("<tr><th width=50%>Client Contacts (Initiator)</th><th width=50%>Server Contacts (Receiver)</th></tr>\n")
+   
+   print("<tr>")
+   
+   if(cnum  == 0) then
+      print("<td>No client contacts so far</td>")
    else
-      url = k
+      print("<td><table class=\"table table-bordered table-striped\">\n")
+      print("<tr><th width=75%>Server Address</th><th>Contacts</th></tr>\n")
+      
+      -- Client
+      sortTable = {}
+      for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
+      
+      for _v,k in pairsByKeys(sortTable, rev) do 
+	 name = interface.getHostInfo(k)
+	 v = host["contacts"]["client"][k]
+	 if(name ~= nil) then
+	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
+	    url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
+	 else
+	    url = k
+	 end
+	 print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
+      end
+      print("</table></td>\n")
    end
-   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
-end
-print("</table></td>\n")
-end
-
-if(snum  == 0) then
-   print("<td>No server contacts so far</td>")
-else
-print("<td><table class=\"table table-bordered table-striped\">\n")
-print("<tr><th width=75%>Client Address</th><th>Contacts</th></tr>\n")
-
--- Server
-sortTable = {}
-for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
-
-for _v,k in pairsByKeys(sortTable, rev) do 
-   name = interface.getHostInfo(k)   
-   v = host["contacts"]["server"][k]
-   if(name ~= nil) then
-      if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
+   
+   if(snum  == 0) then
+      print("<td>No server contacts so far</td>")
    else
-      url = k
+      print("<td><table class=\"table table-bordered table-striped\">\n")
+      print("<tr><th width=75%>Client Address</th><th>Contacts</th></tr>\n")
+      
+      -- Server
+      sortTable = {}
+      for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
+      
+      for _v,k in pairsByKeys(sortTable, rev) do 
+	 name = interface.getHostInfo(k)   
+	 v = host["contacts"]["server"][k]
+	 if(name ~= nil) then
+	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
+	    url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
+	 else
+	    url = k
+	 end
+	 print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
+      end
+      print("</table></td>\n")
    end
-   print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
-end
-print("</table></td>\n")
-end
-
+   
 print("</tr>\n")
-
 
 print("</table>\n")
 else

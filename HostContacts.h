@@ -38,7 +38,12 @@ class HostContacts : public Serializable {
   HostContacts();
   ~HostContacts();
 
-  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { incrIPContacts(peer, contacted_peer_as_client ? clientContacts : serverContacts, value); }
+  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { 
+    incrIPContacts(peer, contacted_peer_as_client ? clientContacts : serverContacts, value);
+  };
+
+  u_int get_num_contacts_by(IpAddress* host_ip);
+
   void getIPContacts(lua_State* vm);
   char* serialize();
   void deserialize(json_object *o);

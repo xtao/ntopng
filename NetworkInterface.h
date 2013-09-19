@@ -143,7 +143,8 @@ class NetworkInterface {
   Host* getHost(char *host_ip, u_int16_t vlan_id);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm);
-  bool getAggregatedHostInfo(lua_State* vm, char *host_name);
+  bool getAggregatedHostInfo(lua_State* vm, char *host_ip);
+  bool getAggregationsForHost(lua_State* vm, char *host_ip);
   StringHost* findHostByString(char *keyname, u_int16_t family_id, 
 			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
