@@ -46,6 +46,14 @@ function findString(str, tofind)
    return(rsp)
 end
 
+function string.starts(String,Start)
+   return string.sub(String,1,string.len(Start))==Start
+end
+
+function string.ends(String,End)
+   return End=='' or string.sub(String,-string.len(End))==End
+end
+
 function printASN(asn, asname)
    if(asn > 0) then
       return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A>")

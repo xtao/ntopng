@@ -161,15 +161,21 @@ static int ntop_find_interface(lua_State* vm) {
 
 /* ****************************************** */
 
+static void handle_null_interface(lua_State* vm) {  
+  ntop->getTrace()->traceEvent(TRACE_ERROR, "Null interface: did you restart ntopng in the meantime?");
+}
+
+/* ****************************************** */
+
 static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface;
   NdpiStats stats;
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) {
@@ -189,9 +195,9 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->getActiveHostsList(vm, false);
@@ -206,9 +212,9 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->getActiveHostsList(vm, true);
@@ -223,9 +229,9 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    // return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm);
@@ -240,9 +246,9 @@ static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
@@ -394,9 +400,9 @@ static int ntop_zmq_receive(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   item.socket = subscriber;
@@ -440,9 +446,9 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->getActiveFlowsList(vm);
@@ -465,8 +471,8 @@ static int ntop_get_interface_host_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
     ntop_interface = ntop->getInterfaceId(0);
   }
  
@@ -492,8 +498,9 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
  
   if((!ntop_interface) || !(h = ntop_interface->getHost(host_ip, vlan_id)))
@@ -518,9 +525,9 @@ static int ntop_restore_interface_host(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
   }
  
   if((!ntop_interface) || !ntop_interface->restoreHost(host_ip))
@@ -540,9 +547,9 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
   }
 
   if((!ntop_interface) || (!ntop_interface->getAggregatedHostInfo(vm, host_name)))
@@ -562,9 +569,9 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
   }
 
   if((!ntop_interface) || (!ntop_interface->getAggregationsForHost(vm, host_name)))
@@ -586,9 +593,9 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->getFlowPeersList(vm, host_name);
@@ -608,9 +615,9 @@ static int ntop_get_interface_flow_by_key(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    //return(false);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(!ntop_interface) return(false);
@@ -633,9 +640,9 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    // return(false);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) {
@@ -653,9 +660,9 @@ static int ntop_interface_is_running(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    // return(false);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(!ntop_interface) return(false);
@@ -923,9 +930,9 @@ static int ntop_process_flow(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    // return(false);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface)
@@ -1054,9 +1061,9 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null interface");
-    // return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
   }
 
   if(ntop_interface) ntop_interface->lua(vm);
@@ -1422,7 +1429,7 @@ int Lua::run_script(char *script_path, char *ifname) {
   lua_register_classes(L, false); /* Load custom classes */
 
   if(ifname != NULL) {
-    /* Name of the inteface for which we are running this script for */
+    /* Name of the interface for which we are running this script for */
     lua_pushstring(L, ifname);
     lua_setglobal(L, "ifname");
   }

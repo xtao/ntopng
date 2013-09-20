@@ -36,8 +36,10 @@ class CollectorInterface : public NetworkInterface {
   CollectorInterface(const char *_endpoint, const char *_script_name);
   ~CollectorInterface();
 
-  char *getScriptName() { return script_name; }
-  char *getEndpoint()   { return endpoint; }
+  inline const char* get_type()  { return("zmq");      };
+  inline bool is_ndpi_enabled()  { return(false);      };
+  char *getScriptName()          { return script_name; };
+  char *getEndpoint()            { return endpoint;    };
 
   void run_collector_script();
 

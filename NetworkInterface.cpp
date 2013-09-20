@@ -221,6 +221,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
   flow->setDetectedProtocol(proto_id, l4_proto);
   flow->setJSONInfo(additional_fields_json);
+  incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
+	   flow->get_detected_protocol(), in_bytes+out_bytes);
 }
 
 /* **************************************************** */
@@ -915,7 +917,9 @@ u_int NetworkInterface::purgeIdleAggregatedHosts() {
 
 void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
+
   lua_push_str_table_entry(vm, "name", ifname);
+  lua_push_str_table_entry(vm, "type", (char*)get_type());
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());

@@ -32,6 +32,7 @@ class PcapInterface : public NetworkInterface {
   PcapInterface(const char *name);
   ~PcapInterface();
 
+  inline const char* get_type()    { return("pcap");      };
   inline pcap_t* get_pcap_handle() { return(pcap_handle); };
   void startPacketPolling();
   void shutdown();

@@ -5,6 +5,8 @@
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
+require "lua_utils"
+
 -- Toggle debug
 local enable_second_debug = 0
 
@@ -25,30 +27,31 @@ end
 
 ifnames = interface.getIfNames()
 for _,ifname in pairs(ifnames) do
+   a = string.ends(ifname, ".pcap")
+   if(not(a)) then 
+      interface.find(ifname)
+      ifstats = interface.getStats()
+      dirs = ntop.getDirs()
+      basedir = dirs.workingdir .. "/" .. ifname .. "/rrd"
 
-interface.find(ifname)
-ifstats = interface.getStats()
-dirs = ntop.getDirs()
-basedir = dirs.workingdir .. "/" .. ifname .. "/rrd"
+      -- Windows fixes for interfaces with "uncommon chars"
+      basedir = string.gsub(basedir, "@", "_")
+      basedir = string.gsub(basedir, ":", "_")
 
--- Windows fixes for interfaces with "uncommon chars"
-basedir = string.gsub(basedir, "@", "_")
-basedir = string.gsub(basedir, ":", "_")
+      if(not(ntop.exists(basedir))) then
+	 if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
+	 ntop.mkdir(basedir)
+      end
 
-if(not(ntop.exists(basedir))) then
-   if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
-   ntop.mkdir(basedir)
-end
+      -- Traffic stats
+      name =  basedir .. "/" .. "bytes.rrd"
+      create_rrd(name,"bytes")
+      ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
+      if(enable_second_debug == 1) then io.write('Updating RRD '.. name .. " " .. ifstats.stats_bytes ..'\n') end
 
--- Traffic stats
-name =  basedir .. "/" .. "bytes.rrd"
-create_rrd(name,"bytes")
-ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
-if(enable_second_debug == 1) then io.write('Updating RRD '.. name .. " " .. ifstats.stats_bytes ..'\n') end
-
-name =  basedir .. "/" .. "packets.rrd"
-create_rrd(name,"packets")
-ntop.rrd_update(name, "N:".. ifstats.stats_packets)
-if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end
-
+      name =  basedir .. "/" .. "packets.rrd"
+      create_rrd(name,"packets")
+      ntop.rrd_update(name, "N:".. ifstats.stats_packets)
+      if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end
+   end
 end -- for _,ifname in pairs(ifnames) do

@@ -45,7 +45,7 @@ Flow::Flow(NetworkInterface *_iface,
   last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
   bytes_thpt_trend = trend_unknown;
-  allocFlowMemory();
+  if(iface->is_ndpi_enabled()) allocFlowMemory();
 }
 
 /* *************************************** */
@@ -101,7 +101,7 @@ Flow::~Flow() {
 /* *************************************** */
 
 void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
-  if(ndpi_flow != NULL) {
+  if((ndpi_flow != NULL) || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
       u_int16_t sport = htons(cli_port), dport = htons(srv_port);
 
@@ -117,6 +117,18 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	    if(at) {
 	      at[0] = '\0';
 	      ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
+
+	      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
+	      if(true) {
+		StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_DNS, true);
+		
+		if(host != NULL) {
+		  host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_DNS, 0, 0, 1, 1 /* Dummy */);
+		  host->updateSeen();
+		  
+		  if(cli_host) host->incrContact(cli_host->get_ip(), true);
+		}
+	      }
 	    }
 	  }
 	}
@@ -164,9 +176,10 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 	break;
       } /* switch */
       detection_completed = true;
-    } else if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-	      && (cli_host != NULL)
-	      && (srv_host != NULL)) {
+    } else if((((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+	       && (cli_host != NULL)
+	       && (srv_host != NULL))
+	      || (!iface->is_ndpi_enabled())) {
       detection_completed = true; /* We give up */
 
       /* We can guess the protocol */
@@ -341,7 +354,8 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
   if(verbose) {
     if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-       || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+       || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
+       || iface->is_ndpi_enabled())
       lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
     else
       lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
@@ -408,6 +422,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
     float tdiff = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec))/(float)1000;
 
     tdiff = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff;
+    if(tdiff < 0) tdiff = 0; /* Just to be safe */
 
     if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
     else if(bytes_thpt > tdiff) bytes_thpt_trend = trend_down;
@@ -468,7 +483,8 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
+     || iface->is_ndpi_enabled())
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   else
     lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);

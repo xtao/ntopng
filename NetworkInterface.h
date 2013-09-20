@@ -75,6 +75,8 @@ class NetworkInterface {
   virtual char *getEndpoint()                  { return NULL;   };
   virtual bool set_packet_filter(char *filter) { return(false); };
 
+  inline virtual const char* get_type()      { return("unknown"); }
+  inline virtual bool is_ndpi_enabled()      { return(true); }
   inline u_int  getNumnDPIProtocols()        { return(ndpi_get_num_supported_protocols(ndpi_struct)); };
   inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
   inline void  setTimeLastPktRcvd(time_t t)  { last_pkt_rcvd = t; };

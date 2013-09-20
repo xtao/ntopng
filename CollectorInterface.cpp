@@ -112,7 +112,8 @@ void CollectorInterface::shutdown() {
 /* **************************************************** */
 
 bool CollectorInterface::set_packet_filter(char *filter) {
-  ntop->getTrace()->traceEvent(TRACE_ERROR, "No filter can be set on a collector interface. Ignored %s", filter);
+  ntop->getTrace()->traceEvent(TRACE_ERROR,
+			       "No filter can be set on a collector interface. Ignored %s", filter);
   return(false);
 }
 

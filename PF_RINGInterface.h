@@ -34,6 +34,7 @@ class PF_RINGInterface : public NetworkInterface {
   PF_RINGInterface(const char *name);
   ~PF_RINGInterface();
 
+  inline const char* get_type()      { return("PF_RING");     };
   inline pfring* get_pfring_handle() { return(pfring_handle); };
   u_int getNumDroppedPackets();
   void startPacketPolling();

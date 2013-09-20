@@ -52,6 +52,7 @@ class IpAddress : Serializable {
   IpAddress(u_int32_t _ipv4);
   IpAddress(struct ndpi_in6_addr *_ipv6);
 
+  inline bool isIPv4()                                { return((addr.ipVersion == 4) ? true : false); }
   inline void set_ipv4(u_int32_t _ipv4)               { addr.ipVersion = 4, addr.ipType.ipv4 = _ipv4; }
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6)   { addr.ipVersion = 6, memcpy(&addr.ipType.ipv6, _ipv6, sizeof(struct ndpi_in6_addr)); }
   inline u_int32_t get_ipv4()                         { return((addr.ipVersion == 4) ? addr.ipType.ipv4 : 0); }

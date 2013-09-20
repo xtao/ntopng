@@ -17,6 +17,9 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 page = _GET["page"]
 
+interface.find(ifname)
+ifstats = interface.getStats()
+
 rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
 
 url= '/lua/if_stats.lua?ifname=' .. ifname
@@ -35,10 +38,12 @@ else
   print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
 end
 
-if(page == "packets") then
-  print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
-else
-  print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+if(ifstats.type ~= "zmq") then
+   if(page == "packets") then
+      print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
+   else
+      print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+   end
 end
 
 if(page == "ndpi") then
@@ -61,12 +66,10 @@ print [[
 </div>
    ]]
 
-interface.find(ifname)
-ifstats = interface.getStats()
-
 if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
+   print("<tr><th>Family</th><td>" .. ifstats.type .. "</td></tr>\n")
    print("<tr><th>Bytes</th><td><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
    print [[
 	 <p>
@@ -77,19 +80,28 @@ if((page == "overview") or (page == nil)) then
 	 </td></tr>
    ]]
 
-   print("<tr><th>Received Packets</th><td><span id=if_pkts>" .. formatPackets(ifstats.stats_packets) .. "</span> <span id=pkts_trend></span></td></tr>\n")
-   print("<tr><th>Dropped Packets</th><td><span id=if_drops>")
+if(ifstats.type ~= "zmq") then
+   label = "Packets"
+else
+   label = "Flows"
+end
+   print("<tr><th>Received "..label.."</th><td><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
 
-   if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
-   print(formatPackets(ifstats.stats_drops))
-
-   if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
-      local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
-      if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
+   if(ifstats.type ~= "zmq") then
+      print("<tr><th>Dropped "..label.."</th><td><span id=if_drops>")
+      
+      if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
+      print(formatValue(ifstats.stats_drops).. " " .. label)
+      
+      if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
+	 local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
+	 if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
+      end
+      
+      if(ifstats.stats_drops > 0) then print('</span>') end
+      print("</span>  <span id=drops_trend></span></td></tr>\n")
    end
 
-   if(ifstats.stats_drops > 0) then print('</span>') end
-   print("</span>  <span id=drops_trend></span></td></tr>\n")
    print("</table>\n")
 elseif((page == "packets")) then
       print [[
@@ -111,15 +123,15 @@ elseif((page == "packets")) then
 elseif(page == "ndpi") then
       print [[
 
-      <table class="table table-bordered table-striped">
-      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      <table class="table table-bordered table-striped"> 
+     	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
 
         <script type='text/javascript'>
 	       window.onload=function() {
-				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(ifname) print [[" }, "", refresh);
-				}
+		   var refresh = 3000 /* ms */;
+		   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(ifname) print [[" }, "", refresh);
+		}
 
 	    </script><p>
 	]]
