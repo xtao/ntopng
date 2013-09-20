@@ -179,7 +179,10 @@ if((page == "overview") or (page == nil)) then
 
    if(host["ip"] ~= nil) then
       -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
-      print("<tr><th width=35%>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+
+      if(host["mac"] ~= "00:00:00:00:00:00") then
+	 print("<tr><th width=35%>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+      end
       print("<tr><th>IP Address</th><td>" .. host["ip"])
    else
       if(host["mac"] ~= nil) then
