@@ -671,3 +671,11 @@ function getTopInterfaceHosts(howmany, localHostsOnly)
 
    return(ret)
 end
+
+function http_encode(t)
+   local s = ""
+   for k,v in pairs(t) do
+      s = s .. "&" .. escape(k) .. "=" .. escape(v)
+   end
+   return string.sub(s, 2)     -- remove first `&'
+end
