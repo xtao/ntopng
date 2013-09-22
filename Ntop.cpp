@@ -456,9 +456,10 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
       return(NULL);
   }
 
-  for(int i=0; i<num_defined_interfaces; i++)
+  for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), name) == 0)
       return(iface[i]);
+  }
 
   /* FIX: remove this for at some point, when endpoint is passed */
   for(int i=0; i<num_defined_interfaces; i++) {
@@ -477,6 +478,20 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
 /* ******************************************* */
 
 NetworkInterface* Ntop::getInterface(char *name) {
+ /* This method accepts both interface names or Ids */
+  u_int if_id = atoi(name);
+  char str[8];
+
+  snprintf(str, sizeof(str), "%u", if_id);
+  if(strcmp(name, str) == 0) {
+    /* name is a number */
+    
+    if(if_id < num_defined_interfaces)
+      return(iface[if_id]);
+    else
+      return(NULL);
+  }
+
   for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), name) == 0) {
       return(iface[i]);
@@ -489,6 +504,21 @@ NetworkInterface* Ntop::getInterface(char *name) {
 /* ******************************************* */
 
 int Ntop::getInterfaceIdByName(char *name) {
+   /* This method accepts both interface names or Ids */
+  u_int if_id = atoi(name);
+  char str[8];
+
+  snprintf(str, sizeof(str), "%u", if_id);
+  if(strcmp(name, str) == 0) {
+    /* name is a number */
+    
+    if(if_id < num_defined_interfaces)
+      return(if_id);
+    else
+      return(-1);
+  }
+
+
   for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), name) == 0) {
       return(i);
