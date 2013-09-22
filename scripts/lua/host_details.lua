@@ -21,6 +21,7 @@ if(host_ip == nil) then
    return
 end
 
+_ifname = http_escape(ifname)
 interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
@@ -283,10 +284,10 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifname) print ('", host: ')
+		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(_ifname) print ('", host: ')
 	print("\""..host_ip.."\" }, \"\", refresh); \n")
 	print [[
-		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifname) print ('", host: ')
+		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(_ifname) print ('", host: ')
 
 	print("\""..host_ip.."\" }, \"\", refresh); \n")
 	print [[
@@ -315,7 +316,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifname) print ('", host: ')
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(_ifname) print ('", host: ')
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -357,7 +358,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifname) print [[" , host: ]]
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(_ifname) print [[" , host: ]]
 	print("\""..host_ip.."\"")
 	print [[ }, "", refresh);
 				}
@@ -623,7 +624,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
-		    data: { ifname: "]] print(ifname) print [[", host: "]] print(host_ip) print [[" },
+		    data: { ifname: "]] print(_ifname) print [[", host: "]] print(host_ip) print [[" },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);

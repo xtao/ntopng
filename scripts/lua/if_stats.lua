@@ -22,7 +22,8 @@ ifstats = interface.getStats()
 
 rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
 
-url= '/lua/if_stats.lua?ifname=' .. ifname
+_ifname = http_escape(ifname)
+url= '/lua/if_stats.lua?ifname=' .. _ifname
 
 print [[
             <div class="navbar">
@@ -113,9 +114,9 @@ elseif((page == "packets")) then
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(ifname.."\"")
+		   do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(_ifname.."\"")
 	print [[
-	         , }, "", refresh);
+	         }, "", refresh);
 		}
 
 	    </script><p>
@@ -130,7 +131,7 @@ elseif(page == "ndpi") then
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(ifname) print [[" }, "", refresh);
+		   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
 		}
 
 	    </script><p>
@@ -173,7 +174,7 @@ setInterval(function() {
 		  $.ajax({
 			    type: 'GET',
 			    url: '/lua/network_load.lua',
-			    data: { ifname: "]] print(ifstats.name) print [[" },
+			    data: { ifname: "]] print(http_escape(ifstats.name)) print [[" },
 			    success: function(content) {
 				var rsp = jQuery.parseJSON(content);
 				$('#if_bytes').html(bytesToVolume(rsp.bytes));
