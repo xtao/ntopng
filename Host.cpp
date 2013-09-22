@@ -179,12 +179,14 @@ char* Host::get_mac(char *buf, u_int buf_len) {
 /* *************************************** */
 
 void Host::set_mac(char *m) {
-  u_int8_t mac[6] = { 0 };
+  u_int32_t mac[6] = { 0 };
 
   sscanf(m, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
          &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
 
-  memcpy(mac_address, mac, 6);
+  mac_address[0] = mac[0], mac_address[1] = mac[1],
+	  mac_address[2] = mac[2], mac_address[3] = mac[3],
+	  mac_address[4] = mac[4], mac_address[5] = mac[5];
 }
 
 /* *************************************** */
