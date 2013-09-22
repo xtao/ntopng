@@ -1445,6 +1445,61 @@ int Lua::run_script(char *script_path, char *ifname) {
 
 /* ****************************************** */
 
+/* http://www.geekhideout.com/downloads/urlcode.c */
+
+#if 0
+/* Converts an integer value to its hex character*/
+static char to_hex(char code) {
+  static char hex[] = "0123456789abcdef";
+  return hex[code & 15];
+}
+
+/* Returns a url-encoded version of str */
+/* IMPORTANT: be sure to free() the returned string after use */
+static char* http_encode(char *str) {
+  char *pstr = str, *buf = (char*)malloc(strlen(str) * 3 + 1), *pbuf = buf;
+  while (*pstr) {
+    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+      *pbuf++ = *pstr;
+    else if (*pstr == ' ') 
+      *pbuf++ = '+';
+    else 
+      *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
+    pstr++;
+  }
+  *pbuf = '\0';
+  return buf;
+}
+#endif
+
+/* Converts a hex character to its integer value */
+static char from_hex(char ch) {
+  return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
+/* Returns a url-decoded version of str */
+/* IMPORTANT: be sure to free() the returned string after use */
+static char* http_decode(char *str) {
+  char *pstr = str, *buf = (char*)malloc(strlen(str) + 1), *pbuf = buf;
+  while (*pstr) {
+    if (*pstr == '%') {
+      if (pstr[1] && pstr[2]) {
+        *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
+        pstr += 2;
+      }
+    } else if (*pstr == '+') { 
+      *pbuf++ = ' ';
+    } else {
+      *pbuf++ = *pstr;
+    }
+    pstr++;
+  }
+  *pbuf = '\0';
+  return buf;
+}
+
+/* ****************************************** */
+
 int Lua::handle_script_request(struct mg_connection *conn,
 			       const struct mg_request_info *request_info, char *script_path) {
   char buf[64], key[64], val[64];
@@ -1470,13 +1525,14 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	char *equal = strchr(tok, '=');
 
 	if(equal) {
-	  char decoded_buf[1024];
+	  char *decoded_buf;
 
 	  equal[0] = '\0';
-	  url_decode(&equal[1], strlen(&equal[1]), decoded_buf, sizeof(decoded_buf), 1);
-
-	  //ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
-	  lua_push_str_table_entry(L, tok, decoded_buf);
+	  if((decoded_buf = http_decode(&equal[1])) != NULL) {
+	    //ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	    lua_push_str_table_entry(L, tok, decoded_buf);
+	    free(decoded_buf);
+	  }
 	}
 
 	tok = strtok_r(NULL, "&", &where);
