@@ -672,12 +672,10 @@ function getTopInterfaceHosts(howmany, localHostsOnly)
    return(ret)
 end
 
-function http_escape(str)
-   if (str) then
-      str = string.gsub (str, "\n", "\r\n")
-      str = string.gsub (str, "([^%w ])",
-			 function (c) return string.format ("%%%02X", string.byte(c)) end)
-      str = string.gsub (str, " ", "+")
-   end
-   return str    
+function http_escape(s)
+   s = string.gsub(s, "([&=+%c])", function (c)
+				      return string.format("%%%02X", string.byte(c))
+				   end)
+   s = string.gsub(s, " ", "+")
+      return s
 end

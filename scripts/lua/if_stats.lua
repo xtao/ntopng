@@ -22,7 +22,7 @@ ifstats = interface.getStats()
 
 rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
 
-_ifname = http_escape(ifname)
+_ifname = tostring(interface.name2id(ifname))
 url= '/lua/if_stats.lua?ifname=' .. _ifname
 
 print [[
@@ -174,7 +174,7 @@ setInterval(function() {
 		  $.ajax({
 			    type: 'GET',
 			    url: '/lua/network_load.lua',
-			    data: { ifname: "]] print(http_escape(ifstats.name)) print [[" },
+			    data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
 			    success: function(content) {
 				var rsp = jQuery.parseJSON(content);
 				$('#if_bytes').html(bytesToVolume(rsp.bytes));

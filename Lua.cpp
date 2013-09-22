@@ -672,6 +672,19 @@ static int ntop_interface_is_running(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_interface_name2id(lua_State* vm) {
+  char *if_name;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if_name = (char*)lua_tostring(vm, 1);
+
+  lua_pushinteger(vm, ntop->getInterfaceIdByName(if_name));
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 /* Code taken from third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c */
 
 typedef int (*RRD_FUNCTION)(int, char **);
@@ -1282,6 +1295,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "processFlow",            ntop_process_flow },
   { "isRunning",              ntop_interface_is_running },
+  { "name2id",                ntop_interface_name2id },
   { NULL,                     NULL }
 };
 

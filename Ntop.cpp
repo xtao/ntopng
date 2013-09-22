@@ -442,6 +442,20 @@ void Ntop::setLocalNetworks(char *nets) {
 /* ******************************************* */
 
 NetworkInterface* Ntop::getNetworkInterface(const char *name) {
+  /* This method accepts both interface names or Ids */
+  u_int if_id = atoi(name);
+  char str[8];
+
+  snprintf(str, sizeof(str), "%u", if_id);
+  if(strcmp(name, str) == 0) {
+    /* name is a number */
+    
+    if(if_id < num_defined_interfaces)
+      return(iface[if_id]);
+    else
+      return(NULL);
+  }
+
   for(int i=0; i<num_defined_interfaces; i++)
     if(strcmp(iface[i]->get_name(), name) == 0)
       return(iface[i]);
@@ -470,6 +484,18 @@ NetworkInterface* Ntop::getInterface(char *name) {
   }
 
   return(NULL);
+}
+
+/* ******************************************* */
+
+int Ntop::getInterfaceIdByName(char *name) {
+  for(int i=0; i<num_defined_interfaces; i++) {
+    if(strcmp(iface[i]->get_name(), name) == 0) {
+      return(i);
+    }
+  }
+
+  return(-1);
 }
 
 /* ******************************************* */

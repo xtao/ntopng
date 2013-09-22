@@ -73,6 +73,7 @@ class Ntop {
   inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }
   inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
   NetworkInterface* getInterface(char *name);
+  int getInterfaceIdByName(char *name);
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   inline void setCategorization(Categorization *c)   { categorization = c; };
   NetworkInterface* getNetworkInterface(const char *name);

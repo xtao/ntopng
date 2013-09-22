@@ -21,7 +21,8 @@ if(host_ip == nil) then
    return
 end
 
-_ifname = http_escape(ifname)
+_ifname = tostring(interface.name2id(ifname))
+
 interface.find(ifname)
 host = interface.getHostInfo(host_ip)
 
