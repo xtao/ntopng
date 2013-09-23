@@ -32,24 +32,21 @@ for _,ifname in pairs(ifnames) do
       interface.find(ifname)
       ifstats = interface.getStats()
       dirs = ntop.getDirs()
-      basedir = dirs.workingdir .. "/" .. ifname .. "/rrd"
+      basedir = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd")
 
-      -- Windows fixes for interfaces with "uncommon chars"
-      basedir = string.gsub(basedir, "@", "_")
-      basedir = string.gsub(basedir, ":", "_")
-
+      -- io.write(basedir.."\n")
       if(not(ntop.exists(basedir))) then
 	 if(enable_second_debug == 1) then io.write('Creating base directory ', basedir, '\n') end
 	 ntop.mkdir(basedir)
       end
 
       -- Traffic stats
-      name =  basedir .. "/" .. "bytes.rrd"
+      name = fixPath(basedir .. "/" .. "bytes.rrd")
       create_rrd(name,"bytes")
       ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
       if(enable_second_debug == 1) then io.write('Updating RRD '.. name .. " " .. ifstats.stats_bytes ..'\n') end
 
-      name =  basedir .. "/" .. "packets.rrd"
+      name = fixPath(basedir .. "/" .. "packets.rrd")
       create_rrd(name,"packets")
       ntop.rrd_update(name, "N:".. ifstats.stats_packets)
       if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end

@@ -44,7 +44,8 @@ Ntop::Ntop(char *appName) {
 #endif
 
 #ifdef WIN32
-  if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
+  if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
+		     SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
     strcpy(working_dir, "C:\\Windows\\Temp\\ntopng"); // Fallback: it should never happen
   }
 
@@ -89,13 +90,13 @@ Ntop::Ntop(char *appName) {
 /* ******************************************* */
 
 void Ntop::initTimezone() {
-  /* 
-     Setup timezone differences 
+  /*
+     Setup timezone differences
 
      We call it all the time as daylight can change
      during the night and thus we need to have it "fresh"
   */
-  tzset(); 
+  tzset();
   time_offset = timezone - (daylight * 3600);
 }
 
@@ -104,20 +105,22 @@ void Ntop::initTimezone() {
 void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   struct stat statbuf;
   char *local_nets, buf[512];
-  
+
   prefs = _prefs, redis = _redis;
 
   if(stat(prefs->get_data_dir(), &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
      || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_data_dir());
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified",
+				 prefs->get_data_dir());
     exit(-1);
   }
 
   if(stat(prefs->get_callbacks_dir(), &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
      || (!(statbuf.st_mode & S_IWRITE)) /* It's not writable    */) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified", prefs->get_callbacks_dir());
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid directory %s specified",
+				 prefs->get_callbacks_dir());
     exit(-1);
   }
 
@@ -126,7 +129,8 @@ void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
   else {
     /* Add defaults */
     /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
-    snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS, CONST_DEFAULT_LOCAL_NETS);
+    snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS,
+	     CONST_DEFAULT_LOCAL_NETS);
     local_nets = strdup(buf);
     setLocalNetworks(local_nets);
     free(local_nets);
@@ -161,7 +165,8 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
-  getTrace()->traceEvent(TRACE_NORMAL, "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
+  getTrace()->traceEvent(TRACE_NORMAL,
+			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
 
   pa->startPeriodicActivitiesLoop();
@@ -395,7 +400,8 @@ void Ntop::daemonize() {
   signal(SIGQUIT, SIG_IGN);
 
   if((childpid = fork()) < 0)
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while daemonizing (errno=%d)", errno);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while daemonizing (errno=%d)",
+				 errno);
   else {
     if(!childpid) { /* child */
       int rc;
@@ -425,7 +431,8 @@ void Ntop::daemonize() {
       setvbuf(stdout, (char *)NULL, _IOLBF, 0);
 #endif
     } else { /* father */
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Parent process is exiting (this is normal)");
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				   "Parent process is exiting (this is normal)");
       exit(0);
     }
   }
@@ -449,7 +456,7 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
   snprintf(str, sizeof(str), "%u", if_id);
   if(strcmp(name, str) == 0) {
     /* name is a number */
-    
+
     if(if_id < num_defined_interfaces)
       return(iface[if_id]);
     else
@@ -485,7 +492,7 @@ NetworkInterface* Ntop::getInterface(char *name) {
   snprintf(str, sizeof(str), "%u", if_id);
   if(strcmp(name, str) == 0) {
     /* name is a number */
-    
+
     if(if_id < num_defined_interfaces)
       return(iface[if_id]);
     else
@@ -511,7 +518,7 @@ int Ntop::getInterfaceIdByName(char *name) {
   snprintf(str, sizeof(str), "%u", if_id);
   if(strcmp(name, str) == 0) {
     /* name is a number */
-    
+
     if(if_id < num_defined_interfaces)
       return(if_id);
     else
@@ -533,7 +540,8 @@ int Ntop::getInterfaceIdByName(char *name) {
 void Ntop::registerInterface(NetworkInterface *_if) {
   for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), _if->get_name()) == 0) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Skipping duplicated interface %s", _if->get_name());
+      ntop->getTrace()->traceEvent(TRACE_WARNING,
+				   "Skipping duplicated interface %s", _if->get_name());
       delete _if;
       return;
     }
@@ -563,9 +571,10 @@ void Ntop::runHousekeepingTasks() {
 void Ntop::shutdown() {
   for(int i=0; i<num_defined_interfaces; i++) {
     EthStats *stats = iface[i]->getStats();
-    
+
     stats->print();
     iface[i]->shutdown();
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s [running: %d]", iface[i]->get_name(), iface[i]->isRunning());    
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s [running: %d]",
+				 iface[i]->get_name(), iface[i]->isRunning());
   }
 }

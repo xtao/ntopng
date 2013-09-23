@@ -23,19 +23,30 @@ if((type == nil) or (type == "size")) then
    end
 end
 
+tot = 0
+for key, value in pairs(what) do
+   tot = tot + value
+end
 
+threshold = (5 * tot) / 100
 
 print "[\n"
 num = 0
+s = 0
 for key, value in pairs(what) do
-   if(value > 0) then
+   if(value > threshold) then
       if(num > 0) then
 	 print ",\n"
       end
    
       print("\t { \"label\": \"" .. key .."\", \"value\": ".. value .." }") 
       num = num + 1
+      s = s + value
    end
+end
+
+if(tot > s) then
+   print(",\t { \"label\": \"Other\", \"value\": ".. (tot-s) .." }") 
 end
 
 

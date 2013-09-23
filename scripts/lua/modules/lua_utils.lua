@@ -679,3 +679,19 @@ function http_escape(s)
    s = string.gsub(s, " ", "+")
       return s
 end
+
+-- Windows fixes for interfaces with "uncommon chars"
+function purifyInterfaceName(interface_name)
+   interface_name = string.gsub(interface_name, "@", "_")
+   interface_name = string.gsub(interface_name, ":", "_")
+   return(interface_name)
+end
+
+-- Fix path format Unix <-> Windows
+function fixPath(path)
+   if(ntop.isWindows()) then
+      path = string.gsub(path, "/", "\\")
+   end
+
+   return(path)
+end

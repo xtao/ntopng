@@ -275,6 +275,20 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_is_windows(lua_State* vm) {
+  lua_pushboolean(vm, 
+#ifdef WIN32
+		  1
+#else
+		  0
+#endif
+		  );
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_list_dir_files(lua_State* vm) {
   char *path;
   DIR *dirp;
@@ -1343,6 +1357,7 @@ static const luaL_Reg ntop_reg[] = {
   { "resolveAddress",     ntop_resolve_address },
   { "getResolvedAddress", ntop_get_resolved_address },
 
+  { "isWindows",      ntop_is_windows },
   { NULL,          NULL}
 };
 

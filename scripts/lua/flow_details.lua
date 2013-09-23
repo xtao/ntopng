@@ -117,7 +117,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/flow_stats.lua',
-		    data: { ifname: "]] print(http_encode(ifname)) print [[", flow_key: "]] print(flow_key) print [[" },
+		    data: { ifname: "]] print(tostring(interface.name2id(ifname))) print [[", flow_key: "]] print(flow_key) print [[" },
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#first_seen').html(rsp["seen.first"]);

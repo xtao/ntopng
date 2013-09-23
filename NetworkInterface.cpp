@@ -223,6 +223,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   flow->setJSONInfo(additional_fields_json);
   incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
 	   flow->get_detected_protocol(), in_bytes+out_bytes);
+
+  purgeIdle(last_switched);
 }
 
 /* **************************************************** */

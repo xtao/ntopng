@@ -72,7 +72,8 @@ else
       host_ip = host["ip"]
    end
 
-   rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/" .. host_ip .. "/bytes.rrd"
+   rrdname = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host_ip .. "/bytes.rrd"
+   --print(rrdname)
 print [[
 <div class="bs-docs-example">
             <div class="navbar">

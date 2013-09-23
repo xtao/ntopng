@@ -20,7 +20,9 @@ page = _GET["page"]
 interface.find(ifname)
 ifstats = interface.getStats()
 
-rrdname = dirs.workingdir .. "/" .. ifname .. "/rrd/bytes.rrd"
+interface_name = purifyInterfaceName(ifstats.name)
+
+rrdname = dirs.workingdir .. "/" .. interface_name .. "/rrd/bytes.rrd"
 
 _ifname = tostring(interface.name2id(ifname))
 url= '/lua/if_stats.lua?ifname=' .. _ifname
@@ -160,7 +162,7 @@ elseif(page == "ndpi") then
 
       print("</table>\n")
 else
-   drawRRD(ifname, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
+   drawRRD(interface_name, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
@@ -178,7 +180,11 @@ setInterval(function() {
 			    success: function(content) {
 				var rsp = jQuery.parseJSON(content);
 				$('#if_bytes').html(bytesToVolume(rsp.bytes));
-				$('#if_pkts').html(addCommas(rsp.packets)+" Pkts");
+				$('#if_pkts').html(addCommas(rsp.packets)+"]]
+
+
+if(ifstats.type ~= "zmq") then print(" Flows\");") else print(" Pkts\");") end
+print [[
 				var pctg = 0;
 				var drops = "";
 
