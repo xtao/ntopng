@@ -691,6 +691,7 @@ end
 function fixPath(path)
    if(ntop.isWindows()) then
       path = string.gsub(path, "/", "\\")
+      path = string.gsub(path, ":", "_")
    end
 
    return(path)
