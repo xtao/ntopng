@@ -41,10 +41,10 @@ Flow::Flow(NetworkInterface *_iface,
   iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
   if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
   if(srv_host) { srv_host->incUses(); if(cli_host) srv_host->incrContact(cli_host, false); }
-  first_seen = _first_seen;
-  last_seen = _last_seen;
+  first_seen = _first_seen, last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
   bytes_thpt_trend = trend_unknown;
+  protocol_processed = false;
   if(iface->is_ndpi_enabled()) allocFlowMemory();
 }
 
@@ -100,81 +100,102 @@ Flow::~Flow() {
 
 /* *************************************** */
 
-void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
+void Flow::processDetectedProtocol() {
+  if((!ntop->getPrefs()->do_enable_aggregations())
+     || protocol_processed 
+     || (ndpi_flow == NULL)) return;
+
+  switch(detected_protocol) {
+  case NDPI_PROTOCOL_DNS:
+    if(ntop->getPrefs()->decode_dns_responses()) {
+      if(ndpi_flow->host_server_name[0] != '\0') {
+	char delimiter = '@', *name = NULL;
+	char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
+	
+	if(at != NULL)
+	  name = &at[1];
+	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
+	  name = (char*)ndpi_flow->host_server_name;
+
+	if(name) {
+	  protocol_processed = true;
+	  ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+
+	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
+
+	  if(true) {
+	    StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_DNS, true);
+
+	    if(host != NULL) {
+	      host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_DNS, 0, 0, 1, 1 /* Dummy */);
+	      host->updateSeen();
+
+	      if(cli_host) host->incrContact(cli_host->get_ip(), true);
+	    }
+	  }
+	}
+      }
+    }
+    break;
+
+  case NDPI_PROTOCOL_WHOIS_DAS:
+    if(ndpi_flow->host_server_name[0] != '\0') {
+      StringHost *host;
+
+      protocol_processed = true;
+
+      for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
+	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
+
+      host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_WHOIS_DAS, true);
+
+      if(host != NULL) {
+	//ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
+	host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
+	host->updateSeen();
+
+	if(cli_host) host->incrContact(cli_host->get_ip(), true);
+      }
+    }
+    break;
+
+  case NDPI_PROTOCOL_SSL:
+  case NDPI_PROTOCOL_HTTP:
+    if(ndpi_flow->host_server_name[0] != '\0') {
+      char buf[64], *doublecol, delimiter = ':';
+      u_int16_t sport = htons(cli_port), dport = htons(srv_port);
+      Host *svr = (sport < dport) ? cli_host : srv_host;
+
+      protocol_processed = true;
+
+      /* if <host>:<port> We need to remove ':' */
+      if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
+	doublecol[0] = '\0';
+
+      if(svr) {
+	svr->setName((char*)ndpi_flow->host_server_name, true);
+	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
+	  categorization.flow_categorized = true;
+	  categorization.category = strdup(buf);
+	}
+	ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
+					     (char*)ndpi_flow->host_server_name);
+      }
+    }
+    break;
+  } /* switch */
+
+  if(protocol_processed)
+    deleteFlowMemory();
+}
+
+/* *************************************** */
+
+void Flow::setDetectedProtocol(u_int16_t proto_id) {
   if((ndpi_flow != NULL) || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
-      u_int16_t sport = htons(cli_port), dport = htons(srv_port);
-
       detected_protocol = proto_id;
-
-      switch(detected_protocol) {
-      case NDPI_PROTOCOL_DNS:
-	if(ntop->getPrefs()->decode_dns_responses()) {
-	  if(ndpi_flow->host_server_name[0] != '\0') {
-	    char delimiter = '@';
-	    char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
-
-	    if(at) {
-	      at[0] = '\0';
-	      ntop->getRedis()->setResolvedAddress(&at[1], (char*)ndpi_flow->host_server_name);
-
-	      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
-	      if(true) {
-		StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_DNS, true);
-		
-		if(host != NULL) {
-		  host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_DNS, 0, 0, 1, 1 /* Dummy */);
-		  host->updateSeen();
-		  
-		  if(cli_host) host->incrContact(cli_host->get_ip(), true);
-		}
-	      }
-	    }
-	  }
-	}
-	break;
-
-      case NDPI_PROTOCOL_WHOIS_DAS:
-	if(ndpi_flow->host_server_name[0] != '\0') {
-	  StringHost *host;
-
-	  for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
-	    ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
-
-	  host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_WHOIS_DAS, true);
-
-	  if(host != NULL) {
-	    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
-	    host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
-	    host->updateSeen();
-
-	    if(cli_host) host->incrContact(cli_host->get_ip(), true);
-	  }
-	}
-	break;
-
-      case NDPI_PROTOCOL_SSL:
-      case NDPI_PROTOCOL_HTTP:
-	if(ndpi_flow->host_server_name[0] != '\0') {
-	  char buf[64], *doublecol, delimiter = ':';
-	  Host *svr = (sport < dport) ? cli_host : srv_host;
-
-	  /* if <host>:<port> We need to remove ':' */
-	  if((doublecol = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter)) != NULL)
-	    doublecol[0] = '\0';
-
-	  if(svr) {
-	    svr->setName((char*)ndpi_flow->host_server_name, true);
-	    if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
-	      categorization.flow_categorized = true;
-	      categorization.category = strdup(buf);
-	    }
-	    ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
-						 (char*)ndpi_flow->host_server_name);
-	  }
-	}
-	break;
-      } /* switch */
+      processDetectedProtocol();
       detection_completed = true;
     } else if((((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
 	       && (cli_host != NULL)
@@ -188,9 +209,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto) {
 							 ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
     }
 
-    if(detection_completed) {
-      deleteFlowMemory();
-    }
+    //if(detection_completed) deleteFlowMemory();
   }
 }
 
@@ -594,12 +613,12 @@ char* Flow::serialize() {
   char *rsp, buf[64];
 
   my_object = json_object_new_object();
-  
+
   inner = json_object_new_object();
   json_object_object_add(inner, "ip",   json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
   json_object_object_add(inner, "port", json_object_new_int(cli_port));
   json_object_object_add(my_object, "client", inner);
-  
+
   inner = json_object_new_object();
   json_object_object_add(inner, "ip",   json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
   json_object_object_add(inner, "port", json_object_new_int(srv_port));

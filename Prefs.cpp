@@ -50,6 +50,7 @@ Prefs::Prefs(Ntop *_ntop) {
   disable_host_persistency = false;
   num_interfaces = 0;
   dump_flows_on_db = false;
+  enable_aggregations = false;
   memset(ifNames, 0, sizeof(ifNames));
 
 #ifdef WIN32
@@ -191,6 +192,7 @@ static const struct option long_options[] = {
   { "users-file",                        required_argument, NULL, 'u' },
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
+  { "enable-aggregations",               no_argument,       NULL, 'A' },
 #ifdef HAVE_SQLITE
   { "dump-flows",                        no_argument,       NULL, 'F' },
 #endif
@@ -211,6 +213,10 @@ static const struct option long_options[] = {
 
 int Prefs::setOption(int optkey, char *optarg) {
   switch(optkey) {
+  case 'A':
+    enable_aggregations = true;
+    break;
+
   case 'B':
     packet_filter = optarg;
     break;
@@ -394,7 +400,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:B:FG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:AB:FG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

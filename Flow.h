@@ -31,7 +31,7 @@ class Flow : public GenericHashEntry, Serializable {
   u_int16_t vlanId;
   u_int8_t protocol, tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
-  bool detection_completed;
+  bool detection_completed, protocol_processed;
   u_int16_t detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -52,7 +52,6 @@ class Flow : public GenericHashEntry, Serializable {
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  
 
-  void deleteFlowMemory();
   char* ipProto2Name(u_short proto_id);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
 
@@ -70,10 +69,12 @@ class Flow : public GenericHashEntry, Serializable {
 
   char *getDomainCategory();
   void allocFlowMemory();
+  void deleteFlowMemory();
   char* serialize();
   inline u_int8_t getTcpFlags()              { return(tcp_flags);  };
   inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; };
-  void setDetectedProtocol(u_int16_t proto_id, u_int8_t l4_proto);
+  void processDetectedProtocol();
+  void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(char *json);
   bool isFlowPeer(char *numIP);
   void incStats(bool cli2srv_direction, u_int pkt_len);

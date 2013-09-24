@@ -219,7 +219,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
 
   if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
   flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
-  flow->setDetectedProtocol(proto_id, l4_proto);
+  flow->setDetectedProtocol(proto_id);
   flow->setJSONInfo(additional_fields_json);
   incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
 	   flow->get_detected_protocol(), in_bytes+out_bytes, (in_pkts+out_pkts),
@@ -337,6 +337,8 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   /* Protocol Detection */
 
   if(flow->isDetectionCompleted()) {
+    flow->processDetectedProtocol();
+    flow->deleteFlowMemory(); 
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else
@@ -349,8 +351,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 							    ip, ipsize, (u_int32_t)time,
-							    cli, srv),
-			      l4_proto);
+							    cli, srv));
   } else {
     // FIX - only handle unfragmented packets
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
