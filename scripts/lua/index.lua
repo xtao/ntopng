@@ -57,7 +57,8 @@ if(ifstats.stats_packets > 0) then
   --ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_top.inc")
   -- ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_bottom.inc")
 else
-print("<div class=\"alert alert-warning\">No packet has been received yet on interface " .. ifname .. ".<p>Please wait and then reload this page in a few seconds.</div>")
+print("<div class=\"alert alert-warning\">No packet has been received yet on interface " .. ifname .. ".<p>Please wait <span id='countdown'></span> seconds until this page reloads.</div> <script type=\"text/JavaScript\">(function countdown(remaining) { if(remaining <= 0) location.reload(true); document.getElementById('countdown').innerHTML = remaining;  setTimeout(function(){ countdown(remaining - 1); }, 1000);})(10);</script>")
+
 end
 
   dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
