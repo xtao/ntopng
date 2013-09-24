@@ -88,7 +88,7 @@ if(ifstats.type ~= "zmq") then
 else
    label = "Flows"
 end
-   print("<tr><th>Received "..label.."</th><td><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
+   print("<tr><th>Received Packets</th><td><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
 
    print("<tr><th>Dropped "..label.."</th><td><span id=if_drops>")
    
