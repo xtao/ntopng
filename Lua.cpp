@@ -869,6 +869,26 @@ static int ntop_get_prefs(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_increase_drops(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  u_int32_t num;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num = (u_int32_t)lua_tonumber(vm, 1);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
+  } else
+    ntop_interface->incrDrops(num);
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_process_flow(lua_State* vm) {
   NetworkInterface *ntop_interface;
   IpAddress src_ip, dst_ip;
@@ -1308,6 +1328,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "findFlowByKey",          ntop_get_interface_flow_by_key },
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "processFlow",            ntop_process_flow },
+  { "incrDrops",              ntop_increase_drops },
   { "isRunning",              ntop_interface_is_running },
   { "name2id",                ntop_interface_name2id },
   { NULL,                     NULL }

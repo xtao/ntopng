@@ -70,11 +70,11 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
-  virtual u_int getNumDroppedPackets()         { return(0);     };
+  virtual u_int getNumDrops()                  { return(0);     };
   virtual char *getScriptName()                { return NULL;   }
   virtual char *getEndpoint()                  { return NULL;   };
   virtual bool set_packet_filter(char *filter) { return(false); };
-
+  virtual void incrDrops(u_int32_t num)        { ; }
   inline virtual const char* get_type()      { return("unknown"); }
   inline virtual bool is_ndpi_enabled()      { return(true); }
   inline u_int  getNumnDPIProtocols()        { return(ndpi_get_num_supported_protocols(ndpi_struct)); };

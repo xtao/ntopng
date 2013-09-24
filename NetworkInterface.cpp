@@ -222,7 +222,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   flow->setDetectedProtocol(proto_id, l4_proto);
   flow->setJSONInfo(additional_fields_json);
   incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
-	   flow->get_detected_protocol(), in_bytes+out_bytes);
+	   flow->get_detected_protocol(), in_bytes+out_bytes
+	   + (in_pkts+out_pkts)*(24 /* IFG and all the rest */ + 14 /* Ethernet header */));
 
   purgeIdle(last_switched);
 }
@@ -928,7 +929,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
   lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
   lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
-  lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
+  lua_push_int_table_entry(vm, "stats_drops", getNumDrops());
 
   ethStats.lua(vm);
   ndpiStats.lua(this, vm);

@@ -30,7 +30,8 @@
 CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name)
   : NetworkInterface(_endpoint) {
   char *slash;
-  
+
+  num_drops = 0;
   endpoint = (char*)_endpoint, script_name = strdup(_script_name);
   
   /*

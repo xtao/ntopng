@@ -52,7 +52,7 @@ Redis::Redis(char *redis_host, int redis_port) {
   }
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
-			       "Succesfully connected to Redis %d bit v.%s",
+			       "Successfully connected to Redis %d bit v.%s",
 			       info.arch_bits, info.redis_version);
   l = new Mutex();
   setDefaults();

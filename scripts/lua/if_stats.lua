@@ -90,21 +90,19 @@ else
 end
    print("<tr><th>Received "..label.."</th><td><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
 
-   if(ifstats.type ~= "zmq") then
-      print("<tr><th>Dropped "..label.."</th><td><span id=if_drops>")
-      
-      if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
-      print(formatValue(ifstats.stats_drops).. " " .. label)
-      
-      if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
-	 local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
-	 if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
-      end
-      
-      if(ifstats.stats_drops > 0) then print('</span>') end
-      print("</span>  <span id=drops_trend></span></td></tr>\n")
+   print("<tr><th>Dropped "..label.."</th><td><span id=if_drops>")
+   
+   if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
+   print(formatValue(ifstats.stats_drops).. " " .. label)
+   
+   if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
+      local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
+      if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
    end
-
+   
+   if(ifstats.stats_drops > 0) then print('</span>') end
+   print("</span>  <span id=drops_trend></span></td></tr>\n")
+   
    print("</table>\n")
 elseif((page == "packets")) then
       print [[
@@ -183,7 +181,7 @@ setInterval(function() {
 				$('#if_pkts').html(addCommas(rsp.packets)+"]]
 
 
-if(ifstats.type ~= "zmq") then print(" Flows\");") else print(" Pkts\");") end
+if(ifstats.type == "zmq") then print(" Flows\");") else print(" Pkts\");") end
 print [[
 				var pctg = 0;
 				var drops = "";
@@ -203,9 +201,9 @@ print [[
 
 				if((rsp.packets+rsp.drops) > 0)	{ pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
 				if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
-				drops = drops + addCommas(rsp.drops)+"]]
+				drops = drops + addCommas(rsp.drops)+" ]]
 
-if(ifstats.type ~= "zmq") then print("Flows);") else print("Pkts);") end
+if(ifstats.type == "zmq") then print("Flows") else print("Pkts") end
 print [[";
 
 				if(pctg > 0)      { drops = drops + " [ "+pctg+" % ]"; }
