@@ -208,7 +208,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   bool src2dst_direction;
   Flow *flow;
 
-  addFlowStats(last_switched, in_pkts+out_pkts, in_bytes+out_bytes);
+  if (last_switched > last_pkt_rcvd) last_pkt_rcvd = last_switched;
 
   /* Updating Flow */
 
@@ -222,8 +222,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   flow->setDetectedProtocol(proto_id, l4_proto);
   flow->setJSONInfo(additional_fields_json);
   incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
-	   flow->get_detected_protocol(), in_bytes+out_bytes
-	   + (in_pkts+out_pkts)*(24 /* IFG and all the rest */ + 14 /* Ethernet header */));
+	   flow->get_detected_protocol(), in_bytes+out_bytes, (in_pkts+out_pkts),
+	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
 
   purgeIdle(last_switched);
 }
@@ -254,7 +254,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   if(iph != NULL) {
     /* IPv4 */
     if(ipsize < 20) {
-      incStats(ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize);
+      incStats(ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
       return;
     }
 
@@ -270,7 +270,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   } else {
     /* IPv6 */
     if(ipsize < sizeof(const struct ndpi_ip6_hdr)) {
-      incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+      incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
       return;
     }
 
@@ -327,7 +327,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
 
   if(flow == NULL) {
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else {
     flow->incStats(src2dst_direction, rawsize);
@@ -337,10 +337,10 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   /* Protocol Detection */
 
   if(flow->isDetectionCompleted()) {
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
 
   if(!is_fragment) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
@@ -408,7 +408,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       eth_type = ETHERTYPE_IPV6;
       break;
     default:
-      incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
+      incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
       return; /* Any other non IP protocol */
     }
 
@@ -424,9 +424,9 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     ethernet = (struct ndpi_ethhdr *)&dummy_ethernet;
     eth_type = (packet[14] << 8) + packet[15];
     ip_offset = 16;
-    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
   } else {
-    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   }
 
@@ -505,7 +505,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
     if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
 
-    incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len);
+    incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     break;
   }
 

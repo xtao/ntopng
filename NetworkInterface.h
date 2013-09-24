@@ -86,12 +86,11 @@ class NetworkInterface {
   inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
 
-  inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len) { 
-    ethStats.incStats(eth_proto, 1, pkt_len);
+  inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
+    ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
     ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 
     pktStats.incStats(pkt_len);
   };
-  inline void addFlowStats(time_t last, u_int pkts, u_int bytes) { if (last > last_pkt_rcvd) last_pkt_rcvd = last; ethStats.incStats(0, pkts, bytes); }
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
   inline int isRunning()	   { return running; };

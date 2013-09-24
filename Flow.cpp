@@ -419,16 +419,21 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 		       diff_sent_packets, diff_sent_bytes);
 
   if(last_update_time.tv_sec > 0) {
-    float tdiff = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec))/(float)1000;
+    float tdiff_msec = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000)+((tv->tv_usec-last_update_time.tv_usec)/(float)1000);
+    float bytes_msec = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff_msec;
 
-    tdiff = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff;
-    if(tdiff < 0) tdiff = 0; /* Just to be safe */
+    if(bytes_msec < 0) bytes_msec = 0; /* Just to be safe */
 
-    if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
-    else if(bytes_thpt > tdiff) bytes_thpt_trend = trend_down;
-    else                        bytes_thpt_trend = trend_stable;
+    if(bytes_thpt < bytes_msec)      bytes_thpt_trend = trend_up;
+    else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
+    else                             bytes_thpt_trend = trend_stable;
 
-    bytes_thpt = tdiff;
+    /*
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][bytes: %u][bits_thpt: %.2f Mbps]",
+				 bytes_msec, (cli2srv_last_bytes-prev_cli2srv_last_bytes),
+				 (bytes_thpt*8)/((float)(1024*1024)));
+    */
+    bytes_thpt = bytes_msec;
   }
 
   memcpy(&last_update_time, tv, sizeof(struct timeval));

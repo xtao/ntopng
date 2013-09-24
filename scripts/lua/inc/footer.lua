@@ -84,12 +84,12 @@ function bytesToVolume(bytes) {
    };
 
 
-function bitsToSize(bits) {
+function bitsToSize(bits, factor) {
       var sizes = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];
       if (bits == 0) return '0 bps';
       var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
       if (i == 0) return bits + ' ' + sizes[i];
-      return (bits / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+      return (bits / Math.pow(factor, i)).toFixed(2) + ' ' + sizes[i];
    };
 
 function bytesToSize(bytes) {
@@ -206,7 +206,7 @@ setInterval(function() {
 
 		pps = Math.floor(packets_diff / epoch_diff);
 		bps = Math.round((bytes_diff*8) / epoch_diff);
-		msg = ""+bitsToSize(bps)+" [" + addCommas(pps) + " pps]<br>";
+		msg = ""+bitsToSize(bps, 1000)+" [" + addCommas(pps) + " pps]<br>";
 		msg += "<i class=\"icon-time\"></i> Uptime: "+rsp.uptime+"<br>";
 
 		var alarm_threshold_low = 60;  /* 60% */

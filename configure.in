@@ -94,7 +94,7 @@ fi
 AC_CHECK_LIB([glib-2.0], [glib_check_version], glib2=true)
 if test x$glib2 = x
 then
-echo "Please install libglib-2.0 (glib2-devel) package (RRD prerequisite)"
+echo "Please install libglib-2.0 (glib2-devel/libglib2.0-dev) package (RRD prerequisite)"
 exit
 fi
 

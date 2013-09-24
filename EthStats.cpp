@@ -34,8 +34,8 @@ EthStats::EthStats() {
 /* *************************************** */
 
 void EthStats::incStats(u_int16_t proto, u_int32_t num_pkts, 
-			u_int32_t num_bytes) {
-  raw.inc(num_pkts, num_bytes+(24 /* 8 Preamble + 4 CRC + 12 IFG */ * num_pkts));
+			u_int32_t num_bytes, u_int pkt_overhead) {
+  raw.inc(num_pkts, num_bytes+pkt_overhead*num_pkts);
 
   switch(proto) {
   case ETHERTYPE_ARP:
