@@ -1,4 +1,4 @@
-AC_INIT([Makefile.in], 1.0.1)
+AC_INIT([Makefile.in], 1.0.2)
 
 AC_PROG_CPP
 
