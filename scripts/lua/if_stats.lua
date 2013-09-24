@@ -203,7 +203,11 @@ print [[
 
 				if((rsp.packets+rsp.drops) > 0)	{ pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
 				if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
-				drops = drops + addCommas(rsp.drops)+" Pkts ";
+				drops = drops + addCommas(rsp.drops)+"]]
+
+if(ifstats.type ~= "zmq") then print("Flows);") else print("Pkts);") end
+print [[";
+
 				if(pctg > 0)      { drops = drops + " [ "+pctg+" % ]"; }
 				if(rsp.drops > 0) { drops = drops + '</span>';         }
 				$('#if_drops').html(drops);

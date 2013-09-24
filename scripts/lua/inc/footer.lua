@@ -214,22 +214,24 @@ setInterval(function() {
 		var alert = 0;
 
 		if(rsp.hosts_pctg < alarm_threshold_low) {
-		  alert = 1;
 		  msg += "<span class=\"label\">";
 		} else if(rsp.hosts_pctg < alarm_threshold_high) {
+		  alert = 1;
 		  msg += "<span class=\"label label-warning\">";
 		} else {
+		  alert = 1;
 		  msg += "<span class=\"label label-important\">";
 		}
 
 		msg += addCommas(rsp.num_hosts)+" hosts</span> ";
 		
 		if(rsp.flows_pctg < alarm_threshold_low) {
-		  alert = 1;
 		  msg += "<span class=\"label\">";
 		} else if(rsp.flows_pctg < alarm_threshold_high) {
+		   alert = 1;
 		  msg += "<span class=\"label label-warning\">";
 		} else {
+		   alert = 1;
 		  msg += "<span class=\"label label-important\">";
 		}
 
