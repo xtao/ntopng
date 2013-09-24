@@ -31,20 +31,31 @@ local pkt_distribution = {
    ['above9000'] = '> 9000'
 }
 
+tot = 0
+for key, value in pairs(what) do
+   tot = tot + value
+end
+
+threshold = (tot * 5) / 100
 
 print "[\n"
 num = 0
+sum = 0
 for key, value in pairs(what) do
-   if(value > 0) then
+   if(value > threshold) then
       if(num > 0) then
 	 print ",\n"
       end
    
       print("\t { \"label\": \"" .. pkt_distribution[key] .."\", \"value\": ".. value .." }") 
       num = num + 1
+      sum = sum + value
    end
 end
 
+if(sum < tot) then
+   print("\t, { \"label\": \"Other\", \"value\": ".. (tot-sum) .." }") 
+end
 
 print "\n]"
 

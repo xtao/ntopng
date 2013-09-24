@@ -14,6 +14,7 @@ print [[ <hr>
 print [[
 
 <div class="row-fluid show-grid">
+<div id=toomany></div>
 	 <div class="span3">&copy; 1998-]]
 
 print(os.date("%Y"))
@@ -210,8 +211,10 @@ setInterval(function() {
 
 		var alarm_threshold_low = 60;  /* 60% */
 		var alarm_threshold_high = 90; /* 90% */
+		var alert = 0;
 
 		if(rsp.hosts_pctg < alarm_threshold_low) {
+		  alert = 1;
 		  msg += "<span class=\"label\">";
 		} else if(rsp.hosts_pctg < alarm_threshold_high) {
 		  msg += "<span class=\"label label-warning\">";
@@ -220,8 +223,9 @@ setInterval(function() {
 		}
 
 		msg += addCommas(rsp.num_hosts)+" hosts</span> ";
-
+		
 		if(rsp.flows_pctg < alarm_threshold_low) {
+		  alert = 1;
 		  msg += "<span class=\"label\">";
 		} else if(rsp.flows_pctg < alarm_threshold_high) {
 		  msg += "<span class=\"label label-warning\">";
@@ -233,6 +237,10 @@ setInterval(function() {
 
 		$('#network-load').html(msg);
 		gauge.set(Math.min(bps, gauge.maxValue));
+
+		if(alert) {
+		   $('#toomany').html("<div class='alert alert-block'><h4>Warning</h4>You have too many hosts/flows for your ntopng configuration and this will lead to packet drops and high CPU load. Please restart ntopng increasing -x and -X.</div>");
+		}
 	      }
 	    } else {
 	      /* $('#network-load').html("[No traffic (yet)]"); */
