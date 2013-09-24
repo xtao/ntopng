@@ -87,80 +87,83 @@ end
 
 num = 0
 for _key, _value in pairsByKeys(vals, funct) do
-   key = vals[_key]   
-   value = hosts_stats[key]
+   key = vals[_key]
 
-   if(to_skip > 0) then
-      to_skip = to_skip-1
-   else
-      if(num < perPage) then
-	 if(num > 0) then
-	    print ",\n"
-	 end
+   if((key ~= nil) and (not(key == ""))) then
+      value = hosts_stats[key]
 
-	 print ("{ \"column_ip\" : \"<A HREF='/lua/")
-	 if(aggregated ~= nil) then print("aggregated_") end
-	 print("host_details.lua?host=" .. key .. "'>" .. key .. " ")
-
-	 print("</A>\", \"column_name\" : \"")
-	 if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
-	 print(value["name"])
-         print("</div>")
-
-	 if(value["country"] ~= nil) then 
-	    print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
-	 end
-
-	 if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
-	 if(value["vlan"] ~= nil) then print("\", \"column_vlan\" : "..value["vlan"]) end
-
-	 if(value["asn"] ~= nil) then
-	    if(value["asn"] == 0) then
-	       print(", \"column_asn\" : 0")
-	    else
-	       print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
+      if(to_skip > 0) then
+	 to_skip = to_skip-1
+      else
+	 if(num < perPage) then
+	    if(num > 0) then
+	       print ",\n"
 	    end
-	 else
-	    print("\"")	    
+
+	    print ("{ \"column_ip\" : \"<A HREF='/lua/")
+	    if(aggregated ~= nil) then print("aggregated_") end
+	    print("host_details.lua?host=" .. key .. "'>" .. key .. " ")
+
+	    print("</A>\", \"column_name\" : \"")
+	    if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
+	    print(value["name"])
+	    print("</div>")
+
+	    if(value["country"] ~= nil) then
+	       print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
+	    end
+
+	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
+	    if(value["vlan"] ~= nil) then print("\", \"column_vlan\" : "..value["vlan"]) end
+
+	    if(value["asn"] ~= nil) then
+	       if(value["asn"] == 0) then
+		  print(", \"column_asn\" : 0")
+	       else
+		  print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
+	       end
+	    else
+	       print("\"")
+	    end
+
+	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
+	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
+
+	    if(value["throughput_trend"] > 0) then
+	       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
+	       print("\",")
+	    end
+
+	    if(aggregated ~= nil) then
+	       print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
+
+	       if(value["throughput_trend"] == 1) then
+		  print("<i class=icon-arrow-up></i>")
+		  elseif(value["throughput_trend"] == 2) then
+		  print("<i class=icon-arrow-down></i>")
+		  elseif(value["throughput_trend"] == 3) then
+		  print("<i class=icon-minus></i>")
+	       end
+	    else
+	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+	    end
+
+	    if(value["localhost"] ~= nil) then
+	       print ("\", \"column_location\" : \"")
+	       if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end
+	    end
+
+	    sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
+	    print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. sent2rcvd .."%;'>Sent</div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
+
+
+	    print("\" } ")
+	    num = num + 1
 	 end
-
-	 print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
-	 print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
-
-	 if(value["throughput_trend"] > 0) then 
-	    print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
-	    print("\",")
-	 end
-
-	 if(aggregated ~= nil) then  
-	    print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
-	    
-	    if(value["throughput_trend"] == 1) then 
-	       print("<i class=icon-arrow-up></i>")
-	       elseif(value["throughput_trend"] == 2) then
-	       print("<i class=icon-arrow-down></i>")
-	       elseif(value["throughput_trend"] == 3) then
-	       print("<i class=icon-minus></i>")
-	    end		 
-	 else
-	    print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
-	 end
-
-	 if(value["localhost"] ~= nil) then 
-	    print ("\", \"column_location\" : \"")
-	    if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end
-	 end
-
-	 sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
-	 print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. sent2rcvd .."%;'>Sent</div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
-
-
-	 print("\" } ")
-	 num = num + 1
       end
-   end
 
-   total = total + 1
+      total = total + 1
+   end
 end -- for
 
 
@@ -175,5 +178,4 @@ if(sortOrder == nil) then
 end
 
 print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
-
 print ("\"totalRows\" : " .. total .. " \n}")
