@@ -32,7 +32,7 @@ print [[</font></div>
 key = 'ntopng.prefs.'..ifname..'.speed'
 maxSpeed = ntop.getCache(key)
 if((maxSpeed == "") or (maxSpeed == nil)) then
-   maxSpeed = 3000000000 -- 1 Gbit
+   maxSpeed = 1000000000 -- 1 Gbit
 else
    maxSpeed = tonumber(maxSpeed)*1000000
 end
