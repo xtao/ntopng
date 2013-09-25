@@ -68,6 +68,8 @@ NetworkInterface::NetworkInterface(const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
+  purge_idle_flows_hosts = true;
+
   if(name == NULL) {
     if(!help_printed) ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
     printAvailableInterfaces(false, 0, NULL, 0);
@@ -362,21 +364,23 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 /* **************************************************** */
 
 void NetworkInterface::purgeIdle(time_t when) {
-  u_int n;
+  if(purge_idle_flows_hosts) {
+    u_int n;
 
-  last_pkt_rcvd = when;
+    last_pkt_rcvd = when;
 
-  if((n = purgeIdleFlows()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
-				 n, getNumFlows());
+    if((n = purgeIdleFlows()) > 0)
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
+				   n, getNumFlows());
 
-  if((n = purgeIdleHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
-				 n, getNumHosts());
+    if((n = purgeIdleHosts()) > 0)
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
+				   n, getNumHosts());
 
-  if((n = purgeIdleAggregatedHosts()) > 0)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
-				 n, getNumHosts());
+    if((n = purgeIdleAggregatedHosts()) > 0)
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
+				   n, getNumHosts());
+  }
 }
 
 /* **************************************************** */

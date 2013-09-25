@@ -36,7 +36,7 @@ interface.find(ifname)
 if(aggregated == nil) then
    hosts_stats = interface.getHostsInfo()
 else
-   hosts_stats = interface.getAggregatedHostsInfo(protocol)
+   hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol))
 end
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
