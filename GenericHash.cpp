@@ -23,9 +23,9 @@
 
 /* ************************************ */
 
-GenericHash::GenericHash(u_int _num_hashes, u_int _max_hash_size) {
+GenericHash::GenericHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max_hash_size) {
   num_hashes = _num_hashes, max_hash_size = _max_hash_size, current_size = 0;
-
+  iface = _iface;
   table = new GenericHashEntry*[num_hashes];
   for(u_int i = 0; i < num_hashes; i++)
     table[i] = NULL;

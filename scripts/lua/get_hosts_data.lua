@@ -13,6 +13,7 @@ perPage         = _GET["perPage"]
 sortColumn      = _GET["sortColumn"]
 sortOrder       = _GET["sortOrder"]
 aggregated      = _GET["aggregated"]
+protocol        = _GET["protocol"]
 
 if(sortColumn == nil) then
    sortColumn = "column_"
@@ -35,7 +36,7 @@ interface.find(ifname)
 if(aggregated == nil) then
    hosts_stats = interface.getHostsInfo()
 else
-   hosts_stats = interface.getAggregatedHostsInfo()
+   hosts_stats = interface.getAggregatedHostsInfo(protocol)
 end
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
@@ -124,6 +125,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    else
 	       print("\"")
+	    end
+
+	    if(aggregated ~= nil) then 
+	       print(", \"column_family\" : \"" .. value["family"] .. "\"")
 	    end
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")

@@ -52,7 +52,8 @@ static void free_wrapper(void *freeable)
 
 NetworkInterface::NetworkInterface() {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
-    strings_hash = NULL, ndpi_struct = NULL;
+    strings_hash = NULL, ndpi_struct = NULL,
+    purge_idle_flows_hosts = true;
 }
 
 /* **************************************************** */
@@ -97,11 +98,11 @@ NetworkInterface::NetworkInterface(const char *name) {
   ifname = strdup(name);
 
   num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
-  flows_hash = new FlowHash(num_hashes, ntop->getPrefs()->get_max_num_flows());
+  flows_hash = new FlowHash(this, num_hashes, ntop->getPrefs()->get_max_num_flows());
 
   num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
-  hosts_hash = new HostHash(num_hashes, ntop->getPrefs()->get_max_num_hosts());
-  strings_hash = new StringHash(num_hashes, ntop->getPrefs()->get_max_num_hosts());
+  hosts_hash = new HostHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
+  strings_hash = new StringHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
 
   // init global detection structure
   ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
@@ -637,16 +638,32 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 
 /* **************************************************** */
 
+struct aggregation_walk_hosts_info {
+  lua_State* vm;
+  u_int16_t family_id;
+};
+
+/* **************************************************** */
+
 static void aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
-  ((StringHost*)h)->lua((lua_State*)user_data, true);
+  struct aggregation_walk_hosts_info *info = (struct aggregation_walk_hosts_info*)user_data;
+  StringHost *host = (StringHost*)h;
+
+  if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
+    ((StringHost*)h)->lua(info->vm, true);
+  }
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm) {
+void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family) {
+  struct aggregation_walk_hosts_info info;
+
+  info.vm = vm, info.family_id = proto_family;
+
   lua_newtable(vm);
 
-  strings_hash->walk(aggregated_hosts_get_list, (void*)vm);
+  strings_hash->walk(aggregated_hosts_get_list, (void*)&info);
 }
 
 /* **************************************************** */
@@ -702,6 +719,15 @@ static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_d
 
   if((n = host->get_num_contacts_by(info->host_to_find)) > 0)
     lua_push_int_table_entry(info->vm, host->host_key(), n);
+}
+
+/* **************************************************** */
+
+static void find_aggregation_families(GenericHashEntry *h, void *user_data) {
+  NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
+  StringHost *host                = (StringHost*)h;
+
+  NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
 }
 
 /* **************************************************** */
@@ -805,6 +831,24 @@ bool NetworkInterface::getAggregationsForHost(lua_State* vm, char *host_ip) {
 
 /* **************************************************** */
 
+bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
+  NDPI_PROTOCOL_BITMASK families;
+
+  NDPI_BITMASK_RESET(families);
+  strings_hash->walk(find_aggregation_families, (void*)&families);
+
+  lua_newtable(vm);
+  
+  for(int i=0; i<(NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS); i++)
+    if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(families, i)) {
+      lua_push_int_table_entry(vm, ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i), i);
+    }
+
+  return(true);
+}
+
+/* **************************************************** */
+
 static void flows_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
   Flow *flow = (Flow*)h;
@@ -858,6 +902,8 @@ int ptr_compare(const void *a, const void *b) {
 /* **************************************************** */
 
 u_int NetworkInterface::purgeIdleFlows() {
+  if(!purge_idle_flows_hosts) return(0);
+
   if(next_idle_flow_purge == 0) {
     next_idle_flow_purge = last_pkt_rcvd + FLOW_PURGE_FREQUENCY;
     return(0);
@@ -882,6 +928,8 @@ u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
 /* **************************************************** */
 
 u_int NetworkInterface::purgeIdleHosts() {
+  if(!purge_idle_flows_hosts) return(0);
+
   if(next_idle_host_purge == 0) {
     next_idle_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(0);
@@ -901,6 +949,8 @@ u_int NetworkInterface::purgeIdleHosts() {
 /* **************************************************** */
 
 u_int NetworkInterface::purgeIdleAggregatedHosts() {
+  if(!purge_idle_flows_hosts) return(0);
+
   if(next_idle_aggregated_host_purge == 0) {
     next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(0);

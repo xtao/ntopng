@@ -14,9 +14,31 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "hosts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+
+print [[
+      <hr>
+      <div id="table-hosts"></div>
+	 <script>
+	 $("#table-hosts").datatable({
+					url: "/lua/get_hosts_data.lua?aggregated=1]]
+					if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
+print [[",
+	       showPagination: true,
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Protocols<span class="caret"></span></button> <ul class="dropdown-menu">]]
+
+print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
+
+families = interface.getAggregationFamilies()
+for key,v in pairs(families) do
+   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..'</a></li>')
+end 
+
+print("</ul> </div>' ],")
+
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
 
 prefs = ntop.getPrefs()
+
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.inc")

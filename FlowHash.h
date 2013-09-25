@@ -26,7 +26,7 @@
  
 class FlowHash : public GenericHash {
  public:
-  FlowHash(u_int _num_hashes, u_int _max_hash_size);
+  FlowHash(NetworkInterface *iface, u_int _num_hashes, u_int _max_hash_size);
   
   Flow* find(IpAddress *src_ip, IpAddress *dst_ip,
 	     u_int16_t src_port, u_int16_t dst_port, 

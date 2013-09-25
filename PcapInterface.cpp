@@ -48,9 +48,12 @@ PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
       }
 
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from pcap file %s...", ifname);
+      read_pkts_from_pcap_dump = true, purge_idle_flows_hosts = false;
     }
-  } else
+  } else {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
+    read_pkts_from_pcap_dump = false;
+  }
 
   pcap_datalink_type = pcap_datalink(pcap_handle);
 }
@@ -81,8 +84,9 @@ static void* packetPollLoop(void* ptr) {
 
     if((pkt = pcap_next(pd, &hdr)) != NULL)
       iface->packet_dissector(&hdr, pkt);
-    else
-      iface->purgeIdle(time(NULL));    
+    else {
+      iface->purgeIdle(time(NULL));
+    }
   } /* while */
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Terminated packet polling for %s", iface->get_name());

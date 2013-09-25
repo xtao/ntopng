@@ -26,7 +26,7 @@
  
 class HostHash : public GenericHash {
  public:
-  HostHash(u_int _num_hashes, u_int _max_hash_size);
+  HostHash(NetworkInterface *iface, u_int _num_hashes, u_int _max_hash_size);
 
   Host* get(u_int16_t vlanId, const u_int8_t mac[6]);
   Host* get(u_int16_t vlanId, IpAddress *key);

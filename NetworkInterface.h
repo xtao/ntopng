@@ -48,6 +48,7 @@ class NetworkInterface {
   HostHash *hosts_hash;
   /* String hash (Aggregation) */
   StringHash *strings_hash;
+  bool purge_idle_flows_hosts;
 
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
@@ -143,8 +144,9 @@ class NetworkInterface {
 		      bool createIfNotPresent);
   Host* getHost(char *host_ip, u_int16_t vlan_id);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  void getActiveAggregatedHostsList(lua_State* vm);
+  void getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family);
   bool getAggregatedHostInfo(lua_State* vm, char *host_ip);
+  bool getAggregatedFamilies(lua_State* vm);
   bool getAggregationsForHost(lua_State* vm, char *host_ip);
   StringHost* findHostByString(char *keyname, u_int16_t family_id, 
 			       bool createIfNotPresent);  

@@ -226,15 +226,18 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 
 static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
+  u_int16_t family = 0;
+
+  if(lua_type(vm, 1) == LUA_TNUMBER)
+    family = (u_int16_t)lua_tonumber(vm, 1);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     handle_null_interface(vm);
     return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
   }
 
-  if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm);
+  if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm, family);
 
   return(CONST_LUA_OK);
 }
@@ -574,6 +577,24 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_aggregation_families(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    //ntop_interface = ntop->getInterfaceId(0);
+  }
+
+  if((!ntop_interface) || (!ntop_interface->getAggregatedFamilies(vm)))
+    return(CONST_LUA_ERROR);
+  else
+    return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_aggregregations_for_host(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
@@ -703,15 +724,13 @@ static int ntop_interface_name2id(lua_State* vm) {
 
 typedef int (*RRD_FUNCTION)(int, char **);
 
-static void reset_rrd_state(void)
-{
+static void reset_rrd_state(void) {
   optind = 0;
   opterr = 0;
   rrd_clear_error();
 }
 
-static char **make_argv(const char *cmd, lua_State * L)
-{
+static char **make_argv(const char *cmd, lua_State * L) {
   char **argv;
   int i;
   int argc = lua_gettop(L) + 1;
@@ -743,8 +762,10 @@ static char **make_argv(const char *cmd, lua_State * L)
   return argv;
 }
 
-static int rrd_common_call (lua_State *L, const char *cmd, RRD_FUNCTION rrd_function)
-{
+/* ****************************************** */
+
+static int rrd_common_call (lua_State *L, const char *cmd, 
+			    RRD_FUNCTION rrd_function) {
   char **argv;
   int argc = lua_gettop(L) + 1;
 
@@ -1317,6 +1338,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getHosts",               ntop_get_interface_hosts },
   { "getHostsInfo",           ntop_get_interface_hosts_info },
   { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },
+  { "getAggregationFamilies", ntop_get_interface_aggregation_families },
   { "getNumAggregatedHosts",  ntop_get_interface_num_aggregated_hosts },
   { "getHostInfo",            ntop_get_interface_host_info },
   { "getHostActivityMap",     ntop_get_interface_host_activitymap },

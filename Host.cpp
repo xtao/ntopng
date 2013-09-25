@@ -198,7 +198,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     char *ipaddr = NULL;
 
     lua_newtable(vm);
-    lua_push_bool_table_entry(vm, "localhost", isLocalHost());
+    
     lua_push_bool_table_entry(vm, "privatehost", isPrivateHost());
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
 

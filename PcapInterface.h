@@ -27,6 +27,7 @@
 class PcapInterface : public NetworkInterface {
  private:
   pcap_t *pcap_handle;
+  bool read_pkts_from_pcap_dump;
 
  public:
   PcapInterface(const char *name);

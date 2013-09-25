@@ -54,6 +54,8 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_push_int_table_entry(vm, "seen.first", first_seen);
   lua_push_int_table_entry(vm, "seen.last", last_seen);
   lua_push_int_table_entry(vm, "duration", get_duration());
+  lua_push_str_table_entry(vm, "family", 
+			   ndpi_get_proto_name(iface->get_ndpi_struct(), family_id));
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
   lua_push_int_table_entry(vm, "throughput_trend", getThptTrend());
 

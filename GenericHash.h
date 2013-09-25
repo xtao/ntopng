@@ -33,7 +33,7 @@ class GenericHash {
   u_int last_purged_hash;
 
  public:
-  GenericHash(u_int _num_hashes, u_int _max_hash_size);
+  GenericHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max_hash_size);
   ~GenericHash();
  
   inline u_int getNumEntries() { return(current_size); };
@@ -41,6 +41,7 @@ class GenericHash {
   bool remove(GenericHashEntry *h); /* Note: GenericHashEntry* memory is NOT freed */
   void walk(void (*walker)(GenericHashEntry *h, void *user_data), void *user_data);
   u_int purgeIdle();
+  inline NetworkInterface* getInterface() { return(iface); };
   GenericHashEntry* findByKey(u_int32_t key);
 };
 

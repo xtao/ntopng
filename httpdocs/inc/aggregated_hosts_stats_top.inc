@@ -1,14 +1,4 @@
 
-
-      <hr>
-
-
-
-      <div id="table-hosts"></div>
-	 <script>
-	 $("#table-hosts").datatable({
-	   url: "/lua/get_hosts_data.lua?aggregated=1",
-	       showPagination: true,
 	       title: "Aggregation List",
 	        columns: [
 			     {
@@ -17,6 +7,14 @@
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'left'
+			       }
+			     },
+			     {
+			     title: "Protocol",
+				 field: "column_family",
+				 sortable: false,
+	 	             css: { 
+			        textAlign: 'center'
 			       }
 			     },
 
