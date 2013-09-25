@@ -1,5 +1,5 @@
 
-	       title: "Aggregation List",
+	       title: "Aggregations",
 	        columns: [
 			     {
 			     title: "Name",

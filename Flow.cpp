@@ -100,10 +100,23 @@ Flow::~Flow() {
 
 /* *************************************** */
 
+void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id) {
+  if(ntop->getPrefs()->do_enable_aggregations()) {
+    StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
+    
+    if(host != NULL) {
+      host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
+      host->updateSeen();
+      
+      if(cli_host) host->incrContact(cli_host->get_ip(), true);
+    }
+  }
+}
+
+/* *************************************** */
+
 void Flow::processDetectedProtocol() {
-  if((!ntop->getPrefs()->do_enable_aggregations())
-     || protocol_processed 
-     || (ndpi_flow == NULL)) return;
+  if(protocol_processed || (ndpi_flow == NULL)) return;
 
   switch(detected_protocol) {
   case NDPI_PROTOCOL_DNS:
@@ -123,16 +136,7 @@ void Flow::processDetectedProtocol() {
 
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
 
-	  if(true) {
-	    StringHost *host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_DNS, true);
-
-	    if(host != NULL) {
-	      host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_DNS, 0, 0, 1, 1 /* Dummy */);
-	      host->updateSeen();
-
-	      if(cli_host) host->incrContact(cli_host->get_ip(), true);
-	    }
-	  }
+	  aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_TCP, detected_protocol);
 	}
       }
     }
@@ -140,22 +144,12 @@ void Flow::processDetectedProtocol() {
 
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
-      StringHost *host;
-
       protocol_processed = true;
 
       for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-      host = iface->findHostByString((char*)ndpi_flow->host_server_name, NDPI_PROTOCOL_WHOIS_DAS, true);
-
-      if(host != NULL) {
-	//ntop->getTrace()->traceEvent(TRACE_NORMAL, "[WHOIS] %s", ndpi_flow->host_server_name);
-	host->incStats(IPPROTO_TCP, NDPI_PROTOCOL_WHOIS_DAS, 0, 0, 1, 1 /* Dummy */);
-	host->updateSeen();
-
-	if(cli_host) host->incrContact(cli_host->get_ip(), true);
-      }
+      aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_UDP, detected_protocol);
     }
     break;
 
@@ -174,6 +168,8 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
+	aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_TCP, detected_protocol);
+
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
 	  categorization.flow_categorized = true;
 	  categorization.category = strdup(buf);

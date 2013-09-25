@@ -61,7 +61,7 @@ print [[
    ]]
 
 if(interface.getNumAggregatedHosts() > 0) then
-   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\">Aggregation List</a></li>\n")
+   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\">Aggregations</a></li>\n")
 end
 
 print [[
