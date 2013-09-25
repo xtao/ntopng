@@ -24,7 +24,7 @@ print [[
 					if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
 print [[",
 	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Protocols<span class="caret"></span></button> <ul class="dropdown-menu">]]
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
 print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
 

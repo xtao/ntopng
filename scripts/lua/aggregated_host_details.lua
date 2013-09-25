@@ -82,7 +82,7 @@ elseif(page == "contacts") then
 
 if(num > 0) then
 print("<table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Contacted by</th><th>Contacts Number</th></tr>\n")
+print("<tr><th>Peers</th><th>Contacts Number</th></tr>\n")
 
 -- Client
 sortTable = {}

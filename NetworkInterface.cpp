@@ -730,6 +730,8 @@ static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_d
 static void find_aggregation_families(GenericHashEntry *h, void *user_data) {
   NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
   StringHost *host                = (StringHost*)h;
+  
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "%d", host->get_family_id());
 
   NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
 }
@@ -845,7 +847,14 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
   
   for(int i=0; i<(NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS); i++)
     if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(families, i)) {
-      lua_push_int_table_entry(vm, ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i), i);
+      char *name;
+
+      if(i == NTOPNG_NDPI_OS_PROTO_ID)
+	name = (char*)"OperatingSystem";
+      else
+	name = ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i);
+      
+      lua_push_int_table_entry(vm, name, i);
     }
 
   return(true);

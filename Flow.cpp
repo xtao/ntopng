@@ -176,6 +176,9 @@ void Flow::processDetectedProtocol() {
 	}
 	ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
 					     (char*)ndpi_flow->host_server_name);
+
+	if(ndpi_flow->detected_os[0] != '\0')
+	  aggregateInfo((char*)ndpi_flow->detected_os, IPPROTO_TCP, NTOPNG_NDPI_OS_PROTO_ID);
       }
     }
     break;
