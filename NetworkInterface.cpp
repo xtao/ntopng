@@ -71,13 +71,17 @@ NetworkInterface::NetworkInterface(const char *name) {
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
-    if(!help_printed) ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
+    if(!help_printed)
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
+
     printAvailableInterfaces(false, 0, NULL, 0);
 
     name = pcap_lookupdev(pcap_error_buffer);
 
     if(name == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate default interface (%s)\n", pcap_error_buffer);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				   "Unable to locate default interface (%s)\n", 
+				   pcap_error_buffer);
       exit(0);
     }
   } else {
@@ -116,6 +120,12 @@ NetworkInterface::NetworkInterface(const char *name) {
 
   if(ntop->getCustomnDPIProtos() != NULL)
     ndpi_load_protocols_file(ndpi_struct, ntop->getCustomnDPIProtos());
+
+  ndpi_port_range d_port[MAX_DEFAULT_PORTS];
+  memset(d_port, 0, sizeof(d_port));
+  ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID, 
+			  (char*)"Operating System", d_port, d_port);
+
 
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
@@ -731,8 +741,6 @@ static void find_aggregation_families(GenericHashEntry *h, void *user_data) {
   NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
   StringHost *host                = (StringHost*)h;
   
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "%d", host->get_family_id());
-
   NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
 }
 
@@ -847,12 +855,7 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
   
   for(int i=0; i<(NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS); i++)
     if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(families, i)) {
-      char *name;
-
-      if(i == NTOPNG_NDPI_OS_PROTO_ID)
-	name = (char*)"OperatingSystem";
-      else
-	name = ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i);
+      char *name = ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i);
       
       lua_push_int_table_entry(vm, name, i);
     }

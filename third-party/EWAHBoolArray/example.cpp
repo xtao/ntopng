@@ -5,7 +5,6 @@
  * (c) Daniel Lemire, http://lemire.me/en/
  */
 #include <stdlib.h>
-#include <fstream>
 #include "ewah.h"
 
 void demoSerialization() {
@@ -22,37 +21,14 @@ void demoSerialization() {
     lmyarray.read(ss);
     //
     if (lmyarray == myarray)
-        cout << "serialization work" << endl;
+        cout << "serialization works" << endl;
     else
-        cout << "serialization does not work" << endl;
-
-    /* Luca */
-    /* test dump */
-    ofstream myFile("dump");
-    myFile << ss.str();
-    myFile.close();
-
-    /* test read */
-    EWAHBoolArray<uint64_t> myinarray;
-    stringstream sin;
-    ifstream myInFile("dump");
-    sin << myInFile.rdbuf();
-    myinarray.read(sin);
-    myInFile.close();
-
-    if (lmyarray == myinarray)
-        cout << "file serialization works" << endl;
-    else
-        cout << "file serialization does not work" << endl;
-    
-    cout << "Number of ones:  " << myinarray.numberOfOnes() << endl;
-    cout << "Disk size:       " << myinarray.sizeOnDisk() << endl;
-    cout << "Compressed size: " << myinarray.computeStatistics().getCompressedSize() << endl;
-
+        cout << "serialization does not works" << endl;
 }
 
+
 int main(void) {
-  EWAHBoolArray<uint32_t> bitset1;
+    EWAHBoolArray<uint32_t> bitset1;
     bitset1.set(1);
     bitset1.set(2);
     bitset1.set(1000);

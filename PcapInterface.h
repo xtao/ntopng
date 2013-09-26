@@ -39,6 +39,7 @@ class PcapInterface : public NetworkInterface {
   void shutdown();
   u_int getNumDroppedPackets();
   bool set_packet_filter(char *filter);
+  inline bool read_from_pcap_dump() { return(read_pkts_from_pcap_dump); };
 };
 
 #endif /* _PCAP_INTERFACE_H_ */

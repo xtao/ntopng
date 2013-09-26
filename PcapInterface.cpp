@@ -85,6 +85,9 @@ static void* packetPollLoop(void* ptr) {
     if((pkt = pcap_next(pd, &hdr)) != NULL)
       iface->packet_dissector(&hdr, pkt);
     else {
+      if(iface->read_from_pcap_dump())
+	break;
+
       iface->purgeIdle(time(NULL));
     }
   } /* while */

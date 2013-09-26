@@ -54,9 +54,9 @@ end
 
 if(num > 0) then 
    if(page == "contacts") then
-      print("<li class=\"active\"><a href=\"#\">Host Contacts</a></li>\n")
+      print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=contacts\">Host Contacts</a></li>")
+      print("<li><a href=\""..url.."&page=contacts\">Contacts</a></li>")
    end
 end
 

@@ -22,6 +22,50 @@ static string testfailed = "---\ntest failed.\n\n\n\n\n\n";
 
 
 template<class uword>
+bool testGet() {
+	cout << "[testing Get] sizeof(uword)=" << sizeof(uword) << endl;
+	bool isOk = true;
+
+	for (size_t gap = 29; gap < 10000; gap *= 10) {
+		EWAHBoolArray<uword> x;
+		for (uint32_t k = 0; k < 100; ++k)
+			x.set(k * gap);
+		for (size_t k = 0; k < 100 * gap; ++k)
+			if (x.get(k)) {
+				if (k % gap != 0) {
+					cout << "spotted an extra set bit at " << k << " gap = "
+							<< gap << endl;
+					return false;
+			}
+		} else if (k % gap == 0) {
+			cout<<
+			"missed a set bit " << k
+			<< " gap = " << gap<<endl;
+			return false;
+		}
+	}
+	return isOk;
+}
+
+
+template<class uword>
+bool testLucaDeri() {
+    cout << "[testing LucaDeri] sizeof(uword)="<<sizeof(uword)<<endl;
+    bool isOk = true;
+    EWAHBoolArray<uword> bitset1;
+    bitset1.set(1);
+    bitset1.set(2);
+    bitset1.set(2);
+    bitset1.set(1000);
+    bitset1.set(1001);
+    if(bitset1.numberOfOnes() != 4) {
+    	cout << "Failed LucaDeri test"<<endl;
+    	isOk = false;
+    }
+    return isOk;
+}
+
+template<class uword>
 bool testSetGet() {
     cout << "[testing EWAH set/get] sizeof(uword)="<<sizeof(uword)<<endl;
     EWAHBoolArray<uword> ewcb;
@@ -478,8 +522,8 @@ bool testEWAHBoolArrayLogical() {
     for (uint32_t k = 0; k < N; ++k) {
         myarray1.add(x1[k]);
         myarray2.add(x2[k]);
-        xand[k] = x1[k] & x2[k];
-        xxor[k] = x1[k] | x2[k];
+        xand[k] = static_cast<uword>(x1[k] & x2[k]);
+        xxor[k] = static_cast<uword>(x1[k] | x2[k]);
     }
     EWAHBoolArray<uword> myand;
     EWAHBoolArray<uword> myor;
@@ -649,6 +693,20 @@ void tellmeaboutmachine() {
 
 int main(void) {
     int failures = 0;
+
+    if (!testGet<uint16_t> ())
+        ++failures;
+    if (!testGet<uint32_t> ())
+        ++failures;
+    if (!testGet<uint64_t> ())
+        ++failures;
+
+    if (!testLucaDeri<uint16_t> ())
+        ++failures;
+    if (!testLucaDeri<uint32_t> ())
+        ++failures;
+    if (!testLucaDeri<uint64_t> ())
+        ++failures;
 
     if (!testSetGet<uint16_t> ())
         ++failures;

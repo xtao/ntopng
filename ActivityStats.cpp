@@ -63,7 +63,8 @@ void ActivityStats::reset() {
 /* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
-
+  u_int16_t w;
+  
   if(when > wrap_time) {
     reset();
 
@@ -75,14 +76,14 @@ void ActivityStats::set(time_t when) {
 				 when, begin_time, wrap_time);
   }
 
-  when = (when - begin_time) % MAX_ACTIVITY_DURATION;
+  w = (when - begin_time) % MAX_ACTIVITY_DURATION;
 
-  if(when == last_set_time) return;
+  if(w == last_set_time) return;
 
-  // ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)when);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)w);
 
   m.lock(__FILE__, __LINE__);
-  bitset->set((size_t)when);
+  bitset->set((size_t)w);
   m.unlock(__FILE__, __LINE__);
   last_set_time = when;
 };

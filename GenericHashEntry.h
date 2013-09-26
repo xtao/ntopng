@@ -43,6 +43,7 @@ class GenericHashEntry {
   void updateSeen();
   void updateSeen(time_t _last_seen);
   bool equal(GenericHashEntry *b)    { return((this == b) ? true : false); };  
+  inline NetworkInterface* getInterface() { return(iface); };
   virtual bool idle();
   inline u_int get_duration()        { return((u_int)(1+last_seen-first_seen)); };
   virtual u_int32_t key()            { return(0);         };  
