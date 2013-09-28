@@ -140,7 +140,7 @@ build-rpm: maketar
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
 	#
-	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-1.0.1_@SVN_RELEASE@.tgz
+	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@PACKAGE_VERSION@.tgz
 	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
 	@echo ""

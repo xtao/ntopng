@@ -35,7 +35,7 @@ fi
 # "T.J. Yang" <tjyang2001@gmail.com>
 #
 mkdir -p $RPM_BUILD_ROOT/etc/ntopng
-cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.conf <<_EOT_
+cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.conf.sample <<_EOT_
 -G=/var/tmp/ntopng.gid
 _EOT_
 cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.start <<_EOT_
@@ -66,7 +66,7 @@ rm -fr $RPM_BUILD_ROOT
 /etc/init/ntopng.conf
 /etc/init.d/ntopng
 /usr/local/share/ntopng
-/etc/ntopng/ntopng.conf
+/etc/ntopng/ntopng.conf.sample
 /etc/ntopng/ntopng.start
 
 # Set the default attributes of all of the files specified to have an
