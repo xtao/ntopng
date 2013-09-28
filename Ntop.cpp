@@ -441,9 +441,25 @@ void Ntop::daemonize() {
 
 /* ******************************************* */
 
-void Ntop::setLocalNetworks(char *nets) {
+void Ntop::setLocalNetworks(char *_nets) {
+  char *nets;
+  u_int len;
+
+  if(_nets == NULL) return;
+
+  len = strlen(_nets);
+
+  if((len > 2) 
+     && (_nets[0] == '"')  
+     && (_nets[len-1] == '"')) {
+    nets = strdup(&_nets[1]);
+    nets[len-2] = '\0';
+  } else
+    nets = strdup(_nets);
+
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Setting local networks to %s", nets);
   address->setLocalNetworks(nets);
+  free(nets);
 };
 
 /* ******************************************* */
