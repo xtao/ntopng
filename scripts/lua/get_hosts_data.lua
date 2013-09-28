@@ -58,6 +58,13 @@ for key, value in pairs(hosts_stats) do
    if(sortColumn == "column_ip") then
       vals[key] = key
       elseif(sortColumn == "column_name") then
+      if(hosts_stats[key]["name"] == nil) then 
+	 if(hosts_stats[key]["ip"] ~= nil) then
+	    hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
+	 else
+	    hosts_stats[key]["name"] = hosts_stats[key]["mac"]
+	 end
+      end
       vals[hosts_stats[key]["name"]..postfix] = key
       elseif(sortColumn == "column_since") then
       vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
