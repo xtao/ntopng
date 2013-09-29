@@ -1,4 +1,4 @@
-Source: ntopng-data
+Source: ntopng
 Section: free
 Priority: optional
 Maintainer: Luca Deri <deri@ntop.org>
@@ -6,13 +6,13 @@ Standards-Version: @NTOPNG_VERS@
 Build-Depends:
 Build-Conflicts:
 
-Depends: ntopng
-Package: ntopng-data
+Depends: libsqlite3-0, redis-server
+Package: ntopng
 Architecture: @EXTN@
-Recommends:
+Recommends: ntopng-data
 Suggests:
 Pre-Depends:
 Conflicts:
 Provides:
 Replaces:
-Description: Data files (geoip) for ntopng.
+Description: Web-based traffic monitoring.

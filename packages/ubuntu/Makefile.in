@@ -25,9 +25,9 @@ ntopng:
 	@/bin/mv ../ntopng*deb .
 	@echo
 	@echo "Package built."
-	@/bin/ls ntopng*deb
+	@/bin/ls ntopng_*deb
 	@echo "-------------------------------"
-	-dpkg --contents ntopng*deb
+	-dpkg --contents ntopng_*deb
 	@echo "-------------------------------"
 
 ntopng-data:
@@ -46,9 +46,9 @@ ntopng-data:
 	@/bin/mv ../ntopng*deb .
 	@echo
 	@echo "Package built."
-	@/bin/ls ntopng*deb
+	@/bin/ls ntopng-data_*deb
 	@echo "-------------------------------"
-	-dpkg --contents ntopng*deb
+	-dpkg --contents ntopng-data_*deb
 	@echo "-------------------------------"
 
 distclean:

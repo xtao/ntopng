@@ -42,12 +42,7 @@ binary-arch: build install
 	dh_installinit
 	dh_installman
 # install the files into debian/tmp.
-	cp -r ../etc/ ./usr/ ./debian/tmp	
-	-find ./debian/tmp -name .svn -exec /bin/rm -rf {} ';'
-	\rm -rf ./debian/tmp/etc/init.d/nprobe ./debian/tmp/etc/ld.so.conf.d
-	# Don't use upstart
-	\rm -rf ./debian/tmp/etc/init
-	#\rm ./debian/tmp/etc/init/nprobe.conf
+	cp -r ./usr/ ./debian/tmp
 	dh_link
 	dh_strip
 	dh_compress
