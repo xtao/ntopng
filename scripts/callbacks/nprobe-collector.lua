@@ -11,7 +11,7 @@ local json = require ("dkjson")
 
 local debug_collector = ntop.verboseTrace()
 
-local handled_fields = { 
+local handled_fields = {
 [template.IN_SRC_MAC]      = true,
 [template.OUT_DST_MAC]     = true,
 [template.IPV4_SRC_ADDR]   = true,
@@ -24,20 +24,20 @@ local handled_fields = {
 [template.L4_DST_PORT]     = true,
 [template.SRC_VLAN]        = true,
 [template.DST_VLAN]        = true,
-[template.L7_PROTO]        = true, 
-[template.L7_PROTO_NAME]   = true, 
-[template.TCP_FLAGS]       = true, 
-[template.PROTOCOL]        = true, 
-[template.IN_PKTS]         = true, 
-[template.IN_BYTES]        = true, 
-[template.OUT_PKTS]        = true, 
+[template.L7_PROTO]        = true,
+[template.L7_PROTO_NAME]   = true,
+[template.TCP_FLAGS]       = true,
+[template.PROTOCOL]        = true,
+[template.IN_PKTS]         = true,
+[template.IN_BYTES]        = true,
+[template.OUT_PKTS]        = true,
 [template.OUT_BYTES]       = true,
-[template.FIRST_SWITCHED]  = true, 
+[template.FIRST_SWITCHED]  = true,
 [template.LAST_SWITCHED]   = true,
 [template.TOTAL_FLOWS_EXP] = true
 }
 
-print("Starting ZMQ collector on "..ifname) 
+print("Starting ZMQ collector on "..ifname)
 interface.find(ifname)
 local endpoint = interface.getEndpoint()
 ntop.zmq_connect(endpoint, "flow")
@@ -45,7 +45,7 @@ ntop.zmq_connect(endpoint, "flow")
 local last_total_flows_exp = 0
 local total_flow_drops = 0
 
-print("ZMQ Collector connected to " .. endpoint .. "\n") 
+print("ZMQ Collector connected to " .. endpoint .. "\n")
 
 while(interface.isRunning) do
   flowjson = ntop.zmq_receive()
@@ -56,9 +56,9 @@ while(interface.isRunning) do
     print("JSON parser error: " .. err)
   else
 
-    if(false) then 
+    if(false) then
         for key,value in pairs(flow) do
-	  print(key.."="..value) 
+	  print(key.."="..value)
 	end
     end
 
@@ -76,7 +76,7 @@ while(interface.isRunning) do
 	  key = _key
 	end
 
-      if not handled_fields[key] then	
+      if not handled_fields[key] then
         if rtemplate[key] ~= nil then
           unhandled_fields[rtemplate[key]] = value
         else
@@ -86,20 +86,21 @@ while(interface.isRunning) do
     end
 
     local unhandled_fields_json = json.encode(unhandled_fields, {})
-    
+
     if(flow[template.TOTAL_FLOWS_EXP]) then
        --io.write("Flow [rcvd: "..flow[template.TOTAL_FLOWS_EXP].."][last: "..last_total_flows_exp.."]\n")
-       
+
        if((last_total_flows_exp > 0) and (last_total_flows_exp < flow[template.TOTAL_FLOWS_EXP])) then
 	  -- The probe has NOT been reset so let's start over
 
 	  if(flow[template.TOTAL_FLOWS_EXP] > (last_total_flows_exp+1)) then
-	     io.write("Flow drop [rcvd: "..flow[template.TOTAL_FLOWS_EXP].."][last: "..last_total_flows_exp.."][total: "..total_flow_drops.."]\n")
-	     total_flow_drops = total_flow_drops + 1	     
-	     interface.incrDrops(1)
-	  end	  
+	     diff = flow[template.TOTAL_FLOWS_EXP]- (last_total_flows_exp+1)
+	     --io.write("Flow drop [rcvd: "..flow[template.TOTAL_FLOWS_EXP].."][last: "..last_total_flows_exp.."][total: "..total_flow_drops.."]\n")
+	     total_flow_drops = total_flow_drops + diff
+	     interface.incrDrops(diff)
+	  end
        end
-       
+
        last_total_flows_exp = flow[template.TOTAL_FLOWS_EXP]
     end
 
@@ -107,18 +108,18 @@ while(interface.isRunning) do
       flow[template.IN_SRC_MAC]     or "00:00:00:00:00:00",
       flow[template.OUT_DST_MAC]    or "00:00:00:00:00:00",
       flow[template.IPV4_SRC_ADDR]  or flow[template.IPV6_SRC_ADDR] or "0.0.0.0",
-      flow[template.IPV4_DST_ADDR]  or flow[template.IPV6_DST_ADDR] or "0.0.0.0", 
-      flow[template.L4_SRC_PORT]    or flow['L4_SRC_PORT'] or 0, 
-      flow[template.L4_DST_PORT]    or 0, 
-      flow[template.SRC_VLAN]       or flow[template.DST_VLAN] or 0, 
-      flow[template.L7_PROTO]       or 0, 
-      flow[template.PROTOCOL]       or 0, 
-      flow[template.TCP_FLAGS]      or 0, 
-      flow[template.IN_PKTS]        or 0, 
-      flow[template.IN_BYTES]       or 0, 
-      flow[template.OUT_PKTS]       or 0, 
+      flow[template.IPV4_DST_ADDR]  or flow[template.IPV6_DST_ADDR] or "0.0.0.0",
+      flow[template.L4_SRC_PORT]    or flow['L4_SRC_PORT'] or 0,
+      flow[template.L4_DST_PORT]    or 0,
+      flow[template.SRC_VLAN]       or flow[template.DST_VLAN] or 0,
+      flow[template.L7_PROTO]       or 0,
+      flow[template.PROTOCOL]       or 0,
+      flow[template.TCP_FLAGS]      or 0,
+      flow[template.IN_PKTS]        or 0,
+      flow[template.IN_BYTES]       or 0,
+      flow[template.OUT_PKTS]       or 0,
       flow[template.OUT_BYTES]      or 0,
-      flow[template.FIRST_SWITCHED] or 0, 
+      flow[template.FIRST_SWITCHED] or 0,
       flow[template.LAST_SWITCHED]  or 0,
       unhandled_fields_json         or "{}"
     )
