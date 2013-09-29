@@ -21,8 +21,11 @@ AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 
 AC_CONFIG_FILES(Makefile)
-AC_CONFIG_FILES(debian/changelog)
-AC_CONFIG_FILES(debian/files)
-AC_CONFIG_FILES(debian/control)
+AC_CONFIG_FILES(debian.ntopng/changelog)
+AC_CONFIG_FILES(debian.ntopng/files)
+AC_CONFIG_FILES(debian.ntopng/control)
+AC_CONFIG_FILES(debian.ntopng-data/changelog)
+AC_CONFIG_FILES(debian.ntopng-data/files)
+AC_CONFIG_FILES(debian.ntopng-data/control)
 
 AC_OUTPUT

@@ -1672,11 +1672,17 @@ KERNEL=`uname -r`
 
 ac_config_files="$ac_config_files Makefile"
 
-ac_config_files="$ac_config_files debian/changelog"
+ac_config_files="$ac_config_files debian.ntopng/changelog"
 
-ac_config_files="$ac_config_files debian/files"
+ac_config_files="$ac_config_files debian.ntopng/files"
 
-ac_config_files="$ac_config_files debian/control"
+ac_config_files="$ac_config_files debian.ntopng/control"
+
+ac_config_files="$ac_config_files debian.ntopng-data/changelog"
+
+ac_config_files="$ac_config_files debian.ntopng-data/files"
+
+ac_config_files="$ac_config_files debian.ntopng-data/control"
 
 
 cat >confcache <<\_ACEOF
@@ -2397,9 +2403,12 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "debian/changelog") CONFIG_FILES="$CONFIG_FILES debian/changelog" ;;
-    "debian/files") CONFIG_FILES="$CONFIG_FILES debian/files" ;;
-    "debian/control") CONFIG_FILES="$CONFIG_FILES debian/control" ;;
+    "debian.ntopng/changelog") CONFIG_FILES="$CONFIG_FILES debian.ntopng/changelog" ;;
+    "debian.ntopng/files") CONFIG_FILES="$CONFIG_FILES debian.ntopng/files" ;;
+    "debian.ntopng/control") CONFIG_FILES="$CONFIG_FILES debian.ntopng/control" ;;
+    "debian.ntopng-data/changelog") CONFIG_FILES="$CONFIG_FILES debian.ntopng-data/changelog" ;;
+    "debian.ntopng-data/files") CONFIG_FILES="$CONFIG_FILES debian.ntopng-data/files" ;;
+    "debian.ntopng-data/control") CONFIG_FILES="$CONFIG_FILES debian.ntopng-data/control" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
