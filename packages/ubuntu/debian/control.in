@@ -6,6 +6,7 @@ Standards-Version: @NTOPNG_VERS@
 Build-Depends:
 Build-Conflicts:
 
+Depends: libsqlite3-0, redis-server
 Package: ntopng
 Architecture: @EXTN@
 Recommends:
