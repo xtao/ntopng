@@ -97,7 +97,7 @@ void usage() {
 	 " [-F]"
 #endif
 	 "\n"
-	 "              [-B <filter>]\n"
+	 "              [-B <filter>] [-A]\n"
 	 "\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
@@ -149,6 +149,7 @@ void usage() {
 #endif
 
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
+	 "[--enable-aggregations|-A]          | Enable aggregations"
 #ifdef HAVE_SQLITE
 	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
 #endif
