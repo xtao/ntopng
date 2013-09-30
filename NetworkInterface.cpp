@@ -805,17 +805,24 @@ bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_
 
 /* **************************************************** */
 
-bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
+StringHost* NetworkInterface::getAggregatedHost(char *host_name) {
   struct host_find_info info;
 
   memset(&info, 0, sizeof(info));
   info.host_to_find = host_name;
   strings_hash->walk(find_aggregated_host_by_name, (void*)&info);
+  return(info.s);
+}
 
-  if(info.s != NULL) {
+/* **************************************************** */
+
+bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
+  StringHost *h = getAggregatedHost(host_name);
+
+  if(h != NULL) {
     lua_newtable(vm);
 
-    info.s->lua(vm, false);
+    h->lua(vm, false);
     return(true);
   } else
     return(false);

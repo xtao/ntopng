@@ -40,6 +40,28 @@ GenericHost::~GenericHost() {
 
 /* *************************************** */
 
+void GenericHost::dumpStats() {
+  if(localHost) {
+    /* (Daily) Wrap */
+    char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
+    time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
+  
+    host_key = get_string_key(buf, sizeof(buf));
+
+    if(strcmp(host_key, "00:00:00:00:00:00")) {
+      strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s", ntop->get_working_dir(), daybuf);
+      Utils::mkdir_tree(dump_path);
+      
+      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
+      activityStats.dump(dump_path);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Dumping %s", dump_path);   
+    }
+  }
+}
+
+/* *************************************** */
+
 void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 			   u_int64_t sent_packets, u_int64_t sent_bytes,
 			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
@@ -48,22 +70,7 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     
     /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
     when -= when % CONST_TREND_TIME_GRANULARITY;
-
-    if(localHost && (when > activityStats.get_wrap_time())) {
-      /* (Daily) Wrap */
-      char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
-      time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
-
-      host_key = get_string_key(buf, sizeof(buf));
-      
-      strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s", ntop->get_working_dir(), daybuf);
-      Utils::mkdir_tree(dump_path);
-
-      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
-      activityStats.dump(dump_path);
-      ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);
-    } 
+    if(when > activityStats.get_wrap_time()) dumpStats();
     activityStats.set(when);
 
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);

@@ -232,7 +232,6 @@ end
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
 
-   if(true) then
    print [[
 	    <tr><th>Activity Map</th><td>
 	    <table border=0>
@@ -271,7 +270,7 @@ end
 
 	    </td></tr>
       ]]
-end
+
 
    print("</table>\n")
 

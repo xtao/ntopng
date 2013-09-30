@@ -505,13 +505,17 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
   u_int16_t vlan_id;
-  Host *h;
+  GenericHost *h;
+  bool aggregated;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   host_ip = (char*)lua_tostring(vm, 1);
 
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
+  aggregated = lua_toboolean(vm, 2) ? true : false;
+
   /* Optional VLAN id */
-  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+  if(lua_type(vm, 3) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 3);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -520,7 +524,14 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
     // ntop_interface = ntop->getInterfaceId(0);
   }
  
-  if((!ntop_interface) || !(h = ntop_interface->getHost(host_ip, vlan_id)))
+  if(!ntop_interface)  return(CONST_LUA_ERROR);
+
+  if(!aggregated) 
+    h = ntop_interface->getHost(host_ip, vlan_id);
+  else
+    h = ntop_interface->getAggregatedHost(host_ip);
+  
+  if(h == NULL)
     return(CONST_LUA_ERROR);
   else {
     char *json = h->getJsonActivityMap();

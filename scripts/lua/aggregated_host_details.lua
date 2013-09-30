@@ -75,6 +75,50 @@ if(page == "overview") then
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
    print("<tr><th>Contacts Received</th><td><span id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
+
+
+   print [[
+	    <tr><th>Activity Map</th><td>
+	    <table border=0>
+	    <tr><td><button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-left"></i></button></td>
+	    <td><span id="sentHeatmap"></span></td>
+	    <td><button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-right"></i></button></td></tr>
+	    </table></td></tr>
+
+	    <script type="text/javascript">
+
+	 var sent_calendar = new CalHeatMap();
+        sent_calendar.init({
+		       itemSelector: "#sentHeatmap",
+		       data: "]]
+     print("/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'",\n')
+
+     timezone = get_timezone()
+
+     now = ((os.time()-5*3600)*1000)
+     today = os.time()
+     today = today - (today % 86400) - 2*3600
+     today = today * 1000
+     
+     print("/* "..timezone.." */\n")
+     print("\t\tstart:   new Date("..now.."),\n") -- now-3h
+     print("\t\tminDate: new Date("..today.."),\n")
+     print("\t\tmaxDate: new Date("..(os.time()*1000).."),\n")
+		     print [[ 
+   		       domain : "hour",
+		       range : 6,
+		       nextSelector: "#sent-heatmap-next-selector",
+		       previousSelector: "#sent-heatmap-prev-selector"		       
+		    });
+
+   </script>
+
+	    </td></tr>
+      ]]
+
+
+
+
    print("</table>\n")
 
 elseif(page == "contacts") then

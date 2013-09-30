@@ -143,6 +143,7 @@ class NetworkInterface {
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 		      bool createIfNotPresent);
   Host* getHost(char *host_ip, u_int16_t vlan_id);
+  StringHost* getAggregatedHost(char *host_name);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family);
   bool getAggregatedHostInfo(lua_State* vm, char *host_ip);

@@ -31,6 +31,7 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
 /* *************************************** */
 
 StringHost::~StringHost() {
+  dumpStats();
   free(keyname);
 }
 
