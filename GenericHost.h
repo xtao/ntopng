@@ -37,7 +37,8 @@ class GenericHost : public GenericHashEntry {
   u_int64_t last_bytes;
   struct timeval last_update_time;
 
-  void dumpStats();
+  void dumpStats(bool forceDump);
+  void readStats();
 
  public:
   GenericHost(NetworkInterface *_iface);

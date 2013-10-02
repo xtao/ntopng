@@ -29,6 +29,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   localHost = false;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
+  // readStats(); - Commented as if put here it's too early and the key is not yet set
 }
 
 /* *************************************** */
@@ -40,8 +41,21 @@ GenericHost::~GenericHost() {
 
 /* *************************************** */
 
-void GenericHost::dumpStats() {
-  if(localHost) {
+void GenericHost::readStats() {
+  char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
+  time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
+  
+  host_key = get_string_key(buf, sizeof(buf));
+  strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));  
+  snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
+  if(activityStats.readDump(dump_path))
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Read activity stats from %s", dump_path);   
+}
+
+/* *************************************** */
+
+void GenericHost::dumpStats(bool forceDump) {
+  if(localHost || forceDump) {
     /* (Daily) Wrap */
     char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
     time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
@@ -55,7 +69,7 @@ void GenericHost::dumpStats() {
       
       snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
       activityStats.dump(dump_path);
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Dumping %s", dump_path);   
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);   
     }
   }
 }
@@ -70,7 +84,7 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     
     /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
     when -= when % CONST_TREND_TIME_GRANULARITY;
-    if(when > activityStats.get_wrap_time()) dumpStats();
+    if(when > activityStats.get_wrap_time()) dumpStats(false);
     activityStats.set(when);
 
     sent.incStats(sent_packets, sent_bytes), rcvd.incStats(rcvd_packets, rcvd_bytes);

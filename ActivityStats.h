@@ -43,6 +43,7 @@ class ActivityStats {
   std::stringstream* getDump();
   void setDump(std::stringstream* dump);
   bool dump(char* path);
+  bool readDump(char* path);
   json_object* getJSONObject();
   char* serialize();  
   void deserialize(json_object *o);

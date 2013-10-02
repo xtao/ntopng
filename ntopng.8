@@ -45,6 +45,8 @@ or
 .IR <max num flows> ]
 .RB [ -B
 .IR <filter> ]
+.RB [ -A
+.IR <mode> ]
 .RB [ -x
 .IR <max num hosts> ]
 .RB [ -v ] 
@@ -177,6 +179,11 @@ Run ntopng with the specified system user instead of 'nobody'.
 .It -B|--packet-filter
 Specifies the packet filter for the specified interface. For pcap/PF_RING interfaces
 the filter has to be specified in BPF format (Berkeley Packet Filter).
+
+.It -A|--enable-aggregations <mode>
+Enable data aggregations (e.g. Operating System, DNS etc). The available modes are:
+0 (disable aggregations, default), 1 (enable aggregations but do not dump on disk
+their activity timeline), 2 (enable aggregations and timeline dump on disk).
 
 .It -X|--max-num-flows
 Specify the maximum number of active flows that ntopng will handle. If more flows are

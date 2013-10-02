@@ -56,7 +56,7 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 Host::~Host() {
   char key[128], *k;
 
-  dumpStats();
+  dumpStats(false);
 
   k = get_string_key(key, sizeof(key));
 
@@ -150,6 +150,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       symbolic_name = strdup(buf);
       localHost = true;
     }
+
+    readStats();
   }
 }
 

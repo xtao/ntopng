@@ -119,6 +119,49 @@ bool ActivityStats::dump(char* path) {
 
 /* *************************************** */
 
+bool ActivityStats::readDump(char* path) {
+  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+
+  /*
+    We do not use "direct" bitset->read() as this is apparently creating
+    crash problems.
+   */
+  try {
+    ifstream dumpFile(path);
+    stringstream ss;
+
+    if(!dumpFile.is_open()) return(false);
+
+    ss << dumpFile.rdbuf();
+
+#if 1
+    EWAHBoolArray<u_int32_t> tmp;
+
+    tmp.read(ss);   
+    m.lock(__FILE__, __LINE__);
+    bitset->reset();
+
+    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i) {
+      bitset->set((size_t)*i);
+    }
+    m.unlock(__FILE__, __LINE__);
+#else
+    m.lock(__FILE__, __LINE__);
+    bitset->reset();
+    bitset->read(ss);
+    m.unlock(__FILE__, __LINE__);
+#endif
+
+    dumpFile.close();
+    return(true);
+  } catch(...) {
+    return(false);
+  }
+
+}
+
+/* *************************************** */
+
 json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];

@@ -26,12 +26,13 @@
 StringHost::StringHost(NetworkInterface *_iface, char *_key, 
 		       u_int16_t _family_id) : GenericHost(_iface) {
   keyname = strdup(_key), family_id = _family_id;
+  readStats();
 }
 
 /* *************************************** */
 
 StringHost::~StringHost() {
-  dumpStats();
+  dumpStats(ntop->getPrefs()->get_aggregation_mode() == aggregations_enabled_with_bitmap_dump);
   free(keyname);
 }
 

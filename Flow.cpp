@@ -101,7 +101,7 @@ Flow::~Flow() {
 /* *************************************** */
 
 void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id) {
-  if(ntop->getPrefs()->do_enable_aggregations()) {
+  if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
     StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
     
     if(host != NULL) {

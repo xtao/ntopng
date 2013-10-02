@@ -50,7 +50,7 @@ Prefs::Prefs(Ntop *_ntop) {
   disable_host_persistency = false;
   num_interfaces = 0;
   dump_flows_on_db = false;
-  enable_aggregations = false;
+  enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
 
 #ifdef WIN32
@@ -97,7 +97,7 @@ void usage() {
 	 " [-F]"
 #endif
 	 "\n"
-	 "              [-B <filter>] [-A]\n"
+	 "              [-B <filter>] [-A <mode>]\n"
 	 "\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
@@ -149,7 +149,10 @@ void usage() {
 #endif
 
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
-	 "[--enable-aggregations|-A]          | Enable aggregations"
+	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:"
+	 "                                    | 0 - No aggregations (default)\n"
+	 "                                    | 1 - Enable aggregations, no timeline dump\n"
+	 "                                    | 2 - Enable aggregations, with timeline dump\n"
 #ifdef HAVE_SQLITE
 	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
 #endif
@@ -215,7 +218,21 @@ static const struct option long_options[] = {
 int Prefs::setOption(int optkey, char *optarg) {
   switch(optkey) {
   case 'A':
-    enable_aggregations = true;
+    switch(atoi(optarg)) {
+    case 0:
+      enable_aggregations = aggregations_disabled;
+      break;
+    case 1:
+      enable_aggregations = aggregations_enabled_no_bitmap_dump;
+      break;
+    case 2:
+      enable_aggregations = aggregations_enabled_with_bitmap_dump;
+      break;
+    default:
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid value for -A: disabling aggregations");
+      enable_aggregations = aggregations_disabled;
+      break;
+    }
     break;
 
   case 'B':
@@ -401,7 +418,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:AB:FG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:A:B:FG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
