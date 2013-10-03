@@ -47,7 +47,10 @@ void GenericHost::readStats() {
   
   host_key = get_string_key(buf, sizeof(buf));
   strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));  
-  snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
+  snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s", 
+	   ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
+  ntop->fixPath(dump_path);
+
   if(activityStats.readDump(dump_path))
     ntop->getTrace()->traceEvent(TRACE_INFO, "Read activity stats from %s", dump_path);   
 }
@@ -64,10 +67,14 @@ void GenericHost::dumpStats(bool forceDump) {
 
     if(strcmp(host_key, "00:00:00:00:00:00")) {
       strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s", ntop->get_working_dir(), daybuf);
+      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s", 
+	       ntop->get_working_dir(), iface->get_name(), daybuf);
+      ntop->fixPath(dump_path);
       Utils::mkdir_tree(dump_path);
       
-      snprintf(dump_path, sizeof(dump_path), "%s/activities/%s/%s", ntop->get_working_dir(), daybuf, host_key);
+      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s", 
+	       ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
+      ntop->fixPath(dump_path);
       activityStats.dump(dump_path);
       ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);   
     }

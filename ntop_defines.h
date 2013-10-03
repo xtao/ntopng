@@ -58,9 +58,6 @@
 #define AUTHORIZE_URL           "/authorize.html"
 #define HTTP_SESSION_DURATION   3600
 
-#define TIME_GRANULARITY          5 /* sec */
-#define MAX_ACTIVITY_DURATION     86400 /* sec */
-
 #define NO_NDPI_PROTOCOL          ((u_int)-1)
 #define NDPI_MIN_NUM_PACKETS      10
 #define GTP_U_V1_PORT             2152
@@ -135,9 +132,10 @@
 #define CONST_LUA_ERROR                0
 #define CONST_LUA_PARAM_ERROR         -1
 
-#define CONST_TREND_TIME_GRANULARITY   5 /* sec */
-#define CONST_DEFAULT_PRIVATE_NETS  "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
-#define CONST_DEFAULT_LOCAL_NETS    "0.0.0.0/32,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32"
+#define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */
+#define CONST_TREND_TIME_GRANULARITY   1 /* sec */
+#define CONST_DEFAULT_PRIVATE_NETS     "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
+#define CONST_DEFAULT_LOCAL_NETS       "0.0.0.0/32,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"

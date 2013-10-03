@@ -29,10 +29,10 @@ ActivityStats::ActivityStats(time_t when) {
   _bitset = new EWAHBoolArray<u_int32_t>;
  
   begin_time  = (when == 0) ? time(NULL) : when;
-  begin_time -= (begin_time % MAX_ACTIVITY_DURATION);
+  begin_time -= (begin_time % CONST_MAX_ACTIVITY_DURATION);
   begin_time += ntop->get_time_offset();
 
-  wrap_time = begin_time + MAX_ACTIVITY_DURATION;
+  wrap_time = begin_time + CONST_MAX_ACTIVITY_DURATION;
 
   last_set_time = 0;
 
@@ -69,18 +69,18 @@ void ActivityStats::set(time_t when) {
     reset();
 
     begin_time = wrap_time;
-    wrap_time += MAX_ACTIVITY_DURATION;
+    wrap_time += CONST_MAX_ACTIVITY_DURATION;
 
     ntop->getTrace()->traceEvent(TRACE_INFO,
 				 "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]", 
 				 when, begin_time, wrap_time);
   }
 
-  w = (when - begin_time) % MAX_ACTIVITY_DURATION;
+  w = (when - begin_time) % CONST_MAX_ACTIVITY_DURATION;
 
   if(w == last_set_time) return;
 
-  ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)w);
+  // ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)w);
 
   m.lock(__FILE__, __LINE__);
   bitset->set((size_t)w);
@@ -228,7 +228,7 @@ void ActivityStats::deserialize(json_object *o) {
     char *key  = (char*)json_object_iter_peek_name(&it);
     u_int32_t when = atol(key);
       
-    when %= MAX_ACTIVITY_DURATION;
+    when %= CONST_MAX_ACTIVITY_DURATION;
     bitset->set(when);
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, 1);
     
