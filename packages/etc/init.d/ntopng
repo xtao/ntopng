@@ -120,7 +120,8 @@ case "$1" in
 
   restart)
         stop_ntopng;
-	sleep 5
+	echo "Waiting ntopng to shutdown and flush data..."
+	sleep 10
 	start_ntopng 0;
 	;;
 
