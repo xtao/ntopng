@@ -136,7 +136,7 @@ void Flow::processDetectedProtocol() {
 
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
 
-	  aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_TCP, detected_protocol);
+	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
 	}
       }
     }
@@ -149,7 +149,7 @@ void Flow::processDetectedProtocol() {
       for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-      aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_UDP, detected_protocol);
+      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
     }
     break;
 
@@ -168,9 +168,10 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
-	aggregateInfo((char*)ndpi_flow->host_server_name, IPPROTO_TCP, detected_protocol);
+	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
 
-	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, buf, sizeof(buf), true) != NULL) {
+	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, 
+					     buf, sizeof(buf), true) != NULL) {
 	  categorization.flow_categorized = true;
 	  categorization.category = strdup(buf);
 	}
@@ -178,7 +179,7 @@ void Flow::processDetectedProtocol() {
 					     (char*)ndpi_flow->host_server_name);
 
 	if(ndpi_flow->detected_os[0] != '\0')
-	  aggregateInfo((char*)ndpi_flow->detected_os, IPPROTO_TCP, NTOPNG_NDPI_OS_PROTO_ID);
+	  aggregateInfo((char*)ndpi_flow->detected_os, protocol, NTOPNG_NDPI_OS_PROTO_ID);
       }
     }
     break;
