@@ -74,8 +74,8 @@ for key, value in pairs(hosts_stats) do
       vals[hosts_stats[key]["category"]..postfix] = key
       elseif(sortColumn == "column_asn") then
       vals[hosts_stats[key]["asn"]..postfix] = key
-      elseif(sortColumn == "column_2") then
-      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
+      elseif(sortColumn == "column_thpt") then
+      vals[hosts_stats[key]["throughput"]+postfix] = key
    else
       -- io.write(key.."\n")
       -- io.write(hosts_stats[key].."\n")
