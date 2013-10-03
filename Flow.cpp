@@ -126,7 +126,7 @@ void Flow::processDetectedProtocol() {
 	char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
 	
 	if(at != NULL)
-	  name = &at[1];
+	  name = &at[1], at[0] = '\0';
 	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
 	  name = (char*)ndpi_flow->host_server_name;
 
