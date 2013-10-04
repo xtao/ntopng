@@ -71,6 +71,7 @@ print [[
 if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td><A HREF=http://" .. host["name"].. ">".. host["name"].."</A></td></tr>\n")
+   print("<tr><th>Family</th><td>" .. host["family"].. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
@@ -126,7 +127,7 @@ elseif(page == "contacts") then
 
 if(num > 0) then
 print("<table class=\"table table-bordered table-striped\">\n")
-print("<tr><th>Peers</th><th>Contacts Number</th></tr>\n")
+print("<tr><th>Top Peers</th><th>Contacts Number</th></tr>\n")
 
 -- Client
 sortTable = {}

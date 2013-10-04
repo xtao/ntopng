@@ -35,13 +35,16 @@ hosts = {}
 num = 0
 print '{"nodes":[\n'
 
+--print(" >>>[" .. tracked_host .. "]\n")
+
 while(num == 0) do
    for key, values in pairs(peers) do
-      if((values["sent.last"] + values["rcvd.last"]) > threshold) then
+      --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "]\n")
+      last = values["sent.last"] + values["rcvd.last"]
 
-	 --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "][" .. tracked_host .. "]\n")
+      if((last == 0) or (last > threshold)) then 
 	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
-	    -- print("[" .. key .. "][" .. tracked_host .. "]\n")
+	   -- print("[" .. key .. "][" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
 	       if(num >= max_num_hosts) then
@@ -136,7 +139,7 @@ reverse_nodes = {}
 for key, values in pairs(peers) do
    val = values["sent.last"] + values["rcvd.last"]
 
-   if((val > threshold) or ((top_host ~= nil) and (findString(key, top_host) ~= nil)) and (num < max_num_links)) then
+   if(((val == 0) or (val > threshold)) or ((top_host ~= nil) and (findString(key, top_host) ~= nil)) and (num < max_num_links)) then
       e = {}
       id = 0
       --print("->"..key.."\n")
