@@ -206,13 +206,13 @@ if((page == "overview") or (page == nil)) then
 
    if(host["ip"] ~= nil) then
       if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
-      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"><span id=name>")
+      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"> <span id=name>")
 
       if(host["ip"] ==  host["name"]) then
 	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\"> ")
       end
 
-      print(host["name"] .. "</span></A> ")
+      print(host["name"] .. "</span></A> <i class=\"icon-external-link\"></i> ")
       
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-success">Private IP</span>') end
@@ -230,7 +230,7 @@ end
 
    print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
-   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><A HREF=/lua/host_get_json.lua?host="..host_ip.."><i class=\"icon-download\"></i> Download<A></td></tr>\n") end
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><i class=\"icon-download\"></i> <A HREF=/lua/host_get_json.lua?host="..host_ip..">Download<A></td></tr>\n") end
 
    print [[
 	    <tr><th>Activity Map</th><td>

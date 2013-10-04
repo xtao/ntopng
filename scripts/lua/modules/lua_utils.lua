@@ -696,3 +696,15 @@ function fixPath(path)
 
    return(path)
 end
+
+function mapOS2Icon(name)
+   icon = ""
+
+   if(findString(name, "Linux")) then icon = '<i class=icon-linux></i> '
+      elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=icon-windows></i> '
+      elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=icon-apple></i> '
+   end
+
+   return(icon..name)
+end
+

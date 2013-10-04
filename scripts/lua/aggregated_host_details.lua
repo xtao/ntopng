@@ -70,7 +70,13 @@ print [[
 --print("<b>".._GET["page"].."</b>")
 if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th>Name</th><td><A HREF=http://" .. host["name"].. ">".. host["name"].."</A></td></tr>\n")
+   print("<tr><th>Name</th><td>")
+   if(host["family"] == "Operating System") then
+      print(host["name"])
+   else
+      print("<A HREF=http://" .. host["name"].. ">".. host["name"].."</A> <i class=\"icon-external-link\"></i>")
+   end
+   print("</td></tr>\n")
    print("<tr><th>Family</th><td>" .. host["family"].. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")

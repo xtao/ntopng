@@ -32,7 +32,7 @@ print [[
       <li><a href="/lua/about.lua"><i class="icon-question-sign"></i> About ntopng</a></li>
       <li><a href="http://blog.ntop.org/"><i class="icon-globe"></i> ntop Blog</a></li>
       <li class="divider"></li>
-      <li><a href="/"><i class="icon-home"></i> Dashboard</a></li>
+      <li><a href="/"><i class="icon-dashboard"></i> Dashboard</a></li>
       <li><a href="/lua/logout.lua"><i class="icon-off"></i> Logout</a></li>
     </ul>
   </li>
@@ -57,18 +57,18 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
-	 <li><a href="/lua/top_hosts.lua"><i class="icon-signal"></i> Top Hosts (Local)</a></li>
+	 <li><a href="/lua/top_hosts.lua"><i class="icon-trophy"></i> Top Hosts (Local)</a></li>
    ]]
 
 if(interface.getNumAggregatedHosts() > 0) then
-   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\">Aggregations</a></li>\n")
+   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\"><i class=\"icon-group\"></i> Aggregations</a></li>\n")
 end
 
 print [[
       <li class="divider"></li>
-      <li><a href="/lua/hosts_interaction.lua"><i class="icon-eye-open"></i> Interactions</a></li>
+      <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
       <li><a href="/lua/hosts_geomap.lua"><i class="icon-map-marker"></i> Geo Map</a></li>
-      <li><a href="/lua/hosts_treemap.lua"><i class="icon-th"></i> Tree Map</a></li>
+      <li><a href="/lua/hosts_treemap.lua"><i class="icon-sitemap"></i> Tree Map</a></li>
       <li><a href="/lua/hosts_matrix.lua"><i class="icon-th-large"></i> Local Matrix</a></li>
     </ul>
   </li>

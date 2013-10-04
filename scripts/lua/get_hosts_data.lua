@@ -110,11 +110,20 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print ("{ \"column_ip\" : \"<A HREF='/lua/")
 	    if(aggregated ~= nil) then print("aggregated_") end
-	    print("host_details.lua?host=" .. key .. "'>" .. key .. " ")
+	    print("host_details.lua?host=" .. key .. "'>")
+	    if(aggregated == nil) then
+	       print(key)
+	    else
+	       print(mapOS2Icon(key))
+	    end
 
-	    print("</A>\", \"column_name\" : \"")
-	    if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
-	    print(value["name"])
+	    print(" </A>\", \"column_name\" : \"")
+	    if(aggregated == nil) then
+	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
+	       print(value["name"])
+	    else
+	       print(value["name"])
+	    end
 	    print("</div>")
 
 	    if(value["country"] ~= nil) then
