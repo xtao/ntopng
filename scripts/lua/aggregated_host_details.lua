@@ -52,7 +52,7 @@ if(host.contacts ~= nil) then
    for k,v in pairs(host["contacts"]["server"]) do num = num + 1 end
 end
 
-if(num > 0) then 
+if(num > 0) then
    if(page == "contacts") then
       print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
    else
@@ -86,11 +86,11 @@ if(page == "overview") then
 
    print [[
 	    <tr><th>Activity Map</th><td>
-	    <table border=0>
-	    <tr><td><button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-left"></i></button></td>
-	    <td><span id="sentHeatmap"></span></td>
-	    <td><button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-right"></i></button></td></tr>
-	    </table></td></tr>
+	    <span id="sentHeatmap"></span>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-angle-left"></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="icon-refresh"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-angle-right"></i></button>
+	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">
 
@@ -106,17 +106,32 @@ if(page == "overview") then
      today = os.time()
      today = today - (today % 86400) - 2*3600
      today = today * 1000
-     
+
      print("/* "..timezone.." */\n")
      print("\t\tstart:   new Date("..now.."),\n") -- now-3h
      print("\t\tminDate: new Date("..today.."),\n")
      print("\t\tmaxDate: new Date("..(os.time()*1000).."),\n")
-		     print [[ 
+		     print [[
    		       domain : "hour",
 		       range : 6,
 		       nextSelector: "#sent-heatmap-next-selector",
-		       previousSelector: "#sent-heatmap-prev-selector"		       
-		    });
+		       previousSelector: "#sent-heatmap-prev-selector",
+			   onClick: function(date, nb) {
+				  if(nb === null) { 
+				     ("#heatmapInfo").html(""); 
+				  } else {
+				     $("#heatmapInfo").html(date + ": detected traffic for <b>" + nb + "</b> seconds.");
+				  }
+			       }
+				    });
+
+	    $(document).ready(function(){
+			    $('#heatmap-refresh').click(function(){
+							      sent_calendar.update(]]
+									     print("\"/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'\");\n')
+									     print [[
+						    });
+				      });
 
    </script>
 
@@ -139,7 +154,7 @@ print("<tr><th>Top Peers</th><th>Contacts Number</th></tr>\n")
 sortTable = {}
 for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
 
-for _v,k in pairsByKeys(sortTable, rev) do 
+for _v,k in pairsByKeys(sortTable, rev) do
    name = interface.getHostInfo(k)
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
@@ -165,7 +180,7 @@ end
 end
 
 
-print("<script>\nvar contacts = " .. host["pkts.rcvd"] .. ";") 
+print("<script>\nvar contacts = " .. host["pkts.rcvd"] .. ";")
 print [[
 
 setInterval(function() {
@@ -178,7 +193,7 @@ setInterval(function() {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
 			$('#contacts').html(addCommas(rsp.num_contacts));
-			
+
 			if(contacts == rsp.num_contacts) {
 			   $('#contacts_trend').html("<i class=icon-minus></i>");
 			} else {

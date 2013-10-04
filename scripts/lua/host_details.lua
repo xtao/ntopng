@@ -39,24 +39,24 @@ if(host == nil) then
 
    if(host == nil) then
       stats = interface.getIfNames()
-      for id, name in pairs(stats) do 
+      for id, name in pairs(stats) do
 	 if(name == ifname) then
 	    ifId = id
 	    break
 	 end
       end
-      
+
       if(not(restoreFailed)) then json = ntop.getCache(host_ip.. "." .. ifId .. ".json") end
       sendHTTPHeader('text/html')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
       print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_ip .. " cannot be found.")
-      if((json ~= nil) and (json ~= "")) then 
+      if((json ~= nil) and (json ~= "")) then
 	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?host='..host_ip..'&mode=restore">here</A> to restore it from cache.\n')
       else
 	 print('<p>Perhaps this host has been previously purged from memory or it has never been observed by this ntopng instance.</p>\n')
       end
-      
+
       print("</div>")
       dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
    else
@@ -153,7 +153,7 @@ end
 
 num = cnum + snum
 
-if(num > 0) then 
+if(num > 0) then
    if(page == "contacts") then
       print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
    else
@@ -196,7 +196,7 @@ if((page == "overview") or (page == nil)) then
    if((host["city"] ~= "") and (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
-   
+
    print("</td></tr>\n")
 
    if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
@@ -213,7 +213,7 @@ if((page == "overview") or (page == nil)) then
       end
 
       print(host["name"] .. "</span></A> <i class=\"icon-external-link\"></i> ")
-      
+
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-success">Private IP</span>') end
    print("</td></tr>\n")
@@ -234,11 +234,11 @@ end
 
    print [[
 	    <tr><th>Activity Map</th><td>
-	    <table border=0>
-	    <tr><td><button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-left"></i></button></td>
-	    <td><span id="sentHeatmap"></span></td>
-	    <td><button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-chevron-right"></i></button></td></tr>
-	    </table></td></tr>
+	    <span id="sentHeatmap"></span>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-angle-left"></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="icon-refresh"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="icon-angle-right"></i></button>
+	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">
 
@@ -254,17 +254,33 @@ end
      today = os.time()
      today = today - (today % 86400) - 2*3600
      today = today * 1000
-     
+
      print("/* "..timezone.." */\n")
      print("\t\tstart:   new Date("..now.."),\n") -- now-3h
      print("\t\tminDate: new Date("..today.."),\n")
      print("\t\tmaxDate: new Date("..(os.time()*1000).."),\n")
-		     print [[ 
+		     print [[
    		       domain : "hour",
 		       range : 6,
 		       nextSelector: "#sent-heatmap-next-selector",
-		       previousSelector: "#sent-heatmap-prev-selector"		       
+		       previousSelector: "#sent-heatmap-prev-selector",
+
+			   onClick: function(date, nb) {
+					  if(nb === null) { ("#heatmapInfo").html(""); }
+				       else {
+					     $("#heatmapInfo").html(date + ": detected traffic for <b>" + nb + "</b> seconds.");
+				       }
+				    }
+
 		    });
+
+	    $(document).ready(function(){
+			    $('#heatmap-refresh').click(function(){
+							      sent_calendar.update(]]
+									     print("\"/lua/get_host_activitymap.lua?host="..host_ip..'\");\n')
+									     print [[
+						    });
+				      });
 
    </script>
 
@@ -326,7 +342,7 @@ end
 	]]
 
      print("<tr><th>Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
-     
+
 
      for id, _ in ipairs(l4_keys) do
 	label = l4_keys[id][1]
@@ -466,7 +482,7 @@ print [[
 			     title: "Throughput",
 				 field: "column_thpt",
 				 sortable: true,
-	 	             css: { 
+	 	             css: {
 			        textAlign: 'right'
 			     }
 				 },
@@ -528,24 +544,24 @@ if(num > 0) then
    mode = "embed"
    if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
    name = host["name"]
-   dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua") 
-   
+   dofile(dirs.installdir .. "/scripts/lua/hosts_interaction.lua")
+
    print("<table class=\"table table-bordered table-striped\">\n")
    print("<tr><th width=50%>Client Contacts (Initiator)</th><th width=50%>Server Contacts (Receiver)</th></tr>\n")
-   
+
    print("<tr>")
-   
+
    if(cnum  == 0) then
       print("<td>No client contacts so far</td>")
    else
       print("<td><table class=\"table table-bordered table-striped\">\n")
       print("<tr><th width=75%>Server Address</th><th>Contacts</th></tr>\n")
-      
+
       -- Client
       sortTable = {}
       for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
-      
-      for _v,k in pairsByKeys(sortTable, rev) do 
+
+      for _v,k in pairsByKeys(sortTable, rev) do
 	 name = interface.getHostInfo(k)
 	 v = host["contacts"]["client"][k]
 	 if(name ~= nil) then
@@ -558,19 +574,19 @@ if(num > 0) then
       end
       print("</table></td>\n")
    end
-   
+
    if(snum  == 0) then
       print("<td>No server contacts so far</td>")
    else
       print("<td><table class=\"table table-bordered table-striped\">\n")
       print("<tr><th width=75%>Client Address</th><th>Contacts</th></tr>\n")
-      
+
       -- Server
       sortTable = {}
       for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
-      
-      for _v,k in pairsByKeys(sortTable, rev) do 
-	 name = interface.getHostInfo(k)   
+
+      for _v,k in pairsByKeys(sortTable, rev) do
+	 name = interface.getHostInfo(k)
 	 v = host["contacts"]["server"][k]
 	 if(name ~= nil) then
 	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
@@ -582,7 +598,7 @@ if(num > 0) then
       end
       print("</table></td>\n")
    end
-   
+
 print("</tr>\n")
 
 print("</table>\n")
@@ -644,16 +660,16 @@ setInterval(function() {
 			} else {
 			   $('#sent_trend').html("<i class=icon-arrow-up></i>");
 			}
-			
+
 			if(last_pkts_rcvd == host["pkts.rcvd"]) {
 			   $('#rcvd_trend').html("<i class=icon-minus></i>");
 			} else {
 			   $('#rcvd_trend').html("<i class=icon-arrow-up></i>");
 			}
-			
+
 			last_pkts_sent = host["pkts.sent"];
 			last_pkts_rcvd = host["pkts.rcvd"];
-			
+
 			/* **************************************** */
 
 			/*
