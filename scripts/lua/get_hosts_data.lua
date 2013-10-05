@@ -117,7 +117,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print(mapOS2Icon(key))
 	    end
 
-	    print(" </A>\", \"column_name\" : \"")	    
+	    print(" </A> ".. getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
 	    if(aggregated == nil) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	       print(shortHostName(value["name"]))

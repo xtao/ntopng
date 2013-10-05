@@ -178,8 +178,11 @@ void Flow::processDetectedProtocol() {
 	ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
 					     (char*)ndpi_flow->host_server_name);
 
-	if(ndpi_flow->detected_os[0] != '\0')
+	if(ndpi_flow->detected_os[0] != '\0') {
 	  aggregateInfo((char*)ndpi_flow->detected_os, protocol, NTOPNG_NDPI_OS_PROTO_ID);
+	  if(cli_host)
+	    cli_host->setOS((char*)ndpi_flow->detected_os);
+	}
       }
     }
     break;

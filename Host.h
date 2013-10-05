@@ -28,7 +28,7 @@ class Host : public GenericHost, Serializable {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
-  char *symbolic_name, *country, *city, *asname, category[8];
+  char *symbolic_name, *country, *city, *asname, category[8], os[16];
   u_int16_t num_uses, vlan_id;
   float latitude, longitude;
   IpAddress *ip;
@@ -56,9 +56,11 @@ class Host : public GenericHost, Serializable {
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
   u_int32_t key();
   char* getJSON();
-  inline IpAddress* get_ip()                   { return(ip);               }
+  inline void setOS(char *_os)                 { if(os[0] == '\0') snprintf(os, sizeof(os), "%s", _os); }
+  inline IpAddress* get_ip()                   { return(ip);            }
   void set_mac(char *m);
   inline u_int8_t*  get_mac()                  { return(mac_address);   }
+  inline char* get_os()                        { return(os);            }
   inline u_int16_t get_vlan_id()               { return(vlan_id);       }
   inline char* get_name()                      { return(symbolic_name); }
   inline char* get_country()                   { return(country);       }

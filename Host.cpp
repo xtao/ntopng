@@ -103,7 +103,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
-  category[0] = '\0';
+  category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
@@ -224,6 +224,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_bool_table_entry(vm, "localhost", localHost);
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
     lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
+    lua_push_str_table_entry(vm, "os", os);
 
     if(verbose) {
       lua_push_float_table_entry(vm, "latitude", latitude);

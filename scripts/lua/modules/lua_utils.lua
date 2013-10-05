@@ -70,7 +70,7 @@ function shortHostName(name)
       max_len = 24
 
       chunks = {name:match("%w+:%w+:%w+:%w+:%w+:%w+")}
-      io.write(#chunks.."\n")
+      --io.write(#chunks.."\n")
       if (#chunks == 1) then
 	 return(name)
       end
@@ -713,7 +713,7 @@ function fixPath(path)
    return(path)
 end
 
-function mapOS2Icon(name)
+function getOSIcon(name)
    icon = ""
 
    if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=icon-linux></i> '
@@ -721,6 +721,10 @@ function mapOS2Icon(name)
       elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=icon-apple></i> '
    end
 
-   return(icon..name)
+   return(icon)
+end
+
+function mapOS2Icon(name)
+   return(getOSIcon(name) .. name)
 end
 

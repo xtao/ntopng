@@ -25,7 +25,7 @@ if(ifstats.stats_packets > 0) then
 
    print('<div class="navbar">\n\t<div class="navbar-inner">\n\t<ul class="nav">\n')
 
-   print('<li><a href="#">Top: </a></li>\n')
+   print('<li><a href="#">Dashboard: </a></li>\n')
 
    if(page == "TopFlowTalkers") then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopFlowTalkers">Talkers</a></li>\n')
