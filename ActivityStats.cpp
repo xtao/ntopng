@@ -27,7 +27,7 @@
 /* Daily duration */
 ActivityStats::ActivityStats(time_t when) {
   _bitset = new EWAHBoolArray<u_int32_t>;
- 
+
   begin_time  = (when == 0) ? time(NULL) : when;
   begin_time -= (begin_time % CONST_MAX_ACTIVITY_DURATION);
   begin_time += ntop->get_time_offset();
@@ -64,7 +64,7 @@ void ActivityStats::reset() {
 void ActivityStats::set(time_t when) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
   u_int16_t w;
-  
+
   if(when > wrap_time) {
     reset();
 
@@ -72,7 +72,7 @@ void ActivityStats::set(time_t when) {
     wrap_time += CONST_MAX_ACTIVITY_DURATION;
 
     ntop->getTrace()->traceEvent(TRACE_INFO,
-				 "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]", 
+				 "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]",
 				 when, begin_time, wrap_time);
   }
 
@@ -104,7 +104,7 @@ bool ActivityStats::dump(char* path) {
   try {
     ofstream dumpFile(path);
     stringstream ss;
-    
+
     m.lock(__FILE__, __LINE__);
     bitset->write(ss);
     m.unlock(__FILE__, __LINE__);
@@ -131,24 +131,24 @@ bool ActivityStats::readDump(char* path) {
     stringstream ss;
 
     if(!dumpFile.is_open()) return(false);
-
     ss << dumpFile.rdbuf();
 
-#if 1
+#if 0
     EWAHBoolArray<u_int32_t> tmp;
 
-    tmp.read(ss);   
+    if(!ss.str().empty()) tmp.read(ss);
+
     m.lock(__FILE__, __LINE__);
     bitset->reset();
 
-    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i) {
+    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
       bitset->set((size_t)*i);
-    }
+
     m.unlock(__FILE__, __LINE__);
 #else
     m.lock(__FILE__, __LINE__);
     bitset->reset();
-    bitset->read(ss);
+    if(!ss.str().empty()) bitset->read(ss);
     m.unlock(__FILE__, __LINE__);
 #endif
 
@@ -166,7 +166,7 @@ json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
-  u_int num = 0, last_dump = 0;  
+  u_int num = 0, last_dump = 0;
   my_object = json_object_new_object();
 
   m.lock(__FILE__, __LINE__);
@@ -223,15 +223,15 @@ void ActivityStats::deserialize(json_object *o) {
   bitset->reset();
 
   it = json_object_iter_begin(o), itEnd = json_object_iter_end(o);
-  
+
   while (!json_object_iter_equal(&it, &itEnd)) {
     char *key  = (char*)json_object_iter_peek_name(&it);
     u_int32_t when = atol(key);
-      
+
     when %= CONST_MAX_ACTIVITY_DURATION;
     bitset->set(when);
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, 1);
-    
+
     json_object_iter_next(&it);
   }
 }

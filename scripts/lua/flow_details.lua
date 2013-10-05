@@ -16,14 +16,26 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+a = _GET["label"]
+
+patterns = {["<"] = "", ["->"] = "<i class=icon-exchange></i>" }
+for search,replace in pairs(patterns) do
+   a = string.gsub(a, search, replace)
+end
+
 print [[
 
-
-<ul class="breadcrumb">
-  <li><A HREF=/lua/flows_stats.lua>Flows</A> <span class="divider">/</span></li>
+<div class="bs-docs-example">
+            <div class="navbar">
+              <div class="navbar-inner">
+<ul class="nav">
+	 <li><a href="#">Flow: ]] print(a) print [[ </a></li>
+<li class="active"><a href="#">Overview</a></li>
+</div>
+</div>
+</div>
 ]]
 
-print("<li>".._GET["label"].."</li></ul>")
 
 flow_key = _GET["flow_key"]
 if(flow_key == nil) then

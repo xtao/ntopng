@@ -56,7 +56,7 @@ end
 
 function printASN(asn, asname)
    if(asn > 0) then
-      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A>")
+      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class=icon-external-link></i>")
    else
       return("")
    end
@@ -67,20 +67,36 @@ function shortHostName(name)
    if (#chunks == 4) then
       return(name)
    else
+      max_len = 24
+
       chunks = {name:match("%w+:%w+:%w+:%w+:%w+:%w+")}
       io.write(#chunks.."\n")
       if (#chunks == 1) then
 	 return(name)
       end
 
-      for token in string.gmatch(name, "([%w-]+).") do
-	 return(token)
+      if(string.len(name) < max_len) then
+	 return(name)
+      else
+	 tot = 0
+	 n = 0
+	 ret = ""
+
+	 for token in string.gmatch(name, "([%w-]+).") do
+	    if(tot < max_len) then
+	       if(n > 0) then ret = ret .. "." end
+	       ret = ret .. token
+	       tot = tot+string.len(token)
+	       n = n + 1
+	    end
+	 end
+
+	 return(ret .. "...")
       end
    end
 
    return(name)
 end
-
 
 function l4Label(proto)
    local id
@@ -700,7 +716,7 @@ end
 function mapOS2Icon(name)
    icon = ""
 
-   if(findString(name, "Linux")) then icon = '<i class=icon-linux></i> '
+   if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=icon-linux></i> '
       elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=icon-windows></i> '
       elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=icon-apple></i> '
    end

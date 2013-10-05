@@ -20,15 +20,14 @@ print [[
 
 print("<table class=\"table table-bordered table-striped\">\n")
 print("<tr><th>Copyright</th><td>"..info["copyright"].."</td></tr>\n")
-print("<tr><th>Authors</th><td>"..info["authors"].."</td></tr>\n")
 print("<tr><th>License</th><td><A HREF=http://www.gnu.org/licenses/gpl.html>"..info["license"].."</A>")
 
 print("<tr><th>Version</th><td>"..info["version"].."</td></tr>\n")
-print("<tr><th>Currently Logged User</th><td>".._SESSION["user"].."</td></tr>\n")
-print("<tr><th>Uptime</th><td>"..secondsToTime(info["uptime"]).."</td></tr>\n")
+print("<tr><th><i class=icon-user></i> Currently Logged User</th><td>".._SESSION["user"].."</td></tr>\n")
+print("<tr><th><i class=icon-time></i> Uptime</th><td>"..secondsToTime(info["uptime"]).."</td></tr>\n")
 print("<tr><th colspan=2 align=center>&nbsp;</th></tr>\n")
 print("<tr><th><a href=http://www.ntop.org/products/ndpi/>nDPI</A></th><td>".. info["version.ndpi"] .."</td></tr>\n")
-print("<tr><th><a href=http://twitter.github.io/>Twitter Bootstrap</A></th><td>2.3.1</td></tr>\n")
+print("<tr><th><a href=http://twitter.github.io/><i class=icon-twitter></i> Twitter Bootstrap</A></th><td>2.3.1</td></tr>\n")
 print("<tr><th><a href=http://www.rrdtool.org/>RRDtool</A></th><td>"..info["version.rrd"].."</td></tr>\n")
 print("<tr><th><a href=http://www.redis.io>Redis</A> Server</th><td>"..info["version.redis"].."</td></tr>\n")
 print("<tr><th><a href=https://github.com/valenok/mongoose>Mongoose web server</A></th><td>"..info["version.httpd"].."</td></tr>\n")
@@ -37,12 +36,13 @@ print("<tr><th><a href=http://www.zeromq.org>ØMQ</A></th><td>"..info["version.zm
 print("<tr><th><a href=http://www.maxmind.com>GeoIP</A></th><td>"..info["version.geoip"])
 
 print [[ <p><small>
-         <div class="alert alert-info">This product includes GeoLite data created by MaxMind, available from
-	 <a href="http://www.maxmind.com">http://www.maxmind.com</a>. </div></small>
+         <p><span class="alert alert-info">This product includes GeoLite data created by MaxMind, available from
+	 <a href="http://www.maxmind.com">http://www.maxmind.com</a>. </span></small></p>
 ]]
 
 print("</td></tr>\n")
 print("<tr><th><a href=http://www.d3js.org>Data-Driven Documents (d3js)</A></th><td>2.9.1 / 3.0</td></tr>\n")
+print("<tr><th><a href=https://github.com/lemire/EWAHBoolArray>Compressed Bitmap (EWAHBoolArray)</A></th><td>0.4.0</td></tr>\n")
 
 
 
