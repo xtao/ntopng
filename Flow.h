@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Flow : public GenericHashEntry, Serializable {
+class Flow : public GenericHashEntry {
  private:
   Host *cli_host, *srv_host;  
   u_int16_t cli_port, srv_port;

@@ -216,7 +216,7 @@ if((page == "overview") or (page == nil)) then
       print(host["name"] .. "</span></A> <i class=\"icon-external-link\"></i> ")
 
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
-      if(host["privatehost"] == true) then print(' <span class="label label-success">Private IP</span>') end
+      if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
    print("</td></tr>\n")
 end
 

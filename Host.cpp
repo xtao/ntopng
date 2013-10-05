@@ -56,7 +56,7 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 Host::~Host() {
   char key[128], *k;
 
-  dumpStats(false);
+  if(ip && (!ip->isEmpty())) dumpStats(false);
 
   k = get_string_key(key, sizeof(key));
 

@@ -29,7 +29,7 @@ typedef struct {
   u_int32_t num_contacts;
 } IPContacts;
 
-class HostContacts : public Serializable {
+class HostContacts {
  protected:
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
   void incrIPContacts(IpAddress *peer, IPContacts *contacts, u_int32_t value);

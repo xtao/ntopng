@@ -108,9 +108,10 @@ public:
 		return ss.str();
 	}
     friend ostream& operator<< (ostream &out, const EWAHBoolArray &a) {
+      const_iterator i;
 
     	out<<"{";
-		for (EWAHBoolArray::const_iterator i = a.begin(); i != a.end(); ) {
+		for (i = a.begin(); i != a.end(); ) {
 			out<<*i;
 			++i;
 			if( i != a.end())

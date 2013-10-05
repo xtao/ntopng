@@ -38,7 +38,8 @@ class Prefs {
  private:
   Ntop *ntop;
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
-    categorization_enabled, resolve_all_host_ip, change_user, daemonize;
+    categorization_enabled, resolve_all_host_ip, change_user, daemonize,
+    dump_timeline;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
@@ -69,6 +70,7 @@ class Prefs {
 
   inline char* get_local_networks()                     { return(local_networks);         };
   inline FILE* get_log_fd()                             { return(logFd);                  };
+  inline bool do_dump_timeline()                        { return(dump_timeline);          };
   inline void disable_dns_resolution()                  { enable_dns_resolution = false;  };
   inline void resolve_all_hosts()                       { resolve_all_host_ip = true;     };
   inline bool is_dns_resolution_enabled_for_all_hosts() { return(resolve_all_host_ip);    };

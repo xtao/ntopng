@@ -133,7 +133,7 @@ bool ActivityStats::readDump(char* path) {
     if(!dumpFile.is_open()) return(false);
     ss << dumpFile.rdbuf();
 
-#if 0
+#if 1
     EWAHBoolArray<u_int32_t> tmp;
 
     if(!ss.str().empty()) tmp.read(ss);

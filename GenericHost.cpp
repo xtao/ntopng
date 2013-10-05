@@ -25,7 +25,7 @@
 
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ndpiStats = new NdpiStats();
-  
+
   localHost = false;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
@@ -42,41 +42,47 @@ GenericHost::~GenericHost() {
 /* *************************************** */
 
 void GenericHost::readStats() {
-  char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
-  time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
-  
-  host_key = get_string_key(buf, sizeof(buf));
-  strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));  
-  snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s", 
-	   ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
-  ntop->fixPath(dump_path);
+  if(!ntop->getPrefs()->do_dump_timeline())
+    return;
+  else {
+    char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
+    time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
 
-  if(activityStats.readDump(dump_path))
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Read activity stats from %s", dump_path);   
+    host_key = get_string_key(buf, sizeof(buf));
+    strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+    snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s",
+	     ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
+    ntop->fixPath(dump_path);
+
+    if(activityStats.readDump(dump_path))
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Read activity stats from %s", dump_path);
+  }
 }
 
 /* *************************************** */
 
 void GenericHost::dumpStats(bool forceDump) {
+  if(!ntop->getPrefs()->do_dump_timeline()) return;
+
   if(localHost || forceDump) {
     /* (Daily) Wrap */
     char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
     time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
-  
+
     host_key = get_string_key(buf, sizeof(buf));
 
     if(strcmp(host_key, "00:00:00:00:00:00")) {
       strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s", 
+      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s",
 	       ntop->get_working_dir(), iface->get_name(), daybuf);
       ntop->fixPath(dump_path);
       Utils::mkdir_tree(dump_path);
-      
-      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s", 
+
+      snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s",
 	       ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
       ntop->fixPath(dump_path);
       activityStats.dump(dump_path);
-      ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);   
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);
     }
   }
 }
@@ -88,7 +94,7 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 			   u_int64_t rcvd_packets, u_int64_t rcvd_bytes) {
   if(sent_packets || rcvd_packets) {
     time_t when = iface->getTimeLastPktRcvd();
-    
+
     /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
     when -= when % CONST_TREND_TIME_GRANULARITY;
     if(when > activityStats.get_wrap_time()) dumpStats(false);
@@ -98,7 +104,7 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 
     if((ndpi_proto != NO_NDPI_PROTOCOL) && ndpiStats)
       ndpiStats->incStats(ndpi_proto, sent_packets, sent_bytes, rcvd_packets, rcvd_bytes);
-    
+
     updateSeen();
   }
 }

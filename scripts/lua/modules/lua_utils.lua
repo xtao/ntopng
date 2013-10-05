@@ -35,6 +35,8 @@ function sendHTTPHeader(mime)
 end
 
 function findString(str, tofind)
+   if(str == nil) then return(nil) end
+
    str1    = string.gsub(str, "-", "_")
    tofind1 = string.gsub(tofind, "-", "_")
    rsp = string.find(str1, tofind1, 1)
@@ -717,6 +719,7 @@ function getOSIcon(name)
    icon = ""
 
    if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=icon-linux></i> '
+      elseif(findString(name, "Android")) then icon = '<i class=icon-android></i> '
       elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=icon-windows></i> '
       elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=icon-apple></i> '
    end

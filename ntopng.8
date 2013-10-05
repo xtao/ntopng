@@ -45,6 +45,7 @@ or
 .IR <max num flows> ]
 .RB [ -B
 .IR <filter> ]
+.RB [ -C ]
 .RB [ -A
 .IR <mode> ]
 .RB [ -x
@@ -179,6 +180,9 @@ Run ntopng with the specified system user instead of 'nobody'.
 .It -B|--packet-filter
 Specifies the packet filter for the specified interface. For pcap/PF_RING interfaces
 the filter has to be specified in BPF format (Berkeley Packet Filter).
+
+.It -C|--dump-timeline
+Enable timeline dump on disk (default: disabled).
 
 .It -A|--enable-aggregations <mode>
 Enable data aggregations (e.g. Operating System, DNS etc). The available modes are:

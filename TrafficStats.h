@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class TrafficStats : Serializable {
+class TrafficStats {
  private:
   u_int64_t numPkts, numBytes;
 

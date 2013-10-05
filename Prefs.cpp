@@ -24,7 +24,7 @@
 /* ******************************************* */
 
 Prefs::Prefs(Ntop *_ntop) {
-  ntop = _ntop;
+  ntop = _ntop, dump_timeline = false;
   local_networks = strdup(CONST_DEFAULT_HOME_NET);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
@@ -92,7 +92,7 @@ void usage() {
 	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "              [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-U <sys user>] [-s] [-v]"
+	 "              [-l] [-U <sys user>] [-s] [-v] [-C]"
 #ifdef HAVE_SQLITE
 	 " [-F]"
 #endif
@@ -122,6 +122,7 @@ void usage() {
 	 "                                    | Default: %s\n"
 	 "[--callbacks-dir|-3] <path>         | Callbacks directory.\n"
 	 "                                    | Default: %s\n"
+	 "[--dump-timeline|-C]                | Enable timeline dump.\n"
 	 "[--categorization-key|-c] <key>     | Key used to access host categorization\n"
 	 "                                    | services (default: disabled). \n"
 	 "                                    | Please read README.categorization for\n"
@@ -152,7 +153,7 @@ void usage() {
 	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:"
 	 "                                    | 0 - No aggregations (default)\n"
 	 "                                    | 1 - Enable aggregations, no timeline dump\n"
-	 "                                    | 2 - Enable aggregations, with timeline dump\n"
+	 "                                    | 2 - Enable aggregations, with timeline dump (see -C)\n"
 #ifdef HAVE_SQLITE
 	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
 #endif
@@ -184,6 +185,7 @@ static const struct option long_options[] = {
 #endif
   { "packet-filter",                     required_argument, NULL, 'B' },
   { "categorization-key",                required_argument, NULL, 'c' },
+  { "dump-timeline",                     no_argument,       NULL, 'C' },
   { "daemonize",                         required_argument, NULL, 'e' },
   { "http-port",                         required_argument, NULL, 'w' },
   { "local-networks",                    required_argument, NULL, 'm' },
@@ -241,6 +243,10 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'c':
     categorization_key = optarg;
+    break;
+
+  case 'C':
+    dump_timeline = true;
     break;
 
 #ifndef WIN32
@@ -418,7 +424,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:A:B:FG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:A:B:CFG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

@@ -93,7 +93,6 @@ extern "C" {
 #include "NtopGlobals.h"
 #include "Prefs.h"
 #include "Mutex.h"
-#include "Serializable.h"
 #include "IpAddress.h"
 #include "ActivityStats.h"
 #include "NdpiStats.h"

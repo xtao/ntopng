@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class PacketStats : Serializable {
+class PacketStats {
  private:
   u_int64_t upTo64, upTo128, upTo256,
     upTo512, upTo1024, upTo1518,

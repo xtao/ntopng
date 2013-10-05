@@ -72,6 +72,16 @@ void IpAddress::set_from_string(char *string) {
 
 /* ******************************************* */
 
+bool IpAddress::isEmpty() {
+  if((addr.ipVersion == 0)
+     || ((addr.ipVersion == 4) && (addr.ipType.ipv4 == 0)))
+    return(true);
+  else
+    return(false);
+}
+
+/* ******************************************* */
+
 void IpAddress::checkPrivate() {
   u_int32_t a;
 

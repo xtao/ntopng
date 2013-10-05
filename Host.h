@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-class Host : public GenericHost, Serializable {
+class Host : public GenericHost {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;

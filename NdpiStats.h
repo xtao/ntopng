@@ -40,7 +40,7 @@ class NetworkInterface;
 
 /* *************************************** */
 
-class NdpiStats : public Serializable {
+class NdpiStats {
  private:
   ProtoCounter *counters[MAX_NDPI_PROTOS];
 
