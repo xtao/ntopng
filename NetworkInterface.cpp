@@ -234,6 +234,7 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
   flow->setDetectedProtocol(proto_id);
   flow->setJSONInfo(additional_fields_json);
+  flow->updateActivities();
   incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
 	   flow->get_detected_protocol(), in_bytes+out_bytes, (in_pkts+out_pkts),
 	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
@@ -348,6 +349,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   }
 
   /* Protocol Detection */
+  flow->updateActivities();
 
   if(flow->isDetectionCompleted()) {
     flow->processDetectedProtocol();
@@ -518,8 +520,15 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     Host *srcHost = findHostByMac(ethernet->h_source, vlan_id, true);
     Host *dstHost = findHostByMac(ethernet->h_dest, vlan_id, true);
 
-    if(srcHost) srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
-    if(dstHost) dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
+    if(srcHost) {
+      srcHost->incStats(0, NO_NDPI_PROTOCOL, 1, h->len, 0, 0);
+      srcHost->updateActivities();
+    }
+
+    if(dstHost) {
+      dstHost->incStats(0, NO_NDPI_PROTOCOL, 0, 0, 1, h->len);
+      dstHost->updateActivities();
+    }
 
     incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     break;

@@ -78,9 +78,8 @@ class Flow : public GenericHashEntry {
   void setJSONInfo(char *json);
   bool isFlowPeer(char *numIP);
   void incStats(bool cli2srv_direction, u_int pkt_len);
-  inline void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen) { updateSeen(last_seen); 
-    if (cli2srv_direction) cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
-    else cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; };
+  void updateActivities();
+  void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen);
   inline bool isDetectionCompleted()  { return(detection_completed); };
   inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
   inline void* get_cli_id()                       { return(cli_id);    };

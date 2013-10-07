@@ -30,7 +30,7 @@
 
 class ActivityStats {
  private:
-  time_t begin_time, wrap_time, last_set_time;
+  time_t begin_time, wrap_time, last_set_time, last_set_requested;
   void *_bitset;
   Mutex m;
   

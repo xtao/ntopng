@@ -53,6 +53,7 @@ class GenericHost : public GenericHashEntry {
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm);        };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts.get_num_contacts_by(host_ip)); };
   void updateStats(struct timeval *tv);
+  void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };
   inline char* getJsonActivityMap()   { return(activityStats.serialize()); };
   virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL);   };

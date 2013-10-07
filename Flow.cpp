@@ -687,3 +687,25 @@ void Flow::incStats(bool cli2srv_direction, u_int pkt_len) {
     cli_host->get_recv_stats()->incStats(pkt_len), srv_host->get_sent_stats()->incStats(pkt_len);
   }
 };
+
+
+/* *************************************** */
+
+void Flow::updateActivities() {
+  if(cli_host) cli_host->updateActivities();
+  if(srv_host) srv_host->updateActivities();
+}
+
+/* *************************************** */
+
+void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
+			u_int out_pkts, u_int out_bytes, time_t last_seen) {
+  updateSeen(last_seen); 
+
+  if (cli2srv_direction) 
+    cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
+  else
+    cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; 
+
+  updateActivities();
+}

@@ -34,7 +34,7 @@ ActivityStats::ActivityStats(time_t when) {
 
   wrap_time = begin_time + CONST_MAX_ACTIVITY_DURATION;
 
-  last_set_time = 0;
+  last_set_time = last_set_requested = 0;
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "Wrap stats at %u/%s", wrap_time, ctime(&wrap_time));
 }
@@ -62,30 +62,34 @@ void ActivityStats::reset() {
 
 /* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
-  u_int16_t w;
+  if(last_set_requested != when) {
+    EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+    u_int16_t w;
+   
+    last_set_requested = when;
 
-  if(when > wrap_time) {
-    reset();
-
-    begin_time = wrap_time;
-    wrap_time += CONST_MAX_ACTIVITY_DURATION;
-
-    ntop->getTrace()->traceEvent(TRACE_INFO,
-				 "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]",
-				 when, begin_time, wrap_time);
+    if(when > wrap_time) {
+      reset();
+      
+      begin_time = wrap_time;
+      wrap_time += CONST_MAX_ACTIVITY_DURATION;
+      
+      ntop->getTrace()->traceEvent(TRACE_INFO,
+				   "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]",
+				   when, begin_time, wrap_time);
+    }
+    
+    w = (when - begin_time) % CONST_MAX_ACTIVITY_DURATION;
+    
+    if(w == last_set_time) return;
+    
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%p] %u\n", this, (unsigned int)w);
+    
+    m.lock(__FILE__, __LINE__);
+    bitset->set((size_t)w);
+    m.unlock(__FILE__, __LINE__);
+    last_set_time = when;
   }
-
-  w = (when - begin_time) % CONST_MAX_ACTIVITY_DURATION;
-
-  if(w == last_set_time) return;
-
-  // ntop->getTrace()->traceEvent(TRACE_INFO, "%u\n", (unsigned int)w);
-
-  m.lock(__FILE__, __LINE__);
-  bitset->set((size_t)w);
-  m.unlock(__FILE__, __LINE__);
-  last_set_time = when;
 };
 
 /* *************************************** */
