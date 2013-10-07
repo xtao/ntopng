@@ -120,7 +120,7 @@ if(page == "overview") then
 				  if(nb === null) { 
 				     ("#heatmapInfo").html(""); 
 				  } else {
-				     $("#heatmapInfo").html(date + ": detected traffic for <b>" + nb + "</b> seconds.");
+				     $("#heatmapInfo").html(date + ": detected traffic for <b>" + nb + "</b> seconds ("+ Math.round((nb*100)/60)+" % of time).");
 				  }
 			       }
 				    });
