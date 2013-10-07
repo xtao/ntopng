@@ -107,7 +107,7 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id)
     if(host != NULL) {
       host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
       host->updateSeen();
-      
+      host->updateActivities();
       if(cli_host) host->incrContact(cli_host->get_ip(), true);
     }
   }
@@ -132,7 +132,9 @@ void Flow::processDetectedProtocol() {
 
 	if(name) {
 	  protocol_processed = true;
-	  ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+
+	  if(ndpi_flow->protos.dns.num_answer_rrs > 0)
+	    ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
 
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
 

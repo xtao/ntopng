@@ -151,7 +151,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       localHost = true;
     }
 
-    readStats();
+    if(localHost) readStats();
   }
 }
 
