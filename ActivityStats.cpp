@@ -106,7 +106,7 @@ bool ActivityStats::writeDump(char* path) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
   stringstream ss;
   time_t now = time(NULL);
-  time_t expire_time = (now+CONST_MAX_ACTIVITY_DURATION-1) % CONST_MAX_ACTIVITY_DURATION;
+  time_t expire_time = now+((now+CONST_MAX_ACTIVITY_DURATION-1) % CONST_MAX_ACTIVITY_DURATION);
 
   m.lock(__FILE__, __LINE__);
   bitset->write(ss);
@@ -115,7 +115,7 @@ bool ActivityStats::writeDump(char* path) {
   string s = ss.str();
   std::string encoded = Utils::base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
 
-  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)(%s)", __FUNCTION__, path, encoded.c_str());
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)(%s)(%d)", __FUNCTION__, path, encoded.c_str(), expire_time-now);
  
   /* Save it both in redis and disk */
   ntop->getRedis()->set(path, (char*)encoded.c_str(), expire_time-now);
@@ -143,7 +143,11 @@ bool ActivityStats::readDump(char* path) {
     std::string s(decoded);
     std::stringstream ss(s);
 
-#if 0
+#if 1
+  /*
+    We do not use "direct" bitset->read() as this is apparently creating
+    crash problems.
+   */
     if(!ss.str().empty()) tmp.read(ss);
 
     // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)", __FUNCTION__, path);
@@ -164,44 +168,6 @@ bool ActivityStats::readDump(char* path) {
     return(true);
   } else
     return(false);
-
-#if 0
-  /*
-    We do not use "direct" bitset->read() as this is apparently creating
-    crash problems.
-   */
-  try {
-    ifstream dumpFile(path);
-    stringstream ss;
-
-    if(!dumpFile.is_open()) return(false);
-    ss << dumpFile.rdbuf();
-
-#if 1
-    EWAHBoolArray<u_int32_t> tmp;
-
-    if(!ss.str().empty()) tmp.read(ss);
-
-    m.lock(__FILE__, __LINE__);
-    bitset->reset();
-
-    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
-      bitset->set((size_t)*i);
-
-    m.unlock(__FILE__, __LINE__);
-#else
-    m.lock(__FILE__, __LINE__);
-    bitset->reset();
-    if(!ss.str().empty()) bitset->read(ss);
-    m.unlock(__FILE__, __LINE__);
-#endif
-
-    dumpFile.close();
-    return(true);
-  } catch(...) {
-    return(false);
-  }
-#endif
 }
 
 /* *************************************** */
