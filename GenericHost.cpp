@@ -81,7 +81,7 @@ void GenericHost::dumpStats(bool forceDump) {
       snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s/%s",
 	       ntop->get_working_dir(), iface->get_name(), daybuf, host_key);
       ntop->fixPath(dump_path);
-      activityStats.dump(dump_path);
+      activityStats.writeDump(dump_path);
       ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", dump_path);
     }
   }

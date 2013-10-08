@@ -41,6 +41,8 @@ class Utils {
   static bool mkdir_tree(char *path);
   static const char* trend2str(ValueTrend t);
   static void dropPrivileges();
+  static std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
+  static std::string base64_decode(std::string const& encoded_string);
 };
 
 

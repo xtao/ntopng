@@ -99,7 +99,7 @@ Host::~Host() {
 /* *************************************** */
 
 void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
-  char key[128], json[4096], *k;
+  char key[64], redis_key[128], json[4096], *k;
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
@@ -110,12 +110,12 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   asn = 0, asname = NULL, country = NULL, city = NULL;
 
   k = get_string_key(key, sizeof(key));
-  snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
+  snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
 
   if(ntop->getPrefs()->is_host_persistency_enabled()
-     && (!ntop->getRedis()->get(key, json, sizeof(json)))) {
+     && (!ntop->getRedis()->get(redis_key, json, sizeof(json)))) {
     /* Found saved copy of the host so let's start from the previous state */
-    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", redis_key, json);
     deserialize(json);
   }
 
@@ -151,7 +151,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       localHost = true;
     }
 
-    if(localHost) readStats();
+    if(localHost && ip) readStats();
   }
 }
 

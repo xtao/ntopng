@@ -78,7 +78,8 @@ static void* packetPollLoop(void* ptr) {
   /* Wait until the initialization competes */
   while(!iface->isRunning()) sleep(1);
 
-  while(iface->isRunning()) {
+  while(iface->isRunning() 
+	&& (!ntop->getGlobals()->isShutdown())) {
     const u_char *pkt;
     struct pcap_pkthdr hdr;
 

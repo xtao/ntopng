@@ -102,16 +102,26 @@ void ActivityStats::setDump(stringstream* dump) {
 
 /* *************************************** */
 
-bool ActivityStats::dump(char* path) {
+bool ActivityStats::writeDump(char* path) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  stringstream ss;
+  time_t now = time(NULL);
+  time_t expire_time = (now+CONST_MAX_ACTIVITY_DURATION-1) % CONST_MAX_ACTIVITY_DURATION;
+
+  m.lock(__FILE__, __LINE__);
+  bitset->write(ss);
+  m.unlock(__FILE__, __LINE__);
+
+  string s = ss.str();
+  std::string encoded = Utils::base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
+
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)(%s)", __FUNCTION__, path, encoded.c_str());
+ 
+  /* Save it both in redis and disk */
+  ntop->getRedis()->set(path, (char*)encoded.c_str(), expire_time-now);
 
   try {
     ofstream dumpFile(path);
-    stringstream ss;
-
-    m.lock(__FILE__, __LINE__);
-    bitset->write(ss);
-    m.unlock(__FILE__, __LINE__);
 
     dumpFile << ss.str();
     dumpFile.close();
@@ -125,7 +135,37 @@ bool ActivityStats::dump(char* path) {
 
 bool ActivityStats::readDump(char* path) {
   EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  char rsp[4096];
+  
+  if(ntop->getRedis()->get(path, rsp, sizeof(rsp)) == 0) {
+    EWAHBoolArray<u_int32_t> tmp;
+    std::string decoded = Utils::base64_decode(rsp);
+    std::string s(decoded);
+    std::stringstream ss(s);
 
+#if 0
+    if(!ss.str().empty()) tmp.read(ss);
+
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)", __FUNCTION__, path);
+    m.lock(__FILE__, __LINE__);
+    bitset->reset();
+
+    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
+      bitset->set((size_t)*i);
+
+    m.unlock(__FILE__, __LINE__);
+#else
+    m.lock(__FILE__, __LINE__);
+    bitset->reset();
+    if(!ss.str().empty()) bitset->read(ss);
+    m.unlock(__FILE__, __LINE__);
+#endif
+
+    return(true);
+  } else
+    return(false);
+
+#if 0
   /*
     We do not use "direct" bitset->read() as this is apparently creating
     crash problems.
@@ -161,7 +201,7 @@ bool ActivityStats::readDump(char* path) {
   } catch(...) {
     return(false);
   }
-
+#endif
 }
 
 /* *************************************** */
