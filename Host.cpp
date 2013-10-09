@@ -108,7 +108,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
   asn = 0, asname = NULL, country = NULL, city = NULL;
-
+  longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
 

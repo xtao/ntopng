@@ -20,8 +20,8 @@ void usage();
 
 char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len) {
   struct sockaddr_in remote;
-  int sock;
-  int tmpres, out_len = 0;
+  int sock, tmpres;
+  u_int out_len = 0;
   char *ip, _ip[64];
   char *get, _get[256];
   char buf[BUFSIZ+1];
@@ -50,7 +50,7 @@ char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len) {
   // fprintf(stderr, "Query is:\n<<START>>\n%s<<END>>\n", get);
   
   //Send the query to the server
-  int sent = 0;
+  u_int sent = 0;
   while(sent < strlen(get))
     { 
       tmpres = send(sock, get+sent, strlen(get)-sent, 0);

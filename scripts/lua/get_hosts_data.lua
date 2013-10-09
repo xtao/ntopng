@@ -71,6 +71,7 @@ for key, value in pairs(hosts_stats) do
       elseif(sortColumn == "column_last") then
       vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
       elseif(sortColumn == "column_category") then
+      if(hosts_stats[key]["category"] == nil) then hosts_stats[key]["category"] = "" end
       vals[hosts_stats[key]["category"]..postfix] = key
       elseif(sortColumn == "column_asn") then
       vals[hosts_stats[key]["asn"]..postfix] = key
