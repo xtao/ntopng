@@ -25,7 +25,8 @@
 #include "ntop_includes.h"
 
 #define DEFAULT_CATEGORIZATION_KEY "9hoAtewwpC2tXRMJBfifrY24B"
-#define CATEGORIZATION_URL         "http://service.block.si/getRating"
+#define CATEGORIZATION_HOST        "service.block.si"
+#define CATEGORIZATION_URL         "/getRating"
 #define NULL_CATEGORY              "''"
 
 typedef struct {

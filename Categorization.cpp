@@ -20,7 +20,8 @@
  */
 
 #include "ntop_includes.h"
-#include "http-client-c.h"
+
+#include "third-party/htmlget.c"
 
 /* **************************************** */
 
@@ -66,30 +67,18 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
       ntop->getRedis()->expire(key, 3600);
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
     } else {
-      struct http_response *hresp;
-      char url_buf[256];
+      char url_buf[256], body[256];
     
       /*
 	Save category into the cache so that if the categorization service is slow, we do not
 	recursively add the domain into the list of domains to solve
       */
-      ntop->getRedis()->set(key, NULL_CATEGORY, 3600);
+      ntop->getRedis()->set(key, (char*)NULL_CATEGORY, 3600);
 
       snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
-      hresp = http_get(url_buf, "User-agent:ntopng\r\n");
-
-#if 0
-      printf("%d\n", hresp->status_code_int);
-      printf("%s\n", hresp->body);
-#endif
-
-      buf[0] = '\0';
-      if(hresp && hresp->body
-	 && ((hresp->status_code_int == 200) || (hresp->status_code_int == 0))) {
-	char body[256], *doublecolumn;
-       
-	snprintf(body, sizeof(body), "%s", hresp->body);
+      if(http_get((char*)CATEGORIZATION_HOST, 80, url_buf, body, sizeof(body)) != NULL) {
+	char *doublecolumn;
 
 	if((doublecolumn = strrchr(body, ':')) != NULL) {
 	  char *end;
@@ -108,7 +97,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 	      if((strcmp(doublecolumn, "error") != 0) && (doublecolumn[0] != '-' /* Negative error code */))
 		ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid format for category '%s'", doublecolumn);
 
-	      doublecolumn = NULL_CATEGORY;
+	      doublecolumn = (char*)NULL_CATEGORY;
 	    } else	    
 	      ntop->getRedis()->set(key, doublecolumn, 3600); /* Save category into the cache */
 
@@ -116,8 +105,6 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 	  }
 	}
       }
-
-      if(hresp) http_response_free(hresp);
     }
   } else 
     buf[0] = '\0';

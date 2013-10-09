@@ -3053,9 +3053,12 @@ fi
   fi
 fi
 
+CFLAGS="-Wall $CFLAGS"
+
 if test $SYSTEM = "Darwin"; then
    if test $MACHINE = "x86_64"; then
       LINK_OPTS="-pagezero_size 10000 -image_base 100000000"
+      CFLAGS="-fno-color-diagnostics $CFLAGS"
    fi
 fi
 
