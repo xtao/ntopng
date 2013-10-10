@@ -33,7 +33,9 @@ print("<tr><th><a href=http://www.redis.io>Redis</A> Server</th><td>"..info["ver
 print("<tr><th><a href=https://github.com/valenok/mongoose>Mongoose web server</A></th><td>"..info["version.httpd"].."</td></tr>\n")
 print("<tr><th><a href=http://www.luajit.org>LuaJIT</A></th><td>"..info["version.luajit"].."</td></tr>\n")
 print("<tr><th><a href=http://www.zeromq.org>ØMQ</A></th><td>"..info["version.zmq"].."</td></tr>\n")
+if(info["version.geoip"] ~= nil) then
 print("<tr><th><a href=http://www.maxmind.com>GeoIP</A></th><td>"..info["version.geoip"])
+end
 
 print [[ <p><small>
          <p><span class="alert alert-info">This product includes GeoLite data created by MaxMind, available from
