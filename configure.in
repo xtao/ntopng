@@ -59,7 +59,10 @@ dnl> http://luajit.org/install.html
 if test $SYSTEM = "Darwin"; then
    if test $MACHINE = "x86_64"; then 
       LINK_OPTS="-pagezero_size 10000 -image_base 100000000"
-      CFLAGS="-fno-color-diagnostics $CFLAGS"
+      RES=`g++ -Wall -fno-color-diagnostics Prefs.cpp 2>&1 | grep "unrecognized command line option "|wc -l`
+      if test $RES -eq 0; then
+            CFLAGS="-fno-color-diagnostics $CFLAGS"
+      fi
    fi
 fi
 
