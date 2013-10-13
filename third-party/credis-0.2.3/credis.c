@@ -1299,7 +1299,9 @@ int credis_info(REDIS rhnd, REDIS_INFO *info)
 
   if (rc == 0) {
     char role;
+
     memset(info, 0, sizeof(REDIS_INFO));
+
     cr_parseinfo(rhnd->reply.bulk, "redis_version", "%"CR_VERSION_STRING_SIZE_STR"s\r\n", &(info->redis_version));
     cr_parseinfo(rhnd->reply.bulk, "arch_bits", "%d", &(info->arch_bits));
     cr_parseinfo(rhnd->reply.bulk, "multiplexing_api", "%"CR_MULTIPLEXING_API_SIZE_STR"s\r\n", &(info->multiplexing_api));

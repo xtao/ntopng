@@ -41,7 +41,7 @@ Prefs::Prefs(Ntop *_ntop) {
   user = strdup(CONST_DEFAULT_NTOP_USER);
   categorization_key = NULL;
   cpu_affinity = -1;
-  redis_host = NULL;
+  redis_host = strdup("127.0.0.1");;
   redis_port = 6379;
   dns_mode = 0;
   logFd = NULL;
@@ -314,14 +314,16 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'r':
     {
-      char buf[64];
+      char buf[64], *r;
+
       snprintf(buf, sizeof(buf), "%s", optarg);
-      redis_host = strtok(buf, ":");
-      if(redis_host) {
+      r = strtok(buf, ":");
+      if(r) {
 	char *c = strtok(NULL, ":");
 	if(c) redis_port = atoi(c);
 
-	redis_host = strdup(redis_host);
+	if(redis_host) free(redis_host);
+	redis_host = strdup(r);
       }
     }
     break;

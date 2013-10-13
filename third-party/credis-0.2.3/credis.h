@@ -106,31 +106,31 @@ typedef enum _cr_aggregate {
 #define CREDIS_USED_MEMORY_HUMAN_SIZE 32
 
 typedef struct _cr_info {
-  char redis_version[CREDIS_VERSION_STRING_SIZE];
-  int arch_bits;
-  char multiplexing_api[CREDIS_MULTIPLEXING_API_SIZE];
-  long process_id;
-  long uptime_in_seconds;
-  long uptime_in_days;
-  int connected_clients;
-  int connected_slaves;
-  int blocked_clients;
-  unsigned long used_memory;
-  char used_memory_human[CREDIS_USED_MEMORY_HUMAN_SIZE];
-  long long changes_since_last_save;
-  int bgsave_in_progress;
-  long last_save_time;
-  int bgrewriteaof_in_progress;
-  long long total_connections_received;
-  long long total_commands_processed;
-  long long expired_keys;
-  unsigned long hash_max_zipmap_entries;
-  unsigned long hash_max_zipmap_value;
-  long pubsub_channels;
-  unsigned int pubsub_patterns;
-  int vm_enabled;
-  int role;
-} REDIS_INFO;
+  u_int8_t redis_version[CREDIS_VERSION_STRING_SIZE];
+  int32_t arch_bits;
+  u_int8_t multiplexing_api[CREDIS_MULTIPLEXING_API_SIZE];
+  int32_t process_id;
+  int32_t uptime_in_seconds;
+  int32_t uptime_in_days;
+  int32_t connected_clients;
+  int32_t connected_slaves;
+  int32_t blocked_clients;
+  u_int32_t used_memory;
+  u_int8_t used_memory_human[CREDIS_USED_MEMORY_HUMAN_SIZE];
+  int64_t changes_since_last_save;
+  int32_t bgsave_in_progress;
+  int32_t last_save_time;
+  int32_t bgrewriteaof_in_progress;
+  int64_t total_connections_received;
+  int64_t total_commands_processed;
+  int64_t expired_keys;
+  u_int32_t hash_max_zipmap_entries;
+  u_int32_t hash_max_zipmap_value;
+  int32_t pubsub_channels;
+  u_int32_t pubsub_patterns;
+  int32_t vm_enabled;
+  int32_t role;
+}  __attribute__((packed)) REDIS_INFO;
 
 
 /*

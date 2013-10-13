@@ -308,7 +308,7 @@ prefix_t *
 ascii2prefix (int family, char *string)
 {
   long bitlen;
-  u_long maxbitlen = 0;
+  long maxbitlen = 0;
   char *cp;
   struct in_addr sin;
 #ifdef HAVE_IPV6
@@ -347,8 +347,7 @@ ascii2prefix (int family, char *string)
     string = save;
     if ((bitlen < 0) || (bitlen > maxbitlen))
       bitlen = maxbitlen;
-  }
-  else {
+  } else {
     bitlen = maxbitlen;
   }
 

@@ -80,6 +80,7 @@ extern "C" {
 #ifdef HAVE_SQLITE
 #include <sqlite3.h>
 #endif
+#include "credis.h"
 };
 
 #include <fstream>

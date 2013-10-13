@@ -40,7 +40,7 @@ Redis::Redis(char *redis_host, int redis_port) {
     exit(-1);
   }
 
-  if(sscanf(info.redis_version, "%d.%d.%d", &major, &minor, &sub) == 3) {
+  if(sscanf((const char*)info.redis_version, "%d.%d.%d", &major, &minor, &sub) == 3) {
     u_int version = (major << 16) + (minor << 8) + sub;
 
     if(version < 0x00020200 /* 2.2.0 */) {

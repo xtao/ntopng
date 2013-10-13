@@ -23,7 +23,6 @@
 #define _REDIS_H_
 
 #include "ntop_includes.h"
-#include "credis.h"
 
 class Host;
 

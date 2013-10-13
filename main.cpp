@@ -71,42 +71,12 @@ int main(int argc, char *argv[])
 #endif
 {
   HTTPserver *httpd = NULL;
-  Redis *redis = NULL;
   Prefs *prefs = NULL;
   char *ifName;
   int rc;
 
   if((ntop = new Ntop(argv[0])) == NULL) exit(0);
-  if((prefs = new Prefs(ntop)) == NULL) exit(0);
-
-#ifdef TEST
-  if(0) {
-    ActivityStats *act;
-    u_int m = 86400*2;
-    time_t now = time(NULL)-m;
-
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Beginning at %u", now);
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Ending at    %u", now+m);
- 
-    act = new ActivityStats(now);
-
-    for(u_int i=0; i<m; i += 10) {
-      time_t w = now+i;
-      
-      act->set(w);
-      // ntop->getTrace()->traceEvent(TRACE_WARNING, "Setting time to %u", w);
-    }
-   
-
-    char *s = act->serialize();
-    
-    printf("%s\n", s);
-    free(s);
-    delete act;
-
-    return(-1);
-  }
-#endif
+  if((prefs = new Prefs(ntop)) == NULL)  exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
     rc = prefs->loadFromFile(argv[1]);
@@ -114,10 +84,7 @@ int main(int argc, char *argv[])
     rc = prefs->loadFromCLI(argc, argv);
   if(rc < 0) return(-1);
 
-  if(prefs->get_redis_host() != NULL) redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
-  if(redis == NULL) redis = new Redis();
-
-  ntop->registerPrefs(prefs, redis);
+  ntop->registerPrefs(prefs);
 
   prefs->loadUsersFromFile();
 

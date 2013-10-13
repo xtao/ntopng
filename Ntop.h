@@ -46,7 +46,7 @@ class Ntop {
 
  public:
   Ntop(char *appName);
-  void registerPrefs(Prefs *_prefs, Redis *_redis);
+  void registerPrefs(Prefs *_prefs);
   ~Ntop();
 
   void setCustomnDPIProtos(char *path);

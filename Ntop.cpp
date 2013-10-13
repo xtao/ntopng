@@ -36,7 +36,7 @@ Ntop::Ntop(char *appName) {
   categorization = NULL;
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
-  prefs = NULL;
+  prefs = NULL, redis = NULL;
   num_defined_interfaces = 0;
 
 #ifndef WIN32
@@ -102,11 +102,11 @@ void Ntop::initTimezone() {
 
 /* ******************************************* */
 
-void Ntop::registerPrefs(Prefs *_prefs, Redis *_redis) {
+void Ntop::registerPrefs(Prefs *_prefs) {
   struct stat statbuf;
   char *local_nets, buf[512];
 
-  prefs = _prefs, redis = _redis;
+  prefs = _prefs;
 
   if(stat(prefs->get_data_dir(), &statbuf)
      || (!(statbuf.st_mode & S_IFDIR)) /* It's not a directory */
@@ -156,8 +156,8 @@ Ntop::~Ntop() {
   delete rrd_lock;
   delete address;
   delete pa;
-  delete geo;
-  delete redis;
+  if(geo) delete geo;
+  if(redis) delete redis;
   delete globals;
   delete prefs;
 }
@@ -169,12 +169,16 @@ void Ntop::start() {
 			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
 
+  redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
+
   pa->startPeriodicActivitiesLoop();
-  address->startResolveAddressLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
 
   for(int i=0; i<num_defined_interfaces; i++)
     iface[i]->startPacketPolling();
+
+  sleep(2);
+  address->startResolveAddressLoop();
 
   while(!globals->isShutdown()) {
     sleep(2);
@@ -594,3 +598,4 @@ void Ntop::shutdown() {
 				 iface[i]->get_name(), iface[i]->isRunning());
   }
 }
+

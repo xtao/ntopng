@@ -90,6 +90,7 @@ $(JSON_LIB):
 clean:
 	-rm -f *.o *~ svn-commit.* #config.h
 	-rm -f $(TARGET)
+	cd $(CREDIS_HOME); make clean
 
 veryclean:
 	-rm -rf nDPI
