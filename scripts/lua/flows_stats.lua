@@ -32,13 +32,17 @@ print [[",
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
-
---for key, value in pairs(stats["ndpi"]) do
+print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
-   print('<li><a href="/lua/flows_stats.lua?application=' .. key..'">'..key..'</a></li>')
+   class_active = ''
+   if(key == application) then
+      class_active = ' class="active"'
+   end
+   print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key..'">'..key..'</a></li>')
 end
 
-print("</ul> </div>' ],")
+
+print("</ul> </div>' ],\n")
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_top.inc")
