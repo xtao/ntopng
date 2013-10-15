@@ -75,6 +75,8 @@ for key, value in pairs(hosts_stats) do
       vals[hosts_stats[key]["category"]..postfix] = key
       elseif(sortColumn == "column_asn") then
       vals[hosts_stats[key]["asn"]..postfix] = key
+      elseif(sortColumn == "column_vlan") then
+      vals[hosts_stats[key]["vlan"]..postfix] = key
       elseif(sortColumn == "column_thpt") then
       vals[hosts_stats[key]["throughput"]+postfix] = key
    else
@@ -150,6 +152,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
+	    print("\"column_vlan\" : " .. value["vlan"] .. ", ")
 
 	    if(value["throughput_trend"] > 0) then
 	       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")

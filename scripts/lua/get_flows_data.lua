@@ -76,6 +76,8 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["srv.ip"]..postfix
 	 elseif(sortColumn == "column_bytes") then
 	 vkey = flows_stats[key]["bytes"]+postfix
+	 elseif(sortColumn == "column_vlan") then
+	 vkey = flows_stats[key]["vlan"]+postfix
 	 elseif(sortColumn == "column_bytes_last") then
 	 vkey = flows_stats[key]["bytes.last"]+postfix
 	 elseif(sortColumn == "column_ndpi") then

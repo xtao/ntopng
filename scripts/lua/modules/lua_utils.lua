@@ -276,9 +276,7 @@ function secondsToTime(seconds)
 	 days = days % 365
 
 	 msg = years .. " year"
-	 if(years > 1) then
-	    msg = msg .. "s"
-	 end
+	 if(years > 1) then msg = msg .. "s" end
 
 	 msg = msg .. ", "
       end
@@ -290,12 +288,12 @@ function secondsToTime(seconds)
    if(hours > 0) then
       msg = msg .. string.format("%d ", hours)
       if(hours > 1) then
-	 msg = msg .. "hour"
+	 msg = msg .. "h"
       else
-	 msg = msg .. "hour"
+	 msg = msg .. "h"
       end
 
-      if(hours > 1) then msg = msg .. "s" end
+      --if(hours > 1) then msg = msg .. "s" end
       msg = msg .. ", "
    end
 

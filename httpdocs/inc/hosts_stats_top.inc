@@ -20,6 +20,15 @@
 			     }
 				 },
 			     {
+			     title: "VLAN",
+				 field: "column_vlan",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
+				 },			     
+			     {
 			     title: "Location",
 				 field: "column_location",
 				 sortable: false,
@@ -29,7 +38,7 @@
 
 				 },			     
 			     {
-			     title: "Symbolic Name",
+			     title: "Name",
 				 field: "column_name",
 				 sortable: true,
 	 	             css: { 

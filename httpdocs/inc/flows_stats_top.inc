@@ -24,6 +24,14 @@
 			     }
 				 },
 			     {
+			     title: "VLAN",
+				 field: "column_vlan",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
 			     title: "Client",
 				 field: "column_client",
 				 sortable: true,
