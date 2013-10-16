@@ -161,6 +161,14 @@ if(num > 0) then
    end
 end
 
+if(interface.getNumAggregatedHosts() > 0) then
+if(page == "aggregations") then
+  print("<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
+else
+  print("<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
+end
+end
+
 
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
@@ -624,6 +632,37 @@ else
 end
 
 drawRRD(ifname, host_ip, rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?host='..host_ip..'&page=historical', 1, _GET["epoch"])
+
+
+elseif(page == "aggregations") then
+print [[
+      <div id="table-hosts"></div>
+	 <script>
+	 $("#table-hosts").datatable({
+					url: "/lua/get_hosts_data.lua?aggregated=1]]
+					print("&client="..host_ip)
+print [[",
+	       showPagination: true,
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
+
+print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
+
+families = interface.getAggregationFamilies()
+for key,v in pairs(families) do
+   print('<li><a href="/lua/host_details.lua?host='.. host_ip ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
+end 
+
+print("</ul> </div>' ],")
+print("title: \"Host Aggregations\",\n")
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
+
+prefs = ntop.getPrefs()
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.inc")
+
+
+
 else
    print(page)
 end

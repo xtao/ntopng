@@ -1,5 +1,4 @@
 
-	       title: "Aggregations",
 	        columns: [
 			     {
 			     title: "Name",
@@ -12,7 +11,7 @@
 			     {
 			     title: "Protocol",
 				 field: "column_family",
-				 sortable: false,
+				 sortable: true,
 	 	             css: { 
 			        textAlign: 'center'
 			       }

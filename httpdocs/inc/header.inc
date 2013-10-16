@@ -34,13 +34,11 @@
         padding-bottom: 20px;
       }
 
-
-
-
       /* Custom container */
       .container-narrow {
-        margin: 0 auto;
-        max-width: 1024px;
+        margin-left: 20px;
+        margin-right: 20px;
+        /* max-width: 1024px; */
       }
 
       /* Smaller table row padding */

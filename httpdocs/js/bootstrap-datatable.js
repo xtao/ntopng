@@ -461,7 +461,7 @@
           , o = e.data.options
           , found = false;
 
-        colprop.sortOrder = colprop.sortOrder ? (colprop.sortOrder == "asc" ? "desc" : "") : "asc";
+        colprop.sortOrder = colprop.sortOrder ? (colprop.sortOrder == "desc" ? "asc" : "") : "desc";
 
         if(o.allowMultipleSort) {
           // does the sort already exist?

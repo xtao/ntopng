@@ -8,12 +8,15 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-currentPage     = _GET["currentPage"]
-perPage         = _GET["perPage"]
-sortColumn      = _GET["sortColumn"]
-sortOrder       = _GET["sortOrder"]
-aggregated      = _GET["aggregated"]
-protocol        = _GET["protocol"]
+currentPage = _GET["currentPage"]
+perPage     = _GET["perPage"]
+sortColumn  = _GET["sortColumn"]
+sortOrder   = _GET["sortOrder"]
+aggregated  = _GET["aggregated"]
+protocol    = _GET["protocol"]
+
+-- Only for aggregations
+client      = _GET["client"]
 
 if(sortColumn == nil) then
    sortColumn = "column_"
@@ -54,37 +57,54 @@ for key, value in pairs(hosts_stats) do
    num = num + 1
    postfix = string.format("0.%04u", num)
 
-   --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
-   if(sortColumn == "column_ip") then
-      vals[key] = key
-      elseif(sortColumn == "column_name") then
-      if(hosts_stats[key]["name"] == nil) then 
-	 if(hosts_stats[key]["ip"] ~= nil) then
-	    hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
-	 else
-	    hosts_stats[key]["name"] = hosts_stats[key]["mac"]
-	 end
-      end
-      vals[hosts_stats[key]["name"]..postfix] = key
-      elseif(sortColumn == "column_since") then
-      vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
-      elseif(sortColumn == "column_last") then
-      vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
-      elseif(sortColumn == "column_category") then
-      if(hosts_stats[key]["category"] == nil) then hosts_stats[key]["category"] = "" end
-      vals[hosts_stats[key]["category"]..postfix] = key
-      elseif(sortColumn == "column_asn") then
-      vals[hosts_stats[key]["asn"]..postfix] = key
-      elseif(sortColumn == "column_vlan") then
-      vals[hosts_stats[key]["vlan"]..postfix] = key
-      elseif(sortColumn == "column_thpt") then
-      vals[hosts_stats[key]["throughput"]+postfix] = key
-   else
-      -- io.write(key.."\n")
-      -- io.write(hosts_stats[key].."\n")
-      -- for k,v in pairs(hosts_stats[key]) do io.write(k.."\n") end
+   if(client ~= nil) then
+      ok = false
 
-      vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
+      for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
+	 if((ok == false) and (k == client)) then ok = true end
+      end
+      
+      for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
+	 if((ok == false) and (k == client)) then ok = true end
+      end
+   else
+      ok = true
+   end
+
+   if(ok) then
+      --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
+
+      if(sortColumn == "column_ip") then
+	 vals[key] = key
+	 elseif(sortColumn == "column_name") then
+	 if(hosts_stats[key]["name"] == nil) then 
+	    if(hosts_stats[key]["ip"] ~= nil) then
+	       hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
+	    else
+	       hosts_stats[key]["name"] = hosts_stats[key]["mac"]
+	    end
+	 end
+	 vals[hosts_stats[key]["name"]..postfix] = key
+	 elseif(sortColumn == "column_since") then
+	 vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
+	 elseif(sortColumn == "column_last") then
+	 vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
+	 elseif(sortColumn == "column_category") then
+	 if(hosts_stats[key]["category"] == nil) then hosts_stats[key]["category"] = "" end
+	 vals[hosts_stats[key]["category"]..postfix] = key
+	 elseif(sortColumn == "column_asn") then
+	 vals[hosts_stats[key]["asn"]..postfix] = key
+	 elseif(sortColumn == "column_vlan") then
+	 vals[hosts_stats[key]["vlan"]..postfix] = key
+	 elseif(sortColumn == "column_thpt") then
+	 vals[hosts_stats[key]["throughput"]+postfix] = key
+      else
+	 -- io.write(key.."\n")
+	 -- io.write(hosts_stats[key].."\n")
+	 -- for k,v in pairs(hosts_stats[key]) do io.write(k.."\n") end
+
+	 vals[(hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"])+postfix] = key
+      end
    end
 end
 
@@ -134,7 +154,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
-	    if(value["vlan"] ~= nil) then print("\", \"column_vlan\" : "..value["vlan"]) end
+
+	    if((value["vlan"] ~= nil) and (value["vlan"] ~= 0)) then 
+	       print("\", \"column_vlan\" : "..value["vlan"]) 
+	    else
+	       print("\", \"column_vlan\" : \"\"") 
+	    end
 
 	    if(value["asn"] ~= nil) then
 	       if(value["asn"] == 0) then
@@ -142,8 +167,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       else
 		  print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
 	       end
-	    else
-	       print("\"")
 	    end
 
 	    if(aggregated ~= nil) then 
@@ -152,7 +175,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
-	    print("\"column_vlan\" : " .. value["vlan"] .. ", ")
 
 	    if(value["throughput_trend"] > 0) then
 	       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")

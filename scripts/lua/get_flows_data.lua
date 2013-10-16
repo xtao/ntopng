@@ -156,9 +156,16 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
 	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
-	 if(value["category"] ~= nil) then print ("\", \"column_category\" : \"" .. getCategory(value["category"])) end
+
+	 if((value["vlan"] ~= nil) and (value["vlan"] ~= 0)) then 
+	    print("\", \"column_vlan\" : "..value["vlan"]) 
+	 else
+	    print("\", \"column_vlan\" : \"\"") 
+	 end
+
+	 if(value["category"] ~= nil) then print (", \"column_category\" : \"" .. getCategory(value["category"])) else print (",") end
 	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
-	 print ("\", \"column_proto_l4\" : \"" .. value["proto.l4"])
+	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
