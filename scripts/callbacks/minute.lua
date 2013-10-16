@@ -41,6 +41,10 @@ for _,_ifname in pairs(ifnames) do
    diff = when % 300
 
    -- io.write('Diff: '..diff..'\n')
+   
+   if(diff > 59) then
+      return
+   end
 
    interface.find(_ifname)
    hosts_stats = interface.getHostsInfo()
