@@ -22,15 +22,26 @@ if(host_ip == nil) then
 end
 
 _ifname = tostring(interface.name2id(ifname))
-
 interface.find(ifname)
-host = interface.getHostInfo(host_ip)
 
-restoreFailed = false
-if((host == nil) and (_GET["mode"] == "restore")) then
-   interface.restoreHost(host_ip)
+ip_elems = split(host_ip, " ");
+host_ip = ip_elems[1]
+host = nil
+family = nil
+
+--print(">>>") print(ip_elems[2]) print("<<<")
+
+if(ip_elems[2] == nil) then
    host = interface.getHostInfo(host_ip)
-   restoreFailed = true
+   restoreFailed = false
+
+   if((host == nil) and (_GET["mode"] == "restore")) then
+      interface.restoreHost(host_ip)
+      host = interface.getHostInfo(host_ip)
+      restoreFailed = true
+   end
+else
+   family = ip_elems[2]
 end
 
 if(host == nil) then
@@ -211,7 +222,13 @@ if((page == "overview") or (page == nil)) then
    if(host["os"] ~= "") then print("<tr><th>OS</th><td>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
    if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
 
-   if((host["category"] ~= nil) and (host["category"] ~= "")) then print("<tr><th>Category</th><td>"..getCategory(host["category"]).."</td></tr>\n") end
+   if((host["category"] ~= nil) and (host["category"] ~= "")) then 
+      cat = getCategory(host["category"])
+      
+      if(cat ~= "") then
+	 print("<tr><th>Category</th><td>".. cat .."</td></tr>\n") 
+      end
+   end
 
    if(host["ip"] ~= nil) then
       if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
@@ -653,7 +670,7 @@ for key,v in pairs(families) do
 end 
 
 print("</ul> </div>' ],")
-print("title: \"Host Aggregations\",\n")
+print("title: \"Client Host Aggregations\",\n")
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
 

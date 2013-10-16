@@ -42,13 +42,6 @@ for _,_ifname in pairs(ifnames) do
 
    -- io.write('Diff: '..diff..'\n')
 
-   -- Toggle debug
-   if(verbose == 0) then
-      if(diff > 30) then
-	 return
-      end
-   end
-
    interface.find(_ifname)
    hosts_stats = interface.getHostsInfo()
    for key, value in pairs(hosts_stats) do

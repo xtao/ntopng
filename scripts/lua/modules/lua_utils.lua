@@ -560,7 +560,6 @@ function getCategory(_cat)
    if(starts(cat, "error") or (cat == "''") or (cat == "") or starts(cat, "-") or starts(cat, "Local")) then
       return("")
    else
-
       for id, _ in ipairs(categories) do
 	 local key = categories[id][1]
 	 local name = categories[id][2]

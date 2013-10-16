@@ -65,7 +65,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
     snprintf(key, sizeof(key), "domain.category.%s", _url);
     if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
       ntop->getRedis()->expire(key, 3600);
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s (cached)", _url, buf);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "%s => %s (cached)", _url, buf);
     } else {
       char url_buf[256], body[256];
     
@@ -90,7 +90,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
 	    end[0] = '\0';
 
-	    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", _url, doublecolumn);
+	    ntop->getTrace()->traceEvent(TRACE_INFO, "%s => %s", _url, doublecolumn);
 
 	    /* The category format is XX_YY so it can very well with into a 16 bit value */
 	    if(sscanf(doublecolumn, "%d_%d", &major, &minor) != 2) {

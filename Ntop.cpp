@@ -39,10 +39,6 @@ Ntop::Ntop(char *appName) {
   prefs = NULL, redis = NULL;
   num_defined_interfaces = 0;
 
-#ifndef WIN32
-  getcwd(startup_dir, sizeof(startup_dir));
-#endif
-
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
 		     SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
@@ -68,7 +64,8 @@ Ntop::Ntop(char *appName) {
   umask (0);
   mkdir(working_dir, 0777);
 
-  getcwd(startup_dir, sizeof(startup_dir));
+  if(getcwd(startup_dir, sizeof(startup_dir)) == NULL)
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while checking the current directory (errno=%d)", errno);
 
   if(stat(CONST_DEFAULT_INSTALL_DIR, &statbuf) == 0)
     strcpy(install_dir, CONST_DEFAULT_INSTALL_DIR);

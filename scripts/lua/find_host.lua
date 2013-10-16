@@ -54,6 +54,7 @@ print [[
       what = aggregated_hosts_stats[_key]["name"]
       if((what ~= nil) and (starts(what, query))) then 
 	 found = 1
+	 what = what .. " (" .. aggregated_hosts_stats[_key]["family"] .. ")"
       end
       
       if(found == 1) then
