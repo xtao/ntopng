@@ -150,7 +150,7 @@ void usage() {
 #endif
 
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
-	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:"
+	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:\n"
 	 "                                    | 0 - No aggregations (default)\n"
 	 "                                    | 1 - Enable aggregations, no timeline dump\n"
 	 "                                    | 2 - Enable aggregations, with timeline dump (see -C)\n"

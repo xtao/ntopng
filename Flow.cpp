@@ -368,7 +368,7 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_push_int_table_entry(vm,  "rcvd", srv2cli_bytes);
   lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
-
+  lua_push_int_table_entry(vm,  "duration", get_duration());
   lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
   lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
   lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
