@@ -17,12 +17,16 @@ peers = interface.getFlowPeers()
 max_num_links = 32
 max_num_hosts = 8
 
+local debug = false
+
 -- 1. compute total traffic
 total_traffic = 0
 for key, values in pairs(peers) do
    total_traffic = total_traffic + values["sent.last"] + values["rcvd.last"]
-   -- print("->"..key.."(".. total_traffic..")" .. "\n")
+   if(debug) then io.write("->"..key.."\t[".. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."]" .. "\n") end
 end
+
+if(debug) then io.write("\n") end
 
 -- 2. compute flow threshold under which we do not print any relation
 if(tracked_host == nil) then
@@ -30,6 +34,8 @@ if(tracked_host == nil) then
 else
    threshold = 1
 end
+
+if(debug) then io.write("\nThreshold: "..threshold.."\n") end
 
 hosts = {}
 num = 0
@@ -41,8 +47,12 @@ while(num == 0) do
    for key, values in pairs(peers) do
       --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "]\n")
       last = values["sent.last"] + values["rcvd.last"]
+      if((last == 0) and (values.duration < 3)) then
+	 last = values["sent"] + values["rcvd"]
+      end
+      if(last > threshold) then 
+	 if(debug) then io.write("==>"..key.."\t[".. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
 
-      if((last == 0) or (last > threshold)) then 
 	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
 	   -- print("[" .. key .. "][" .. tracked_host .. "]\n")
 
