@@ -150,7 +150,7 @@ void NetworkInterface::deleteDataStructures() {
   }
 
   if(ifname) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
     free(ifname);
     ifname = NULL;
   }
@@ -1075,7 +1075,12 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   int i, numInterfaces = 0;
   pcap_if_t *devpointer;
 
-  if(help_printed) return; else help_printed = true;
+  if(printHelp) {
+    if(help_printed) 
+      return;
+    else
+      help_printed = true;
+  }
 
   ebuf[0] = '\0';
 
