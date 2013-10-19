@@ -121,9 +121,9 @@ void Ntop::registerPrefs(Prefs *_prefs) {
     exit(-1);
   }
 
-  if(prefs->get_local_networks())
+  if(prefs->get_local_networks()) {
     setLocalNetworks(prefs->get_local_networks());
-  else {
+  } else {
     /* Add defaults */
     /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
     snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS,

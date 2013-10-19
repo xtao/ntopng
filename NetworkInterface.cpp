@@ -221,7 +221,8 @@ void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
   bool src2dst_direction;
   Flow *flow;
 
-  if (last_switched > last_pkt_rcvd) last_pkt_rcvd = last_switched;
+  if ((time_t)last_switched > (time_t)last_pkt_rcvd)
+    last_pkt_rcvd = last_switched;
 
   /* Updating Flow */
 
@@ -1075,19 +1076,15 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   int i, numInterfaces = 0;
   pcap_if_t *devpointer;
 
-  if(printHelp) {
-    if(help_printed) 
-      return;
-    else
-      help_printed = true;
-  }
+  if(printHelp && help_printed) 
+    return;
 
   ebuf[0] = '\0';
 
   if(ifname == NULL) {
     if(printHelp)
       printf("Available interfaces (-i <interface index>):\n");
-    else
+    else if(!help_printed)
       ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
   }
 
@@ -1108,7 +1105,7 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
 #else
 	    printf("   %d. %s\n", numInterfaces, devpointer->name);
 #endif
-	  } else
+	  } else if(!help_printed)
 	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",
 					 numInterfaces,
 					 devpointer->description ? devpointer->description : "",
@@ -1133,6 +1130,8 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
     ntop->getTrace()->traceEvent(TRACE_WARNING, "No interfaces available: are you superuser?");
 #endif
   }
+
+  help_printed = true;
 }
 
 /* **************************************************** */

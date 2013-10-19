@@ -134,8 +134,8 @@
 
 #define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */
 #define CONST_TREND_TIME_GRANULARITY   1 /* sec */
-#define CONST_DEFAULT_PRIVATE_NETS     "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
-#define CONST_DEFAULT_LOCAL_NETS       "0.0.0.0/32,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32"
+#define CONST_DEFAULT_PRIVATE_NETS     "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,127.0.0.0/8"
+#define CONST_DEFAULT_LOCAL_NETS       "0.0.0.0/32,224.0.0.0/8,239.0.0.0/8,255.255.255.255/32,127.0.0.0/8"
 
 #define PAGE_NOT_FOUND "<html><head><title>ntop</title></head><body><center><img src=/img/warning.png> Page &quot;%s&quot; was not found</body></html>"
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"

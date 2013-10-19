@@ -25,7 +25,7 @@
 
 Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop, dump_timeline = false;
-  local_networks = strdup(CONST_DEFAULT_HOME_NET);
+  local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;

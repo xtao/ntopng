@@ -31,7 +31,7 @@ IpAddress::IpAddress() {
 
 IpAddress::IpAddress(char *string) {
   set_from_string(string);
-checkPrivate();
+  checkPrivate();
 }
 
 /* ******************************************* */
@@ -103,7 +103,9 @@ void IpAddress::checkPrivate() {
 
   if(((a & 0xFF000000) == 0x0A000000 /* 10.0.0.0/8 */)
      || ((a & 0xFFF00000) == 0xAC100000 /* 172.16.0.0/12 */)
-     || ((a & 0xFFFF0000) == 0xC0A80000 /* 192.168.0.0/16 */))
+     || ((a & 0xFFFF0000) == 0xC0A80000 /* 192.168.0.0/16 */)
+     || ((a & 0xFF000000) == 0x7F000000 /* 127.0.0.0/8 */)
+     )
     addr.privateIP = true;
 }
 
