@@ -45,6 +45,9 @@ extern "C" {
 #endif
 };
 
+/* Included by Categorization.cpp */
+extern char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len);
+
 /* ******************************* */
 
 Lua::Lua() {
@@ -909,6 +912,25 @@ static int ntop_http_redirect(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_http_get(lua_State* vm) {
+  char *page, *host, rsp[4096], *out;
+  u_int port = 80;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((host = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((page = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  out = http_get(host, port, page, rsp, sizeof(rsp));
+
+  lua_pushstring(vm, out ? out : "");
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_prefs(lua_State* vm) {
   lua_newtable(vm);
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts());
@@ -1317,6 +1339,7 @@ static const luaL_Reg ntop_reg[] = {
 
   /* HTTP */
   { "httpRedirect",   ntop_http_redirect },
+  { "httpGet",        ntop_http_get },
 
   /* Admin */
   { "getUsers",       ntop_get_users },
@@ -1342,9 +1365,7 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
   ntop_class_reg ntop[] = {
     { "interface", ntop_interface_reg },
     { "ntop",      ntop_reg },
-    // { "luaejdb",      ejdb_reg },
-
-    {NULL,    NULL}
+    {NULL,         NULL}
   };
 
   for(i=0; ntop[i].class_name != NULL; i++) {
@@ -1454,6 +1475,8 @@ static char to_hex(char code) {
   return hex[code & 15];
 }
 
+/* ****************************************** */
+
 /* Returns a url-encoded version of str */
 /* IMPORTANT: be sure to free() the returned string after use */
 static char* http_encode(char *str) {
@@ -1472,10 +1495,14 @@ static char* http_encode(char *str) {
 }
 #endif
 
+/* ****************************************** */
+
 /* Converts a hex character to its integer value */
 static char from_hex(char ch) {
   return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
 }
+
+/* ****************************************** */
 
 /* Returns a url-decoded version of str */
 /* IMPORTANT: be sure to free() the returned string after use */

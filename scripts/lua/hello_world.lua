@@ -18,10 +18,9 @@ for key, value in pairs(_GET) do
    print(key.."="..value.."<p>\n")
 end
 
-stats = interface.getStats()
+rsp = ntop.httpGet("www.google.com", "/")
 
-print(stats["packets"])
-print(stats["bytes"])
+--print(rsp)
 print('</body></html>\n')
 
 
