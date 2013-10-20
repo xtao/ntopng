@@ -20,7 +20,7 @@ end
 
 rsp = ntop.httpGet("www.google.com", "/")
 
---print(rsp)
+print(rsp)
 print('</body></html>\n')
 
 
