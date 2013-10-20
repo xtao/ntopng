@@ -79,7 +79,7 @@ else
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
    print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
-   
+
    print("<span id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</span> <span id=throughput_trend></span>")
    print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
 
@@ -99,8 +99,13 @@ else
    end
 
    local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
+   num = 0
    for key,value in pairs(info) do
+      if(num == 0) then
+	 print("<tr><th colspan=3 bgcolor=lightgray>Additional Flow Elements</th></tr>\n")
+      end
       print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+      num = num + 1
    end
 
    print("</table>\n")
@@ -116,13 +121,14 @@ print [[
 
 
 var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
-
 ]]
 
-print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
-print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
-print("var throughput = " .. flow["throughput"] .. ";")
-print("var bytes = " .. flow["bytes"] .. ";")
+if(flow ~= nil) then
+   print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
+   print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
+   print("var throughput = " .. flow["throughput"] .. ";")
+   print("var bytes = " .. flow["bytes"] .. ";")
+end
 
 print [[
 setInterval(function() {
@@ -146,7 +152,7 @@ setInterval(function() {
 			} else {
 			   $('#sent_trend').html("<i class=icon-arrow-up></i>");
 			}
-			
+
 			if(srv2cli_packets == rsp["srv2cli.packets"]) {
 			   $('#rcvd_trend').html("<i class=icon-minus></i>");
 			} else {

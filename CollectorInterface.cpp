@@ -25,18 +25,26 @@
 #include <uuid/uuid.h>
 #endif
 
+#define MSG_VERSION 0
+
+struct zmq_msg_hdr {
+  char url[32];
+  u_int32_t version;
+  u_int32_t size;
+};
+
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(const char *_endpoint, const char *_script_name)
+CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic)
   : NetworkInterface(_endpoint) {
   char *slash;
 
   num_drops = 0;
-  endpoint = (char*)_endpoint, script_name = strdup(_script_name);
-  
+  endpoint = (char*)_endpoint, topic = strdup(_topic);
+
   /*
-    We need to cleanup the interface name 
-    
+    We need to cleanup the interface name
+
     Format <tcp|udp>://<host>:<port>
   */
 
@@ -52,43 +60,178 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_scrip
     ifname = strdup(buf);
   }
 
-  l = new Lua();
+
+  context = zmq_ctx_new();
+  subscriber = zmq_socket(context, ZMQ_SUB);
+
+  if(zmq_connect(subscriber, endpoint) != 0) {
+    zmq_close(subscriber);
+    zmq_ctx_destroy(context);
+    throw("Unable to connect to the specified ZMQ endpoint");
+  }
+
+  if(zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, topic, strlen(topic)) != 0) {
+    zmq_close(subscriber);
+    zmq_ctx_destroy(context);
+    throw("Unable to subscribe to the specified ZMQ endpoint");
+  }
 }
 
 /* **************************************************** */
 
 CollectorInterface::~CollectorInterface() {
-  shutdown();
-
-  delete l;
-  free(endpoint);
-  free(script_name);
-
-  deleteDataStructures();
+  if(endpoint) free(endpoint);
+  if(topic)    free(topic);
+  zmq_close(subscriber);
+  zmq_ctx_destroy(context);
 }
 
 /* **************************************************** */
 
-void CollectorInterface::run_collector_script() {
-  char script[MAX_PATH];
-  struct stat buf;
+void CollectorInterface::collect_flows() {
+  struct zmq_msg_hdr h;
+  char payload[8192];
+  u_int payload_len = sizeof(payload)-1;
+  zmq_pollitem_t item;
+  int rc, size;
 
-  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), script_name);
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Collecting flows...");
 
-  if(stat(script, &buf) != 0) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "The script %s does not exist", script);
-    exit(0);
-  } else {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Running flow collector %s.. [%s]", ifname, script);    
-    l->run_script(script, ifname);
+  while(isRunning()) {
+    item.socket = subscriber, item.events = ZMQ_POLLIN;
+
+    do {
+      rc = zmq_poll(&item, 1, 1000);
+      if((rc < 0) || (!isRunning())) return;
+    } while(rc == 0);
+
+    size = zmq_recv(subscriber, &h, sizeof(h), 0);
+
+    if((size != sizeof(h)) || (h.version != MSG_VERSION)) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING,
+				   "Unsupported publisher version [%d]: your nProbe sender is outdated?",
+				   h.version);
+      continue;
+    }
+
+    size = zmq_recv(subscriber, payload, payload_len, 0);
+
+    if(size > 0) {
+      json_object *o;
+      ZMQ_Flow flow;
+
+      payload[size] = '\0';
+      o = json_tokener_parse(payload);
+
+      if(o != NULL) {
+	struct json_object_iterator it = json_object_iter_begin(o);
+	struct json_object_iterator itEnd = json_object_iter_end(o);
+
+	/* Reset data */
+	memset(&flow, 0, sizeof(flow));
+	flow.additional_fields = json_object_new_object();
+
+	while(!json_object_iter_equal(&it, &itEnd)) {
+	  const char *key   = json_object_iter_peek_name(&it);
+	  json_object *v    = json_object_iter_peek_value(&it);
+	  const char *value = json_object_get_string(v);
+
+	  if((key != NULL) && (value != NULL)) {
+	    u_int key_id = atoi(key);
+
+	    ntop->getTrace()->traceEvent(TRACE_INFO, "[%s]=[%s]", key, value);
+
+	    switch(key_id) {
+	    case IN_SRC_MAC:
+	      /* Format 00:00:00:00:00:00 */
+	      sscanf(value, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		     &flow.src_mac[0], &flow.src_mac[1], &flow.src_mac[2],
+		     &flow.src_mac[3], &flow.src_mac[4], &flow.src_mac[5]);
+	      break;
+	    case OUT_DST_MAC:
+	      sscanf(value, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		     &flow.dst_mac[0], &flow.dst_mac[1], &flow.dst_mac[2],
+		     &flow.dst_mac[3], &flow.dst_mac[4], &flow.dst_mac[5]);
+	      break;
+	    case IPV4_SRC_ADDR:
+	    case IPV6_SRC_ADDR:
+	      flow.src_ip.set_from_string((char*)value);
+	      break;
+	    case IPV4_DST_ADDR:
+	    case IPV6_DST_ADDR:
+	      flow.dst_ip.set_from_string((char*)value);
+	      break;
+	    case L4_SRC_PORT:
+	      flow.src_port = atoi(value);
+	      break;
+	    case L4_DST_PORT:
+	      flow.dst_port = atoi(value);
+	      break;
+	    case SRC_VLAN:
+	    case DST_VLAN:
+	      flow.vlan_id = atoi(value);
+	      break;
+	    case L7_PROTO:
+	      flow.l7_proto = atoi(value);
+	      break;
+	    case PROTOCOL:
+	      flow.l4_proto = atoi(value);
+	      break;
+	    case TCP_FLAGS:
+	      flow.tcp_flags = atoi(value);
+	      break;
+	    case IN_PKTS:
+	      flow.in_pkts = atol(value);
+	      break;
+	    case IN_BYTES:
+	      flow.in_bytes = atol(value);
+	      break;
+	    case OUT_PKTS:
+	      flow.out_pkts = atol(value);
+	      break;
+	    case OUT_BYTES:
+	      flow.out_bytes = atol(value);
+	      break;
+	    case FIRST_SWITCHED:
+	      flow.first_switched = atol(value);
+	      break;
+	    case LAST_SWITCHED:
+	      flow.last_switched = atol(value);
+	      break;
+	    default:
+	      ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);
+	      json_object_object_add(flow.additional_fields, key, json_object_new_string(value));
+	      break;
+	    }
+	  }
+
+	  /* Move to the next element */
+	  json_object_iter_next(&it);
+	}
+
+	/* Process Flow */
+	flow_processing(&flow);
+
+	/* Dispose memory */
+	json_object_put(o);
+	json_object_put(flow.additional_fields);
+      } else
+	ntop->getTrace()->traceEvent(TRACE_WARNING,
+				     "Invalid message received: your nProbe sender is outdated?");
+
+
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
+    }
   }
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flow collection is over.");
 }
 
 /* **************************************************** */
 
 static void* packetPollLoop(void* ptr) {
   CollectorInterface *iface = (CollectorInterface*)ptr;
-  iface->run_collector_script();
+  iface->collect_flows();
   return(NULL);
 }
 
@@ -103,7 +246,7 @@ void CollectorInterface::startPacketPolling() {
 
 void CollectorInterface::shutdown() {
   void *res;
-  
+
   if(running) {
     NetworkInterface::shutdown();
     pthread_join(pollLoop, &res);

@@ -34,7 +34,6 @@ Prefs::Prefs(Ntop *_ntop) {
   docs_dir = strdup(CONST_DEFAULT_DOCS_DIR);
   scripts_dir = strdup(CONST_DEFAULT_SCRIPTS_DIR);
   callbacks_dir = strdup(CONST_DEFAULT_CALLBACKS_DIR);
-  users_file_path = strdup(CONST_DEFAULT_USERS_FILE);
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
   change_user = true, daemonize = false;
@@ -66,7 +65,6 @@ Prefs::~Prefs() {
   if(docs_dir) free(docs_dir);
   if(scripts_dir) free(scripts_dir);
   if(callbacks_dir) free(callbacks_dir);
-  if(users_file_path) free(users_file_path);
   if(config_file_path) free(config_file_path);
   if(user) free(user);
   if(pid_path) free(pid_path);
@@ -195,7 +193,6 @@ static const struct option long_options[] = {
   { "core-affinity",                     required_argument, NULL, 'g' },
   { "dont-change-user",                  no_argument,       NULL, 's' },
   { "disable-login",                     no_argument,       NULL, 'l' },
-  { "users-file",                        required_argument, NULL, 'u' },
   { "verbose",                           no_argument,       NULL, 'v' },
   { "help",                              no_argument,       NULL, 'h' },
   { "enable-aggregations",               no_argument,       NULL, 'A' },
@@ -351,11 +348,6 @@ int Prefs::setOption(int optkey, char *optarg) {
     enable_users_login = false;
     break;
 
-  case 'u':
-    free(users_file_path);
-    users_file_path = strdup(optarg);
-    break;
-
   case 'x':
     max_num_hosts = max_val(atoi(optarg), 1024);
     break;
@@ -426,7 +418,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvu:A:B:CFG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CFG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -498,8 +490,6 @@ int Prefs::loadFromFile(const char *path) {
 int Prefs::save() {
   FILE *fd;
 
-  saveUsersToFile();
-
   if(config_file_path == NULL)
     return(-1);
 
@@ -528,7 +518,6 @@ int Prefs::save() {
   if(cpu_affinity >= 0)   fprintf(fd, "core-affinity=%d\n", cpu_affinity);
   if(!change_user)        fprintf(fd, "dont-change-user\n");
   if(!enable_users_login) fprintf(fd, "disable-login\n");
-  if(users_file_path)     fprintf(fd, "users-file=%s\n", users_file_path);
   if(docs_dir)            fprintf(fd, "httpdocs-dir=%s\n", docs_dir);
   if(scripts_dir)         fprintf(fd, "scripts-dir=%s\n", scripts_dir);
   if(callbacks_dir)       fprintf(fd, "callbacks-dir=%s\n", callbacks_dir);
@@ -541,95 +530,4 @@ int Prefs::save() {
 }
 
 /* ******************************************* */
-
-int Prefs::loadUsersFromFile() {
-  char buffer[512], *line, *key, *value, path[MAX_PATH];
-  FILE *fd;
-  int i;
-
-  if(users_file_path == NULL)
-    return(-1);
-
-  snprintf(path, sizeof(path), "%s/%s", ntop->get_working_dir(), users_file_path);
-  ntop->fixPath(path);
-
-  fd = fopen(path, "r");
-
-  if(fd == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING,
-				 "Config file %s not found (it will be created)", path);
-    return(-1);
-  }
-
-  while(fd) {
-    if(!(line = fgets(buffer, sizeof(buffer), fd)))
-      break;
-
-    if(((i = strlen(line)) <= 1) || (line[0] == '#'))
-      continue;
-    else
-      line[i-1] = '\0';
-
-    key = line;
-    key = Utils::trim(key);
-
-    value = strrchr(line, '=');
-    if(value == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid line '%s'", line);
-      continue;
-    } else
-      value[0] = 0, value = &value[1];
-    value = Utils::trim(value);
-
-    /* inserting all users info into redis */
-    if(strncmp(key, "user.", 5) == 0) {
-      if(ntop->getRedis()->set(key, value, 0) < 0)
-        ntop->getTrace()->traceEvent(TRACE_WARNING, "Error setting '%s' = '%s'", key, value);
-    }
-  }
-
-  fclose(fd);
-
-  return(0);
-}
-
-/* ******************************************* */
-
-int Prefs::saveUsersToFile() {
-  char **keys;
-  char val[64], path[MAX_PATH];
-  int rc, i;
-  FILE *fd;
-
-  if(users_file_path == NULL)
-    return(-1);
-
-  snprintf(path, sizeof(path), "%s/%s", data_dir, users_file_path);
-  ntop->fixPath(path);
-
-  fd = fopen(path, "w");
-
-  if(fd == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open file %s [%s]", path, strerror(errno));
-    return(-1);
-  }
-
-  /* wrinting users */
-  if((rc = ntop->getRedis()->keys("user.*", &keys)) > 0) {
-    for (i = 0; i < rc; i++) {
-      if(keys[i] == NULL) continue; /* safety check */
-
-      if(ntop->getRedis()->get(keys[i], val, sizeof(val)) >= 0)
-        fprintf(fd, "%s=%s\n", keys[i], val);
-
-      free(keys[i]);
-    }
-
-    free(keys);
-  }
-
-  fclose(fd);
-
-  return(rc);
-}
 

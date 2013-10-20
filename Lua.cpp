@@ -437,14 +437,37 @@ static int ntop_zmq_receive(lua_State* vm) {
   }
 
   payload_len = h.size + 1;
-  if((payload = (char*)malloc(payload_len)) != NULL) {
+  if((payload = (char*)malloc(payload_len)) != NULL) {    
     size = zmq_recv(subscriber, payload, payload_len, 0);
-
     payload[h.size] = '\0';
-    lua_pushfstring(vm, "%s", payload);
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
-    free(payload);
-    return(CONST_LUA_OK);
+    
+    if(size > 0) {
+      json_object *o = json_tokener_parse(payload);
+
+      if(o != NULL) {
+	struct json_object_iterator it = json_object_iter_begin(o);
+	struct json_object_iterator itEnd = json_object_iter_end(o);
+
+	while (!json_object_iter_equal(&it, &itEnd)) {
+	  char *key   = (char*)json_object_iter_peek_name(&it);
+	  const char *value = json_object_get_string(json_object_iter_peek_value(&it));
+
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s]=[%s]", key, value);
+	  
+	  json_object_iter_next(&it);
+	}
+
+	json_object_put(o);
+      }
+
+      lua_pushfstring(vm, "%s", payload);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
+      free(payload);
+      return(CONST_LUA_OK);
+    } else {
+      free(payload);
+      return(CONST_LUA_PARAM_ERROR);
+    }    
   } else
     return(CONST_LUA_PARAM_ERROR);
 }
@@ -921,111 +944,6 @@ static int ntop_increase_drops(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_process_flow(lua_State* vm) {
-  NetworkInterface *ntop_interface;
-  IpAddress src_ip, dst_ip;
-  u_int16_t src_port, dst_port;
-  u_int16_t vlan_id;
-  u_int16_t proto_id;
-  u_int8_t l4_proto, tcp_flags, id = 1;
-  u_int in_pkts, in_bytes, out_pkts, out_bytes;
-  u_int first_switched, last_switched;
-  char *additional_fields_json;
-  char *str;
-  u_char smac[6], dmac[6];
-
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((str = (char*)lua_tostring(vm, id)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-         &smac[0], &smac[1], &smac[2], &smac[3], &smac[4], &smac[5]);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((str = (char*)lua_tostring(vm, id)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-  sscanf(str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-         &dmac[0], &dmac[1], &dmac[2], &dmac[3], &dmac[4], &dmac[5]);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((str = (char*)lua_tostring(vm, id)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-  src_ip.set_from_string(str);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((str = (char*)lua_tostring(vm, id)) == NULL)     return(CONST_LUA_PARAM_ERROR);
-  dst_ip.set_from_string(str);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  src_port = htons((u_int16_t)lua_tonumber(vm, id));
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  dst_port = htons((u_int16_t)lua_tonumber(vm, id));
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  vlan_id = htons((u_int16_t)lua_tonumber(vm, id));
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  proto_id = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  l4_proto = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  tcp_flags = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  in_pkts = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  in_bytes = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  out_pkts = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  out_bytes = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  first_switched = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  last_switched = (u_int32_t)lua_tonumber(vm, id);
-
-  id++;
-  if(ntop_lua_check(vm, __FUNCTION__, id, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((additional_fields_json = (char*)lua_tostring(vm, id)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-
-  lua_getglobal(vm, "ntop_interface");
-  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
-  }
-
-  if(ntop_interface)
-    ntop_interface->flow_processing(smac, dmac, &src_ip, &dst_ip, src_port, dst_port,
-				    vlan_id, proto_id, l4_proto, tcp_flags,
-				    in_pkts, in_bytes, out_pkts, out_bytes,
-				    first_switched, last_switched,
-				    additional_fields_json);
-
-  return(true);
-}
-
-/* ****************************************** */
-
 static int ntop_get_users(lua_State* vm) {
 
   ntop->getUsers(vm);
@@ -1360,7 +1278,6 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getFlowPeers",           ntop_get_interface_flows_peers },
   { "findFlowByKey",          ntop_get_interface_flow_by_key },
   { "getEndpoint",            ntop_get_interface_endpoint },
-  { "processFlow",            ntop_process_flow },
   { "incrDrops",              ntop_increase_drops },
   { "isRunning",              ntop_interface_is_running },
   { "name2id",                ntop_interface_name2id },

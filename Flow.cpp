@@ -220,7 +220,9 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
 
 /* *************************************** */
 
-void Flow::setJSONInfo(char *json) {
+void Flow::setJSONInfo(const char *json) {
+  if(json == NULL) return;
+
   if (json_info != NULL) free(json_info);
   json_info = strdup(json);
 }

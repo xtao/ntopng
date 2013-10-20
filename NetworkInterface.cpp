@@ -186,7 +186,8 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 				time_t first_seen, time_t last_seen) {
   Flow *ret;
 
-  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, vlan_id, l4_proto, src2dst_direction);
+  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, 
+			 vlan_id, l4_proto, src2dst_direction);
 
   if(ret == NULL) {
     ret = new Flow(this, vlan_id, l4_proto,
@@ -207,40 +208,40 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 
 /* **************************************************** */
 
-void NetworkInterface::flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
-				       IpAddress *src_ip, IpAddress *dst_ip,
-				       u_int16_t src_port, u_int16_t dst_port,
-				       u_int16_t vlan_id,
-				       u_int16_t proto_id,
-				       u_int8_t l4_proto, u_int8_t tcp_flags,
-				       u_int in_pkts, u_int in_bytes,
-				       u_int out_pkts, u_int out_bytes,
-				       u_int first_switched, u_int last_switched,
-				       char *additional_fields_json)
+void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 {
   bool src2dst_direction;
   Flow *flow;
 
-  if ((time_t)last_switched > (time_t)last_pkt_rcvd)
-    last_pkt_rcvd = last_switched;
+  if((time_t)zflow->last_switched > (time_t)last_pkt_rcvd)
+    last_pkt_rcvd = zflow->last_switched;
 
   /* Updating Flow */
 
-  flow = getFlow(src_eth, dst_eth, vlan_id, src_ip, dst_ip, src_port, dst_port,
-		 l4_proto, &src2dst_direction, first_switched, last_switched);
+  flow = getFlow(zflow->src_mac, zflow->dst_mac,
+		 zflow->vlan_id, 
+		 &zflow->src_ip, &zflow->dst_ip,
+		 zflow->src_port, zflow->dst_port,
+		 zflow->l4_proto, &src2dst_direction, 
+		 zflow->first_switched, 
+		 zflow->last_switched);
 
   if(flow == NULL) return;
 
-  if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
-  flow->addFlowStats(src2dst_direction, in_pkts, in_bytes, out_pkts, out_bytes, last_switched);
-  flow->setDetectedProtocol(proto_id);
-  flow->setJSONInfo(additional_fields_json);
+  if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(zflow->tcp_flags);
+  flow->addFlowStats(src2dst_direction, zflow->in_pkts, zflow->in_bytes, 
+		     zflow->out_pkts, zflow->out_bytes, 
+		     zflow->last_switched);
+  flow->setDetectedProtocol(zflow->l7_proto);
+  flow->setJSONInfo(json_object_to_json_string(zflow->additional_fields));
   flow->updateActivities();
-  incStats(src_ip->isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
-	   flow->get_detected_protocol(), in_bytes+out_bytes, (in_pkts+out_pkts),
+  incStats(zflow->src_ip.isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
+	   flow->get_detected_protocol(), 
+	   (zflow->in_bytes + zflow->out_bytes), 
+	   (zflow->in_pkts + zflow->out_pkts),
 	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
 
-  purgeIdle(last_switched);
+  purgeIdle(zflow->last_switched);
 }
 
 /* **************************************************** */
@@ -541,7 +542,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 /* **************************************************** */
 
 void NetworkInterface::startPacketPolling() {
-  if (cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
+  if(cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling on interface %s...", get_name());
   running = true;
 }

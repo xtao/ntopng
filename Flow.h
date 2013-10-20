@@ -75,7 +75,7 @@ class Flow : public GenericHashEntry {
   inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; };
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
-  void setJSONInfo(char *json);
+  void setJSONInfo(const char *json);
   bool isFlowPeer(char *numIP);
   void incStats(bool cli2srv_direction, u_int pkt_len);
   void updateActivities();

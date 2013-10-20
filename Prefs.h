@@ -49,7 +49,7 @@ class Prefs {
   char *ifNames[MAX_NUM_INTERFACES], *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
-  char *users_file_path, *config_file_path, *ndpi_proto_path;
+  char *config_file_path, *ndpi_proto_path;
   char *packet_filter;
   char *user;
   char *redis_host;
@@ -62,7 +62,6 @@ class Prefs {
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
   int checkOptions();
-  int saveUsersToFile();
 
  public:
   Prefs(Ntop *_ntop);
@@ -103,7 +102,6 @@ class Prefs {
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
   inline bool daemonize_ntopng()                        { return(daemonize);      };
   inline void addDefaultInterface()                     { num_interfaces++;       };
-  int loadUsersFromFile();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);
   

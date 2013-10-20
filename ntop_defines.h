@@ -22,6 +22,8 @@
 #ifndef _NTOP_DEFINES_H_
 #define _NTOP_DEFINES_H_
 
+#include "ntop_flow.h"
+
 #define NUM_ROOTS 512
 
 /* ***************************************************** */

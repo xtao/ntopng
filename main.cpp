@@ -86,8 +86,6 @@ int main(int argc, char *argv[])
 
   ntop->registerPrefs(prefs);
 
-  prefs->loadUsersFromFile();
-
   if(prefs->get_num_interfaces() == 0) {
     /* We need to add a default interface */
     prefs->addDefaultInterface();
@@ -101,24 +99,14 @@ int main(int argc, char *argv[])
     /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
     if(ifName && (strstr(ifName, "tcp://") || strstr(ifName, "ipc://"))) {
       char *at = strchr(ifName, '@');
-      char *script, *endpoint;
+      char *topic = (char*)"flow", *endpoint;
 
-      if(at != NULL) {
-	u_int len = strlen(ifName)-strlen(at);
-
-	script = (char*)malloc(len+1);
-	if(script == NULL) {
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "Not enough memory");
-	  exit(-1);
-	}
-
-	strncpy(script, ifName, len);
-	script[len] = '\0';
+      if(at != NULL)
 	endpoint = &at[1];
-      } else
-	script = strdup("nprobe-collector.lua"), endpoint = ifName;
+      else
+	endpoint = ifName;
 
-      iface = new CollectorInterface(endpoint, script);
+      iface = new CollectorInterface(endpoint, topic);
     } else {
 #ifdef HAVE_PF_RING
       try {

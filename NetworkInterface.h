@@ -34,6 +34,17 @@ typedef struct ether80211q {
   u_int16_t protoType;
 } Ether80211q;
 
+typedef struct zmq_flow {
+  IpAddress src_ip, dst_ip;
+  u_int16_t src_port, dst_port, l7_proto;
+  u_int16_t vlan_id;
+    u_int8_t l4_proto, tcp_flags;
+  u_int32_t in_pkts, in_bytes, out_pkts, out_bytes;
+  u_int32_t first_switched, last_switched;
+  json_object *additional_fields;
+  u_int8_t src_mac[6], dst_mac[6];
+} ZMQ_Flow;
+
 class NetworkInterface {
  protected:
   char *ifname;
@@ -111,16 +122,7 @@ class NetworkInterface {
 			 struct ndpi_iphdr *iph,
 			 struct ndpi_ip6_hdr *ip6,
 			 u_int16_t ipsize, u_int16_t rawsize);
-  void flow_processing(u_int8_t *src_eth, u_int8_t *dst_eth,
-  		       IpAddress *src_ip, IpAddress *dst_ip,
-		       u_int16_t src_port, u_int16_t dst_port,
-		       u_int16_t vlan_id,
-		       u_int16_t proto_id,
-		       u_int8_t l4_proto, u_int8_t tcp_flags,
-		       u_int in_pkts, u_int in_bytes,
-		       u_int out_pkts, u_int out_bytes,
-		       u_int first_switched, u_int last_switched,
-		       char *additional_fields_json);
+  void flow_processing(ZMQ_Flow *zflow);
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();

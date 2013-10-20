@@ -329,7 +329,7 @@ template = {
 -- template id to name
 rtemplate = {}
 for key,value in pairs(template) do
-   rtemplate[value] = key
+   rtemplate[tonumber(value)] = key
 end
 
 

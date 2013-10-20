@@ -28,22 +28,20 @@ class Lua;
 
 class CollectorInterface : public NetworkInterface {
  private:
-  Lua *l;
-  char *script_name;
-  char *endpoint;
+  char *endpoint, *topic;
+  void *context, *subscriber;
   u_int32_t num_drops;
-
+  
  public:
   CollectorInterface(const char *_endpoint, const char *_script_name);
   ~CollectorInterface();
 
   inline const char* get_type()         { return("zmq");      };
   inline bool is_ndpi_enabled()         { return(false);      };
-  char *getScriptName()                 { return script_name; };
   char *getEndpoint()                   { return endpoint;    };
   inline void incrDrops(u_int32_t num)  { num_drops += num;   };
   u_int32_t getNumDrops()               { return(num_drops);  };
-  void run_collector_script();
+  void collect_flows();
 
   void startPacketPolling();
   void shutdown();
