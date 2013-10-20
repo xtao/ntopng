@@ -43,7 +43,7 @@ Flow* FlowHash::find(IpAddress *src_ip, IpAddress *dst_ip,
   while(head) {
     if(head->equal(src_ip, dst_ip, src_port, dst_port, vlanId, protocol, src2dst_direction)) {
       if(num_loops > max_num_loops) {
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "[Num loops: %u][hashId: %u]", num_loops, hash);
+	ntop->getTrace()->traceEvent(TRACE_INFO, "DEBUG: [Num loops: %u][hashId: %u]", num_loops, hash);
 	max_num_loops = num_loops;
       }
       return(head);
@@ -52,7 +52,7 @@ Flow* FlowHash::find(IpAddress *src_ip, IpAddress *dst_ip,
   }
 
   if(num_loops > max_num_loops) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[Num loops: %u][hashId: %u]", num_loops, hash);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "DEBUG: [Num loops: %u][hashId: %u]", num_loops, hash);
     max_num_loops = num_loops;
   }
 

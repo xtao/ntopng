@@ -19,7 +19,6 @@ for key, value in pairs(_GET) do
 end
 
 rsp = ntop.httpGet("www.google.com", "/")
-
 print(rsp)
 print('</body></html>\n')
 

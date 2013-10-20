@@ -3,11 +3,11 @@
 --
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
-if((ifname == nil) and (_GET ~= nil)) then	
- ifname = _GET["ifname"]	
- if(ifname == nil) then	  
-   ifname = _SESSION["ifname"]
- end
+if((ifname == nil) and (_GET ~= nil)) then
+   ifname = _GET["ifname"]
+   if(ifname == nil) then
+      ifname = _SESSION["ifname"]
+   end
 end
 
 l4_keys = {
@@ -230,29 +230,29 @@ end
 
 string.split = function(s, p)
 		  local temp = {}
-    local index = 0
+		  local index = 0
 		  local last_index = string.len(s)
 
-    while true do
-       local i, e = string.find(s, p, index)
+		  while true do
+		     local i, e = string.find(s, p, index)
 
-        if i and e then
-            local next_index = e + 1
-            local word_bound = i - 1
-	   table.insert(temp, string.sub(s, index, word_bound))
-            index = next_index
-        else            
-            if index > 0 and index <= last_index then
-	       table.insert(temp, string.sub(s, index, last_index))
-            elseif index == 0 then
-                temp = nil
-            end
-            break
-	 end
-      end
+		     if i and e then
+			local next_index = e + 1
+			local word_bound = i - 1
+			table.insert(temp, string.sub(s, index, word_bound))
+			index = next_index
+		     else
+			if index > 0 and index <= last_index then
+			   table.insert(temp, string.sub(s, index, last_index))
+			elseif index == 0 then
+			   temp = nil
+			end
+			break
+		     end
+		  end
 
-    return temp
-   end
+		  return temp
+	       end
 
 function formatEpoch(epoch)
    return(os.date("%d/%m/%Y %X", epoch))
@@ -592,7 +592,7 @@ end
 
 -- Typical call:  if hasbit(x, bit(3)) then ...
 function hasbit(x, p)
-   return x % (p + p) >= p       
+   return x % (p + p) >= p
 end
 
 function setbit(x, p)
@@ -609,7 +609,7 @@ function isBroadMulticast(ip)
    -- print(ip)
    t = string.split(ip, "%.")
    -- print(table.concat(t, "\n"))
-   if(t == nil) then 
+   if(t == nil) then
       return(false) -- Might be an IPv6 address
    else
       if(tonumber(t[1]) >= 224)  then return(true) end
@@ -622,36 +622,36 @@ end
 function addGauge(name, url, maxValue, width, height)
    if(url ~= nil) then print('<A HREF="'..url..'">') end
    print('<canvas id="'..name..'" height="'..height..'" width="'..width..'"></canvas>\n')
---   print('<div id="'..name..'-text" style="font-size: 12px;"></div>\n')
+   --   print('<div id="'..name..'-text" style="font-size: 12px;"></div>\n')
    if(url ~= nil) then print('</A>') end
 
-print [[
- <script type="text/javascript">
+   print [[
+	    <script type="text/javascript">
 
-var opts = {
-fontSize: 40,
-  lines: 12, // The number of lines to draw
-  angle: 0.15, // The length of each line
-  lineWidth: 0.44, // The line thickness
-  pointer: {
-    length: 0.85, // The radius of the inner circle
-    strokeWidth: 0.051, // The rotation offset
-    color: '#000000' // Fill color
-  },
-  limitMax: 'false',   // If true, the pointer will not go past the end of the gauge
+	    var opts = {
+	    fontSize: 40,
+	    lines: 12, // The number of lines to draw
+	    angle: 0.15, // The length of each line
+	    lineWidth: 0.44, // The line thickness
+	    pointer: {
+	       length: 0.85, // The radius of the inner circle
+	       strokeWidth: 0.051, // The rotation offset
+	       color: '#000000' // Fill color
+	    },
+	    limitMax: 'false',   // If true, the pointer will not go past the end of the gauge
 
-  colorStart: '#6FADCF',   // Colors
-  colorStop: '#8FC0DA',    // just experiment with them
-  strokeColor: '#E0E0E0',   // to see which ones work best for you
-  generateGradient: true
-};
-]]
+	 colorStart: '#6FADCF',   // Colors
+	 colorStop: '#8FC0DA',    // just experiment with them
+	 strokeColor: '#E0E0E0',   // to see which ones work best for you
+	 generateGradient: true
+      };
+   ]]
 
-print('var target = document.getElementById("'..name..'"); // your canvas element\n')
-print('var '..name..' = new Gauge(target).setOptions(opts);\n')
---print(name..'.setTextField(document.getElementById("'..name..'-text"));\n')
-print(name..'.maxValue = '..maxValue..'; // set max gauge value\n')
-print("</script>\n")
+   print('var target = document.getElementById("'..name..'"); // your canvas element\n')
+   print('var '..name..' = new Gauge(target).setOptions(opts);\n')
+   --print(name..'.setTextField(document.getElementById("'..name..'-text"));\n')
+   print(name..'.maxValue = '..maxValue..'; // set max gauge value\n')
+   print("</script>\n")
 end
 
 -- Compute the difference in seconds between local time and UTC.
@@ -661,13 +661,13 @@ function get_timezone()
 end
 
 
--- Return the first 'howmany' hosts 
+-- Return the first 'howmany' hosts
 function getTopInterfaceHosts(howmany, localHostsOnly)
    hosts_stats = interface.getHostsInfo()
    ret = {}
    sortTable = {}
    n = 0
-   for k,v in pairs(hosts_stats) do 
+   for k,v in pairs(hosts_stats) do
       if((not localHostsOnly) or ((v["localhost"] ~= nil) and (v["ip"] ~= nil))) then
 	 sortTable[v["bytes.sent"]+v["bytes.rcvd"]+n] = k
 	 n = n +0.01
@@ -675,8 +675,8 @@ function getTopInterfaceHosts(howmany, localHostsOnly)
    end
 
    n = 0
-   for _v,k in pairsByKeys(sortTable, rev) do 
-      if(n < howmany) then 
+   for _v,k in pairsByKeys(sortTable, rev) do
+      if(n < howmany) then
 	 ret[k] = hosts_stats[k]
 	 n = n+1
       else
@@ -692,7 +692,7 @@ function http_escape(s)
 				      return string.format("%%%02X", string.byte(c))
 				   end)
    s = string.gsub(s, " ", "+")
-      return s
+   return s
 end
 
 -- Windows fixes for interfaces with "uncommon chars"
@@ -726,5 +726,12 @@ end
 
 function mapOS2Icon(name)
    return(getOSIcon(name) .. name)
+end
+
+-- version is major.minor.veryminor
+function version2int(v)
+   e = string.split(v, "%.");
+   version = tonumber(e[1])*100 + tonumber(e[2])*10 + tonumber(e[3])
+   return(version)
 end
 
