@@ -67,12 +67,14 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic
   if(zmq_connect(subscriber, endpoint) != 0) {
     zmq_close(subscriber);
     zmq_ctx_destroy(context);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to connect to the specified ZMQ endpoint");
     throw("Unable to connect to the specified ZMQ endpoint");
   }
 
   if(zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, topic, strlen(topic)) != 0) {
     zmq_close(subscriber);
     zmq_ctx_destroy(context);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to connect to the specified ZMQ endpoint");
     throw("Unable to subscribe to the specified ZMQ endpoint");
   }
 }

@@ -36,7 +36,8 @@ class GenericHost : public GenericHashEntry {
   ValueTrend bytes_thpt_trend;
   u_int64_t last_bytes;
   struct timeval last_update_time;
-
+  time_t last_activity_update;
+  
   void dumpStats(bool forceDump);
   void readStats();
 

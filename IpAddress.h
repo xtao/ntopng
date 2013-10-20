@@ -40,10 +40,12 @@ struct ipAddress {
 class IpAddress {
  private:
   struct ipAddress addr;
+  u_int32_t ip_key;
 
   char* _intoaV4(unsigned int addr, char* buf, u_short bufLen);
   char* _intoa(char* buf, u_short bufLen);
   void checkPrivate();
+  u_int32_t get_key();
 
  public:
   IpAddress();
@@ -66,7 +68,7 @@ class IpAddress {
 
   void set_from_string(char *string);
   int compare(IpAddress *ip);
-  u_int key();
+  inline u_int32_t key()                               { return(ip_key);         };
   void dump(struct sockaddr *sa);
   inline bool isPrivateAddress()                       { return(addr.privateIP); };
   char* print(char *str, u_int str_len);

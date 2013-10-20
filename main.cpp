@@ -97,7 +97,9 @@ int main(int argc, char *argv[])
     ifName = ntop->get_if_name(i);
 
     /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
-    if(ifName && (strstr(ifName, "tcp://") || strstr(ifName, "ipc://"))) {
+    if(ifName && (strstr(ifName, "tcp://")
+		  || strstr(ifName, "ipc://"))
+       ) {
       char *at = strchr(ifName, '@');
       char *topic = (char*)"flow", *endpoint;
 

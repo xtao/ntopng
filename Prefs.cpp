@@ -29,7 +29,7 @@ Prefs::Prefs(Ntop *_ntop) {
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
   host_max_idle = 60 /* sec */, flow_max_idle = 30 /* sec */;
-  max_num_hosts = MAX_NUM_INTERFACE_HOSTS/2, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
+  max_num_hosts = MAX_NUM_INTERFACE_HOSTS, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
   data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   docs_dir = strdup(CONST_DEFAULT_DOCS_DIR);
   scripts_dir = strdup(CONST_DEFAULT_SCRIPTS_DIR);

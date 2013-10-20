@@ -26,7 +26,7 @@
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ndpiStats = new NdpiStats();
 
-  localHost = false;
+  localHost = false, last_activity_update = 0;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   // readStats(); - Commented as if put here it's too early and the key is not yet set
@@ -91,11 +91,14 @@ void GenericHost::dumpStats(bool forceDump) {
 
 void GenericHost::updateActivities() {
   time_t when = iface->getTimeLastPktRcvd();
-  
-  /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
-  when -= when % CONST_TREND_TIME_GRANULARITY;
-  if(when > activityStats.get_wrap_time()) dumpStats(false);
-  activityStats.set(when);
+
+  if(when != last_activity_update) {
+    /* Set a bit every CONST_TREND_TIME_GRANULARITY seconds */
+    when -= when % CONST_TREND_TIME_GRANULARITY;
+    if(when > activityStats.get_wrap_time()) dumpStats(false);
+    activityStats.set(when);
+    last_activity_update = when;
+  }
 }
 
 /* *************************************** */
