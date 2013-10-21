@@ -28,7 +28,7 @@ class StringHash : public GenericHash {
  public:
   StringHash(NetworkInterface *iface, u_int _num_hashes, u_int _max_hash_size);
 
-  StringHost* get(char *key);
+  StringHost* get(char *key, u_int16_t family_id);
 };
 
 #endif /* _STRING_HASH_H_ */

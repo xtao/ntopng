@@ -1153,7 +1153,7 @@ bool NetworkInterface::isNumber(const char *str) {
 StringHost* NetworkInterface::findHostByString(char *keyname,
 					       u_int16_t family_id,
 					       bool createIfNotPresent) {
-  StringHost *ret = strings_hash->get(keyname);
+  StringHost *ret = strings_hash->get(keyname, family_id);
 
   if((ret == NULL) && createIfNotPresent) {
     if((ret = new StringHost(this, keyname, family_id)) != NULL)

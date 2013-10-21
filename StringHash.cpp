@@ -29,7 +29,7 @@ StringHash::StringHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max_h
 
 /* ************************************ */
 
-StringHost* StringHash::get(char *key) {
+StringHost* StringHash::get(char *key, u_int16_t family_id) {
   u_int32_t hash = Utils::hashString(key) % num_hashes;
 
   if(table[hash] == NULL) {
@@ -41,7 +41,8 @@ StringHost* StringHash::get(char *key) {
     head = (StringHost*)table[hash];
     
     while(head != NULL) {      
-      if(strcmp(key, head->host_key()) == 0)
+      if((head->get_family_id() == family_id)
+	 && (strcmp(key, head->host_key()) == 0))	 
 	break;
       else
 	head = (StringHost*)head->next();
