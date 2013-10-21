@@ -25,31 +25,28 @@
 
 IpAddress::IpAddress() {
   memset(&addr, 0, sizeof(addr));
-  ip_key = get_key();
+  compute_key();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(char *string) {
   set_from_string(string);
-  checkPrivate();
-  ip_key = get_key();
+  compute_key();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(IpAddress *ip) {
   memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
-  checkPrivate();
-  ip_key = get_key();
+  compute_key();
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(u_int32_t _ipv4) {
   set_ipv4(_ipv4);
-  checkPrivate();
-  ip_key = get_key();
+  compute_key();
 }
 
 /* ******************************************* */
@@ -57,7 +54,7 @@ IpAddress::IpAddress(u_int32_t _ipv4) {
 IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
   set_ipv6(_ipv6);
   addr.privateIP = false;
-  ip_key = get_key();
+  compute_key();
 }
 
 /* ******************************************* */
@@ -73,8 +70,8 @@ void IpAddress::set_from_string(char *string) {
       addr.ipVersion = 6, addr.localHost = 0;
     }
   }
-  checkPrivate();
-  ip_key = get_key();
+
+  compute_key();
 }
 
 /* ******************************************* */
@@ -131,16 +128,18 @@ int IpAddress::compare(IpAddress *ip) {
 
 /* ******************************************* */
 
-u_int32_t IpAddress::get_key() {
+void IpAddress::compute_key() {
+  checkPrivate();
+
   if(addr.ipVersion == 4)
-    return(ntohl(addr.ipType.ipv4));
+    ip_key = ntohl(addr.ipType.ipv4);
   else {
     u_int32_t key=0;
 
     for(u_int32_t i=0; i<4; i++)
       key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];
 
-    return(key);
+    ip_key = key;
   }
 }
 

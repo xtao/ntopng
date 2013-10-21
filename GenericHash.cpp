@@ -63,6 +63,13 @@ bool GenericHash::add(GenericHashEntry *h) {
   if(current_size < max_hash_size) {
     u_int32_t hash = (h->key() % num_hashes);
 
+    if(false) {
+      char buf[256];
+      
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(): adding %s/%u", 
+				   __FUNCTION__, h->get_string_key(buf, sizeof(buf)), h->key());
+    }
+
     locks[hash]->lock(__FILE__, __LINE__);
     h->set_next(table[hash]);
     table[hash] = h, current_size++;
@@ -93,6 +100,13 @@ bool GenericHash::remove(GenericHashEntry *h) {
     }
 
     if(head) {
+      if(false) {
+	char buf[256];
+	
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(): removing %s",
+				     __FUNCTION__, h->get_string_key(buf, sizeof(buf)));
+      }
+
       if(prev != NULL)
 	prev->set_next(head->next());
       else
