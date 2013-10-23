@@ -731,7 +731,11 @@ end
 -- version is major.minor.veryminor
 function version2int(v)
    e = string.split(v, "%.");
+   if(e ~= nil) then   
    version = tonumber(e[1])*100 + tonumber(e[2])*10 + tonumber(e[3])
    return(version)
+   else
+   return(0)
+   end
 end
 
