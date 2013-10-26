@@ -14,6 +14,8 @@ ifstats = interface.getStats()
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+-- NOTE: in the home page, footer.lua checks the ntopng version
+-- so in case we change it, footer.lua must also be updated
 active_page = "home"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
@@ -62,15 +64,18 @@ print("<div class=\"alert alert-warning\">No packet has been received yet on int
 end
 
 info = ntop.getInfo()
-rsp = ntop.httpGet("www.ntop.org", "/ntopng.version")
 
-version_elems = split(info["version"], " ");
-
-stable_version = version2int(rsp)
-this_version   = version2int(version_elems[1])
-
-if(stable_version > this_version) then
-   print("<p><div class=\"alert alert-ok\"><i class=\"icon-cloud-download\"></i> A new ntopng version (v." .. rsp .. ") is available for <A HREF=http://www.ntop.org>download</A>: please upgrade.</div></p>")
+if(page == "TopFlowTalkers") then
+   rsp = ntop.httpGet("www.ntop.org", "/ntopng.version")
+   
+   version_elems = split(info["version"], " ");
+   
+   stable_version = version2int(rsp)
+   this_version   = version2int(version_elems[1])
+   
+   if(stable_version > this_version) then
+      print("<p><div class=\"alert alert-ok\"><i class=\"icon-cloud-download\"></i> A new ntopng version (v." .. rsp .. ") is available for <A HREF=http://www.ntop.org>download</A>: please upgrade.</div></p>")
+   end
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
