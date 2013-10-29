@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 OS := $(shell uname -s)
 ######
 CREDIS_HOME=third-party/credis-0.2.3
@@ -120,7 +121,11 @@ maketar:
 	#
 	rm -rf ntopng-data-@PACKAGE_VERSION@
 	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
-	cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	@if test -d ~/dat_files ; then \
+	  cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/; \
+	else \
+	  cp ./httpdocs/geoip/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/ ;\
+	fi
 	gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
 	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
 
