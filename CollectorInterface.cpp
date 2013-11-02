@@ -128,10 +128,11 @@ void CollectorInterface::collect_flows() {
       if(o != NULL) {
 	struct json_object_iterator it = json_object_iter_begin(o);
 	struct json_object_iterator itEnd = json_object_iter_end(o);
-
+	
 	/* Reset data */
 	memset(&flow, 0, sizeof(flow));
 	flow.additional_fields = json_object_new_object();
+	flow.pkt_sampling_rate = 1; /* 1:1 (no sampling) */
 
 	while(!json_object_iter_equal(&it, &itEnd)) {
 	  const char *key   = json_object_iter_peek_name(&it);
@@ -199,6 +200,9 @@ void CollectorInterface::collect_flows() {
 	      break;
 	    case LAST_SWITCHED:
 	      flow.last_switched = atol(value);
+	      break;
+	    case SAMPLING_INTERVAL:
+	      flow.pkt_sampling_rate = atoi(value);
 	      break;
 	    default:
 	      ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);

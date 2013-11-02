@@ -229,16 +229,19 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
   if(flow == NULL) return;
 
   if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(zflow->tcp_flags);
-  flow->addFlowStats(src2dst_direction, zflow->in_pkts, zflow->in_bytes, 
-		     zflow->out_pkts, zflow->out_bytes, 
+  flow->addFlowStats(src2dst_direction,
+		     zflow->pkt_sampling_rate*zflow->in_pkts,
+		     zflow->pkt_sampling_rate*zflow->in_bytes, 
+		     zflow->pkt_sampling_rate*zflow->out_pkts,
+		     zflow->pkt_sampling_rate*zflow->out_bytes, 
 		     zflow->last_switched);
   flow->setDetectedProtocol(zflow->l7_proto);
   flow->setJSONInfo(json_object_to_json_string(zflow->additional_fields));
   flow->updateActivities();
   incStats(zflow->src_ip.isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
 	   flow->get_detected_protocol(), 
-	   (zflow->in_bytes + zflow->out_bytes), 
-	   (zflow->in_pkts + zflow->out_pkts),
+	   zflow->pkt_sampling_rate*(zflow->in_bytes + zflow->out_bytes), 
+	   zflow->pkt_sampling_rate*(zflow->in_pkts + zflow->out_pkts),
 	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
 
   purgeIdle(zflow->last_switched);
