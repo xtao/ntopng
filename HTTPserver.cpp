@@ -131,8 +131,9 @@ static void redirect_to_login(struct mg_connection *conn,
                               const struct mg_request_info *request_info) {
 
   char session_id[33];
+
   mg_get_cookie(conn, "session", session_id, sizeof(session_id));
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s(%s)", __FUNCTION__, session_id);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s(%s)", __FUNCTION__, session_id);
   
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
@@ -279,7 +280,7 @@ static int handle_lua_request(struct mg_connection *conn) {
       // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", request_info->uri, path);
       
       if(l == NULL) {
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start LUA interpreter");
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start Lua interpreter");
 	return(send_error(conn, 500 /* Internal server error */, "Internal server error", "%s", "Unable to start Lua interpreter"));
       } else {
 	l->handle_script_request(conn, request_info, path);
