@@ -164,10 +164,10 @@ void CollectorInterface::collect_flows() {
 	      flow.dst_ip.set_from_string((char*)value);
 	      break;
 	    case L4_SRC_PORT:
-	      flow.src_port = atoi(value);
+	      flow.src_port = htons(atoi(value));
 	      break;
 	    case L4_DST_PORT:
-	      flow.dst_port = atoi(value);
+	      flow.dst_port = htons(atoi(value));
 	      break;
 	    case SRC_VLAN:
 	    case DST_VLAN:

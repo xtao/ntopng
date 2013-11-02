@@ -45,7 +45,14 @@ Flow::Flow(NetworkInterface *_iface,
   categorization.category = NULL, categorization.flow_categorized = false;
   bytes_thpt_trend = trend_unknown;
   protocol_processed = false;
-  if(iface->is_ndpi_enabled()) allocFlowMemory();
+  /*
+    NOTE
+
+    We enable nDPI even if this is a flow collector interface
+    where DPI cannot be used. This is because we will use nDPI
+    to guess protocols based on ports and IPs
+   */
+  /* if(iface->is_ndpi_enabled()) */ allocFlowMemory();
 }
 
 /* *************************************** */
