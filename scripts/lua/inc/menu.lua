@@ -32,7 +32,7 @@ print [[
       <li><a href="/lua/about.lua"><i class="icon-question-sign"></i> About ntopng</a></li>
       <li><a href="http://blog.ntop.org/"><i class="icon-globe"></i> ntop Blog</a></li>
       <li class="divider"></li>
-      <li><a href="/"><i class="icon-dashboard"></i> Dashboard</a></li>
+      <li><a href="/lua/index.lua"><i class="icon-dashboard"></i> Dashboard</a></li>
       <li><a href="/lua/logout.lua"><i class="icon-off"></i> Logout</a></li>
     </ul>
   </li>

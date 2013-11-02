@@ -20,8 +20,10 @@ l4_keys = {
 
 function sendHTTPHeaderIfName(mime, ifname, maxage)
    print('HTTP/1.1 200 OK\r\n')
-   print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; http-only\r\n')
-   if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '\r\n') end
+   print('Cache-Control: max-age=0, no-cache, no-store\r\n')
+   print('Pragma: no-cache\r\n')
+   print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; path=/; http-only\r\n')
+   if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '; path=/\r\n') end
    print('Content-Type: '.. mime ..'\r\n')
    print('\r\n')
 end

@@ -12,6 +12,10 @@ sendHTTPHeaderLogout('text/html')
 ntop.deleteKey("sessions.".._SESSION["session"])
 ntop.deleteKey("sessions.".._SESSION["session"]..".ifname")
 
+-- io.write("Deleting ".."sessions.".._SESSION["session"].."\n")
+-- io.write("Deleting ".."sessions.".._SESSION["session"]..".ifname\n")
+
+
 print [[
  <meta http-equiv="refresh" content="1; URL=/">
 <html>

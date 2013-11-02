@@ -120,7 +120,7 @@ static int is_authorized(const struct mg_connection *conn,
     return(0);
   } else {
     ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
-    // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Session %s is OK", session_id);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", session_id, HTTP_SESSION_DURATION);
     return(1);
   }
 }
@@ -129,11 +129,15 @@ static int is_authorized(const struct mg_connection *conn,
 // we came from, so that after the authorization we could redirect back.
 static void redirect_to_login(struct mg_connection *conn,
                               const struct mg_request_info *request_info) {
+
+  char session_id[33];
+  mg_get_cookie(conn, "session", session_id, sizeof(session_id));
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] %s(%s)", __FUNCTION__, session_id);
+  
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
-	    "Set-Cookie: original_url=%s\r\n"
-	    "Set-Cookie: session=; path=/; max-age=0; HttpOnly\r\n"  // Session ID
+	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
 	    "Location: %s\r\n\r\n",
-	    request_info->uri, LOGIN_URL);
+	    session_id, LOGIN_URL);
 }
 
 static void get_qsvar(const struct mg_request_info *request_info,
@@ -158,8 +162,6 @@ static void authorize(struct mg_connection *conn,
     // Authentication success:
     //   1. create new session
     //   2. set session ID token in the cookie
-    //   3. remove original_url from the cookie - not needed anymore
-    //   4. redirect client back to the original URL
     //
     // The most secure way is to stay HTTPS all the time. However, just to
     // show the technique, we redirect to HTTP after the successful
@@ -177,7 +179,6 @@ static void authorize(struct mg_connection *conn,
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	      "Set-Cookie: session=%s; path=/; max-age=%u; HttpOnly\r\n"  // Session ID
 	      "Set-Cookie: user=%s; path=/; max-age=%u; HttpOnly\r\n"  // Set user, needed by Javascript code
-	      "Set-Cookie: original_url=/; max-age=0\r\n"  // Delete original_url
 	      "Location: /\r\n\r\n",
 	      session_id, HTTP_SESSION_DURATION, 
 	      user, HTTP_SESSION_DURATION);
@@ -185,9 +186,11 @@ static void authorize(struct mg_connection *conn,
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     ntop->getRedis()->set(key, user, HTTP_SESSION_DURATION);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Set session sessions.%s", session_id);
 
     snprintf(key, sizeof(key), "sessions.%s.ifname", session_id);
     ntop->getRedis()->del(key);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Set sessions.%s.ifname", session_id);
 
     // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Sending session %s", session_id);
   } else {
@@ -244,7 +247,7 @@ static int handle_lua_request(struct mg_connection *conn) {
       ;
     else if(!is_authorized(conn, request_info)) {
       redirect_to_login(conn, request_info);
-    } else if (strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
+    } else if(strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
       authorize(conn, request_info);
       return(1);
     }

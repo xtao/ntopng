@@ -83,9 +83,10 @@ static void* packetPollLoop(void* ptr) {
     const u_char *pkt;
     struct pcap_pkthdr hdr;
 
-    if((pkt = pcap_next(pd, &hdr)) != NULL)
-      iface->packet_dissector(&hdr, pkt);
-    else {
+    if((pkt = pcap_next(pd, &hdr)) != NULL) {
+      if((hdr.caplen > 0) && (hdr.len > 0))
+	iface->packet_dissector(&hdr, pkt);
+    } else {
       if(iface->read_from_pcap_dump())
 	break;
 
