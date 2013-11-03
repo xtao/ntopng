@@ -88,14 +88,14 @@ void usage() {
 	 "[-g <core>] "
 #endif
 	 "[-n mode] [-i <iface|pcap file>]\n"
-	 "              [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
-	 "              [-c <categorization key>] [-r <redis>]\n"
-	 "              [-l] [-U <sys user>] [-s] [-v] [-C]"
+	 "         [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
+	 "         [-c <categorization key>] [-r <redis>]\n"
+	 "         [-l] [-U <sys user>] [-s] [-v] [-C]"
 #ifdef HAVE_SQLITE
 	 " [-F]"
 #endif
 	 "\n"
-	 "              [-B <filter>] [-A <mode>]\n"
+	 "         [-B <filter>] [-A <mode>]\n"
 	 "\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
@@ -136,11 +136,14 @@ void usage() {
 	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
 	 "                                    | specific CPU Core\n"
 #endif
-	 "[--user|-U] <sys user>              | Run ntopng with the specified user instead of %s\n"
+	 "[--user|-U] <sys user>              | Run ntopng with the specified user\n"
+	 "                                    | instead of %s\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
-	 "[--max-num-flows|-X] <num>          | Max number of active flows (default: %u)\n"
-	 "[--max-num-hosts|-x] <num>          | Max number of active hosts (default: %u)\n"
+	 "[--max-num-flows|-X] <num>          | Max number of active flows\n"
+	 "                                    | (default: %u)\n"
+	 "[--max-num-hosts|-x] <num>          | Max number of active hosts\n"
+	 "                                    | (default: %u)\n"
 	 "[--users-file|-u] <path>            | Users configuration file path\n"
 	 "                                    | Default: %s\n"
 #ifndef WIN32
@@ -151,7 +154,8 @@ void usage() {
 	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:\n"
 	 "                                    | 0 - No aggregations (default)\n"
 	 "                                    | 1 - Enable aggregations, no timeline dump\n"
-	 "                                    | 2 - Enable aggregations, with timeline dump (see -C)\n"
+	 "                                    | 2 - Enable aggregations, with timeline\n"
+	 "                                    |     dump (see -C)\n"
 #ifdef HAVE_SQLITE
 	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
 #endif
