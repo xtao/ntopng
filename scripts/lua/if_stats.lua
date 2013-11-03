@@ -152,8 +152,8 @@ elseif(page == "ndpi") then
 	 print("<tr><th>"..k)
 	 t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
 	 print("</th><td class=\"text-right\">" .. bytesToSize(t).. "</td>")
-         print("<td>")
-         percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], k)
+         print("<td width=100>")
+         percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], "") -- k
          print("</td>\n")
 	 print("<td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end

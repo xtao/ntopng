@@ -19,8 +19,12 @@ l4_keys = {
 
 
 function sendHTTPHeaderIfName(mime, ifname, maxage)
+   info = ntop.getInfo()
+
    print('HTTP/1.1 200 OK\r\n')
    print('Cache-Control: max-age=0, no-cache, no-store\r\n')
+   print('Pragma: no-cache\r\n')
+   print('Server: ntopng '..info["version"]..'\r\n')
    print('Pragma: no-cache\r\n')
    print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; path=/; http-only\r\n')
    if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '; path=/\r\n') end

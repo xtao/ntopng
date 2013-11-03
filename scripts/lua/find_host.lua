@@ -20,20 +20,29 @@ print [[
    query = _GET["query"]
 --   query = "192"
 
-   if(query ~= nil) then 
+   if(query ~= nil) then
+      query = string.lower(query)
+
    for _key, value in pairs(hosts_stats) do
-      found = 0 
+      found = 0
       if((hosts_stats[_key]["name"] == nil) and (hosts_stats[_key]["ip"] ~= nil)) then
-	 hosts_stats[_key]["name"] = ntop.getResolvedAddress(hosts_stats[_key]["ip"]) 
+	 hosts_stats[_key]["name"] = ntop.getResolvedAddress(hosts_stats[_key]["ip"])
       end
       what = hosts_stats[_key]["name"]
 
-      if((what ~= nil) and (starts(what, query))) then 
+      if((what ~= nil) and (starts(string.lower(what), query))) then
 	 found = 1
       else
 	 what = hosts_stats[_key]["mac"]
-	 if(starts(what, query)) then 
-            found = 1
+	 if(starts(what, query)) then
+	    found = 1
+	 else
+	    if(hosts_stats[_key]["ip"] ~= nil) then
+	       what = hosts_stats[_key]["ip"]
+	       if(starts(what, query)) then
+		  found = 1
+	       end
+	    end
 	 end
       end
       
@@ -47,16 +56,16 @@ print [[
 
    aggregated_hosts_stats = interface.getAggregatedHostsInfo()
    for _key, value in pairs(aggregated_hosts_stats) do
-      found = 0 
-      if((aggregated_hosts_stats[_key]["name"] == nil) and (aggregated_hosts_stats[_key]["ip"] ~= nil)) then 
-	 aggregated_hosts_stats[_key]["name"] = ntop.getResolvedAddress(aggregated_hosts_stats[_key]["ip"]) 
+      found = 0
+      if((aggregated_hosts_stats[_key]["name"] == nil) and (aggregated_hosts_stats[_key]["ip"] ~= nil)) then
+	 aggregated_hosts_stats[_key]["name"] = ntop.getResolvedAddress(aggregated_hosts_stats[_key]["ip"])
       end
       what = aggregated_hosts_stats[_key]["name"]
-      if((what ~= nil) and (starts(what, query))) then 
+      if((what ~= nil) and (starts(what, query))) then
 	 found = 1
 	 what = what .. " (" .. aggregated_hosts_stats[_key]["family"] .. ")"
       end
-      
+
       if(found == 1) then
 	 if(num > 0) then print(",\n") end
 	 print("\t\""..what .. "\"")
@@ -64,7 +73,7 @@ print [[
       end
    end
 end
-   
+
 print [[
 
     ]
