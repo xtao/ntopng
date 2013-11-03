@@ -738,10 +738,18 @@ end
 function version2int(v)
    e = string.split(v, "%.");
    if(e ~= nil) then   
-   version = tonumber(e[1])*100 + tonumber(e[2])*10 + tonumber(e[3])
-   return(version)
+      major = e[1]
+      minor = e[2]
+      veryminor = e[3]
+      
+      if(major == nil)     then major = 0 end
+      if(minor == nil)     then minor = 0 end
+      if(veryminor == nil) then veryminor = 0 end
+
+      version = tonumber(major)*100 + tonumber(minor)*10 + tonumber(veryminor)
+      return(version)
    else
-   return(0)
+      return(0)
    end
 end
 
