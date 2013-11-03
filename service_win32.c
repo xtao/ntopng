@@ -909,6 +909,8 @@ void runService(int argc, char ** argv)
   lpszArgv = argv;
 #endif
 
+  AddToMessageLog("Starting ntopg");
+
   _tprintf(TEXT("Running %s.\n"), TEXT(SZSERVICEDISPLAYNAME));
 
   ServiceStart( dwArgc, lpszArgv);

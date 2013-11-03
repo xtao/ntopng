@@ -391,13 +391,21 @@ int Prefs::setOption(int optkey, char *optarg) {
 /* ******************************************* */
 
 int Prefs::checkOptions() {
-  if(daemonize) {
+  if(daemonize
+#ifdef WIN32
+		|| 1
+#endif
+	  ) {
     char path[MAX_PATH];
 
     ntop_mkdir(data_dir, 0777);
-    snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir());
+    snprintf(path, sizeof(path), "%s/ntopng.log", "C:\\Windows\\Temp" /* ntop->get_working_dir() */);
     ntop->fixPath(path);
     logFd = fopen(path, "w");
+	if(logFd)
+			ntop->getTrace()->traceEvent(TRACE_NORMAL, "Logging into %s", path);
+	else
+			ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to create log %s", path);
   }
 
   free(data_dir); data_dir = strdup(ntop->get_install_dir());

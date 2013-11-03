@@ -42,7 +42,7 @@ Ntop::Ntop(char *appName) {
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
 		     SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
-    strcpy(working_dir, "C:\\Windows\\Temp\\ntopng"); // Fallback: it should never happen
+    strcpy(working_dir, "C:\\Windows\\Temp" /* "\\ntopng" */); // Fallback: it should never happen
   }
 
   // Get the full path and filename of this program
