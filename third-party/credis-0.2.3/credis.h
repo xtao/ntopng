@@ -130,7 +130,7 @@ typedef struct _cr_info {
   u_int32_t pubsub_patterns;
   int32_t vm_enabled;
   int32_t role;
-}  __attribute__((packed)) REDIS_INFO;
+}  /* __attribute__((packed)) */ REDIS_INFO;
 
 
 /*

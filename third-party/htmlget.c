@@ -6,6 +6,10 @@
    Strongly debugged by Luca Deri <deri@ntop.org>
 */
 
+
+#ifdef WIN32
+#include "ntop_includes.h"
+#else
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -13,6 +17,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <string.h>
+#endif
 
 int create_tcp_socket();
 char *get_ip(char *host, char *buf, u_int buf_len);
@@ -100,7 +105,11 @@ char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len) {
     }
   }
 
+#ifdef WIN32
+  closesocket(sock);
+#else
   close(sock);
+#endif
 
   if(debug) fprintf(stderr, "%s\n", rsp);
   

@@ -37,6 +37,7 @@
 #endif
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
+#include "ntop_win32.h"
 #else 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -57,11 +58,13 @@
 
 #include "credis.h"
 
+/*
 #ifdef WIN32
 void close(int fd) {
   closesocket(fd);
 }
 #endif
+*/
 
 #define CR_ERROR '-'
 #define CR_INLINE '+'

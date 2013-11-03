@@ -150,6 +150,11 @@
 #endif
 
 #ifdef WIN32
+
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 // internal name of the service
 #define SZSERVICENAME        "ntopng"
 

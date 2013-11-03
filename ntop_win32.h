@@ -25,6 +25,10 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS 1
 #endif
+ 
+#ifndef PTHREAD_H
+#define PTHREAD_H
+#endif
 
 #include <winsock2.h> /* winsock.h is included automatically */
 #include <ws2tcpip.h>
@@ -116,7 +120,10 @@ typedef unsigned long  u_long;
 typedef u_char  u_int8_t;
 typedef u_short u_int16_t;
 typedef uint   u_int32_t;
+typedef int   int32_t;
 typedef unsigned __int64 u_int64_t;
+typedef __int64 int64_t;
+
 
 #define _WS2TCPIP_H_ /* Avoid compilation problems */
 #define HAVE_SIN6_LEN
