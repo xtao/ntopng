@@ -92,6 +92,9 @@ int main(int argc, char *argv[])
     prefs->addDefaultInterface();
   }
 
+  if(prefs->daemonize_ntopng())
+    ntop->daemonize();
+
   for(int i=0; i<max_val(1, prefs->get_num_interfaces()); i++) {
     NetworkInterface *iface;
 
@@ -133,9 +136,6 @@ int main(int argc, char *argv[])
 
   if(prefs->do_change_user())
     Utils::dropPrivileges();
-
-  if(prefs->daemonize_ntopng())
-    ntop->daemonize();
 
 #ifndef WIN32
   if(prefs->get_pid_path() != NULL) {
