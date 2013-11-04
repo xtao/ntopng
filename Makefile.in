@@ -126,7 +126,7 @@ maketar:
 	else \
 	  cp ./httpdocs/geoip/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/ ;\
 	fi
-	gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
+	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
 	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
 
 
