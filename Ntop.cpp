@@ -94,7 +94,13 @@ void Ntop::initTimezone() {
      during the night and thus we need to have it "fresh"
   */
   tzset();
-  time_offset = timezone - (daylight * 3600);
+  time_offset = 
+#ifndef __FreeBSD__
+    timezone - (daylight * 3600)
+#else
+    0 /* We'll better fix it later */
+#endif
+    ;
 }
 
 /* ******************************************* */
