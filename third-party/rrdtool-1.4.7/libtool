@@ -2,7 +2,7 @@
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by config.status (rrdtool) 1.4.7
-# Libtool was configured on host mastroxeon:
+# Libtool was configured on host ntop.consiagnet.it:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
@@ -56,28 +56,28 @@ fast_install=needless
 
 # The host system.
 host_alias=
-host=x86_64-unknown-linux-gnu
-host_os=linux-gnu
+host=x86_64-unknown-freebsd9.2
+host_os=freebsd9.2
 
 # The build system.
 build_alias=
-build=x86_64-unknown-linux-gnu
-build_os=linux-gnu
+build=x86_64-unknown-freebsd9.2
+build_os=freebsd9.2
 
 # A sed program that does not truncate output.
-SED="/bin/sed"
+SED="/usr/bin/sed"
 
 # Sed that helps us avoid accidentally triggering echo(1) options like -n.
 Xsed="$SED -e 1s/^X//"
 
 # A grep program that handles long lines.
-GREP="/bin/grep"
+GREP="/usr/bin/grep"
 
 # An ERE matcher.
-EGREP="/bin/grep -E"
+EGREP="/usr/bin/grep -E"
 
 # A literal string matcher.
-FGREP="/bin/grep -F"
+FGREP="/usr/bin/grep -F"
 
 # A BSD- or MS-compatible name lister.
 NM="/usr/bin/nm -B"
@@ -86,7 +86,7 @@ NM="/usr/bin/nm -B"
 LN_S="ln -s"
 
 # What is the maximum length of a command?
-max_cmd_len=1572864
+max_cmd_len=196608
 
 # Object file suffix (normally "o").
 objext=o
@@ -196,7 +196,7 @@ need_lib_prefix=no
 need_version=no
 
 # Library versioning type.
-version_type=linux
+version_type=freebsd-elf
 
 # Shared library runtime path variable.
 runpath_var=LD_RUN_PATH
@@ -212,10 +212,10 @@ libname_spec="lib\$name"
 
 # List of archive names.  First name is the real one, the rest are links.
 # The last name is the one that the linker finds with -lNAME
-library_names_spec="\${libname}\${release}\${shared_ext}\$versuffix \${libname}\${release}\${shared_ext}\$major \$libname\${shared_ext}"
+library_names_spec="\${libname}\${release}\${shared_ext}\$versuffix \${libname}\${release}\${shared_ext} \$libname\${shared_ext}"
 
 # The coded name of the library, if different from the real name.
-soname_spec="\${libname}\${release}\${shared_ext}\$major"
+soname_spec=""
 
 # Command to use after installation of a shared archive.
 postinstall_cmds=""
@@ -224,7 +224,7 @@ postinstall_cmds=""
 postuninstall_cmds=""
 
 # Commands used to finish a libtool library installation in a directory.
-finish_cmds="PATH=\\\"\\\$PATH:/sbin\\\" ldconfig -n \$libdir"
+finish_cmds=""
 
 # As "finish_cmds", except a single script fragment to be evaled but
 # not shown.
@@ -234,10 +234,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib/gcc/x86_64-pc-linux-gnu/4.8.1 /usr/lib64 /lib64 /usr/x86_64-pc-linux-gnu/lib"
+sys_lib_search_path_spec="/usr/lib"
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib /usr/lib /lib64 /usr/lib64 /usr/local/lib64 /lib32 /usr/lib32 /usr/local/lib32 /lib /usr/lib /usr/local/lib /usr/x86_64-pc-linux-gnu/lib /usr/lib/gcc/x86_64-pc-linux-gnu/4.8.1/32 /usr/lib/gcc/x86_64-pc-linux-gnu/4.8.1 /usr/lib/gcc/x86_64-pc-linux-gnu/4.5.4/32 /usr/lib/gcc/x86_64-pc-linux-gnu/4.5.4 /usr/lib/gcc/x86_64-pc-linux-gnu/4.4.7 /usr/lib64/opengl/xorg-x11/lib /usr/lib64/oprofile /opt/cuda/lib64 /opt/cuda/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib"
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -254,7 +254,7 @@ striplib="strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/usr/x86_64-pc-linux-gnu/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld"
 
 # Commands used to build an old-style archive.
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
@@ -303,10 +303,7 @@ old_archive_from_expsyms_cmds=""
 
 # Commands used to build a shared archive.
 archive_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
-archive_expsym_cmds="echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
-	    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
-	    echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
-	    \$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+archive_expsym_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-retain-symbols-file \$wl\$export_symbols -o \$lib"
 
 # Commands used to build a loadable module if different from building
 # a shared archive.
@@ -653,8 +650,9 @@ func_len ()
 # Append VALUE to the end of shell variable VAR.
 func_append ()
 {
-  eval "$1+=\$2"
+  eval "$1=\$$1\$2"
 }
+
 # Generated shell functions inserted here.
 
 # Work around backward compatibility issue on IRIX 6.5. On IRIX 6.4+, sh

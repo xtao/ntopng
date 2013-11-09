@@ -24,6 +24,10 @@
 
 #include "config.h"
 
+#ifdef __FreeBSD
+#define _XOPEN_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 
