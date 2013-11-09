@@ -1,4 +1,4 @@
-AC_INIT([Makefile.in], 1.1)
+AC_INIT([Makefile.in], 1.1.1)
 
 AC_PROG_CPP
 
@@ -112,6 +112,14 @@ then
   Z_LIB="-lz"
 fi
 
+dnl> ldl (used by edjdb)
+DL_LIB=""
+AC_CHECK_LIB([dl], [dlopen], ldl=true)
+if test x$ldl = xtrue
+then
+  DL_LIB="-ldl"
+fi
+
 dnl> Check for package install
 DOWNLOAD_GEOIP=0
 AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum])
@@ -150,6 +158,19 @@ then
 	GMAKE="make"
 fi
 
+SVN=`which svn`
+if test x$SVN = x
+then
+	AC_MSG_RESULT(FATAL ERROR: svn is not installed on your host)
+	exit
+fi
+
+WGET=`which wget`
+if test x$WGET = x
+then
+	AC_MSG_RESULT(ERROR. wget is not installed on your host: you cannot download GeoIP data)
+fi
+
 umask 002
 
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
@@ -166,8 +187,10 @@ AC_SUBST(Z_LIB)
 AC_SUBST(GEOIP_LIB)
 AC_SUBST(SQLITE_LIB)
 AC_SUBST(GMAKE)
+AC_SUBST(SVN)
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
+AC_SUBST(DL_LIB)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(SVN_RELEASE)
@@ -185,5 +208,5 @@ echo "You are now ready to compile typing $GMAKE"
 
 if test $DOWNLOAD_GEOIP = "1"
 then
-  echo "Please do not forget to download GeoIP databases doing: make geoip"
+  echo "Please do not forget to download GeoIP databases doing: $GMAKE geoip"
 fi
