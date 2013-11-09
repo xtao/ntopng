@@ -86,21 +86,18 @@ Ntop::Ntop(char *appName) {
 
 /* ******************************************* */
 
-void Ntop::initTimezone() {
-  /*
-     Setup timezone differences
+/*
+  Setup timezone differences
+  
+  We call it all the time as daylight can change
+  during the night and thus we need to have it "fresh"
+*/
 
-     We call it all the time as daylight can change
-     during the night and thus we need to have it "fresh"
-  */
-  tzset();
-  time_offset = 
-#ifndef __FreeBSD__
-    timezone - (daylight * 3600)
-#else
-    0 /* We'll better fix it later */
-#endif
-    ;
+void Ntop::initTimezone() {
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
+
+  time_offset = t->tm_gmtoff;
 }
 
 /* ******************************************* */
