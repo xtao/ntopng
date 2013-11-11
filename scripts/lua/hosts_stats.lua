@@ -11,8 +11,28 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+mode = _GET["mode"]
+if(mode == nil) then mode = "all" end
+
 active_page = "hosts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
+print [[
+      <hr>
+      <div id="table-hosts"></div>
+	 <script>
+	 $("#table-hosts").datatable({
+					title: "Hosts List",
+					url: "/lua/get_hosts_data.lua?mode=]] 
+print(mode..'",')
+
+if(mode == "all") then
+   print('title: "All Hosts",\n')
+elseif(mode == "local") then
+   print('title: "Local Hosts",\n')
+else
+   print('title: "Remote Hosts",\n')
+end
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_top.inc")
 

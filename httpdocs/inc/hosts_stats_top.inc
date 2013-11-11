@@ -1,15 +1,6 @@
-
-
-      <hr>
-
-
-
-      <div id="table-hosts"></div>
-	 <script>
-	 $("#table-hosts").datatable({
-	   url: "/lua/get_hosts_data.lua",
+	
 	       showPagination: true,
-	       title: "Hosts List",
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
 	        columns: [
 			     {
 			     title: "IP Address",

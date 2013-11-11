@@ -14,6 +14,7 @@ sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 aggregated  = _GET["aggregated"]
 protocol    = _GET["protocol"]
+mode        = _GET["mode"]
 
 -- Only for aggregations
 client      = _GET["client"]
@@ -33,6 +34,8 @@ if(perPage == nil) then
 else
    perPage = tonumber(perPage)
 end
+
+if((mode == nil) or (mode == "")) then mode = "all" end
 
 interface.find(ifname)
 
@@ -57,18 +60,28 @@ for key, value in pairs(hosts_stats) do
    num = num + 1
    postfix = string.format("0.%04u", num)
 
-   if(client ~= nil) then
-      ok = false
-
-      for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
-	 if((ok == false) and (k == client)) then ok = true end
-      end
-      
-      for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
-	 if((ok == false) and (k == client)) then ok = true end
-      end
-   else
+   if((mode == "all")
+      or ((mode == "local") and (value["localhost"] == true))
+      or ((mode == "remote") and (value["localhost"] ~= true))) then
       ok = true
+   else
+      ok = false      
+   end
+
+   if(ok == true) then
+      if(client ~= nil) then
+	 ok = false
+	 
+	 for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
+	    if((ok == false) and (k == client)) then ok = true end
+	 end
+	 
+	 for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
+	    if((ok == false) and (k == client)) then ok = true end
+	 end
+      else
+	 ok = true
+      end
    end
 
    if(ok) then
