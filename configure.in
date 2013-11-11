@@ -1,3 +1,10 @@
+dnl>
+dnl> ntopng release history
+dnl>
+dnl> 0.1    	r6089	2013-03-25
+dnl> 1.0	r6533	2013-06-30
+dnl> 1.1	r6929	2013-11-03
+
 AC_INIT([Makefile.in], 1.1.1)
 
 AC_PROG_CPP
