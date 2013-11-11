@@ -22,11 +22,14 @@
 #include "ntop_includes.h"
 #include "ewah.h"
 
+typedef EWAHBoolArray<u_int32_t> Uint32EWAHBoolArray;
+
+
 /* *************************************** */
 
 /* Daily duration */
 ActivityStats::ActivityStats(time_t when) {
-  _bitset = new EWAHBoolArray<u_int32_t>;
+  _bitset = new Uint32EWAHBoolArray;
 
   begin_time  = (when == 0) ? time(NULL) : when;
   begin_time -= (begin_time % CONST_MAX_ACTIVITY_DURATION);
@@ -42,7 +45,7 @@ ActivityStats::ActivityStats(time_t when) {
 /* *************************************** */
 
 ActivityStats::~ActivityStats() {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
 
   delete bitset;
 }
@@ -50,7 +53,7 @@ ActivityStats::~ActivityStats() {
 /* *************************************** */
 
 void ActivityStats::reset() {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
 
   m.lock(__FILE__, __LINE__);
   bitset->reset();
@@ -63,7 +66,7 @@ void ActivityStats::reset() {
 /* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
   if((last_set_requested != when) || (when < begin_time)) {
-    EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+    Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
     u_int32_t w;
    
     last_set_requested = when;
@@ -93,7 +96,7 @@ void ActivityStats::set(time_t when) {
 /* *************************************** */
 
 void ActivityStats::setDump(stringstream* dump) {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
 
   bitset->read(*dump);
 }
@@ -101,7 +104,7 @@ void ActivityStats::setDump(stringstream* dump) {
 /* *************************************** */
 
 bool ActivityStats::writeDump(char* path) {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   stringstream ss;
   time_t now = time(NULL);
   time_t expire_time = now+((now+CONST_MAX_ACTIVITY_DURATION-1) % CONST_MAX_ACTIVITY_DURATION);
@@ -132,11 +135,11 @@ bool ActivityStats::writeDump(char* path) {
 /* *************************************** */
 
 bool ActivityStats::readDump(char* path) {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   char rsp[4096];
   
   if(ntop->getRedis()->get(path, rsp, sizeof(rsp)) == 0) {
-    EWAHBoolArray<u_int32_t> tmp;
+    Uint32EWAHBoolArray tmp;
     std::string decoded = Utils::base64_decode(rsp);
     std::string s(decoded);
     std::stringstream ss(s);
@@ -152,7 +155,7 @@ bool ActivityStats::readDump(char* path) {
     m.lock(__FILE__, __LINE__);
     bitset->reset();
 
-    for(EWAHBoolArray<u_int32_t>::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
+    for(Uint32EWAHBoolArray::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
       bitset->set((size_t)*i);
 
     m.unlock(__FILE__, __LINE__);
@@ -173,12 +176,12 @@ bool ActivityStats::readDump(char* path) {
 json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   u_int num = 0, last_dump = 0;
   my_object = json_object_new_object();
 
   m.lock(__FILE__, __LINE__);
-  for(EWAHBoolArray<u_int32_t>::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
+  for(Uint32EWAHBoolArray::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
     /*
       As the bitmap has the time set in UTC we need to remove the timezone in order
       to represent the time as local time
@@ -222,7 +225,7 @@ char* ActivityStats::serialize() {
 /* *************************************** */
 
 void ActivityStats::deserialize(json_object *o) {
-  EWAHBoolArray<u_int32_t> *bitset = (EWAHBoolArray<u_int32_t>*)_bitset;
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   struct json_object_iterator it, itEnd;
 
   if(!o) return;
