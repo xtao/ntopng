@@ -25,6 +25,7 @@ or
 .IR <data_directory> ]
 .RB [ -n 
 .IR <mode> ]
+.RB [ -e ]
 .RB [ -w 
 .IR <http_port> ]
 .RB [ -c
@@ -144,6 +145,9 @@ In order to use these categorization services you need to mail info@block.si and
 ask for a test key to be used in ntopng.
 For test driving the service please use as key 9hoAtewwpC2tXRMJBfifrY24B
 (example ntopng -c 9hoAtewwpC2tXRMJBfifrY24B .....).
+
+.It -e|--daemon
+This parameter causes ntop to become a daemon, i.e. a task which runs in the background without connection to a specific terminal. To use ntop other than as a casual monitoring tool, you probably will want to use this option.
 
 .It -w|--http-port
 Sets the HTTP port of the embedded web server.
