@@ -108,10 +108,9 @@ public:
 		return ss.str();
 	}
     friend ostream& operator<< (ostream &out, const EWAHBoolArray &a) {
-      const_iterator i;
 
     	out<<"{";
-		for (i = a.begin(); i != a.end(); ) {
+		for (EWAHBoolArray::const_iterator i = a.begin(); i != a.end(); ) {
 			out<<*i;
 			++i;
 			if( i != a.end())
@@ -793,7 +792,7 @@ void EWAHBoolArray<uword>::inplace_logicalnot() {
             rlw.setRunningBit(true);
         ++pointer;
         for (size_t k = 0; k < rlw.getNumberOfLiteralWords(); ++k) {
-            buffer[pointer] = ~buffer[pointer];
+            buffer[pointer] = static_cast<uword>(~buffer[pointer]);
             ++pointer;
         }
     }
@@ -1530,7 +1529,7 @@ void EWAHBoolArray<uword>::logicalxor(EWAHBoolArray &a, EWAHBoolArray &container
 							static_cast<size_t> (preyrl - tobediscarded));
 				} else {
 					for(size_t x = 0; x<static_cast<size_t> (preyrl - tobediscarded);++x)
-								container.add(~dw_predator[x]);
+								container.add(static_cast<uword>(~dw_predator[x]));
 				}
 			}
 		}
@@ -1548,18 +1547,11 @@ void EWAHBoolArray<uword>::logicalxor(EWAHBoolArray &a, EWAHBoolArray &container
 				const uword * dw_prey(
 						i_is_prey ? i.dirtyWords() : j.dirtyWords());
 				if (predator.getRunningBit() == 0) {
-			//		cout<<">>> outputing dirty "<<(tobediscarded)<<endl;
-
 					container.addStreamOfDirtyWords(dw_prey,
 							static_cast<size_t> (tobediscarded));
 				} else {
-				//	cout<<">>> outputing negated dirty "<<(tobediscarded)<<endl;
 					for(size_t x = 0; x<tobediscarded;++x)
-						container.add(~dw_prey[x]);
-
-					//container.addStreamOfNegatedDirtyWords(dw_prey,
-						//	static_cast<size_t> (tobediscarded));
-
+						container.add(static_cast<uword>(~dw_prey[x]));
 				}
 				predator.discardFirstWords(tobediscarded);
 				prey.discardFirstWords(tobediscarded);
@@ -1572,7 +1564,6 @@ void EWAHBoolArray<uword>::logicalxor(EWAHBoolArray &a, EWAHBoolArray &container
             assert(predator.getRunningLength() == 0);
             const uword * idirty = i.dirtyWords();
             const uword * jdirty = j.dirtyWords();
-			cout<<">>> outputing computed "<<(nbre_dirty_prey)<<endl;
 
             for (uword k = 0; k < nbre_dirty_prey; ++k) {
                 container.add(idirty[k] ^ jdirty[k]);
