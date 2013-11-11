@@ -24,7 +24,7 @@
 				 field: "column_location",
 				 sortable: false,
 	 	             css: { 
-			        textAlign: 'left'
+			        textAlign: 'right'
 			     }
 
 				 },			     

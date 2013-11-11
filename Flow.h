@@ -80,22 +80,24 @@ class Flow : public GenericHashEntry {
   void incStats(bool cli2srv_direction, u_int pkt_len);
   void updateActivities();
   void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen);
-  inline bool isDetectionCompleted()  { return(detection_completed); };
-  inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow); };
-  inline void* get_cli_id()                       { return(cli_id);    };
-  inline void* get_srv_id()                       { return(srv_id);    };
+  inline bool isDetectionCompleted()              { return(detection_completed);             };
+  inline struct ndpi_flow_struct* get_ndpi_flow() { return(ndpi_flow);                       };
+  inline void* get_cli_id()                       { return(cli_id);                          };
+  inline void* get_srv_id()                       { return(srv_id);                          };
   inline u_int32_t get_cli_ipv4()                 { return(cli_host->get_ip()->get_ipv4());  };
   inline u_int32_t get_srv_ipv4()                 { return(srv_host->get_ip()->get_ipv4());  };
-  inline u_int16_t get_cli_port()                 { return(cli_port);  };
-  inline u_int16_t get_srv_port()                 { return(srv_port);  };
-  inline u_int16_t get_vlan_id()                  { return(vlanId);    };
-  inline u_int8_t  get_protocol()                 { return(protocol);  };
-  inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol)); };
-  inline u_int16_t get_detected_protocol()        { return(detected_protocol); };
-  inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); }
-  inline Host* get_cli_host()                     { return(cli_host); };
-  inline Host* get_srv_host()                     { return(srv_host); };
-  inline char* get_json_info()			  { return(json_info); }
+  inline u_int16_t get_cli_port()                 { return(cli_port);                        };
+  inline u_int16_t get_srv_port()                 { return(srv_port);                        };
+  inline u_int16_t get_vlan_id()                  { return(vlanId);                          };
+  inline u_int8_t  get_protocol()                 { return(protocol);                        };
+  inline u_int64_t get_bytes()                    { return(cli2srv_bytes+srv2cli_bytes);     };
+  inline u_int64_t get_packets()                  { return(cli2srv_packets+srv2cli_packets); };
+  inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol));   };
+  inline u_int16_t get_detected_protocol()        { return(detected_protocol);               };
+  inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); };
+  inline Host* get_cli_host()                     { return(cli_host);                        };
+  inline Host* get_srv_host()                     { return(srv_host);                        };
+  inline char* get_json_info()			  { return(json_info);                       };
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
   void aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id);
