@@ -557,6 +557,9 @@ categories = {
  }},
    {"6_33", "Personal Privacy", {
        {"Sites providing online banking, trading, health care, and others that contain personal privacy information."},
+ }},
+  {"7_0", "Unrated", {
+       {"Unrated site."},
  }}
 };
 
