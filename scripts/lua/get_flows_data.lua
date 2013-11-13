@@ -83,7 +83,9 @@ for key, value in pairs(flows_stats) do
 	 elseif(sortColumn == "column_ndpi") then
 	 vkey = flows_stats[key]["proto.ndpi"]..postfix
 	 elseif(sortColumn == "column_category") then
-   	 vkey = flows_stats[key]["category"]..postfix
+	 c = flows_stats[key]["category"]
+	 if(c == nil) then c = "" end
+   	 vkey = c..postfix
 	 elseif(sortColumn == "column_duration") then
 	 vkey = flows_stats[key]["duration"]+postfix	  
 	 elseif(sortColumn == "column_thpt") then
