@@ -168,7 +168,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 if(value["category"] ~= nil) then print (", \"column_category\" : \"" .. getCategory(value["category"])) else print (",") end
 	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
-	 print ("\", \"column_ndpi\" : \"" .. value["proto.ndpi"])
+	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
@@ -176,11 +176,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
 
 	    if(value["throughput_trend"] == 1) then 
-	       print("<i class=icon-arrow-up></i>")
+	       print("<i class='fa fa-icon-arrow-up fa-lg'></i>")
 	       elseif(value["throughput_trend"] == 2) then
-	       print("<i class=icon-arrow-down></i>")
+	       print("<i class='fa fa-icon-arrow-down fa-lg'></i>")
 	       elseif(value["throughput_trend"] == 3) then
-	       print("<i class=icon-minus></i>")
+	       print("<i class='fa fa-icon-minus fa-lg'></i>")
 	    end
 	    print("\"")
 	 else

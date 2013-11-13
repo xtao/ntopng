@@ -266,6 +266,15 @@ char* Flow::ipProto2Name(u_short proto_id) {
   case IPPROTO_ICMP:
     return((char*)"ICMP");
     break;
+  case 50:
+    return((char*)"ESP");
+    break;
+  case 58:
+    return((char*)"IPv6-ICMP");
+    break;
+  case 103:
+    return((char*)"PIM");
+    break;
   case 112:
     return((char*)"VRRP");
     break;

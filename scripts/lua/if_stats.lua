@@ -187,14 +187,14 @@ print [[
 				var drops = "";
 
 				if(last_pkts == rsp.packets) {
-				   $('#pkts_trend').html("<i class=icon-minus></i>");
+				   $('#pkts_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 				} else {
-				   $('#pkts_trend').html("<i class=icon-arrow-up></i>");
+				   $('#pkts_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 				}
 				if(last_drops == rsp.drops) {
-				   $('#drops_trend').html("<i class=icon-minus></i>");
+				   $('#drops_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 				} else {
-				   $('#drops_trend').html("<i class=icon-arrow-up></i>");
+				   $('#drops_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 				}
 				last_pkts = rsp.packets;
 				last_drops == rsp.drops;

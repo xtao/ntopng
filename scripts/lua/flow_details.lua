@@ -18,7 +18,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
-patterns = {["<"] = "", ["->"] = "<i class=icon-exchange></i>" }
+patterns = {["<"] = "", ["->"] = "<i class=\"fa fa-icon-exchange fa-lg\"></i>" }
 for search,replace in pairs(patterns) do
    a = string.gsub(a, search, replace)
 end
@@ -148,29 +148,29 @@ setInterval(function() {
 			/* **************************************** */
 
 			if(cli2srv_packets == rsp["cli2srv.packets"]) {
-			   $('#sent_trend').html("<i class=icon-minus></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 			} else {
-			   $('#sent_trend').html("<i class=icon-arrow-up></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 			}
 
 			if(srv2cli_packets == rsp["srv2cli.packets"]) {
-			   $('#rcvd_trend').html("<i class=icon-minus></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 			} else {
-			   $('#rcvd_trend').html("<i class=icon-arrow-up></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 			}
 
 			if(bytes == rsp["bytes"]) {
-			   $('#volume_trend').html("<i class=icon-minus></i>");
+			   $('#volume_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 			} else {
-			   $('#volume_trend').html("<i class=icon-arrow-up></i>");
+			   $('#volume_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 			}
 
 			if(throughput > rsp["throughput"]) {
-			   $('#throughput_trend').html("<i class=icon-arrow-down></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-icon-arrow-down fa-lg\"></i>");
 			} else if(throughput < rsp["throughput"]) {
-			   $('#throughput_trend').html("<i class=icon-arrow-up></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
 			} else {
-			   $('#throughput_trend').html("<i class=icon-minus></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
 			}
 
 			cli2srv_packets = rsp["cli2srv.packets"];

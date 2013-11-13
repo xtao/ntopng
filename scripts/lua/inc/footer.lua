@@ -207,7 +207,7 @@ setInterval(function() {
 		pps = Math.floor(packets_diff / epoch_diff);
 		bps = Math.round((bytes_diff*8) / epoch_diff);
 		msg = ""+bitsToSize(bps, 1000)+" [" + addCommas(pps) + " pps]<br>";
-		msg += "<i class=\"icon-time\"></i> Uptime: "+rsp.uptime+"<br>";
+		msg += "<i class=\"fa fa-icon-time fa-lg\"></i> Uptime: "+rsp.uptime+"<br>";
 
 		var alarm_threshold_low = 60;  /* 60% */
 		var alarm_threshold_high = 90; /* 90% */

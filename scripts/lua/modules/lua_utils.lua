@@ -64,7 +64,7 @@ end
 
 function printASN(asn, asname)
    if(asn > 0) then
-      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class=icon-external-link></i>")
+      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class='fa fa-icon-external-link fa-lg'></i>")
    else
       return("")
    end
@@ -724,13 +724,27 @@ end
 function getOSIcon(name)
    icon = ""
 
-   if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=icon-linux></i> '
-      elseif(findString(name, "Android")) then icon = '<i class=icon-android></i> '
-      elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=icon-windows></i> '
-      elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=icon-apple></i> '
+   if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=\'fa fa-icon-linux fa-lg\'></i> '
+      elseif(findString(name, "Android")) then icon = '<i class=\'fa fa-icon-android fa-lg\'></i> '
+      elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=\'fa fa-icon-windows fa-lg\'></i> '
+      elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=\'fa fa-icon-apple fa-lg\'></i> '
    end
 
    return(icon)
+end
+
+function getApplicationLabel(name)
+   icon = ""
+
+   if(findString(name, "Skype")) then icon = '<i class=\'fa fa-skype fa-lg\'></i>'
+      elseif(findString(name, "Twitter")) then icon = '<i class=\'fa fa-twitter fa-lg\'></i>'
+      elseif(findString(name, "DropBox")) then icon = '<i class=\'fa fa-dropbox fa-lg\'></i>'
+      elseif(findString(name, "Apple")) then icon = '<i class=\'fa fa-apple fa-lg\'></i>'
+      elseif(findString(name, "Google")) then icon = '<i class=\'fa fa-google fa-lg\'></i>'
+      elseif(findString(name, "Facebook")) then icon = '<i class=\'fa fa-facebook-square fa-lg\'></i>'
+   end
+
+   return(icon.." "..name)
 end
 
 function mapOS2Icon(name)

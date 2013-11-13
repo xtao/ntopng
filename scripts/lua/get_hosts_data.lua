@@ -198,11 +198,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 
 	       if(value["throughput_trend"] == 1) then
-		  print("<i class=icon-arrow-up></i>")
+		  print("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>")
 		  elseif(value["throughput_trend"] == 2) then
-		  print("<i class=icon-arrow-down></i>")
+		  print("<i class=\"fa fa-icon-arrow-down fa-lg\"></i>")
 		  elseif(value["throughput_trend"] == 3) then
-		  print("<i class=icon-minus></i>")
+		  print("<i class=\"fa fa-icon-minus fa-lg\"></i>")
 	       end
 	    else
 	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))

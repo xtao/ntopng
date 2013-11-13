@@ -7,7 +7,7 @@ print [[
 ]]
 
 -- FIX: show notifications to the user
---        print('<a class="btn" href="#"><i class="icon-bell"></i></a>')
+--        print('<a class="btn" href="#"><i class="fa fa-icon-bell fa-lg"></i></a>')
 
 print [[
 	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead"></input>

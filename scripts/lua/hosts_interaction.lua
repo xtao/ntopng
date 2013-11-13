@@ -46,7 +46,7 @@ if(num > 0) then
       else
 	 name = host_name
 	 if(name == nil) then name = host_ip end
-	 print("<hr><h2>"..name.." Interactions</H2><i class=icon-chevron-left></i><small><A onClick=\"javascript:history.back()\">Back</A></small>")
+	 print("<hr><h2>"..name.." Interactions</H2><i class=\"fa fa-icon-chevron-left fa-lg\"></i><small><A onClick=\"javascript:history.back()\">Back</A></small>")
       end
    end
 
