@@ -1,6 +1,6 @@
 AC_INIT([Makefile.in], 1.0)
 
-NTOPNG_VERS=`cat ../../configure.in | head -1|grep '_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
+NTOPNG_VERS=`cat ../../configure.in | head -2|grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 
