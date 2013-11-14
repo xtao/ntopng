@@ -161,6 +161,6 @@ window.setInterval(sankey, 5000);
 </script>
 
 <span class="row-fluid marketing">
-<div class="span11">&nbsp;</div><div><small><A HREF=http://bost.ocks.org/mike/sankey/><i class="fa fa-icon-question-sign fa-lg"></i></A></small></div>
+<div class="span11">&nbsp;</div><div><small><A HREF=http://bost.ocks.org/mike/sankey/><i class="fa fa-question-sign fa-lg"></i></A></small></div>
 </span>
 ]]

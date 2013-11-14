@@ -74,7 +74,7 @@ if(page == "overview") then
    if(host["family"] == "Operating System") then
       print(host["name"])
    else
-      print("<A HREF=http://" .. host["name"].. ">".. host["name"].."</A> <i class=\"fa fa-icon-external-link fa-lg\"></i>")
+      print("<A HREF=http://" .. host["name"].. ">".. host["name"].."</A> <i class=\"fa fa-external-link fa-lg\"></i>")
    end
    print("</td></tr>\n")
    print("<tr><th>Family</th><td>" .. host["family"].. "</td></tr>\n")
@@ -87,9 +87,9 @@ if(page == "overview") then
    print [[
 	    <tr><th>Activity Map</th><td>
 	    <span id="sentHeatmap"></span>
-	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-angle-left fa-lg"></i></button>
-	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-refresh fa-lg"></i></button>
-	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-angle-right fa-lg"></i></button>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-left fa-lg"></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-refresh fa-lg"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-right fa-lg"></i></button>
 	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">
@@ -195,9 +195,9 @@ setInterval(function() {
 			$('#contacts').html(addCommas(rsp.num_contacts));
 
 			if(contacts == rsp.num_contacts) {
-			   $('#contacts_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#contacts_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#contacts_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#contacts_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 			contacts = rsp.num_contacts;
 

@@ -176,11 +176,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
 
 	    if(value["throughput_trend"] == 1) then 
-	       print("<i class='fa fa-icon-arrow-up fa-lg'></i>")
+	       print("<i class='fa fa-arrow-up'></i>")
 	       elseif(value["throughput_trend"] == 2) then
-	       print("<i class='fa fa-icon-arrow-down fa-lg'></i>")
+	       print("<i class='fa fa-arrow-down'></i>")
 	       elseif(value["throughput_trend"] == 3) then
-	       print("<i class='fa fa-icon-minus fa-lg'></i>")
+	       print("<i class='fa fa-minus'></i>")
 	    end
 	    print("\"")
 	 else

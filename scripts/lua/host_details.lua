@@ -238,7 +238,7 @@ if((page == "overview") or (page == nil)) then
 	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\"> ")
       end
 
-      print(host["name"] .. "</span></A> <i class=\"fa fa-icon-external-link fa-lg\"></i> ")
+      print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
 
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
@@ -256,14 +256,14 @@ end
 
    print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
-   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><i class=\"fa fa-icon-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?host="..host_ip..">Download<A></td></tr>\n") end
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?host="..host_ip..">Download<A></td></tr>\n") end
 
    print [[
 	    <tr><th>Activity Map</th><td>
 	    <span id="sentHeatmap"></span>
-	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-angle-left fa-lg""></i></button>
-	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-refresh fa-lg"></i></button>
-	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-icon-angle-right fa-lg"></i></button>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-left fa-lg""></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-refresh fa-lg"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-right fa-lg"></i></button>
 	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">
@@ -721,15 +721,15 @@ setInterval(function() {
 			/* **************************************** */
 
 			if(last_pkts_sent == host["pkts.sent"]) {
-			   $('#sent_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#sent_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			if(last_pkts_rcvd == host["pkts.rcvd"]) {
-			   $('#rcvd_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#rcvd_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			last_pkts_sent = host["pkts.sent"];

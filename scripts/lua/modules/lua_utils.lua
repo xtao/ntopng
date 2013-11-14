@@ -64,7 +64,7 @@ end
 
 function printASN(asn, asname)
    if(asn > 0) then
-      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class='fa fa-icon-external-link fa-lg'></i>")
+      return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class='fa fa-external-link fa-lg'></i>")
    else
       return("")
    end
@@ -724,10 +724,10 @@ end
 function getOSIcon(name)
    icon = ""
 
-   if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=\'fa fa-icon-linux fa-lg\'></i> '
-      elseif(findString(name, "Android")) then icon = '<i class=\'fa fa-icon-android fa-lg\'></i> '
-      elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=\'fa fa-icon-windows fa-lg\'></i> '
-      elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=\'fa fa-icon-apple fa-lg\'></i> '
+   if(findString(name, "Linux") or findString(name, "Ubuntu")) then icon = '<i class=\'fa fa-linux fa-lg\'></i> '
+      elseif(findString(name, "Android")) then icon = '<i class=\'fa fa-android fa-lg\'></i> '
+      elseif(findString(name, "Windows") or findString(name, "Win32") or findString(name, "MSIE")) then icon = '<i class=\'fa fa-windows fa-lg\'></i> '
+      elseif(findString(name, "iPhone") or findString(name, "iPad") or findString(name, "OS X") ) then icon = '<i class=\'fa fa-apple fa-lg\'></i> '
    end
 
    return(icon)

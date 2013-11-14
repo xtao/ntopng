@@ -18,7 +18,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
-patterns = {["<"] = "", ["->"] = "<i class=\"fa fa-icon-exchange fa-lg\"></i>" }
+patterns = {["<"] = "", ["->"] = "<i class=\"fa fa-exchange fa-lg\"></i>" }
 for search,replace in pairs(patterns) do
    a = string.gsub(a, search, replace)
 end
@@ -148,29 +148,29 @@ setInterval(function() {
 			/* **************************************** */
 
 			if(cli2srv_packets == rsp["cli2srv.packets"]) {
-			   $('#sent_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#sent_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#sent_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			if(srv2cli_packets == rsp["srv2cli.packets"]) {
-			   $('#rcvd_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#rcvd_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#rcvd_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			if(bytes == rsp["bytes"]) {
-			   $('#volume_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#volume_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
-			   $('#volume_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#volume_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			if(throughput > rsp["throughput"]) {
-			   $('#throughput_trend').html("<i class=\"fa fa-icon-arrow-down fa-lg\"></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-arrow-down\"></i>");
 			} else if(throughput < rsp["throughput"]) {
-			   $('#throughput_trend').html("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			} else {
-			   $('#throughput_trend').html("<i class=\"fa fa-icon-minus fa-lg\"></i>");
+			   $('#throughput_trend').html("<i class=\"fa fa-minus\"></i>");
 			}
 
 			cli2srv_packets = rsp["cli2srv.packets"];

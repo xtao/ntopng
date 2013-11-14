@@ -160,7 +160,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    else
 	       print(shortHostName(value["name"]))
 	    end
-	    print("</div>")
+	    --   print("</div>")
 
 	    if(value["country"] ~= nil) then
 	       print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
@@ -198,11 +198,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 
 	       if(value["throughput_trend"] == 1) then
-		  print("<i class=\"fa fa-icon-arrow-up fa-lg\"></i>")
+		  print("<i class='fa fa-arrow-up fa-lg'></i>")
 		  elseif(value["throughput_trend"] == 2) then
-		  print("<i class=\"fa fa-icon-arrow-down fa-lg\"></i>")
+		  print("<i class='fa fa-arrow-down fa-lg'></i>")
 		  elseif(value["throughput_trend"] == 3) then
-		  print("<i class=\"fa fa-icon-minus fa-lg\"></i>")
+		  print("<i class='fa fa-minus fa-lg'></i>")
 	       end
 	    else
 	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
