@@ -515,7 +515,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_nil_table_entry(vm, "cli.ip");
   }
 
-  lua_push_int_table_entry(vm, "cli.port", ntohs(get_cli_port()));
+  lua_push_int_table_entry(vm, "cli.port", get_cli_port());
 
   if(get_srv_host()) {
     if(detailed_dump) lua_push_str_table_entry(vm, "srv.host", get_srv_host()->get_name(buf, sizeof(buf), false));
@@ -525,7 +525,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_nil_table_entry(vm, "srv.ip");
   }
 
-  lua_push_int_table_entry(vm, "srv.port", ntohs(get_srv_port()));
+  lua_push_int_table_entry(vm, "srv.port", get_srv_port());
   lua_push_int_table_entry(vm, "vlan", get_vlan_id());
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
 
@@ -639,12 +639,12 @@ char* Flow::serialize() {
 
   inner = json_object_new_object();
   json_object_object_add(inner, "ip",   json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(inner, "port", json_object_new_int(cli_port));
+  json_object_object_add(inner, "port", json_object_new_int(get_cli_port()));
   json_object_object_add(my_object, "client", inner);
 
   inner = json_object_new_object();
   json_object_object_add(inner, "ip",   json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(inner, "port", json_object_new_int(srv_port));
+  json_object_object_add(inner, "port", json_object_new_int(get_srv_port()));
   json_object_object_add(my_object, "server", inner);
 
   inner = json_object_new_object();
