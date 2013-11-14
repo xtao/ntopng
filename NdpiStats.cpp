@@ -44,7 +44,13 @@ void NdpiStats::sumStats(NdpiStats *stats) {
     if(counters[i] != NULL) {
       if(stats->counters[i] == NULL) {
 	if((stats->counters[i] = (ProtoCounter*)calloc(1, sizeof(ProtoCounter))) == NULL) {
-	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Not enough memory");
+	  static bool oom_warning_sent = false;
+
+	  if(!oom_warning_sent) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	    oom_warning_sent = true;
+	  }
+	 
 	  return;
 	}
       }
@@ -109,7 +115,13 @@ void NdpiStats::incStats(u_int proto_id,
   if(proto_id < (MAX_NDPI_PROTOS)) {
     if(counters[proto_id] == NULL) {
       if((counters[proto_id] = (ProtoCounter*)calloc(1, sizeof(ProtoCounter))) == NULL) {
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Not enough memory");
+	static bool oom_warning_sent = false;
+
+	if(!oom_warning_sent) {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	  oom_warning_sent = true;
+	}
+	
 	return;
       }
     }

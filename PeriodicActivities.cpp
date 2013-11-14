@@ -73,9 +73,20 @@ void PeriodicActivities::runScript(char *path) {
   struct stat statbuf;
 
   if(stat(path, &statbuf) == 0) {
-    Lua *l = new Lua();
+    Lua *l;
 
-    // ntop->getTrace()->traceEvent(TRACE_INFO, "Running script %s", path);
+    try {
+      l = new Lua();
+    } catch(std::bad_alloc& ba) {
+      static bool oom_warning_sent = false;
+      
+      if(!oom_warning_sent) {
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	oom_warning_sent = true;
+      }
+
+      return;
+    }
 
     l->run_script(path, NULL);
     delete l;

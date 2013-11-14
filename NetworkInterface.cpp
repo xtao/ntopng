@@ -190,10 +190,23 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 			 vlan_id, l4_proto, src2dst_direction);
 
   if(ret == NULL) {
-    ret = new Flow(this, vlan_id, l4_proto,
-		   src_eth, src_ip, src_port,
-		   dst_eth, dst_ip, dst_port,
-		   first_seen, last_seen);
+    try {
+      ret = new Flow(this, vlan_id, l4_proto,
+		     src_eth, src_ip, src_port,
+		     dst_eth, dst_ip, dst_port,
+		     first_seen, last_seen);
+      
+    } catch(std::bad_alloc& ba) {
+      static bool oom_warning_sent = false;
+      
+      if(!oom_warning_sent) {
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	oom_warning_sent = true;
+      }
+            
+      return(NULL);
+    }
+    
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);
@@ -502,10 +515,19 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 	    }
 	  }
 	}
-
       }
 
-      packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph, NULL, h->caplen - ip_offset, h->caplen);
+      try {
+	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph, 
+			  NULL, h->caplen - ip_offset, h->caplen);
+      } catch(std::bad_alloc& ba) {
+	static bool oom_warning_sent = false;
+	
+	  if(!oom_warning_sent) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	    oom_warning_sent = true;
+	  }
+      }
     }
     break;
 
@@ -516,8 +538,19 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       if((ntohl(ip6->ip6_ctlun.ip6_un1.ip6_un1_flow) & 0xF0000000) != 0x60000000) {
 	/* This is not IPv6 */
 	return;
-      } else
-	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, NULL, ip6, h->len - ip_offset, h->len);
+      } else {
+	try {
+	  packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, 
+			    NULL, ip6, h->len - ip_offset, h->len);
+	} catch(std::bad_alloc& ba) {
+	  static bool oom_warning_sent = false;
+
+	  if(!oom_warning_sent) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	    oom_warning_sent = true;
+	  }
+	}
+      }
     }
     break;
 
@@ -1046,8 +1079,19 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
   Host *ret = hosts_hash->get(vlanId, mac);
 
   if((ret == NULL) && createIfNotPresent) {
-    if((ret = new Host(this, mac, vlanId)) != NULL)
-      hosts_hash->add(ret);
+    try {
+      if((ret = new Host(this, mac, vlanId)) != NULL)
+	hosts_hash->add(ret);
+    } catch(std::bad_alloc& ba) {
+      static bool oom_warning_sent = false;
+      
+      if(!oom_warning_sent) {
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	oom_warning_sent = true;
+      }
+      
+      return(NULL);
+    }
   }
 
   return(ret);

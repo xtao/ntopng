@@ -76,8 +76,18 @@ static void* packetPollLoop(void* ptr) {
       u_char *buffer; 
       struct pfring_pkthdr hdr;
 
-      if(pfring_recv(pd, &buffer, 0, &hdr, 0 /* wait_for_packet */) > 0)
-	iface->packet_dissector((const struct pcap_pkthdr *) &hdr, buffer);
+      if(pfring_recv(pd, &buffer, 0, &hdr, 0 /* wait_for_packet */) > 0) {
+	try {
+	  iface->packet_dissector((const struct pcap_pkthdr *) &hdr, buffer);
+	} catch(std::bad_alloc& ba) {
+	  static bool oom_warning_sent = false;
+	  
+	  if(!oom_warning_sent) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	    oom_warning_sent = true;
+	  }
+	}
+      }
     } else {
       struct timeval timeout;
       fd_set fdset;

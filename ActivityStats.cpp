@@ -144,7 +144,7 @@ bool ActivityStats::readDump(char* path) {
     std::string s(decoded);
     std::stringstream ss(s);
 
-#if 1
+#if 0
   /*
     We do not use "direct" bitset->read() as this is apparently creating
     crash problems.
