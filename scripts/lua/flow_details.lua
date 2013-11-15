@@ -64,7 +64,7 @@ else
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end
 
-   print("<tr><th width=30%>Application Protocol</th><td colspan=2><A HREF=\"/lua/flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. flow["proto.ndpi"] .. "</A></td></tr>\n")
+   print("<tr><th width=30%>Application Protocol</th><td colspan=2><A HREF=\"/lua/flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
    print("<tr><th width=30%>First Seen</th><td colspan=2><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td></tr>\n")
    print("<tr><th width=30%>Last Seen</th><td colspan=2><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 

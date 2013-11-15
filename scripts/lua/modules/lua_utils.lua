@@ -745,7 +745,7 @@ function getApplicationLabel(name)
       elseif(findString(name, "DropBox")) then icon = '<i class=\'fa fa-dropbox fa-lg\'></i>'
       elseif(findString(name, "Apple")) then icon = '<i class=\'fa fa-apple fa-lg\'></i>'
       elseif(findString(name, "Google")) then icon = '<i class=\'fa fa-google fa-lg\'></i>'
-      elseif(findString(name, "Facebook")) then icon = '<i class=\'fa fa-facebook-square fa-lg\'></i>'
+      elseif(findString(name, "FaceBook")) then icon = '<i class=\'fa fa-facebook-square fa-lg\'></i>'
    end
 
    return(icon.." "..name)

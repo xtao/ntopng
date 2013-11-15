@@ -344,30 +344,33 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm,  "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_bool_table_entry(vm, "client.private", get_cli_host()->get_ip()->isPrivateAddress());
-  lua_push_str_table_entry(vm,  "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
   lua_push_str_table_entry(vm,  "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_bool_table_entry(vm, "server.private", get_srv_host()->get_ip()->isPrivateAddress());
-  lua_push_str_table_entry(vm,  "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
   lua_push_int_table_entry(vm,  "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm,  "rcvd", srv2cli_bytes);
   lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());
   lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
   lua_push_int_table_entry(vm,  "duration", get_duration());
-  lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
-  lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
-  lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
-  lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
-  lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
-  lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
 
   if(verbose) {
-    if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-       || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
-       || iface->is_ndpi_enabled())
-      lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
-    else
-      lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+    lua_push_bool_table_entry(vm, "client.private", get_cli_host()->get_ip()->isPrivateAddress());
+    lua_push_str_table_entry(vm,  "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
+    lua_push_bool_table_entry(vm, "server.private", get_srv_host()->get_ip()->isPrivateAddress());
+    lua_push_str_table_entry(vm,  "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
+    lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
+    lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
+    lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
+    lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
+    lua_push_float_table_entry(vm, "server.longitude", get_srv_host()->get_longitude());
+    lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
+
+    if(verbose) {
+      if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
+	 || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
+	 || iface->is_ndpi_enabled())
+	lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
+      else
+	lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+    }
   }
 
   // Key

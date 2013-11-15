@@ -87,7 +87,7 @@ Host::~Host() {
     //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
     free(json);
   }
-
+  
   if(symbolic_name) free(symbolic_name);
   if(country)       free(country);
   if(city)          free(city);
