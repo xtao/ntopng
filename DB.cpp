@@ -97,7 +97,7 @@ bool DB::dumpFlow(time_t when, Flow *f) {
     initDB(when, create_flows_db);
     
     json = f->serialize();
-    snprintf(sql, sizeof(sql), "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %llu, %u, %u, '%s');",
+    snprintf(sql, sizeof(sql), "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
 	     f->get_vlan_id(), 
 	     f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), f->get_cli_port(),
 	     f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), f->get_srv_port(),

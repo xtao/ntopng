@@ -253,39 +253,6 @@ int Flow::compare(Flow *fb) {
 
 /* *************************************** */
 
-char* Flow::ipProto2Name(u_short proto_id) {
-  static char proto[8];
-
-  switch(proto_id) {
-  case IPPROTO_TCP:
-    return((char*)"TCP");
-    break;
-  case IPPROTO_UDP:
-    return((char*)"UDP");
-    break;
-  case IPPROTO_ICMP:
-    return((char*)"ICMP");
-    break;
-  case 50:
-    return((char*)"ESP");
-    break;
-  case 58:
-    return((char*)"IPv6-ICMP");
-    break;
-  case 103:
-    return((char*)"PIM");
-    break;
-  case 112:
-    return((char*)"VRRP");
-    break;
-  }
-
-  snprintf(proto, sizeof(proto), "%u", proto_id);
-  return(proto);
-}
-
-/* *************************************** */
-
 /*
  * A faster replacement for inet_ntoa().
  */
@@ -428,7 +395,7 @@ void Flow::print() {
   if((cli_host == NULL) || (srv_host == NULL)) return;
 
   printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
-	 ipProto2Name(protocol),
+	 get_protocol_name(),
 	 cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
 	 srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
 	 detected_protocol,

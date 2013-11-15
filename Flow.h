@@ -52,7 +52,6 @@ class Flow : public GenericHashEntry {
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  
 
-  char* ipProto2Name(u_short proto_id);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
 
  public:
