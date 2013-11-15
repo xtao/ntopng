@@ -749,11 +749,26 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
 
-  if((info->h == NULL)
-     && (host->get_vlan_id() == info->vlan_id)
-     && host->get_name()
-     && (!strcmp(host->get_name(), info->host_to_find)))
-    info->h = host;
+#ifdef DEBUG  
+  char buf[64];
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[%s][%s][%s]", 
+			       host->get_ip() ? host->get_ip()->print(buf, sizeof(buf)) : "",
+			       host->get_name(), info->host_to_find);
+#endif
+
+  if((info->h == NULL) && (host->get_vlan_id() == info->vlan_id)) {
+      if((host->get_name() == NULL) && host->get_ip()) {
+	char ip_buf[32], name_buf[96];	
+	char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
+	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf), 
+					      false /* Dont resolve it if not known */);
+	
+	if(rc == 0 /* found */) host->setName(name_buf, false);
+      }
+      
+      if(host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+	info->h = host;
+    }
 }
 
 /* **************************************************** */

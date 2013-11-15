@@ -29,7 +29,7 @@ host_ip = ip_elems[1]
 host = nil
 family = nil
 
---print(">>>") print(ip_elems[2]) print("<<<")
+--print(">>>") print(host_ip) print("<<<")
 
 if(ip_elems[2] == nil) then
    host = interface.getHostInfo(host_ip)

@@ -212,15 +212,21 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 
 static int ntop_get_interface_hosts_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
+  bool show_details;
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     handle_null_interface(vm);
     return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
   }
 
-  if(ntop_interface) ntop_interface->getActiveHostsList(vm, true);
+  /* Optional */
+  if(lua_type(vm, 1) != LUA_TBOOLEAN)
+    show_details = true;
+  else
+    show_details = lua_toboolean(vm, 1) ? true : false;
+
+  if(ntop_interface) ntop_interface->getActiveHostsList(vm, show_details);
 
   return(CONST_LUA_OK);
 }

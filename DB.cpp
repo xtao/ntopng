@@ -101,7 +101,7 @@ bool DB::dumpFlow(time_t when, Flow *f) {
 	     f->get_vlan_id(), 
 	     f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), f->get_cli_port(),
 	     f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), f->get_srv_port(),
-	     f->get_bytes(), f->get_duration(),
+	     (unsigned long)f->get_bytes(), f->get_duration(),
 	     f->get_protocol(), json ? json : "");	   
     
     if(json) free(json);

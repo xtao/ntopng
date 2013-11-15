@@ -54,6 +54,10 @@ function findString(str, tofind)
    return(rsp)
 end
 
+function string.contains(String,Start)
+   return(string.find(String,Start,1) ~= nil)
+end
+
 function string.starts(String,Start)
    return string.sub(String,1,string.len(Start))==Start
 end

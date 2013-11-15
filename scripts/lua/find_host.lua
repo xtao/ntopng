@@ -15,7 +15,7 @@ print [[
 ]]
 
    interface.find(ifname)
-   hosts_stats = interface.getHostsInfo()
+   hosts_stats = interface.getHostsInfo(true)
    num = 0
    query = _GET["query"]
 --   query = "192"
@@ -30,7 +30,7 @@ print [[
       end
       what = hosts_stats[_key]["name"]
 
-      if((what ~= nil) and (starts(string.lower(what), query))) then
+      if((what ~= nil) and (string.contains(string.lower(what), query))) then
 	 found = 1
       else
 	 what = hosts_stats[_key]["mac"]
