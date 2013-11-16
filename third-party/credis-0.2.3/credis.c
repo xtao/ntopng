@@ -1116,15 +1116,20 @@ static int cr_push(REDIS rhnd, int left, const char *key, const char *val)
   return cr_sendfandreceive(rhnd, CR_INLINE, "%s %s %s\r\n%zu\r\n", 
                             left==1?"LPUSH":"RPUSH", key, val, strlen(val));
 #else
-  return cr_sendfandreceive(rhnd, CR_INLINE, "%s %s %s\r\n",
-                            left==1?"LPUSH":"RPUSH", key, val);
+  return cr_sendfandreceive(rhnd, CR_INLINE, "*3\r\n$5\r\n%s\r\n$%u\r\n%s\r\n$%u\r\n%s\r\n",
+                            left==1?"LPUSH":"RPUSH", strlen(key), key, strlen(val), val);
 #endif
 }
 
 static int cr_rpushx(REDIS rhnd, const char *key, const char *val)
 {
+#ifdef ORIGINAL
   return cr_sendfandreceive(rhnd, CR_INLINE, "%s %s %s\r\n%zu\r\n", 
                             "RPUSHX", key, val, strlen(val));
+#else
+  return cr_sendfandreceive(rhnd, CR_INLINE, "%s \"%s\" \"%s\"\r\n%zu\r\n", 
+                            "RPUSHX", key, val, strlen(val));
+#endif
 }
 
 int credis_rpush(REDIS rhnd, const char *key, const char *val)

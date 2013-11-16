@@ -40,6 +40,7 @@ class Prefs {
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, resolve_all_host_ip, change_user, daemonize,
     dump_timeline;
+  bool dump_local_aggregation_db, dump_local_host_db;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port;
@@ -100,6 +101,8 @@ class Prefs {
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
+  inline bool do_dump_local_aggregation_db()            { return(dump_local_aggregation_db); };
+  inline bool do_dump_local_host_db()                   { return(dump_local_host_db);        };
   inline bool daemonize_ntopng()                        { return(daemonize);      };
   inline void addDefaultInterface()                     { num_interfaces++;       };
   int loadFromCLI(int argc, char *argv[]);

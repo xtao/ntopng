@@ -32,6 +32,8 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
 /* *************************************** */
 
 StringHost::~StringHost() {
+  localHost = true; dumpContacts(keyname, family_id);
+
   dumpStats(ntop->getPrefs()->get_aggregation_mode() == aggregations_enabled_with_bitmap_dump);
   free(keyname);
 }

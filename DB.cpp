@@ -33,7 +33,39 @@ DB::DB(u_int32_t _dir_duration) {
 /* ******************************************* */
 
 DB::~DB() {
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    void *res;
+    
+    pthread_join(dumpContactsThreadLoop, &res);
+  }
+
   termDB();
+}
+
+/* **************************************************** */
+
+static void* dumpContactsLoop(void* ptr) {
+  DB *a = (DB*)ptr;
+  Redis *r = ntop->getRedis();
+
+  while(!ntop->getGlobals()->isShutdown()) {
+    char todo[512];
+    int rc = r->popContactToDump(todo, sizeof(todo));
+
+    if(rc == 0) {
+      a->execContactsSQLStatement(todo);
+    } else
+      sleep(1);
+  }
+
+  return(NULL);
+}
+
+/* **************************************************** */
+
+void DB::startDumpContactsLoop() {
+  if(ntop->getPrefs()->do_dump_flows_on_db()) 
+    pthread_create(&dumpContactsThreadLoop, NULL, dumpContactsLoop, (void*)this);
 }
 
 /* ******************************************* */
@@ -68,6 +100,7 @@ void DB::initDB(time_t when, const char *create_sql_string) {
 
   strftime(path, sizeof(path), "%y/%m/%d/%H", localtime(&when));
   snprintf(db_path, sizeof(db_path), "%s/db/%s", ntop->get_working_dir(), path);
+  ntop->fixPath(db_path);
 
   if(Utils::mkdir_tree(db_path)) {
     strftime(path, sizeof(path), "%y/%m/%d/%H/%M", localtime(&when));
@@ -80,7 +113,7 @@ void DB::initDB(time_t when, const char *create_sql_string) {
       end_dump = 0, db = NULL;
     } else {
       execSQL((char*)create_sql_string);
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DB] Created %s", db_path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] Created %s", db_path);
     }
   } else
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create directory tree %s", db_path);
@@ -135,6 +168,79 @@ bool DB::execSQL(char* sql) {
       return(true);
   } else
     return(false);
+}
+
+/* ******************************************* */
+
+bool DB::execContactsSQLStatement(char* _sql) {
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    char *zErrMsg = 0, *path, *filename, *sql, *where;
+    sqlite3 *contacts_db;
+
+    /* PATH|key|SQL */
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", _sql);
+
+    if((path = strtok_r(_sql, "|", &where)) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      return(false);
+    }
+
+    if((filename = strtok_r(NULL, "|", &where)) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      return(false);
+    }
+
+    if((sql = strtok_r(NULL, "|", &where)) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      return(false);
+    }
+
+    if(Utils::mkdir_tree(path)) {
+      char db_path[MAX_PATH];
+      struct stat buf;
+      int rc;
+
+      snprintf(db_path, sizeof(db_path), "%s/%s.sqlite", path, filename);
+      ntop->fixPath(db_path);
+
+      rc = stat(db_path, &buf);
+
+      if(sqlite3_open(db_path, &contacts_db) != 0) {
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to open/create DB %s [%s]",
+				     db_path, sqlite3_errmsg(db));
+	return(false);
+      }
+
+      if(rc != 0) {
+	const char *create_flows_db = "CREATE TABLE IF NOT EXISTS client_contacts (key string, family number, contacts number, PRIMARY KEY (key, family));"
+	  "CREATE TABLE IF NOT EXISTS server_contacts (key string, family number, contacts number, PRIMARY KEY (key, family));";
+	
+	ntop->getTrace()->traceEvent(TRACE_INFO, "%s", create_flows_db);
+
+	/* DB did not exist */
+	rc = sqlite3_exec(contacts_db, create_flows_db, NULL, 0, &zErrMsg);
+	if(rc != SQLITE_OK) {
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
+	  sqlite3_free(zErrMsg);   
+	  sqlite3_close(contacts_db);
+	  return(false);
+	}
+      }
+
+      rc = sqlite3_exec(contacts_db, sql, NULL, 0, &zErrMsg);
+      if(rc != SQLITE_OK) {
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
+	sqlite3_free(zErrMsg);   
+	sqlite3_close(contacts_db);
+      } else {
+	sqlite3_close(contacts_db);
+	return(true);
+      }
+    } else
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create dir %s", path);
+  }
+  
+  return(false);
 }
 
 /* ******************************************* */

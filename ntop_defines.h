@@ -66,16 +66,19 @@
 #define MAX_NUM_INTERFACE_HOSTS   131072
 #define MAX_NUM_INTERFACES        16
 
+#define HOST_FAMILY_ID            ((u_int16_t)-1)
 #define FLOW_PURGE_FREQUENCY      1 /* sec */
 #define HOST_PURGE_FREQUENCY      1 /* sec */
 #define MAX_TCP_FLOW_IDLE         3 /* sec */
 #define PURGE_FRACTION           32 /* check 1/32 of hashes per iteration */
 #define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
+#define MAX_NUM_QUEUED_CONTACTS MAX_NUM_QUEUED_ADDRS
 #define DEFAULT_PID_PATH        "/var/tmp/ntopng.pid"
 #define DOMAIN_CATEGORY         "domain.category"
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
+#define CONTACTS_TO_DUMP        "contacts.todump"
 #define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
 
 #ifndef TH_FIN
@@ -188,5 +191,7 @@
 #ifndef max_val
 #define max_val(a,b) ((a > b) ? a : b)
 #endif
+
+#define ifdot(a) ((a == '.') ? '_' : a)
 
 #endif /* _NTOP_DEFINES_H_ */

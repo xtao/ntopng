@@ -33,16 +33,20 @@ class DB {
   u_int32_t dir_duration;
   char db_path[MAX_PATH];
   time_t end_dump;
+  pthread_t dumpContactsThreadLoop;
 
   void initDB(time_t when, const char *create_sql_string);
   void termDB();
-  bool execSQL(char* sql);
-
+  bool execSQL(char* sql);  
+  
  public:
   DB(u_int32_t _dir_duration = 300 /* 5 minutes */);
   ~DB();
 
+  void startDumpContactsLoop();
   bool dumpFlow(time_t when, Flow *f);
+  void dumpContacts(HostContacts *c, char *path);
+  bool execContactsSQLStatement(char* _sql);
 };
 
 #endif /* HAVE_SQLITE */

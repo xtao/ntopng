@@ -78,6 +78,8 @@ Host::~Host() {
       snprintf(key, sizeof(key), "%s.server", k);
       ntop->getRedis()->del(key);
     }
+
+    dumpContacts(k, HOST_FAMILY_ID);
   }
 
   if(localHost && ntop->getPrefs()->is_host_persistency_enabled()) {
@@ -392,7 +394,7 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(_peer->get_ip() != NULL)
-    ((GenericHost*)this)->incrContact(_peer->get_ip(), contacted_peer_as_client);
+    ((GenericHost*)this)->incrContact(iface, _peer->get_ip(), contacted_peer_as_client);
 }
 
 /* *************************************** */
@@ -530,7 +532,7 @@ bool Host::deserialize(char *json_str) {
   activityStats.reset();
   if(json_object_object_get_ex(o, "activityStats", &obj)) activityStats.deserialize(obj);
 
-  if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(obj);
+  if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(iface, this, obj);
   if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);
   

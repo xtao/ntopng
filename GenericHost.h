@@ -45,11 +45,14 @@ class GenericHost : public GenericHashEntry {
   GenericHost(NetworkInterface *_iface);
   ~GenericHost();
 
+  void dumpContacts(char *host_key, u_int16_t family_id);
   inline bool isLocalHost()          { return(localHost); };
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
-  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client) { contacts.incrContact(peer, contacted_peer_as_client); }
+  inline void incrContact(NetworkInterface *iface, IpAddress *peer, bool contacted_peer_as_client) {
+    contacts.incrContact(iface, this, peer, contacted_peer_as_client); 
+  }
   
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm);        };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts.get_num_contacts_by(host_ip)); };

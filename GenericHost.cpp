@@ -35,9 +35,24 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
 /* *************************************** */
 
 GenericHost::~GenericHost() {
-
   if(ndpiStats)
     delete ndpiStats;
+}
+
+/* *************************************** */
+
+void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
+  if(localHost && ntop->getPrefs()->do_dump_flows_on_db()) {
+    char dump_path[MAX_PATH], daybuf[64];
+    time_t when = time(NULL);
+
+    strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+    snprintf(dump_path, sizeof(dump_path), "%s/%s/contacts/%s",
+	     ntop->get_working_dir(), iface->get_name(), daybuf);
+    ntop->fixPath(dump_path);
+
+    contacts.dbDump(dump_path, host_key, family_id);
+  }   
 }
 
 /* *************************************** */

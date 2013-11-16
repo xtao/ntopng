@@ -29,24 +29,29 @@ typedef struct {
   u_int32_t num_contacts;
 } IPContacts;
 
+class GenericHost;
+
 class HostContacts {
  protected:
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
-  void incrIPContacts(IpAddress *peer, IPContacts *contacts, u_int32_t value);
+  void incrIPContacts(NetworkInterface *iface, GenericHost *host, IpAddress *peer, 
+		      IPContacts *contacts, u_int32_t value);
 
  public:
   HostContacts();
   ~HostContacts();
 
-  inline void incrContact(IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { 
-    incrIPContacts(peer, contacted_peer_as_client ? clientContacts : serverContacts, value);
+  void dbDump(char *path, char *key, u_int16_t family_id);
+  inline void incrContact(NetworkInterface *iface, GenericHost *host, 
+			  IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { 
+    incrIPContacts(iface, host, peer, contacted_peer_as_client ? clientContacts : serverContacts, value);
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);
 
   void getIPContacts(lua_State* vm);
   char* serialize();
-  void deserialize(json_object *o);
+  void deserialize(NetworkInterface *iface, GenericHost *h, json_object *o);
   json_object* getJSONObject();
 };
 

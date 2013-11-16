@@ -51,7 +51,7 @@ Prefs::Prefs(Ntop *_ntop) {
   dump_flows_on_db = false;
   enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
-
+  dump_local_aggregation_db = false, dump_local_host_db = false;
 #ifdef WIN32
   daemonize = true;
 #endif

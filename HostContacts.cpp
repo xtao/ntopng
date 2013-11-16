@@ -39,7 +39,8 @@ HostContacts::~HostContacts() {
 
 /* *************************************** */
 
-void HostContacts::incrIPContacts(IpAddress *peer, IPContacts *contacts, u_int32_t value) {
+void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, IpAddress *peer,
+				  IPContacts *contacts, u_int32_t value) {
   int8_t    least_idx = -1;
   u_int32_t least_value = 0;
 
@@ -58,6 +59,19 @@ void HostContacts::incrIPContacts(IpAddress *peer, IPContacts *contacts, u_int32
   } /* for */
 
   /* No room found: let's discard the item with lowest score */
+  if(contacts[least_idx].host->isLocalHost()
+     && ntop->getPrefs()->do_dump_flows_on_db()) {
+    char dump_path[MAX_PATH], daybuf[64];
+    time_t when = time(NULL);
+    
+    strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+    snprintf(dump_path, sizeof(dump_path), "%s/%s/contacts/%s",
+	     ntop->get_working_dir(), iface->get_name(), daybuf);
+    ntop->fixPath(dump_path);
+
+    // contacts.dbDump(dump_path, host_key, family_id);  // FIX
+  }
+
   delete contacts[least_idx].host;
   contacts[least_idx].host = new IpAddress(peer), contacts[least_idx].num_contacts = value;
 }
@@ -119,9 +133,9 @@ char* HostContacts::serialize() {
       json_object_object_add(inner, clientContacts[i].host->print(buf, sizeof(buf)), json_object_new_string(buf2));
     }
   }
-  
+
   json_object_object_add(my_object, "client", inner);
-  
+
   /* *************************************** */
 
   inner = json_object_new_object();
@@ -129,9 +143,9 @@ char* HostContacts::serialize() {
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(serverContacts[i].host != NULL) {
       char buf[64], buf2[32];
-      
+
       snprintf(buf2, sizeof(buf2), "%u", serverContacts[i].num_contacts);
-      json_object_object_add(inner, serverContacts[i].host->print(buf, sizeof(buf)), json_object_new_string(buf2));      
+      json_object_object_add(inner, serverContacts[i].host->print(buf, sizeof(buf)), json_object_new_string(buf2));
     }
   }
 
@@ -142,7 +156,7 @@ char* HostContacts::serialize() {
   rsp = strdup(json_object_to_json_string(my_object));
 
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", rsp);
-  
+
   /* Free memory */
   json_object_put(my_object);
 
@@ -151,7 +165,7 @@ char* HostContacts::serialize() {
 
 /* *************************************** */
 
-void HostContacts::deserialize(json_object *o) {
+void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_object *o) {
   json_object *obj;
   IpAddress ip;
 
@@ -168,9 +182,9 @@ void HostContacts::deserialize(json_object *o) {
     while (!json_object_iter_equal(&it, &itEnd)) {
       char *key  = (char*)json_object_iter_peek_name(&it);
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
-      
+
       ip.set_from_string(key);
-      incrContact(&ip, true /* client */, value);
+      incrContact(iface, h, &ip, true /* client */, value);
 
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 
@@ -187,8 +201,8 @@ void HostContacts::deserialize(json_object *o) {
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
 
       ip.set_from_string(key);
-      incrContact(&ip, false /* server */, value);
-      
+      incrContact(iface, h, &ip, false /* server */, value);
+
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 
       json_object_iter_next(&it);
@@ -213,10 +227,53 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].num_contacts == 0) break;
-    
+
     if(clientContacts[i].host->equal(host_ip))
       num += clientContacts[i].num_contacts;
   }
 
   return(num);
+}
+
+/* *************************************** */
+
+#define ifdot(a) ((a == '.') ? '_' : a)
+
+void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
+  char buf[64], full_path[MAX_PATH], alt_full_path[MAX_PATH];
+
+  snprintf(full_path, sizeof(full_path), "%s/%c/%c|%s", path, key[0], ifdot(key[1]), key);
+  ntop->fixPath(full_path);
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].host != NULL) {
+      char *host_ip;
+
+      if(clientContacts[i].host->isLocalHost()) {
+	host_ip = clientContacts[i].host->print(buf, sizeof(buf));
+	ntop->getRedis()->queueContactToDump(full_path, true, host_ip, family_id, clientContacts[i].num_contacts);
+
+	if(family_id != HOST_FAMILY_ID) {
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
+	  ntop->fixPath(alt_full_path);
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, clientContacts[i].num_contacts);
+	}
+      }
+    }
+
+    if(serverContacts[i].host != NULL) {
+      char *host_ip;
+
+      if(serverContacts[i].host->isLocalHost()) {
+	host_ip = serverContacts[i].host->print(buf, sizeof(buf));
+	ntop->getRedis()->queueContactToDump(full_path, false, host_ip, family_id, serverContacts[i].num_contacts);
+
+	if(family_id != HOST_FAMILY_ID) {
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
+	  ntop->fixPath(alt_full_path);
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, clientContacts[i].num_contacts);
+	}
+      }
+    }
+  }
 }

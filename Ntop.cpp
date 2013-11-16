@@ -180,6 +180,10 @@ void Ntop::start() {
   sleep(2);
   address->startResolveAddressLoop();
 
+#ifdef HAVE_SQLITE
+  db->startDumpContactsLoop();
+#endif
+
   while(!globals->isShutdown()) {
     sleep(2);
     runHousekeepingTasks();

@@ -380,3 +380,45 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
   
   l->unlock(__FILE__, __LINE__);
 }
+ 
+/* **************************************** */
+
+int Redis::queueContactToDump(char *path, bool client_mode, char *key, 
+			      u_int16_t family_id, u_int32_t num_contacts) {
+  int rc;
+  char sql[1024];
+  const char *table_name = client_mode ? "client_contacts" : "server_contacts";
+
+  snprintf(sql, sizeof(sql),
+	   "%s|INSERT OR IGNORE INTO %s VALUES ('%s', %u, 0);"
+	   "UPDATE %s SET contacts=contacts+%u WHERE key='%s' AND family=%d;",
+	   path, table_name, key, family_id, 
+	   table_name, num_contacts, key, family_id);
+  
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s", sql);
+
+  l->lock(__FILE__, __LINE__);  
+  rc = credis_rpush(redis, CONTACTS_TO_DUMP, sql);
+  credis_ltrim(redis, CONTACTS_TO_DUMP, 0, MAX_NUM_QUEUED_CONTACTS);
+  l->unlock(__FILE__, __LINE__);
+
+ return(rc);
+}
+
+/* **************************************** */
+
+int Redis::popContactToDump(char *buf, u_int buf_len) {
+  char *val;
+  int rc;
+
+  l->lock(__FILE__, __LINE__);
+  rc = credis_lpop(redis, (char*)CONTACTS_TO_DUMP, &val);
+  l->unlock(__FILE__, __LINE__);
+
+  if(rc == 0)
+    snprintf(buf, buf_len, "%s", val);
+  else
+    buf[0] = '\0';
+
+  return(rc);
+}
