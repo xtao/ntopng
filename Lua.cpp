@@ -1452,19 +1452,23 @@ static int post_iterator(void *cls,
 int Lua::run_script(char *script_path, char *ifname) {
   int rc;
   
-  luaL_openlibs(L); /* Load base libraries */
-  lua_register_classes(L, false); /* Load custom classes */
+  try {
+    luaL_openlibs(L); /* Load base libraries */
+    lua_register_classes(L, false); /* Load custom classes */
 
-  if(ifname != NULL) {
-    /* Name of the interface for which we are running this script for */
-    lua_pushstring(L, ifname);
-    lua_setglobal(L, "ifname");
-  }
+    if(ifname != NULL) {
+      /* Name of the interface for which we are running this script for */
+      lua_pushstring(L, ifname);
+      lua_setglobal(L, "ifname");
+    }
 
-  if((rc = luaL_dofile(L, script_path)) != 0) {
-    const char *err = lua_tostring(L, -1);
+    if((rc = luaL_dofile(L, script_path)) != 0) {
+      const char *err = lua_tostring(L, -1);
 
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
+    }
+  } catch(...) {  
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, ifname);
   }
 
   return(rc);
