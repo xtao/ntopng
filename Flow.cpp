@@ -131,21 +131,25 @@ void Flow::processDetectedProtocol() {
       if(ndpi_flow->host_server_name[0] != '\0') {
 	char delimiter = '@', *name = NULL;
 	char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
-	
-	if(at != NULL)
+
+	/* Consider only positive DNS replies */
+	if(at != NULL) {
 	  name = &at[1], at[0] = '\0';
-	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
-	  name = (char*)ndpi_flow->host_server_name;
+	  /*
+	    else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
+	    name = (char*)ndpi_flow->host_server_name;
+	  */
 
-	if(name) {
-	  protocol_processed = true;
-
-	  if(ndpi_flow->protos.dns.num_answer_rrs > 0)
-	    ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
-
-	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
-
-	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
+	  if(name) {
+	    protocol_processed = true;
+	    
+	    if(ndpi_flow->protos.dns.num_answer_rrs > 0)
+	      ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+	    
+	    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
+	    
+	    aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
+	  }
 	}
       }
     }
