@@ -382,6 +382,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
       
   default:
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unknown option -%c: Ignored.", (char)optkey);
     return(-1);
   }
 
