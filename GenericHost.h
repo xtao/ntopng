@@ -50,8 +50,8 @@ class GenericHost : public GenericHashEntry {
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
-  inline void incrContact(NetworkInterface *iface, IpAddress *peer, bool contacted_peer_as_client) {
-    contacts.incrContact(iface, this, peer, contacted_peer_as_client); 
+  inline void incrContact(NetworkInterface *iface, IpAddress *peer, bool contacted_peer_as_client, bool aggregated_host = false) {
+    contacts.incrContact(iface, this, peer, contacted_peer_as_client, aggregated_host); 
   }
   
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm);        };

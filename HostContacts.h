@@ -35,7 +35,7 @@ class HostContacts {
  protected:
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
   void incrIPContacts(NetworkInterface *iface, GenericHost *host, IpAddress *peer, 
-		      IPContacts *contacts, u_int32_t value);
+		      IPContacts *contacts, u_int32_t value, bool aggregated_host);
 
  public:
   HostContacts();
@@ -43,8 +43,9 @@ class HostContacts {
 
   void dbDump(char *path, char *key, u_int16_t family_id);
   inline void incrContact(NetworkInterface *iface, GenericHost *host, 
-			  IpAddress *peer, bool contacted_peer_as_client, u_int32_t value=1) { 
-    incrIPContacts(iface, host, peer, contacted_peer_as_client ? clientContacts : serverContacts, value);
+			  IpAddress *peer, bool contacted_peer_as_client,
+			  u_int32_t value=1, bool aggregated_host = false) { 
+    incrIPContacts(iface, host, peer, contacted_peer_as_client ? clientContacts : serverContacts, value, aggregated_host);
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);

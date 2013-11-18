@@ -64,7 +64,8 @@ bool HostContacts::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
 
 void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, 
 				  IpAddress *peer,
-				  IPContacts *contacts, u_int32_t value) {
+				  IPContacts *contacts, u_int32_t value,
+				  bool aggregated_host) {
   int8_t    least_idx = -1;
   u_int32_t least_value = 0;
 
@@ -86,15 +87,17 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host,
   if(dumpHostToDB(contacts[least_idx].host, 
 		  ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
     char dump_path[MAX_PATH], daybuf[64];
-    char key[128];
+    char key[128], *k = host->get_string_key(key, sizeof(key));
     time_t when = time(NULL);
     
     strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-    snprintf(dump_path, sizeof(dump_path), "%s/%s/host_contacts/%s",
-	     ntop->get_working_dir(), iface->get_name(), daybuf);
+    snprintf(dump_path, sizeof(dump_path), "%s/%s/%s/%s",
+	     ntop->get_working_dir(), iface->get_name(), 
+	     aggregated_host ? "aggregations" : "host_contacts",
+	     daybuf);
     ntop->fixPath(dump_path);
-   
-    dbDump(dump_path, host->get_string_key(key, sizeof(key)), HOST_FAMILY_ID);
+ 
+    dbDump(dump_path, k, HOST_FAMILY_ID);
   }
 
   delete contacts[least_idx].host;
