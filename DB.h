@@ -29,7 +29,7 @@
 class DB {
  private:
   sqlite3 *db;
-
+  NetworkInterface *iface;
   u_int32_t dir_duration;
   char db_path[MAX_PATH];
   time_t end_dump;
@@ -40,7 +40,8 @@ class DB {
   bool execSQL(char* sql);  
   
  public:
-  DB(u_int32_t _dir_duration = 300 /* 5 minutes */);
+  DB(NetworkInterface *_iface = NULL,
+     u_int32_t _dir_duration = 300 /* 5 minutes */);
   ~DB();
 
   void startDumpContactsLoop();

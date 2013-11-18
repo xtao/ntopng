@@ -29,4 +29,11 @@ typedef enum {
   trend_stable = 3
 } ValueTrend;
 
+typedef enum {
+  location_none = 0,
+  location_local_only,
+  location_remote_only,
+  location_all,
+} LocationPolicy;
+
 #endif /* _NTOP_TYPEDEFS_H_ */

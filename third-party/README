@@ -5,7 +5,7 @@ https://github.com/nrk/redis-lua
 https://github.com/valenok/mongoose
 https://github.com/MJPA/SimpleJSON
 https://github.com/lemire/EWAHBoolArray
-
+https://github.com/redis/hiredis
 
 LuaJIT on Windows
 See "Building with MSVC" at http://luajit.org/install.html

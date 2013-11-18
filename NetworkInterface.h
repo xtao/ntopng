@@ -28,6 +28,7 @@ class Flow;
 class FlowHash;
 class Host;
 class HostHash;
+class DB;
 
 typedef struct ether80211q {
   u_int16_t vlanId;
@@ -60,6 +61,7 @@ class NetworkInterface {
   /* String hash (Aggregation) */
   StringHash *strings_hash;
   bool purge_idle_flows_hosts;
+  DB *db;
 
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
@@ -97,7 +99,7 @@ class NetworkInterface {
   inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
-
+  bool dumpFlow(time_t when, Flow *f);
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
     ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
     ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 

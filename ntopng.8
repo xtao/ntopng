@@ -49,6 +49,12 @@ or
 .IR <mode> ]
 .RB [ -x
 .IR <max num hosts> ]
+.RB [ -F
+.IR <dump-flows> ]
+.RB [ -D
+.IR <dump-hosts> ]
+.RB [ -E
+.IR <dump-aggregations> ]
 .RB [ -v ] 
 .RB [ -h ]
 
@@ -204,6 +210,22 @@ Do not change user (debug only)
 
 .It -l|--disable-login
 Disable user login. This is useful for debug purposes or if you want to let everyone access the web gui.
+
+.It -F|--dump-flows
+If ntopng is compiled with sqlite support, flows can dumped persistently on disk using this option.
+Databases are created daily under <data directory>/<interface>db.
+
+.It -D|--dump-hosts
+If ntopng is compiled with sqlite support, hosts contacts can dumped persistently on disk using this option.
+Databases are created daily under <data directory>/<interface>/contacts. This options supports three dump
+modes: local (dumps only local hosts), remote (dumps only remote hosts), all (dumps all hosts). If not
+specified, no hosts are dumped to disk.
+
+.It -E|--dump-aggregations
+If ntopng is compiled with sqlite support, hosts contacts can dumped persistently on disk using this option.
+Databases are created daily under <data directory>/<interface>/contacts. This options supports three dump
+modes: local (dumps only aggregations contacted by local hosts), remote (dumps only aggregations contacted by
+remote hosts), all (dumps all aggregations). If not specified, no hosts are dumped to disk.
 
 .It -v|--verbose
 Verbose tracing

@@ -214,12 +214,12 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
   l->lock(__FILE__, __LINE__);
   rc = credis_lpop(redis, (char*)DNS_TO_RESOLVE, &val);
-  l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
     snprintf(hostname, hostname_len, "%s", val);
   else
     hostname[0] = '\0';
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -278,12 +278,13 @@ int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
 
   l->lock(__FILE__, __LINE__);
   rc = credis_lpop(redis, (char*)DOMAIN_TO_CATEGORIZE, &val);
-  l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
     snprintf(domainname, domainname_len, "%s", val);
   else
     domainname[0] = '\0';
+
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -411,14 +412,15 @@ int Redis::popContactToDump(char *buf, u_int buf_len) {
   char *val;
   int rc;
 
+  memset(buf, 0, buf_len);
   l->lock(__FILE__, __LINE__);
   rc = credis_lpop(redis, (char*)CONTACTS_TO_DUMP, &val);
-  l->unlock(__FILE__, __LINE__);
 
   if(rc == 0)
     snprintf(buf, buf_len, "%s", val);
   else
     buf[0] = '\0';
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }

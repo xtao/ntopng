@@ -633,11 +633,10 @@ static int cr_sendfandreceive(REDIS rhnd, char recvtype, const char *format, ...
 
   va_start(ap, format);
 
-#ifdef WIN32 
   memset(buf->data, 0, buf->size);
+#ifdef WIN32 
   rc = _vsnprintf(buf->data, buf->size, format, ap);
 #else
-
   rc = vsnprintf(buf->data, buf->size, format, ap);
 #endif
   va_end(ap);

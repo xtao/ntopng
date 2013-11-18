@@ -233,9 +233,10 @@ static int handle_lua_request(struct mg_connection *conn) {
   u_int len = strlen(request_info->uri);
 
   if((ntop->getGlobals()->isShutdown())
-     || (strcmp(request_info->request_method, "GET")))
+     || (strcmp(request_info->request_method, "GET"))
+     || (ntop->getRedis() == NULL /* Starting up... */))
     return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method"));
-
+  
 #ifdef HAVE_SSL
   if(!request_info->is_ssl)
     redirect_to_ssl(conn, request_info);

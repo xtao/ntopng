@@ -54,6 +54,10 @@ NetworkInterface::NetworkInterface() {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true;
+
+#ifdef HAVE_SQLITE
+  db = new DB(this);
+#endif
 }
 
 /* **************************************************** */
@@ -79,8 +83,8 @@ NetworkInterface::NetworkInterface(const char *name) {
     name = pcap_lookupdev(pcap_error_buffer);
 
     if(name == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, 
-				   "Unable to locate default interface (%s)\n", 
+      ntop->getTrace()->traceEvent(TRACE_ERROR,
+				   "Unable to locate default interface (%s)\n",
 				   pcap_error_buffer);
       exit(0);
     }
@@ -123,7 +127,7 @@ NetworkInterface::NetworkInterface(const char *name) {
 
   ndpi_port_range d_port[MAX_DEFAULT_PORTS];
   memset(d_port, 0, sizeof(d_port));
-  ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID, 
+  ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
 			  (char*)"Operating System", d_port, d_port);
 
 
@@ -135,6 +139,10 @@ NetworkInterface::NetworkInterface(const char *name) {
   next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
   cpu_affinity = -1;
   running = false;
+
+#ifdef HAVE_SQLITE
+  db = new DB(this);
+#endif
 }
 
 /* **************************************************** */
@@ -160,6 +168,19 @@ void NetworkInterface::deleteDataStructures() {
 
 NetworkInterface::~NetworkInterface() {
   deleteDataStructures();
+#ifdef HAVE_SQLITE
+  delete db;
+#endif
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::dumpFlow(time_t when, Flow *f) {
+#ifdef HAVE_SQLITE
+  return(db->dumpFlow(when, f));
+#else
+  return(false);
+#endif
 }
 
 /* **************************************************** */
@@ -186,7 +207,7 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 				time_t first_seen, time_t last_seen) {
   Flow *ret;
 
-  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port, 
+  ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port,
 			 vlan_id, l4_proto, src2dst_direction);
 
   if(ret == NULL) {
@@ -195,18 +216,18 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 		     src_eth, src_ip, src_port,
 		     dst_eth, dst_ip, dst_port,
 		     first_seen, last_seen);
-      
+
     } catch(std::bad_alloc& ba) {
       static bool oom_warning_sent = false;
-      
+
       if(!oom_warning_sent) {
 	ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
 	oom_warning_sent = true;
       }
-            
+
       return(NULL);
     }
-    
+
     if(flows_hash->add(ret)) {
       *src2dst_direction = true;
       return(ret);
@@ -232,11 +253,11 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
   /* Updating Flow */
 
   flow = getFlow(zflow->src_mac, zflow->dst_mac,
-		 zflow->vlan_id, 
+		 zflow->vlan_id,
 		 &zflow->src_ip, &zflow->dst_ip,
 		 zflow->src_port, zflow->dst_port,
-		 zflow->l4_proto, &src2dst_direction, 
-		 zflow->first_switched, 
+		 zflow->l4_proto, &src2dst_direction,
+		 zflow->first_switched,
 		 zflow->last_switched);
 
   if(flow == NULL) return;
@@ -244,16 +265,16 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
   if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(zflow->tcp_flags);
   flow->addFlowStats(src2dst_direction,
 		     zflow->pkt_sampling_rate*zflow->in_pkts,
-		     zflow->pkt_sampling_rate*zflow->in_bytes, 
+		     zflow->pkt_sampling_rate*zflow->in_bytes,
 		     zflow->pkt_sampling_rate*zflow->out_pkts,
-		     zflow->pkt_sampling_rate*zflow->out_bytes, 
+		     zflow->pkt_sampling_rate*zflow->out_bytes,
 		     zflow->last_switched);
   flow->setDetectedProtocol(zflow->l7_proto);
   flow->setJSONInfo(json_object_to_json_string(zflow->additional_fields));
   flow->updateActivities();
   incStats(zflow->src_ip.isIPv4() ? ETHERTYPE_IP : ETHERTYPE_IPV6,
-	   flow->get_detected_protocol(), 
-	   zflow->pkt_sampling_rate*(zflow->in_bytes + zflow->out_bytes), 
+	   flow->get_detected_protocol(),
+	   zflow->pkt_sampling_rate*(zflow->in_bytes + zflow->out_bytes),
 	   zflow->pkt_sampling_rate*(zflow->in_pkts + zflow->out_pkts),
 	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
 
@@ -371,7 +392,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
   if(flow->isDetectionCompleted()) {
     flow->processDetectedProtocol();
-    flow->deleteFlowMemory(); 
+    flow->deleteFlowMemory();
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else
@@ -518,11 +539,11 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       }
 
       try {
-	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph, 
+	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph,
 			  NULL, h->caplen - ip_offset, h->caplen);
       } catch(std::bad_alloc& ba) {
 	static bool oom_warning_sent = false;
-	
+
 	  if(!oom_warning_sent) {
 	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
 	    oom_warning_sent = true;
@@ -540,7 +561,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 	return;
       } else {
 	try {
-	  packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, 
+	  packet_processing(h->ts.tv_sec, time, ethernet, vlan_id,
 			    NULL, ip6, h->len - ip_offset, h->len);
 	} catch(std::bad_alloc& ba) {
 	  static bool oom_warning_sent = false;
@@ -653,10 +674,10 @@ static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
 static void update_hosts_stats(GenericHashEntry *node, void *user_data) {
   GenericHost *host = (GenericHost*)node;
   struct timeval *tv = (struct timeval*)user_data;
-  
+
   host->updateStats(tv);
   /*
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "Updated: %s [%d]", 
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "Updated: %s [%d]",
 			       ((StringHost*)node)->host_key(),
 			       host->getThptTrend());
   */
@@ -749,23 +770,23 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
 
-#ifdef DEBUG  
+#ifdef DEBUG
   char buf[64];
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "[%s][%s][%s]", 
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "[%s][%s][%s]",
 			       host->get_ip() ? host->get_ip()->print(buf, sizeof(buf)) : "",
 			       host->get_name(), info->host_to_find);
 #endif
 
   if((info->h == NULL) && (host->get_vlan_id() == info->vlan_id)) {
       if((host->get_name() == NULL) && host->get_ip()) {
-	char ip_buf[32], name_buf[96];	
+	char ip_buf[32], name_buf[96];
 	char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
-	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf), 
+	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf),
 					      false /* Dont resolve it if not known */);
-	
+
 	if(rc == 0 /* found */) host->setName(name_buf, false);
       }
-      
+
       if(host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
 	info->h = host;
     }
@@ -790,7 +811,7 @@ static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_d
   struct host_find_aggregation_info *info = (host_find_aggregation_info*)user_data;
   StringHost *host                        = (StringHost*)h;
   u_int n;
-  
+
   if(!info->host_to_find) return;
 
   if((n = host->get_num_contacts_by(info->host_to_find)) > 0)
@@ -802,7 +823,7 @@ static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_d
 static void find_aggregation_families(GenericHashEntry *h, void *user_data) {
   NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
   StringHost *host                = (StringHost*)h;
-  
+
   NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
 }
 
@@ -908,7 +929,7 @@ bool NetworkInterface::getAggregationsForHost(lua_State* vm, char *host_ip) {
   lua_newtable(vm);
   strings_hash->walk(find_aggregations_for_host_by_name, (void*)&info);
   delete h;
-  
+
   return(true);
 }
 
@@ -921,11 +942,11 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
   strings_hash->walk(find_aggregation_families, (void*)&families);
 
   lua_newtable(vm);
-  
+
   for(int i=0; i<(NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS); i++)
     if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(families, i)) {
       char *name = ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i);
-      
+
       lua_push_int_table_entry(vm, name, i);
     }
 
@@ -1099,12 +1120,12 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 	hosts_hash->add(ret);
     } catch(std::bad_alloc& ba) {
       static bool oom_warning_sent = false;
-      
+
       if(!oom_warning_sent) {
 	ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
 	oom_warning_sent = true;
       }
-      
+
       return(NULL);
     }
   }
@@ -1139,7 +1160,7 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   int i, numInterfaces = 0;
   pcap_if_t *devpointer;
 
-  if(printHelp && help_printed) 
+  if(printHelp && help_printed)
     return;
 
   ebuf[0] = '\0';

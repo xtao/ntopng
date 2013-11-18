@@ -91,12 +91,8 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
-#ifdef HAVE_SQLITE
-  DB *db = ntop->get_db();
-
-  if(db) db->dumpFlow(last_seen, this);
-#endif
-
+  if(ntop->getPrefs()->do_dump_flows_on_db())
+    cli_host->getInterface()->dumpFlow(last_seen, this);
   if(cli_host) cli_host->decUses();
   if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
@@ -133,23 +129,21 @@ void Flow::processDetectedProtocol() {
 	char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
 
 	/* Consider only positive DNS replies */
-	if(at != NULL) {
+	if(at != NULL)
 	  name = &at[1], at[0] = '\0';
-	  /*
-	    else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
-	    name = (char*)ndpi_flow->host_server_name;
-	  */
-
-	  if(name) {
-	    protocol_processed = true;
-	    
-	    if(ndpi_flow->protos.dns.num_answer_rrs > 0)
-	      ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
-	    
-	    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
-	    
-	    aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
-	  }
+	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
+	  name = (char*)ndpi_flow->host_server_name;
+	
+	
+	if(name) {
+	  protocol_processed = true;
+	  
+	  if(ndpi_flow->protos.dns.num_answer_rrs > 0)
+	    ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+	  
+	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
+	  
+	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
 	}
       }
     }

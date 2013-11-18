@@ -24,10 +24,11 @@
 
 /* ******************************************* */
 
-DB::DB(u_int32_t _dir_duration) {
+DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration) {
   dir_duration = max_val(_dir_duration, 300); /* 5 min is the minimum duration */
-			 
-  db = NULL, end_dump = 0;
+
+  // sqlite3_config(SQLITE_CONFIG_SERIALIZED);			 
+  db = NULL, end_dump = 0, iface = _iface;
 }
 
 /* ******************************************* */
@@ -64,8 +65,7 @@ static void* dumpContactsLoop(void* ptr) {
 /* **************************************************** */
 
 void DB::startDumpContactsLoop() {
-  if(ntop->getPrefs()->do_dump_flows_on_db()) 
-    pthread_create(&dumpContactsThreadLoop, NULL, dumpContactsLoop, (void*)this);
+  pthread_create(&dumpContactsThreadLoop, NULL, dumpContactsLoop, (void*)this);
 }
 
 /* ******************************************* */
@@ -99,50 +99,54 @@ void DB::initDB(time_t when, const char *create_sql_string) {
   when -= when % dir_duration;
 
   strftime(path, sizeof(path), "%y/%m/%d/%H", localtime(&when));
-  snprintf(db_path, sizeof(db_path), "%s/db/%s", ntop->get_working_dir(), path);
+  snprintf(db_path, sizeof(db_path), "%s/%s/flows/%s", 
+	   ntop->get_working_dir(), iface->get_name(), path);
   ntop->fixPath(db_path);
 
   if(Utils::mkdir_tree(db_path)) {
     strftime(path, sizeof(path), "%y/%m/%d/%H/%M", localtime(&when));
-    snprintf(db_path, sizeof(db_path), "%s/db/%s.sqlite", ntop->get_working_dir(), path);
+    snprintf(db_path, sizeof(db_path), "%s/%s/flows/%s.sqlite",
+	     ntop->get_working_dir(), iface->get_name(), path);
 
     end_dump = when + dir_duration;
     if(sqlite3_open(db_path, &db) != 0) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to open/create DB %s [%s]",
+      ntop->getTrace()->traceEvent(TRACE_ERROR,
+				   "[DB] Unable to open/create DB %s [%s]",
 				   db_path, sqlite3_errmsg(db));
       end_dump = 0, db = NULL;
     } else {
       execSQL((char*)create_sql_string);
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] Created %s", db_path);
+      ntop->getTrace()->traceEvent(TRACE_INFO,
+				   "[DB] Created %s", db_path);
     }
   } else
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create directory tree %s", db_path);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				 "[DB] Unable to create directory tree %s", db_path);
 }
 
 /* ******************************************* */
 
 bool DB::dumpFlow(time_t when, Flow *f) {
-  if(ntop->getPrefs()->do_dump_flows_on_db()) {
-    const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, "
-      "srv_ip string KEY, srv_port number, proto number, bytes number, duration number, json string);";
-    char sql[4096], cli_str[64], srv_str[64], *json;
+  const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, "
+    "srv_ip string KEY, srv_port number, proto number, bytes number, duration number, json string);";
+  char sql[4096], cli_str[64], srv_str[64], *json;
     
-    initDB(when, create_flows_db);
+  initDB(when, create_flows_db);
     
-    json = f->serialize();
-    snprintf(sql, sizeof(sql), "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
-	     f->get_vlan_id(), 
-	     f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), f->get_cli_port(),
-	     f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), f->get_srv_port(),
-	     (unsigned long)f->get_bytes(), f->get_duration(),
-	     f->get_protocol(), json ? json : "");	   
+  json = f->serialize();
+  snprintf(sql, sizeof(sql), 
+	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
+	   f->get_vlan_id(), 
+	   f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)), 
+	   f->get_cli_port(),
+	   f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)), 
+	   f->get_srv_port(),
+	   (unsigned long)f->get_bytes(), f->get_duration(),
+	   f->get_protocol(), json ? json : "");	   
     
-    if(json) free(json);
-    execSQL(sql);
-    return(true);
-  }
-
-  return(false);
+  if(json) free(json);
+  execSQL(sql);
+  return(true);
 }
 
 /* ******************************************* */

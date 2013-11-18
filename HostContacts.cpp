@@ -39,7 +39,31 @@ HostContacts::~HostContacts() {
 
 /* *************************************** */
 
-void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, IpAddress *peer,
+bool HostContacts::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
+  bool do_dump = false;
+  
+  switch(policy) {
+  case location_local_only:
+    if(host->isLocalHost()) do_dump = true;
+    break;
+  case location_remote_only:
+    if(!host->isLocalHost()) do_dump = true;
+    break;
+  case location_all:
+    do_dump = true;
+    break;
+  case location_none:
+    do_dump = false;
+    break;
+  }
+
+  return(do_dump);
+}
+
+/* *************************************** */
+
+void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, 
+				  IpAddress *peer,
 				  IPContacts *contacts, u_int32_t value) {
   int8_t    least_idx = -1;
   u_int32_t least_value = 0;
@@ -59,21 +83,23 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, Ip
   } /* for */
 
   /* No room found: let's discard the item with lowest score */
-  if(contacts[least_idx].host->isLocalHost()
-     && ntop->getPrefs()->do_dump_flows_on_db()) {
+  if(dumpHostToDB(contacts[least_idx].host, 
+		  ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
     char dump_path[MAX_PATH], daybuf[64];
+    char key[128];
     time_t when = time(NULL);
     
     strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-    snprintf(dump_path, sizeof(dump_path), "%s/%s/contacts/%s",
+    snprintf(dump_path, sizeof(dump_path), "%s/%s/host_contacts/%s",
 	     ntop->get_working_dir(), iface->get_name(), daybuf);
     ntop->fixPath(dump_path);
-
-    // contacts.dbDump(dump_path, host_key, family_id);  // FIX
+   
+    dbDump(dump_path, host->get_string_key(key, sizeof(key)), HOST_FAMILY_ID);
   }
 
   delete contacts[least_idx].host;
-  contacts[least_idx].host = new IpAddress(peer), contacts[least_idx].num_contacts = value;
+  contacts[least_idx].host = new IpAddress(peer), 
+    contacts[least_idx].num_contacts = value;
 }
 
 /* *************************************** */
@@ -247,12 +273,16 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].host != NULL) {
-      char *host_ip;
 
-      if(clientContacts[i].host->isLocalHost()) {
+      if(dumpHostToDB(clientContacts[i].host,
+		      (family_id = HOST_FAMILY_ID) ?
+		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
+		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
+	char *host_ip;
+	
 	host_ip = clientContacts[i].host->print(buf, sizeof(buf));
 	ntop->getRedis()->queueContactToDump(full_path, true, host_ip, family_id, clientContacts[i].num_contacts);
-
+	
 	if(family_id != HOST_FAMILY_ID) {
 	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
@@ -262,18 +292,22 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
     }
 
     if(serverContacts[i].host != NULL) {
-      char *host_ip;
+      if(dumpHostToDB(serverContacts[i].host,
+		      (family_id = HOST_FAMILY_ID) ?
+		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
+		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
+	char *host_ip;
 
-      if(serverContacts[i].host->isLocalHost()) {
 	host_ip = serverContacts[i].host->print(buf, sizeof(buf));
 	ntop->getRedis()->queueContactToDump(full_path, false, host_ip, family_id, serverContacts[i].num_contacts);
-
+	
 	if(family_id != HOST_FAMILY_ID) {
 	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
 	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, clientContacts[i].num_contacts);
 	}
-      }
-    }
-  }
+      } /* if */
+    } /* if */
+  } /* for */
 }
+

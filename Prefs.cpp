@@ -51,7 +51,8 @@ Prefs::Prefs(Ntop *_ntop) {
   dump_flows_on_db = false;
   enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
-  dump_local_aggregation_db = false, dump_local_host_db = false;
+  dump_hosts_to_db = location_none, dump_aggregations_to_db = location_none;
+
 #ifdef WIN32
   daemonize = true;
 #endif
@@ -90,11 +91,10 @@ void usage() {
 	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "         [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "         [-c <categorization key>] [-r <redis>]\n"
-	 "         [-l] [-U <sys user>] [-s] [-v] [-C]"
+	 "         [-l] [-U <sys user>] [-s] [-v] [-C]\n"
 #ifdef HAVE_SQLITE
-	 " [-F]"
+	 "         [-F] [-D <mode>] [-E <mode>]\n"
 #endif
-	 "\n"
 	 "         [-B <filter>] [-A <mode>]\n"
 	 "\n"
 	 "Options:\n"
@@ -157,7 +157,17 @@ void usage() {
 	 "                                    | 2 - Enable aggregations, with timeline\n"
 	 "                                    |     dump (see -C)\n"
 #ifdef HAVE_SQLITE
-	 "[--dump-flows|-F]                   | Dump on disk expired flows\n"
+	 "[--dump-flows|-F]                   | Dump expired flows.\n"
+	 "[--dump-hosts|-D] <mode>            | Dump hosts policy (default: none).\n"
+	 "                                    | Values:\n"
+	 "                                    | all    - Dump all hosts\n"
+	 "                                    | local  - Dump only local hosts\n"
+	 "                                    | remote - Dump only remote hosts\n"
+	 "[--dump-aggregations|-E] <mode>     | Dump aggregations policy (default: none)."
+	 "                                    | Values:\n"
+	 "                                    | all    - Dump all hosts\n"
+	 "                                    | local  - Dump only local hosts\n"
+	 "                                    | remote - Dump only remote hosts\n"
 #endif
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
@@ -167,7 +177,7 @@ void usage() {
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT,
-         CONST_DEFAULT_NTOP_USER, 
+         CONST_DEFAULT_NTOP_USER,
 	 MAX_NUM_INTERFACE_HOSTS, MAX_NUM_INTERFACE_HOSTS/2,
 	 CONST_DEFAULT_USERS_FILE);
 
@@ -202,6 +212,8 @@ static const struct option long_options[] = {
   { "enable-aggregations",               no_argument,       NULL, 'A' },
 #ifdef HAVE_SQLITE
   { "dump-flows",                        no_argument,       NULL, 'F' },
+  { "dump-hosts",                        required_argument, NULL, 'D' },
+  { "dump-aggregations",                 required_argument, NULL, 'E' },
 #endif
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
@@ -256,8 +268,24 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 #endif
 
+  case 'D':
+    if(!strcmp(optarg, "all")) dump_hosts_to_db = location_all;
+    else if(!strcmp(optarg, "local")) dump_hosts_to_db = location_local_only;
+    else if(!strcmp(optarg, "remote")) dump_hosts_to_db = location_remote_only;
+    else if(!strcmp(optarg, "none")) dump_hosts_to_db = location_none;
+    else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unknown value %s for -D", optarg);
+    break;
+
   case 'e':
     daemonize = true;
+    break;
+
+  case 'E':
+    if(!strcmp(optarg, "all")) dump_aggregations_to_db = location_all;
+    else if(!strcmp(optarg, "local")) dump_aggregations_to_db = location_local_only;
+    else if(!strcmp(optarg, "remote")) dump_aggregations_to_db = location_remote_only;
+    else if(!strcmp(optarg, "none")) dump_aggregations_to_db = location_none;
+    else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unknown value %s for -E", optarg);
     break;
 
   case 'g':
@@ -380,7 +408,7 @@ int Prefs::setOption(int optkey, char *optarg) {
   case 'X':
     max_num_flows = max_val(atoi(optarg), 1024);
     break;
-      
+
   default:
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unknown option -%c: Ignored.", (char)optkey);
     return(-1);
@@ -393,7 +421,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
 int Prefs::checkOptions() {
 #ifndef WIN32
-  if(daemonize) 
+  if(daemonize)
 #endif
   {
     char path[MAX_PATH];
@@ -411,7 +439,7 @@ int Prefs::checkOptions() {
   docs_dir      = ntop->getValidPath(docs_dir);
   scripts_dir   = ntop->getValidPath(scripts_dir);
   callbacks_dir = ntop->getValidPath(callbacks_dir);
-  
+
   if(!data_dir)         { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate data dir");      return(-1); }
   if(!docs_dir[0])      { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate docs dir");      return(-1); }
   if(!scripts_dir[0])   { ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to locate scripts dir");   return(-1); }
@@ -429,7 +457,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CFG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CD:E:FG:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -465,12 +493,12 @@ int Prefs::loadFromFile(const char *path) {
 
     key = line;
     key = Utils::trim(key);
-    
+
     value = strrchr(line, '=');
 
     /* Fallback to space */
     if(value == NULL) value = strrchr(line, ' ');
-      
+
     if(value == NULL)
       value = &line[strlen(line)]; /* empty */
     else
@@ -512,7 +540,7 @@ int Prefs::save() {
   }
 
   if(dns_mode != 0)       fprintf(fd, "dns-mode=%d\n", dns_mode);
-  
+
   if(num_interfaces > 0) {
     fprintf(fd, "interface=");
 

@@ -77,10 +77,6 @@ Ntop::Ntop(char *appName) {
 
   // printf("--> %s [%s]\n", startup_dir, appName);
 
-#ifdef HAVE_SQLITE
-  db = new DB();
-#endif
-
   initTimezone();
 }
 
@@ -181,6 +177,7 @@ void Ntop::start() {
   address->startResolveAddressLoop();
 
 #ifdef HAVE_SQLITE
+  db = new DB(NULL);
   db->startDumpContactsLoop();
 #endif
 

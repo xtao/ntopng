@@ -48,7 +48,7 @@ class HostContacts {
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);
-
+  bool dumpHostToDB(IpAddress *host, LocationPolicy policy);
   void getIPContacts(lua_State* vm);
   char* serialize();
   void deserialize(NetworkInterface *iface, GenericHost *h, json_object *o);
