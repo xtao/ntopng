@@ -103,11 +103,19 @@ Flow::~Flow() {
 
 /* *************************************** */
 
-void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id) {
+void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id, 
+			 bool aggregation_to_track 
+			 /* 
+			    i.e. it is not here for an error (such as NXDOMAIN)
+			    so we do not store persistently on disk aggregations
+			    due to errors that might fill-up the disk quickly
+			  */
+			 ) {
   if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
     StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
     
     if(host != NULL) {
+      host->set_tracked_host(aggregation_to_track);
       host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
       host->updateSeen();
       host->updateActivities();
@@ -127,23 +135,22 @@ void Flow::processDetectedProtocol() {
       if(ndpi_flow->host_server_name[0] != '\0') {
 	char delimiter = '@', *name = NULL;
 	char *at = (char*)strchr((const char*)ndpi_flow->host_server_name, delimiter);
+	bool to_track = false;
 
 	/* Consider only positive DNS replies */
 	if(at != NULL)
-	  name = &at[1], at[0] = '\0';
+	  name = &at[1], at[0] = '\0', to_track = true;
 	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
 	  name = (char*)ndpi_flow->host_server_name;
-	
-	
-	if(name) {
-	  protocol_processed = true;
-	  
+
+	if(name) { 	  
 	  if(ndpi_flow->protos.dns.num_answer_rrs > 0)
-	    ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+	    protocol_processed = true, ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
 	  
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
-	  
-	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
+
+	  if(ndpi_flow->protos.dns.ret_code != 0) to_track = false;
+	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, to_track);
 	}
       }
     }
@@ -156,7 +163,7 @@ void Flow::processDetectedProtocol() {
       for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
+      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, true);
     }
     break;
 
@@ -175,7 +182,7 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
-	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol);
+	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, true);
 
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, 
 					     buf, sizeof(buf), true) != NULL) {
@@ -186,7 +193,8 @@ void Flow::processDetectedProtocol() {
 					     (char*)ndpi_flow->host_server_name);
 
 	if(ndpi_flow->detected_os[0] != '\0') {
-	  aggregateInfo((char*)ndpi_flow->detected_os, protocol, NTOPNG_NDPI_OS_PROTO_ID);
+	  aggregateInfo((char*)ndpi_flow->detected_os, protocol, NTOPNG_NDPI_OS_PROTO_ID, true);
+
 	  if(cli_host)
 	    cli_host->setOS((char*)ndpi_flow->detected_os);
 	}
@@ -206,7 +214,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
       detected_protocol = proto_id;
       processDetectedProtocol();
-      detection_completed = true;
+      detection_completed = true;      
     } else if((((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
 	       && (cli_host != NULL)
 	       && (srv_host != NULL))

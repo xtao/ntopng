@@ -28,13 +28,16 @@ class StringHost : public GenericHost {
  private:
   char *keyname;
   u_int16_t family_id;
+  bool tracked_host;
 
  public:
   StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
   ~StringHost();
-
-  inline char* host_key()          { return(keyname);   };
-  inline u_int16_t get_family_id() { return(family_id); };
+  
+  inline void set_tracked_host(bool tracked) { tracked_host = tracked;    };
+  inline bool is_tracked_host()              { return(tracked_host);      };
+  inline char* host_key()                    { return(keyname);           };
+  inline u_int16_t get_family_id()           { return(family_id);         };
   bool idle();
   void lua(lua_State* vm, bool returnHost);
   inline u_int32_t key()  { return(Utils::hashString(keyname)); };

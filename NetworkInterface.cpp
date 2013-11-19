@@ -391,12 +391,38 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   flow->updateActivities();
 
   if(flow->isDetectionCompleted()) {
+    /* Handle aggregations here */
+    switch(flow->get_detected_protocol()) {
+    case NDPI_PROTOCOL_DNS:
+      struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
+      struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
+      struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
+
+      if(ndpi_flow) {
+	memset(&ndpi_flow->detected_protocol_stack, 
+	       0, sizeof(ndpi_flow->detected_protocol_stack));
+	
+	ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
+				      ip, ipsize, (u_int32_t)time,
+				      cli, srv);
+	if(ndpi_flow->protos.dns.ret_code != 0) {
+	  /* 
+	     This is a negative reply thus we notify the system that
+	     this aggregation must not be tracked
+	  */
+	  flow->aggregateInfo((char*)ndpi_flow->host_server_name, l4_proto,
+			      NDPI_PROTOCOL_DNS, false);
+	}
+      }
+      break;
+    }
+
     flow->processDetectedProtocol();
     flow->deleteFlowMemory();
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
 
   if(!is_fragment) {
     struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
