@@ -137,6 +137,9 @@
 #define CONST_LUA_ERROR                0
 #define CONST_LUA_PARAM_ERROR         -1
 
+#define CONST_CONTACTED_BY            "contacted_by"
+#define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
+
 #define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */
 #define CONST_TREND_TIME_GRANULARITY   1 /* sec */
 #define CONST_DEFAULT_PRIVATE_NETS     "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,127.0.0.0/8"

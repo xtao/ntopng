@@ -394,7 +394,8 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(_peer->get_ip() != NULL)
-    ((GenericHost*)this)->incrContact(iface, _peer->get_ip(), contacted_peer_as_client);
+    ((GenericHost*)this)->incrContact(iface, get_ip(), _peer->get_ip(),
+				      contacted_peer_as_client);
 }
 
 /* *************************************** */

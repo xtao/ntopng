@@ -119,7 +119,7 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
       host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
       host->updateSeen();
       host->updateActivities();
-      if(cli_host) host->incrContact(iface, cli_host->get_ip(), true, true);
+      if(cli_host) host->incrContact(iface, NULL /* This host has no IP */, cli_host->get_ip(), true, true);
     }
   }
 }

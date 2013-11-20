@@ -62,13 +62,16 @@ bool HostContacts::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
 
 /* *************************************** */
 
-void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host, 
+void HostContacts::incrIPContacts(NetworkInterface *iface, IpAddress *me, 
 				  IpAddress *peer,
 				  IPContacts *contacts, u_int32_t value,
 				  bool aggregated_host) {
   int8_t    least_idx = -1;
   u_int32_t least_value = 0;
 
+  if(value == 0)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): zero contacts", __FUNCTION__);
+  
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(contacts[i].host == NULL) {
       /* Empty slot */
@@ -84,10 +87,11 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host,
   } /* for */
 
   /* No room found: let's discard the item with lowest score */
-  if(dumpHostToDB(contacts[least_idx].host, 
+  if((me != NULL)
+     && dumpHostToDB(contacts[least_idx].host, 
 		  ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
     char dump_path[MAX_PATH], daybuf[64];
-    char key[128], *k = host->get_string_key(key, sizeof(key));
+    char me_key[128], *me_k = me->print(me_key, sizeof(me_key));
     time_t when = time(NULL);
     
     strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
@@ -97,7 +101,7 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, GenericHost *host,
 	     daybuf);
     ntop->fixPath(dump_path);
  
-    dbDump(dump_path, k, HOST_FAMILY_ID);
+    dbDump(dump_path, me_k, HOST_FAMILY_ID);
   }
 
   delete contacts[least_idx].host;
@@ -213,7 +217,7 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
 
       ip.set_from_string(key);
-      incrContact(iface, h, &ip, true /* client */, value);
+      incrContact(iface, NULL, &ip, true /* client */, value, false);
 
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 
@@ -230,7 +234,7 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
 
       ip.set_from_string(key);
-      incrContact(iface, h, &ip, false /* server */, value);
+      incrContact(iface, NULL, &ip, false /* server */, value, false);
 
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 

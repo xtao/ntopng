@@ -216,8 +216,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
       }
 
       if(rc != 0) {
-	const char *create_flows_db = "CREATE TABLE IF NOT EXISTS client_contacts (key string, family number, contacts number, PRIMARY KEY (key, family));"
-	  "CREATE TABLE IF NOT EXISTS server_contacts (key string, family number, contacts number, PRIMARY KEY (key, family));";
+	const char *create_flows_db = "CREATE TABLE IF NOT EXISTS "CONST_CONTACTS" (key string, family number, contacts number, PRIMARY KEY (key, family));"
+	  "CREATE TABLE IF NOT EXISTS "CONST_CONTACTED_BY" (key string, family number, contacts number, PRIMARY KEY (key, family));";
 	
 	ntop->getTrace()->traceEvent(TRACE_INFO, "%s", create_flows_db);
 
@@ -228,7 +228,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	  sqlite3_free(zErrMsg);   
 	  sqlite3_close(contacts_db);
 	  return(false);
-	}
+	} else
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", create_flows_db);
       }
 
       rc = sqlite3_exec(contacts_db, sql, NULL, 0, &zErrMsg);
@@ -237,6 +238,7 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	sqlite3_free(zErrMsg);   
 	sqlite3_close(contacts_db);
       } else {
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", sql);
 	sqlite3_close(contacts_db);
 	return(true);
       }

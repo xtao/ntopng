@@ -388,7 +388,7 @@ int Redis::queueContactToDump(char *path, bool client_mode, char *key,
 			      u_int16_t family_id, u_int32_t num_contacts) {
   int rc;
   char sql[1024];
-  const char *table_name = client_mode ? "client_contacts" : "server_contacts";
+  const char *table_name = client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY;
 
   snprintf(sql, sizeof(sql),
 	   "%s|INSERT OR IGNORE INTO %s VALUES ('%s', %u, 0);"

@@ -422,6 +422,7 @@ for i=0,tot_hosts-1 do
    if((host_ip ~= nil) and (host_ip == k)) then label = "sun" end
    -- f(name == k) then name = ntop.getResolvedAddress(k) end
    if(name == nil) then name = k end
+   if(maxval == 0) then maxval = 1 end
    tot = math.floor(0.5+(v['count']*100)/maxval)
    if(tot < min_size) then tot = min_size end
 
