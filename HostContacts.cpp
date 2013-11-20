@@ -97,7 +97,7 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, IpAddress *me,
     strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
     snprintf(dump_path, sizeof(dump_path), "%s/%s/%s/%s",
 	     ntop->get_working_dir(), iface->get_name(), 
-	     aggregated_host ? "aggregations" : "host_contacts",
+	     aggregated_host ? CONST_AGGREGATIONS : CONST_HOST_CONTACTS,
 	     daybuf);
     ntop->fixPath(dump_path);
  

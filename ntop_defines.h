@@ -101,6 +101,7 @@
 #endif
 
 #define MAX_NUM_DEFINED_INTERFACES 16
+#define MAX_NUM_DB_SPINS            5 /* sec */
 
 #ifndef MAX_PATH
 #define MAX_PATH                256
@@ -139,6 +140,9 @@
 
 #define CONST_CONTACTED_BY            "contacted_by"
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
+
+#define CONST_AGGREGATIONS            "aggregations"
+#define CONST_HOST_CONTACTS           "host_contacts"
 
 #define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */
 #define CONST_TREND_TIME_GRANULARITY   1 /* sec */

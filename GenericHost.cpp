@@ -44,10 +44,17 @@ GenericHost::~GenericHost() {
 void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
   char dump_path[MAX_PATH], daybuf[64];
   time_t when = time(NULL);
-  
+ 
+  /* 
+  if((host_key[0] >= '0') && (host_key[0] <= '9'))
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
+  */
+
   strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-  snprintf(dump_path, sizeof(dump_path), "%s/%s/aggregations/%s",
-	   ntop->get_working_dir(), iface->get_name(), daybuf);
+  snprintf(dump_path, sizeof(dump_path), "%s/%s/%s/%s",
+	   ntop->get_working_dir(), iface->get_name(), 
+	   (family_id == HOST_FAMILY_ID) ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
+	   daybuf);
   ntop->fixPath(dump_path);
   
   contacts.dbDump(dump_path, host_key, family_id);

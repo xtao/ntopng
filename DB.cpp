@@ -185,24 +185,29 @@ bool DB::execContactsSQLStatement(char* _sql) {
     ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", _sql);
 
     if((path = strtok_r(_sql, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				   "[DB] Invalid SQL statement [%s]", _sql);
       return(false);
     }
 
     if((filename = strtok_r(NULL, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				   "[DB] Invalid SQL statement [%s]",
+				   path);
       return(false);
     }
 
     if((sql = strtok_r(NULL, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Invalid SQL statement [%s]", _sql);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				   "[DB] Invalid SQL statement [%s][%s]", 
+				   path, filename);
       return(false);
     }
 
     if(Utils::mkdir_tree(path)) {
       char db_path[MAX_PATH];
       struct stat buf;
-      int rc;
+      int rc, num_spins;
 
       snprintf(db_path, sizeof(db_path), "%s/%s.sqlite", path, filename);
       ntop->fixPath(db_path);
@@ -233,7 +238,20 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	}
       }
 
-      rc = sqlite3_exec(contacts_db, sql, NULL, 0, &zErrMsg);
+      /* If the DB is busy we spin */
+      num_spins = 0;
+      while(num_spins < MAX_NUM_DB_SPINS) {
+	rc = sqlite3_exec(contacts_db, sql, NULL, 0, &zErrMsg);
+	if((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)) {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "DB %s is locked: waiting [%s]",
+				       db_path, zErrMsg);
+	  sqlite3_free(zErrMsg);
+	  num_spins++;
+	  sleep(1);
+	} else 
+	  break;
+      }
+
       if(rc != SQLITE_OK) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
 	sqlite3_free(zErrMsg);   
