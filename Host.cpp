@@ -78,9 +78,9 @@ Host::~Host() {
       snprintf(key, sizeof(key), "%s.server", k);
       ntop->getRedis()->del(key);
     }
-
-    dumpContacts(k, HOST_FAMILY_ID);
   }
+
+  dumpContacts(k, HOST_FAMILY_ID);
 
   if(localHost && ntop->getPrefs()->is_host_persistency_enabled()) {
     char *json = serialize();

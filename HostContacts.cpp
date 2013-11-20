@@ -282,7 +282,7 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
     if(clientContacts[i].host != NULL) {
 
       if(dumpHostToDB(clientContacts[i].host,
-		      (family_id = HOST_FAMILY_ID) ?
+		      (family_id == HOST_FAMILY_ID) ?
 		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
 		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
 	char *host_ip;
@@ -300,7 +300,7 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
 
     if(serverContacts[i].host != NULL) {
       if(dumpHostToDB(serverContacts[i].host,
-		      (family_id = HOST_FAMILY_ID) ?
+		      (family_id == HOST_FAMILY_ID) ?
 		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
 		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
 	char *host_ip;

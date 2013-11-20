@@ -103,9 +103,9 @@ Flow::~Flow() {
 
 /* *************************************** */
 
-void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id, 
-			 bool aggregation_to_track 
-			 /* 
+void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
+			 bool aggregation_to_track
+			 /*
 			    i.e. it is not here for an error (such as NXDOMAIN)
 			    so we do not store persistently on disk aggregations
 			    due to errors that might fill-up the disk quickly
@@ -113,7 +113,7 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
 			 ) {
   if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
     StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
-    
+
     if(host != NULL) {
       host->set_tracked_host(aggregation_to_track);
       host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
@@ -143,13 +143,17 @@ void Flow::processDetectedProtocol() {
 	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
 	  name = (char*)ndpi_flow->host_server_name;
 
-	if(name) { 	  
-	  if(ndpi_flow->protos.dns.num_answer_rrs > 0)
-	    protocol_processed = true, ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
-	  
+	if(name) {
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
 
-	  if(ndpi_flow->protos.dns.ret_code != 0) to_track = false;
+	  if(ndpi_flow->protos.dns.ret_code != 0)
+	    to_track = false;
+	  else {
+	    if(ndpi_flow->protos.dns.num_answers > 0)
+	      to_track = true, protocol_processed = true,
+		ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+	  }
+
 	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, to_track);
 	}
       }
@@ -184,7 +188,7 @@ void Flow::processDetectedProtocol() {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
 	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, true);
 
-	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name, 
+	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
 					     buf, sizeof(buf), true) != NULL) {
 	  categorization.flow_categorized = true;
 	  categorization.category = strdup(buf);
@@ -214,7 +218,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
       detected_protocol = proto_id;
       processDetectedProtocol();
-      detection_completed = true;      
+      detection_completed = true;
     } else if((((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
 	       && (cli_host != NULL)
 	       && (srv_host != NULL))
@@ -696,12 +700,12 @@ void Flow::updateActivities() {
 
 void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 			u_int out_pkts, u_int out_bytes, time_t last_seen) {
-  updateSeen(last_seen); 
+  updateSeen(last_seen);
 
-  if (cli2srv_direction) 
+  if (cli2srv_direction)
     cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
   else
-    cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes; 
+    cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes;
 
   updateActivities();
 }
