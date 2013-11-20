@@ -228,8 +228,9 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	  sqlite3_free(zErrMsg);   
 	  sqlite3_close(contacts_db);
 	  return(false);
-	} else
-	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", create_flows_db);
+	} else {
+	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", create_flows_db);
+	}
       }
 
       rc = sqlite3_exec(contacts_db, sql, NULL, 0, &zErrMsg);
@@ -238,7 +239,7 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	sqlite3_free(zErrMsg);   
 	sqlite3_close(contacts_db);
       } else {
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", sql);
+	// ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", sql);
 	sqlite3_close(contacts_db);
 	return(true);
       }
