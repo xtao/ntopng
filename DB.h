@@ -26,19 +26,29 @@
 
 #ifdef HAVE_SQLITE
 
+typedef struct {
+  sqlite3 *db;
+  u_int32_t num_contacts_db_insert;
+  char last_open_contacts_db_path[MAX_PATH];
+  time_t last_insert;
+} db_cache;
+
 class DB {
  private:
-  sqlite3 *db, *contacts_db;
+  u_int32_t contacts_cache_idx;
+  db_cache contacts_cache[CONST_NUM_OPEN_DB_CACHE];
+  sqlite3 *db;
   NetworkInterface *iface;
-  u_int32_t dir_duration, num_contacts_db_insert;
-  char db_path[MAX_PATH], last_open_contacts_db_path[MAX_PATH];
+  u_int32_t dir_duration;
+  char db_path[MAX_PATH];
   time_t end_dump;
   pthread_t dumpContactsThreadLoop;
 
   void initDB(time_t when, const char *create_sql_string);
   void termDB();
   bool execSQL(char* sql);  
-  
+  int get_open_db_contacts_connection(char *path, int *db_to_purge);
+
  public:
   DB(NetworkInterface *_iface = NULL,
      u_int32_t _dir_duration = 300 /* 5 minutes */);

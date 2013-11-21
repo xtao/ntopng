@@ -34,9 +34,10 @@ class GenericHost;
 class HostContacts {
  protected:
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
-  void incrIPContacts(NetworkInterface *iface, IpAddress *ip, IpAddress *peer, 
+  void incrIPContacts(NetworkInterface *iface, IpAddress *me, char *me_name, IpAddress *peer, 
 		      IPContacts *contacts, u_int32_t value, bool aggregated_host);
-
+  void dbDumpHost(char *daybuf, char *ifname, char *key,
+		  IpAddress *peer, u_int32_t num_contacts);
  public:
   HostContacts();
   ~HostContacts();
@@ -45,7 +46,13 @@ class HostContacts {
   inline void incrContact(NetworkInterface *iface, IpAddress *me, 
 			  IpAddress *peer, bool contacted_peer_as_client,
 			  u_int32_t value, bool aggregated_host) { 
-    incrIPContacts(iface, me, peer, contacted_peer_as_client ? clientContacts : serverContacts, value, aggregated_host);
+    incrIPContacts(iface, me, NULL, peer, contacted_peer_as_client ? clientContacts : serverContacts, value, aggregated_host);
+  };
+
+  inline void incrContact(NetworkInterface *iface, char *me, 
+			  IpAddress *peer, bool contacted_peer_as_client,
+			  u_int32_t value, bool aggregated_host) { 
+    incrIPContacts(iface, NULL, me, peer, contacted_peer_as_client ? clientContacts : serverContacts, value, aggregated_host);
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);

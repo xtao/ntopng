@@ -62,7 +62,8 @@ bool HostContacts::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
 
 /* *************************************** */
 
-void HostContacts::incrIPContacts(NetworkInterface *iface, IpAddress *me, 
+void HostContacts::incrIPContacts(NetworkInterface *iface, 
+				  IpAddress *me, char *me_name,
 				  IpAddress *peer,
 				  IPContacts *contacts, u_int32_t value,
 				  bool aggregated_host) {
@@ -86,16 +87,20 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, IpAddress *me,
     }
   } /* for */
 
-  /* No room found: let's discard the item with lowest score */
-  if((me != NULL)
-     && dumpHostToDB(contacts[least_idx].host, 
-		  ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    char daybuf[64];
-    char me_key[128], *me_k = me->print(me_key, sizeof(me_key));
-    time_t when = time(NULL);
-    
-    strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-    dbDump(daybuf, iface->get_name(), me_k, HOST_FAMILY_ID);
+  /* No room found: let's discard the item with lowest score */  
+  if(dumpHostToDB(contacts[least_idx].host, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
+    if(me != NULL) {
+	/* This is a host */
+      char daybuf[64];
+      char me_key[128], *me_k = me->print(me_key, sizeof(me_key));
+      time_t when = time(NULL);
+      
+      strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+      dbDumpHost(daybuf, iface->get_name(), me_k, contacts[least_idx].host, contacts[least_idx].num_contacts);
+    } else {
+      /* This is an aggregation */
+      
+    }
   }
 
   delete contacts[least_idx].host;
@@ -211,7 +216,7 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
 
       ip.set_from_string(key);
-      incrContact(iface, NULL, &ip, true /* client */, value, false);
+      incrContact(iface, (char*)NULL, &ip, true /* client */, value, false);
 
       //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 
@@ -228,7 +233,7 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
       int  value = json_object_get_int(json_object_iter_peek_value(&it));
 
       ip.set_from_string(key);
-      incrContact(iface, NULL, &ip, false /* server */, value, false);
+      incrContact(iface, (char*)NULL, &ip, false /* server */, value, false);
 
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s=%d", key, value);
 
@@ -264,9 +269,75 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 
 /* *************************************** */
 
+void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key, 
+			      IpAddress *peer, u_int32_t num_contacts) {
+  char buf[32], full_path[MAX_PATH];
+  char *host_ip = peer->print(buf, sizeof(buf));
+
+  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%c/%c|%s",
+	   ntop->get_working_dir(), ifname, CONST_HOST_CONTACTS,
+	   key[0], ifdot(key[1]), key);
+  ntop->fixPath(full_path);
+
+  ntop->getRedis()->queueContactToDump(full_path, true,
+				       host_ip, HOST_FAMILY_ID, num_contacts);  
+}
+
+/* *************************************** */
+
 #define ifdot(a) ((a == '.') ? '_' : a)
 
 void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t family_id) {
+#if 0
+  char buf[64], cmd[256];
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].host != NULL) {
+      if(dumpHostToDB(clientContacts[i].host,
+		      (family_id == HOST_FAMILY_ID) ?
+		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
+		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
+	char *host_ip = clientContacts[i].host->print(buf, sizeof(buf));
+
+	snprintf(cmd, sizeof(cmd), "HINCR %s-%s-%s-%u-%s %s %u",
+		 daybuf, ifname, key, family_id,
+		 (family_id == HOST_FAMILY_ID) ? CONST_CONTACTS : CONST_CONTACTED_BY,
+		 host_ip, clientContacts[i].num_contacts);
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", cmd);
+
+	if(family_id != HOST_FAMILY_ID) {
+	  snprintf(cmd, sizeof(cmd), "HINCR %s-%s-%s-%u-%s %s %u",
+		   daybuf, ifname, host_ip, family_id,
+		   CONST_CONTACTS,
+		   key, clientContacts[i].num_contacts);
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", cmd);
+	}
+      }
+    }
+
+    if(serverContacts[i].host != NULL) {
+      if(dumpHostToDB(serverContacts[i].host,
+		      (family_id == HOST_FAMILY_ID) ?
+		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
+		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
+	char *host_ip = serverContacts[i].host->print(buf, sizeof(buf));
+
+	snprintf(cmd, sizeof(cmd), "HINCR %s-%s-%s-%u-%s %s %u",
+		 daybuf, ifname, key, family_id, CONST_CONTACTED_BY,
+		 host_ip, serverContacts[i].num_contacts);
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", cmd);
+
+	if(family_id != HOST_FAMILY_ID) {
+	  snprintf(cmd, sizeof(cmd), "HINCR %s-%s-%s-%u-%s %s %u",
+		   daybuf, ifname, host_ip, family_id,
+		   CONST_HOST_CONTACTS,
+		   key, serverContacts[i].num_contacts);
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", cmd);
+	}
+      } /* if */
+    } /* if */
+  }
+#else
   char buf[64], full_path[MAX_PATH], alt_full_path[MAX_PATH];
 
   snprintf(full_path, sizeof(full_path), "%s/%s/%s/%c/%c|%s",
@@ -282,9 +353,7 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 		      (family_id == HOST_FAMILY_ID) ?
 		      ntop->getPrefs()->get_dump_hosts_to_db_policy() :
 		      ntop->getPrefs()->get_dump_aggregations_to_db())) {
-	char *host_ip;
-	
-	host_ip = clientContacts[i].host->print(buf, sizeof(buf));
+	char *host_ip = clientContacts[i].host->print(buf, sizeof(buf));
 	ntop->getRedis()->queueContactToDump(full_path, 
 					     (family_id == HOST_FAMILY_ID) ? true : false, 
 					     host_ip, family_id, 
@@ -318,10 +387,11 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
 	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id,
-					       clientContacts[i].num_contacts);
+					       serverContacts[i].num_contacts);
 	}
       } /* if */
     } /* if */
   } /* for */
+#endif
 }
 

@@ -54,6 +54,10 @@ class GenericHost : public GenericHashEntry {
 			  bool contacted_peer_as_client, bool aggregated_host = false) {
     contacts.incrContact(iface, me, peer, contacted_peer_as_client, 1, aggregated_host); 
   }
+  inline void incrContact(NetworkInterface *iface, char *me_str, IpAddress *peer, 
+			  bool contacted_peer_as_client, bool aggregated_host = false) {
+    contacts.incrContact(iface, me_str, peer, contacted_peer_as_client, 1, aggregated_host); 
+  }
   
   void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm);        };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts.get_num_contacts_by(host_ip)); };
