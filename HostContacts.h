@@ -41,7 +41,7 @@ class HostContacts {
   HostContacts();
   ~HostContacts();
 
-  void dbDump(char *path, char *key, u_int16_t family_id);
+  void dbDump(char *daybuf, char *ifname, char *key, u_int16_t family_id);
   inline void incrContact(NetworkInterface *iface, IpAddress *me, 
 			  IpAddress *peer, bool contacted_peer_as_client,
 			  u_int32_t value, bool aggregated_host) { 

@@ -90,18 +90,12 @@ void HostContacts::incrIPContacts(NetworkInterface *iface, IpAddress *me,
   if((me != NULL)
      && dumpHostToDB(contacts[least_idx].host, 
 		  ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    char dump_path[MAX_PATH], daybuf[64];
+    char daybuf[64];
     char me_key[128], *me_k = me->print(me_key, sizeof(me_key));
     time_t when = time(NULL);
     
     strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
-    snprintf(dump_path, sizeof(dump_path), "%s/%s/%s/%s",
-	     ntop->get_working_dir(), iface->get_name(), 
-	     aggregated_host ? CONST_AGGREGATIONS : CONST_HOST_CONTACTS,
-	     daybuf);
-    ntop->fixPath(dump_path);
- 
-    dbDump(dump_path, me_k, HOST_FAMILY_ID);
+    dbDump(daybuf, iface->get_name(), me_k, HOST_FAMILY_ID);
   }
 
   delete contacts[least_idx].host;
@@ -272,10 +266,13 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 
 #define ifdot(a) ((a == '.') ? '_' : a)
 
-void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
+void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t family_id) {
   char buf[64], full_path[MAX_PATH], alt_full_path[MAX_PATH];
 
-  snprintf(full_path, sizeof(full_path), "%s/%c/%c|%s", path, key[0], ifdot(key[1]), key);
+  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%c/%c|%s",
+	   ntop->get_working_dir(), ifname, 
+	   (family_id == HOST_FAMILY_ID) ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
+	   key[0], ifdot(key[1]), key);
   ntop->fixPath(full_path);
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
@@ -288,12 +285,16 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
 	char *host_ip;
 	
 	host_ip = clientContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path, true, host_ip, family_id, clientContacts[i].num_contacts);
+	ntop->getRedis()->queueContactToDump(full_path, true, host_ip, family_id, 
+					     clientContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%c/%c|%s",
+		   ntop->get_working_dir(), ifname, 
+		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, clientContacts[i].num_contacts);
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, 
+					       clientContacts[i].num_contacts);
 	}
       }
     }
@@ -306,12 +307,16 @@ void HostContacts::dbDump(char *path, char *key, u_int16_t family_id) {
 	char *host_ip;
 
 	host_ip = serverContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path, false, host_ip, family_id, serverContacts[i].num_contacts);
+	ntop->getRedis()->queueContactToDump(full_path, false, host_ip, family_id, 
+					     serverContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%c/%c|%s", path, host_ip[0], ifdot(host_ip[1]), host_ip);
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%c/%c|%s",
+		   ntop->get_working_dir(), ifname, 
+		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, clientContacts[i].num_contacts);
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id,
+					       clientContacts[i].num_contacts);
 	}
       } /* if */
     } /* if */
