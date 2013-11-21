@@ -285,7 +285,9 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 	char *host_ip;
 	
 	host_ip = clientContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path, true, host_ip, family_id, 
+	ntop->getRedis()->queueContactToDump(full_path, 
+					     (family_id == HOST_FAMILY_ID) ? true : false, 
+					     host_ip, family_id, 
 					     clientContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
