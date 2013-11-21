@@ -44,9 +44,6 @@ GenericHost::~GenericHost() {
 void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
   char daybuf[64];
   time_t when = time(NULL);
-   
-  if((host_key[0] >= '0') && (host_key[0] <= '9') && (family_id != HOST_FAMILY_ID))
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
 
   strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
   contacts.dbDump(daybuf, iface->get_name(), host_key, family_id);
