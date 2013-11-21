@@ -412,7 +412,12 @@ int credis_zunionstore(REDIS rhnd, const char *destkey, int keyc, const char **k
  * HVALS key Return all the values in a hash.
  * HGETALL key Return all the fields and associated values in a hash.
  */
+  int credis_hincr(REDIS rhnd, const char *hname, const char *key, int *new_val);
+  int credis_hdecr(REDIS rhnd, const char *hname, const char *key, int *new_val);
+  int credis_hincrby(REDIS rhnd, const char *hname, const char *key, int incr_val, int *new_val);
+  int credis_hdecrby(REDIS rhnd, const char *hname, const char *key, int decr_val, int *new_val);
 
+ 
 
 /*
  * Sorting 

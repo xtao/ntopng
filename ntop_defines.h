@@ -72,7 +72,7 @@
 #define MAX_TCP_FLOW_IDLE         3 /* sec */
 #define PURGE_FRACTION           32 /* check 1/32 of hashes per iteration */
 #define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
-#define MAX_NUM_QUEUED_CONTACTS MAX_NUM_QUEUED_ADDRS
+#define MAX_NUM_QUEUED_CONTACTS 25000
 #define DEFAULT_PID_PATH        "/var/tmp/ntopng.pid"
 #define DOMAIN_CATEGORY         "domain.category"
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
@@ -104,13 +104,13 @@
 #define MAX_NUM_DB_SPINS            5 /* sec */
 
 #ifndef MAX_PATH
-#define MAX_PATH                256
+#define MAX_PATH                  256
 #endif
 
 //#define DEMO_WIN32              1
 #define MAX_NUM_PACKETS           2000
 
-#define MAX_NUM_HOST_CONTACTS     10
+#define MAX_NUM_HOST_CONTACTS     32
 #define CONST_DEFAULT_NTOP_PORT   3000
 
 #ifdef WIN32

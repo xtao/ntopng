@@ -929,6 +929,45 @@ static int cr_incr(REDIS rhnd, int incr, int decr, const char *key, int *new_val
   return rc;
 }
 
+static int cr_hincr(REDIS rhnd, int incr, int decr, const char *hname, const char *key, int *new_val)
+{
+  int rc = 0;
+
+  if (incr == 1 || decr == 1)
+    rc = cr_sendfandreceive(rhnd, CR_INT, "%s %s %s\r\n", 
+                            incr>0?"HINCR":"HDECR", hname, key);
+  else if (incr > 1 || decr > 1)
+    rc = cr_sendfandreceive(rhnd, CR_INT, "%s %s %s %d\r\n", 
+                            incr>0?"HINCRBY":"HDECRBY",
+			    hname, key, incr>0?incr:decr);
+
+  if (rc == 0 && new_val != NULL)
+    *new_val = rhnd->reply.integer;
+
+  return rc;
+}
+
+int credis_hincr(REDIS rhnd, const char *hname, const char *key, int *new_val)
+{
+  return cr_hincr(rhnd, 1, 0, hname, key, new_val);
+}
+
+int credis_hdecr(REDIS rhnd, const char *hname, const char *key, int *new_val)
+{
+  return cr_hincr(rhnd, 0, 1, hname, key, new_val);
+}
+
+int credis_hincrby(REDIS rhnd, const char *hname, const char *key, int incr_val, int *new_val)
+{
+  return cr_hincr(rhnd, incr_val, 0, hname, key, new_val);
+}
+
+int credis_hdecrby(REDIS rhnd, const char *hname, const char *key, int decr_val, int *new_val)
+{
+  return cr_hincr(rhnd, 0, decr_val, hname, key, new_val);
+}
+
+
 int credis_incr(REDIS rhnd, const char *key, int *new_val)
 {
   return cr_incr(rhnd, 1, 0, key, new_val);

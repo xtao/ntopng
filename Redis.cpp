@@ -386,7 +386,7 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
 
 int Redis::queueContactToDump(char *path, bool client_mode, char *key, 
 			      u_int16_t family_id, u_int32_t num_contacts) {
-  int rc;
+  int rc, num;
   char sql[1024];
   const char *table_name = client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY;
 
@@ -400,7 +400,20 @@ int Redis::queueContactToDump(char *path, bool client_mode, char *key,
 
   l->lock(__FILE__, __LINE__);  
   rc = credis_rpush(redis, CONTACTS_TO_DUMP, sql);
-  credis_ltrim(redis, CONTACTS_TO_DUMP, 0, MAX_NUM_QUEUED_CONTACTS);
+  
+  if((num = credis_llen(redis, CONTACTS_TO_DUMP)) > 100000 /* MAX_NUM_QUEUED_CONTACTS */) {
+    static time_t next_time = 0;
+    time_t now = time(NULL);
+
+    credis_ltrim(redis, CONTACTS_TO_DUMP, 0, 100000 /* MAX_NUM_QUEUED_CONTACTS */);
+
+    if(now > next_time) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Redis queue %s too long (%d): dropping",
+				   CONTACTS_TO_DUMP, num);
+      next_time = now + 5;
+    }
+  }
+
   l->unlock(__FILE__, __LINE__);
 
  return(rc);

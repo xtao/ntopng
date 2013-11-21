@@ -28,10 +28,10 @@
 
 class DB {
  private:
-  sqlite3 *db;
+  sqlite3 *db, *contacts_db;
   NetworkInterface *iface;
-  u_int32_t dir_duration;
-  char db_path[MAX_PATH];
+  u_int32_t dir_duration, num_contacts_db_insert;
+  char db_path[MAX_PATH], last_open_contacts_db_path[MAX_PATH];
   time_t end_dump;
   pthread_t dumpContactsThreadLoop;
 
