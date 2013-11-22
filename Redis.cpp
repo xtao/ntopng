@@ -89,6 +89,26 @@ int Redis::get(char *key, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
+int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
+  int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HGET %s %s", key, field);
+
+  if(reply && reply->str) {
+    snprintf(rsp, rsp_len, "%s", reply->str);
+  } else
+    rsp[0] = 0;
+  l->unlock(__FILE__, __LINE__);
+
+  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::set(char *key, char *value, u_int expire_secs) {
   int rc;
   redisReply *reply;
@@ -104,6 +124,25 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
+}
+
+/* **************************************** */
+
+char* Redis::popSet(char *pop_name, char *rsp, u_int rsp_len) {
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "SPOP %s", pop_name);
+
+  if(reply && reply->str) {
+    snprintf(rsp, rsp_len, "%s", reply->str);
+  } else
+    rsp[0] = 0;
+  l->unlock(__FILE__, __LINE__);
+
+  if(reply) freeReplyObject(reply);
+
+  return(rsp);
 }
 
 /* **************************************** */
@@ -131,7 +170,7 @@ int Redis::zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len) 
 /* **************************************** */
 
 int Redis::keys(const char *pattern, char ***keys_p) {
-  int rc;
+  int rc = 0;
   u_int i;
   redisReply *reply;
 
@@ -139,13 +178,38 @@ int Redis::keys(const char *pattern, char ***keys_p) {
   reply = (redisReply*)redisCommand(redis, "KEYS %s", pattern);
   if (reply->type == REDIS_REPLY_ARRAY) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
+    rc = reply->elements;
 
     for(i = 0; i < reply->elements; i++) {
       (*keys_p)[i] = strdup(reply->element[i]->str);
     }
   }
 
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::hashKeys(const char *pattern, char ***keys_p) {
+  int rc = 0;
+  u_int i;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HKEYS %s", pattern);
+  if (reply->type == REDIS_REPLY_ARRAY) {
+    (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
+    rc = reply->elements;
+    
+    for(i = 0; i < reply->elements; i++) {
+      (*keys_p)[i] = strdup(reply->element[i]->str);
+    }
+  }
+
+  if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
@@ -159,6 +223,20 @@ int Redis::del(char *key) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "DEL %s", key);
+  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::delHash(char *key) {
+  int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HDEL %s", key);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -241,7 +319,7 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
 char* Redis::getFlowCategory(char *domainname, char *buf,
 			     u_int buf_len, bool categorize_if_unknown) {
-  char key[128], *val;
+  char key[128];
   redisReply *reply;
 
   buf[0] = 0;
@@ -266,7 +344,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
     snprintf(buf, buf_len, "%s", reply->str);
     if(reply) freeReplyObject(reply);
   } else {
-    buf[0] = 0, val = NULL;
+    buf[0] = 0;
 
     if(categorize_if_unknown) {
       reply = (redisReply*)redisCommand(redis, "RPUSH %s %s", DOMAIN_TO_CATEGORIZE, domainname);
@@ -276,7 +354,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
 
   l->unlock(__FILE__, __LINE__);
 
-  return(val);
+  return(buf);
 }
 
 /* **************************************** */

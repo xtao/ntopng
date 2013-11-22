@@ -163,7 +163,7 @@ void usage() {
 	 "                                    | all    - Dump all hosts\n"
 	 "                                    | local  - Dump only local hosts\n"
 	 "                                    | remote - Dump only remote hosts\n"
-	 "[--dump-aggregations|-E] <mode>     | Dump aggregations policy (default: none)."
+	 "[--dump-aggregations|-E] <mode>     | Dump aggregations policy (default: none).\n"
 	 "                                    | Values:\n"
 	 "                                    | all    - Dump all hosts\n"
 	 "                                    | local  - Dump only local hosts\n"

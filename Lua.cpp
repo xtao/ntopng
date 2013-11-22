@@ -385,6 +385,17 @@ static int ntop_delete_redis_key(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_delete_hash_redis_key(lua_State* vm) {
+  char *key;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+  ntop->getRedis()->delHash(key);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_zmq_disconnect(lua_State* vm) {
   void *context, *subscriber;
 
@@ -1170,14 +1181,63 @@ static int ntop_mkdir_tree(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_redis(lua_State* vm) {
-  char *key, *value, rsp[4096];
+  char *key, rsp[4096];
   Redis *redis = ntop->getRedis();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
 
-  value = (redis->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"";
-  lua_pushfstring(vm, "%s", value);
+  lua_pushfstring(vm, "%s", (redis->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"");
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_get_hash_redis(lua_State* vm) {
+  char *key, *member, rsp[4096];
+  Redis *redis = ntop->getRedis();
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
+  if((member = (char*)lua_tostring(vm, 2)) == NULL)    return(CONST_LUA_PARAM_ERROR);
+
+  lua_pushfstring(vm, "%s", (redis->hashGet(key, member, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"");
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_get_hash_keys_redis(lua_State* vm) {
+  char *key, **vals;
+  Redis *redis = ntop->getRedis();
+  int rc, i;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((key    = (char*)lua_tostring(vm, 1)) == NULL)    return(CONST_LUA_PARAM_ERROR);
+
+  rc = redis->hashKeys(key, &vals);
+  
+  lua_newtable(vm);
+  for(i = 0; i < rc; i++) {
+    lua_push_str_table_entry(vm, vals[i], (char*)"");
+    free(vals[i]);
+  }
+  free(vals);
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_get_redis_set_pop(lua_State* vm) {
+  char *set_name, rsp[512];
+  Redis *redis = ntop->getRedis();
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((set_name = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+lua_pushfstring(vm, "%s", redis->popSet(set_name, rsp, sizeof(rsp)));
 
   return(CONST_LUA_OK);
 }
@@ -1320,7 +1380,11 @@ static const luaL_Reg ntop_reg[] = {
   /* Redis */
   { "getCache",       ntop_get_redis },
   { "setCache",       ntop_set_redis },
-  { "deleteKey",      ntop_delete_redis_key },
+  { "delCache",       ntop_delete_redis_key },
+  { "getHashCache",   ntop_get_hash_redis },
+  { "getHashKeysCache", ntop_get_hash_keys_redis },
+  { "delHashCache",   ntop_delete_hash_redis_key },
+  { "setPopCache",    ntop_get_redis_set_pop },
 
   { "mkdir",          ntop_mkdir_tree },
   { "exists",         ntop_get_file_dir_exists },
