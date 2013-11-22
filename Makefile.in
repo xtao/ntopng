@@ -1,9 +1,8 @@
 SHELL=/bin/sh
 OS := $(shell uname -s)
 ######
-CREDIS_HOME=third-party/credis-0.2.3
-CREDIS=$(CREDIS_HOME)/credis.o
-CREDIS_INC=-I$(CREDIS_HOME)
+HIREDIS_HOME=third-party/hiredis
+HIREDIS_INC=-I$(HIREDIS_HOME)
 ######
 NDPI_INC=-I./nDPI/src/include
 NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a 
@@ -36,7 +35,7 @@ EWH_INC=$(EWH_HOME)/headers
 ######
 TARGET = ntopng
 LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) -lxml2 @SQLITE_LIB@ @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ @Z_LIB@ @DL_LIB@ -lm -lpthread
-CPPFLAGS = -g @CFLAGS@ $(CREDIS_INC) $(MONGOOSE_INC) -I$(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) # -D_GLIBCXX_DEBUG
+CPPFLAGS = -g @CFLAGS@ $(HIREDIS_INC) $(MONGOOSE_INC) -I$(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) # -D_GLIBCXX_DEBUG
 ######
 # ntopng-1.0_1234.x86_64.rpm 
 PLATFORM = `uname -p`
@@ -56,7 +55,7 @@ endif
 default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) $(CREDIS)
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS) Makefile
@@ -91,7 +90,6 @@ $(JSON_LIB):
 clean:
 	-rm -f *.o *~ svn-commit.* #config.h
 	-rm -f $(TARGET)
-	cd $(CREDIS_HOME); @GMAKE@ clean
 
 veryclean:
 	-rm -rf nDPI
