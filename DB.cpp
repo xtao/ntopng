@@ -24,11 +24,11 @@
 
 /* ******************************************* */
 
-DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration) {
+DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
   dir_duration = max_val(_dir_duration, 300); /* 5 min is the minimum duration */
 
   // sqlite3_config(SQLITE_CONFIG_SERIALIZED);
-  db = NULL, end_dump = 0, iface = _iface;
+  db = NULL, end_dump = 0, iface = _iface, db_id = _db_id;
   contacts_cache_idx = 0;
 
   for(int i=0; i<CONST_NUM_OPEN_DB_CACHE; i++) {
@@ -72,13 +72,14 @@ int DB::get_open_db_contacts_connection(char *path, int *db_to_purge) {
  }
 
 /* **************************************************** */
+
 static void* dumpContactsLoop(void* ptr) {
   DB *a = (DB*)ptr;
   Redis *r = ntop->getRedis();
 
   while(!ntop->getGlobals()->isShutdown()) {
     char todo[512];
-    int rc = r->popContactToDump(todo, sizeof(todo));
+    int rc = r->popContactToDump(a->get_db_id(), todo, sizeof(todo));
 
     if(rc == 0) {
       a->execContactsSQLStatement(todo);
@@ -109,7 +110,7 @@ void DB::termDB() {
   for(int i=0; i<CONST_NUM_OPEN_DB_CACHE; i++) {
     if(contacts_cache[i].db != NULL) {
       char *zErrMsg = NULL;
-      
+
       if(sqlite3_exec(contacts_cache[i].db, "COMMIT;", NULL, 0, &zErrMsg) != SQLITE_OK)
 	sqlite3_free(zErrMsg);
     }
@@ -244,16 +245,16 @@ bool DB::execContactsSQLStatement(char* _sql) {
     ntop->fixPath(db_path);
 
     cached_id = get_open_db_contacts_connection(db_path, &db_to_purge);
-    
+
     if(cached_id == -1) {
       /* The DB is the not last we have used */
 
-      cached_id = db_to_purge; // FIX
+      cached_id = db_to_purge;
 
       if(contacts_cache[cached_id].db) {
-	ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] Closing (%d) %s [%u operations]", 
-				     cached_id,
-				     contacts_cache[cached_id].last_open_contacts_db_path, 
+	ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] [%u] Closing (%d) %s [%u operations]",
+				     db_id, cached_id,
+				     contacts_cache[cached_id].last_open_contacts_db_path,
 				     contacts_cache[cached_id].num_contacts_db_insert);
 
 	rc = sqlite3_exec(contacts_cache[cached_id].db, "COMMIT;", NULL, 0, &zErrMsg);
@@ -267,7 +268,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
       }
 
       contacts_cache[cached_id].num_contacts_db_insert = 0, contacts_cache[cached_id].last_insert = 0;
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] Opening (%d) %s", cached_id, db_path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] [%d] Opening (%d) %s",
+				   db_id, cached_id, db_path);
 
       if(Utils::mkdir_tree(path)) {
 	char *cmd;
@@ -275,8 +277,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
 	int rc = stat(db_path, &buf);
 
 	if(sqlite3_open(db_path, &contacts_cache[cached_id].db) != 0) {
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to open/create DB %s [%s]",
-				       db_path, sqlite3_errmsg(db));
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] [%d] Unable to open/create DB %s [%s]",
+				       db_id, db_path, sqlite3_errmsg(db));
 	  return(false);
 	}
 
@@ -307,8 +309,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
     while(num_spins < MAX_NUM_DB_SPINS) {
       rc = sqlite3_exec(contacts_cache[cached_id].db, sql, NULL, 0, &zErrMsg);
       if((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)) {
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "DB %s is locked: waiting [%s]",
-				     contacts_cache[cached_id].last_open_contacts_db_path, 
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "[DB] [%u] DB %s is locked: waiting [%s]",
+				     db_id, contacts_cache[cached_id].last_open_contacts_db_path,
 				     zErrMsg);
 	sqlite3_free(zErrMsg);
 	num_spins++;
@@ -318,8 +320,8 @@ bool DB::execContactsSQLStatement(char* _sql) {
     }
 
     if(rc != SQLITE_OK) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s][rc: %u][%s]",
-				   sql, zErrMsg, rc, 
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] [%u] SQL error: %s [%s][rc: %u][%s]",
+				   db_id, sql, zErrMsg, rc,
 				   contacts_cache[cached_id].last_open_contacts_db_path);
       sqlite3_free(zErrMsg);
     }

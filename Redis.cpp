@@ -384,10 +384,11 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
  
 /* **************************************** */
 
-int Redis::queueContactToDump(char *path, bool client_mode, char *key, 
+int Redis::queueContactToDump(char *path, bool client_mode, u_int8_t queue_id,
+			      char *key, 
 			      u_int16_t family_id, u_int32_t num_contacts) {
   int rc, num;
-  char sql[1024];
+  char sql[1024], queue_name[32];
   const char *table_name = client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY;
 
   snprintf(sql, sizeof(sql),
@@ -397,19 +398,20 @@ int Redis::queueContactToDump(char *path, bool client_mode, char *key,
 	   table_name, num_contacts, key, family_id);
   
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s", sql);
+  snprintf(queue_name, sizeof(queue_name), "%s-%d", CONTACTS_TO_DUMP, queue_id);
 
   l->lock(__FILE__, __LINE__);  
-  rc = credis_rpush(redis, CONTACTS_TO_DUMP, sql);
+  rc = credis_rpush(redis, queue_name, sql);
   
-  if((num = credis_llen(redis, CONTACTS_TO_DUMP)) > 100000 /* MAX_NUM_QUEUED_CONTACTS */) {
+  if((num = credis_llen(redis, queue_name)) > 100000 /* MAX_NUM_QUEUED_CONTACTS */) {
     static time_t next_time = 0;
     time_t now = time(NULL);
 
-    credis_ltrim(redis, CONTACTS_TO_DUMP, 0, 100000 /* MAX_NUM_QUEUED_CONTACTS */);
+    credis_ltrim(redis, queue_name, 0, 100000 /* MAX_NUM_QUEUED_CONTACTS */);
 
     if(now > next_time) {
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Redis queue %s too long (%d): dropping",
-				   CONTACTS_TO_DUMP, num);
+				   queue_name, num);
       next_time = now + 5;
     }
   }
@@ -421,13 +423,14 @@ int Redis::queueContactToDump(char *path, bool client_mode, char *key,
 
 /* **************************************** */
 
-int Redis::popContactToDump(char *buf, u_int buf_len) {
-  char *val;
+int Redis::popContactToDump(u_int8_t queue_id, char *buf, u_int buf_len) {
+  char *val, queue_name[32];
   int rc;
 
+  snprintf(queue_name, sizeof(queue_name), "%s-%d", CONTACTS_TO_DUMP, queue_id);
   memset(buf, 0, buf_len);
   l->lock(__FILE__, __LINE__);
-  rc = credis_lpop(redis, (char*)CONTACTS_TO_DUMP, &val);
+  rc = credis_lpop(redis, queue_name, &val);
 
   if(rc == 0)
     snprintf(buf, buf_len, "%s", val);

@@ -114,6 +114,7 @@
 #define CONST_DEFAULT_NTOP_PORT   3000
 
 #define CONST_NUM_OPEN_DB_CACHE   8
+#define CONST_NUM_CONTACT_DBS     8
 
 #ifdef WIN32
 #define ntop_mkdir(a, b) _mkdir(a)

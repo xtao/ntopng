@@ -58,8 +58,9 @@ class Redis {
 
   void getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts);
 
-  int queueContactToDump(char *path, bool client_mode, char *key, u_int16_t family_id, u_int32_t num_contacts);
-  int popContactToDump(char *buf, u_int buf_len);
+  int queueContactToDump(char *path, bool client_mode, u_int8_t queue_id,
+			 char *key, u_int16_t family_id, u_int32_t num_contacts);
+  int popContactToDump(u_int8_t queue_id, char *buf, u_int buf_len);
 };
 
 #endif /* _REDIS_H_ */

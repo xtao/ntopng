@@ -269,6 +269,15 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 
 /* *************************************** */
 
+u_int8_t HostContacts::get_queue_id(char *str) {
+  int id = 0, len = strlen(str);
+  
+  for(int i=0; i<len; i++) id += str[i];
+  return(id % CONST_NUM_OPEN_DB_CACHE);
+}
+
+/* *************************************** */
+
 void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key, 
 			      IpAddress *peer, u_int32_t num_contacts) {
   char buf[32], full_path[MAX_PATH];
@@ -279,7 +288,7 @@ void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key,
 	   key[0], ifdot(key[1]), key);
   ntop->fixPath(full_path);
 
-  ntop->getRedis()->queueContactToDump(full_path, true,
+  ntop->getRedis()->queueContactToDump(full_path, true, get_queue_id(key),
 				       host_ip, HOST_FAMILY_ID, num_contacts);  
 }
 
@@ -356,6 +365,7 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 	char *host_ip = clientContacts[i].host->print(buf, sizeof(buf));
 	ntop->getRedis()->queueContactToDump(full_path, 
 					     (family_id == HOST_FAMILY_ID) ? true : false, 
+					     get_queue_id(key),
 					     host_ip, family_id, 
 					     clientContacts[i].num_contacts);
 	
@@ -364,7 +374,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 		   ntop->get_working_dir(), ifname, 
 		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id, 
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
+					       key, family_id, 
 					       clientContacts[i].num_contacts);
 	}
       }
@@ -378,7 +389,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 	char *host_ip;
 
 	host_ip = serverContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path, false, host_ip, family_id, 
+	ntop->getRedis()->queueContactToDump(full_path, false, get_queue_id(key),
+					     host_ip, family_id, 
 					     serverContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
@@ -386,7 +398,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 		   ntop->get_working_dir(), ifname, 
 		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, key, family_id,
+	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
+					       key, family_id,
 					       serverContacts[i].num_contacts);
 	}
       } /* if */

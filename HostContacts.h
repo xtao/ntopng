@@ -38,6 +38,8 @@ class HostContacts {
 		      IPContacts *contacts, u_int32_t value, bool aggregated_host);
   void dbDumpHost(char *daybuf, char *ifname, char *key,
 		  IpAddress *peer, u_int32_t num_contacts);
+  u_int8_t get_queue_id(char *str);
+
  public:
   HostContacts();
   ~HostContacts();

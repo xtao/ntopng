@@ -40,7 +40,7 @@ class Ntop {
   Categorization *categorization;
   Mutex *rrd_lock;
 #ifdef HAVE_SQLITE
-  DB *db;
+  DB *db[CONST_NUM_CONTACT_DBS];
 #endif
   long time_offset;
 
@@ -67,7 +67,7 @@ class Ntop {
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   inline Categorization* get_categorization()        { return(categorization);             };
 #ifdef HAVE_SQLITE  
-  inline DB* get_db()                                { return(db); };
+  inline DB* get_db(int i)                           { return(db[i]); };
 #endif
   void registerInterface(NetworkInterface *i);
   inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }

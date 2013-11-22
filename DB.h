@@ -43,6 +43,7 @@ class DB {
   char db_path[MAX_PATH];
   time_t end_dump;
   pthread_t dumpContactsThreadLoop;
+  u_int8_t db_id;
 
   void initDB(time_t when, const char *create_sql_string);
   void termDB();
@@ -51,9 +52,11 @@ class DB {
 
  public:
   DB(NetworkInterface *_iface = NULL,
-     u_int32_t _dir_duration = 300 /* 5 minutes */);
+     u_int32_t _dir_duration = 300 /* 5 minutes */,
+     u_int8_t _db_id = 0);
   ~DB();
 
+  inline u_int8_t get_db_id()       { return(db_id); };
   void startDumpContactsLoop();
   bool dumpFlow(time_t when, Flow *f);
   void dumpContacts(HostContacts *c, char *path);
