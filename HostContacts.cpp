@@ -283,8 +283,8 @@ void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key,
   char buf[32], full_path[MAX_PATH];
   char *host_ip = peer->print(buf, sizeof(buf));
 
-  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%c/%c|%s",
-	   ntop->get_working_dir(), ifname, CONST_HOST_CONTACTS,
+  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%s/%c/%c|%s",
+	   ntop->get_working_dir(), ifname, daybuf, CONST_HOST_CONTACTS,
 	   key[0], ifdot(key[1]), key);
   ntop->fixPath(full_path);
 
@@ -349,8 +349,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 #else
   char buf[64], full_path[MAX_PATH], alt_full_path[MAX_PATH];
 
-  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%c/%c|%s",
-	   ntop->get_working_dir(), ifname, 
+  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%s/%c/%c|%s",
+	   ntop->get_working_dir(), ifname, daybuf,
 	   (family_id == HOST_FAMILY_ID) ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
 	   key[0], ifdot(key[1]), key);
   ntop->fixPath(full_path);
@@ -370,8 +370,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 					     clientContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%c/%c|%s",
-		   ntop->get_working_dir(), ifname, 
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%s/%c/%c|%s",
+		   ntop->get_working_dir(), ifname, daybuf,
 		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
 	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
@@ -394,8 +394,8 @@ void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t famil
 					     serverContacts[i].num_contacts);
 	
 	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%c/%c|%s",
-		   ntop->get_working_dir(), ifname, 
+	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%s/%c/%c|%s",
+		   ntop->get_working_dir(), ifname, daybuf,
 		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
 	  ntop->fixPath(alt_full_path);
 	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
