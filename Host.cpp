@@ -60,6 +60,7 @@ Host::~Host() {
 
   k = get_string_key(key, sizeof(key));
 
+  /* Host Contacts */
   if(k && (k[0] != '\0')) {
     char key[64];
 
@@ -114,18 +115,18 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
 
-  if(ntop->getPrefs()->is_host_persistency_enabled()
-     && (!ntop->getRedis()->get(redis_key, json, sizeof(json)))) {
-    /* Found saved copy of the host so let's start from the previous state */
-    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", redis_key, json);
-    deserialize(json);
-  }
-
   if(init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
       updateLocal();
+
+      if((localHost && ntop->getPrefs()->is_host_persistency_enabled())
+	 && (!ntop->getRedis()->get(redis_key, json, sizeof(json)))) {
+	/* Found saved copy of the host so let's start from the previous state */
+	// ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", redis_key, json);
+	deserialize(json);
+      }
 
       if(localHost || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
 	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0) {
@@ -154,6 +155,11 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     }
 
     if(localHost && ip) readStats();
+  }
+
+  if(ip && iface
+     && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
+    ntop->getRedis()->addIpToDBDump(iface, ip, NULL);
   }
 }
 

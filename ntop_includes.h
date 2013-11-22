@@ -84,7 +84,7 @@ extern "C" {
 #ifdef HAVE_SQLITE
 #include <sqlite3.h>
 #endif
-#include "credis.h"
+#include "hiredis.h"
 };
 
 #include <fstream>
@@ -94,11 +94,11 @@ extern "C" {
 #include "ntop_typedefs.h"
 #include "patricia.h"
 #include "Trace.h"
-#include "Utils.h"
 #include "NtopGlobals.h"
 #include "Prefs.h"
 #include "Mutex.h"
 #include "IpAddress.h"
+#include "Utils.h"
 #include "ActivityStats.h"
 #include "NdpiStats.h"
 #include "TrafficStats.h"

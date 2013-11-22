@@ -146,11 +146,6 @@ Ntop::~Ntop() {
   if(httpd) delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
-#ifdef HAVE_SQLITE
-  for(int i=0; i<CONST_NUM_CONTACT_DBS; i++) {
-    if(db[i]) delete(db[i]);
-  }
-#endif
   delete rrd_lock;
   delete address;
   delete pa;
@@ -177,13 +172,6 @@ void Ntop::start() {
 
   sleep(2);
   address->startResolveAddressLoop();
-
-#ifdef HAVE_SQLITE
-  for(int i=0; i<CONST_NUM_CONTACT_DBS; i++) {
-    db[i] = new DB(NULL, 300, i);
-    if(db[i]) db[i]->startDumpContactsLoop();
-  }
-#endif
 
   while(!globals->isShutdown()) {
     sleep(2);

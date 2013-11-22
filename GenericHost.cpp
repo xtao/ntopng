@@ -45,7 +45,7 @@ void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
   char daybuf[64];
   time_t when = time(NULL);
 
-  strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+  strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   contacts.dbDump(daybuf, iface->get_name(), host_key, family_id);
 }
 
@@ -82,7 +82,7 @@ void GenericHost::dumpStats(bool forceDump) {
     host_key = get_string_key(buf, sizeof(buf));
 
     if(strcmp(host_key, "00:00:00:00:00:00")) {
-      strftime(daybuf, sizeof(daybuf), "%y/%m/%d", localtime(&when));
+      strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
       snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s",
 	       ntop->get_working_dir(), iface->get_name(), daybuf);
       ntop->fixPath(dump_path);

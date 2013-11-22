@@ -27,7 +27,7 @@
 class Host;
 
 class Redis {
-  REDIS redis;
+  redisContext *redis;
   Mutex *l;
 
   void setDefaults();
@@ -54,13 +54,10 @@ class Redis {
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 
-  int getDNSQueueLength();
-
   void getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts);
+  int incrContact(char *key, u_int16_t family_id, char *peer, u_int32_t value);
 
-  int queueContactToDump(char *path, bool client_mode, u_int8_t queue_id,
-			 char *key, u_int16_t family_id, u_int32_t num_contacts);
-  int popContactToDump(u_int8_t queue_id, char *buf, u_int buf_len);
+  int addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name);
 };
 
 #endif /* _REDIS_H_ */

@@ -71,31 +71,6 @@ int DB::get_open_db_contacts_connection(char *path, int *db_to_purge) {
    return(-1);
  }
 
-/* **************************************************** */
-
-static void* dumpContactsLoop(void* ptr) {
-  DB *a = (DB*)ptr;
-  Redis *r = ntop->getRedis();
-
-  while(!ntop->getGlobals()->isShutdown()) {
-    char todo[512];
-    int rc = r->popContactToDump(a->get_db_id(), todo, sizeof(todo));
-
-    if(rc == 0) {
-      a->execContactsSQLStatement(todo);
-    } else
-      sleep(1);
-  }
-
-  return(NULL);
-}
-
-/* **************************************************** */
-
-void DB::startDumpContactsLoop() {
-  pthread_create(&dumpContactsThreadLoop, NULL, dumpContactsLoop, (void*)this);
-}
-
 /* ******************************************* */
 
 void DB::termDB() {

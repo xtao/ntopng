@@ -147,11 +147,14 @@ void Flow::processDetectedProtocol() {
 	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[DNS] %s", (char*)ndpi_flow->host_server_name);
 
 	  if(ndpi_flow->protos.dns.ret_code != 0)
-	    to_track = false;
+	    to_track = false; /* Error response */
 	  else {
-	    if(ndpi_flow->protos.dns.num_answers > 0)
-	      to_track = true, protocol_processed = true,
+	    if(ndpi_flow->protos.dns.num_answers > 0) {
+	      to_track = true, protocol_processed = true;
+
+	      if(at != NULL)
 		ntop->getRedis()->setResolvedAddress(name, (char*)ndpi_flow->host_server_name);
+	    }
 	  }
 
 	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, to_track);

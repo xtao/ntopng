@@ -39,9 +39,6 @@ class Ntop {
   Geolocation *geo;
   Categorization *categorization;
   Mutex *rrd_lock;
-#ifdef HAVE_SQLITE
-  DB *db[CONST_NUM_CONTACT_DBS];
-#endif
   long time_offset;
 
  public:
@@ -66,9 +63,6 @@ class Ntop {
   inline char* get_data_dir()                        { return(prefs->get_data_dir());      };
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   inline Categorization* get_categorization()        { return(categorization);             };
-#ifdef HAVE_SQLITE  
-  inline DB* get_db(int i)                           { return(db[i]); };
-#endif
   void registerInterface(NetworkInterface *i);
   inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }
   inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }

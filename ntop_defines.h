@@ -78,7 +78,6 @@
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
-#define CONTACTS_TO_DUMP        "contacts.todump"
 #define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
 
 #ifndef TH_FIN
@@ -156,6 +155,12 @@
 #define PAGE_ERROR     "<html><head><title>ntop</title></head><body><img src=/img/warning.png> Script &quot;%s&quot; returned an error:<p>\n<pre>%s</pre></body></html>"
 #define DENIED         "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
 
+#define DUMP_CONTACTS_ON_REDIS         1
+#ifdef DUMP_CONTACTS_ON_REDIS
+#define CONST_DB_DAY_FORMAT            "%y%m%d"
+#else
+#define CONST_DB_DAY_FORMAT            "%y/%m/%d"
+#endif
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #else

@@ -39,6 +39,7 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
 StringHost::~StringHost() {
   if(tracked_host) {
     localHost = true; /* Hack */
+    ntop->getRedis()->addIpToDBDump(iface, NULL, keyname);
     dumpContacts(keyname, family_id);
   }
 

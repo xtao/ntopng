@@ -346,3 +346,25 @@ std::string Utils::base64_decode(std::string const& encoded_string) {
 }
 
 /* **************************************************** */
+
+bool Utils::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
+  bool do_dump = false;
+
+  switch(policy) {
+  case location_local_only:
+    if(host->isLocalHost()) do_dump = true;
+    break;
+  case location_remote_only:
+    if(!host->isLocalHost()) do_dump = true;
+    break;
+  case location_all:
+    do_dump = true;
+    break;
+  case location_none:
+    do_dump = false;
+    break;
+  }
+
+  return(do_dump);
+}
+
