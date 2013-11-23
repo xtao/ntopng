@@ -77,12 +77,12 @@ int Redis::get(char *key, char *rsp, u_int rsp_len) {
   reply = (redisReply*)redisCommand(redis, "GET %s", key);
 
   if(reply && reply->str) {
-    snprintf(rsp, rsp_len, "%s", reply->str);
+    snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
   } else
-    rsp[0] = 0;
+    rsp[0] = 0, rc = -1;
   l->unlock(__FILE__, __LINE__);
 
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  if(reply) freeReplyObject(reply);
 
   return(rc);
 }
@@ -97,12 +97,12 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
   reply = (redisReply*)redisCommand(redis, "HGET %s %s", key, field);
 
   if(reply && reply->str) {
-    snprintf(rsp, rsp_len, "%s", reply->str);
+    snprintf(rsp, rsp_len, "%s", reply->str), rc = -1;
   } else
-    rsp[0] = 0;
+    rsp[0] = 0, rc = 0;
   l->unlock(__FILE__, __LINE__);
 
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  if(reply) freeReplyObject(reply);
 
   return(rc);
 }
@@ -176,7 +176,7 @@ int Redis::keys(const char *pattern, char ***keys_p) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "KEYS %s", pattern);
-  if (reply->type == REDIS_REPLY_ARRAY) {
+  if(reply->type == REDIS_REPLY_ARRAY) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
     rc = reply->elements;
 
@@ -200,7 +200,7 @@ int Redis::hashKeys(const char *pattern, char ***keys_p) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HKEYS %s", pattern);
-  if (reply->type == REDIS_REPLY_ARRAY) {
+  if(reply->type == REDIS_REPLY_ARRAY) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
     rc = reply->elements;
     
@@ -462,7 +462,7 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "ZREVRANGE %s %u %u WITHSCORES", key, 0, -1);
 
-  if (reply->type == REDIS_REPLY_ARRAY) {
+  if(reply->type == REDIS_REPLY_ARRAY) {
     for(int i=0; i<(reply->elements-1); i++) {
       if((i % 2) == 0) {
 	const char *key = (const char*)reply->element[i]->str;
