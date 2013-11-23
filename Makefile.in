@@ -1,5 +1,6 @@
 SHELL=/bin/sh
 OS := $(shell uname -s)
+GPP=@GPP@
 ######
 HIREDIS_HOME=third-party/hiredis
 HIREDIS_INC=-I$(HIREDIS_HOME)
@@ -59,15 +60,15 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS) Makefile
-	g++ $(CPPFLAGS) -c $< -o $@
+	$(GPP) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.cpp $(HEADERS) Makefile
-	g++ $(CPPFLAGS) -c $< -o $@
+	$(GPP) $(CPPFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS) $(LIBRRDTOOL) Makefile
-	g++ $(OBJECTS) -Wall $(LIBS) -o $@
+	$(GPP) $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(NDPI_LIB): nDPI
 	cd nDPI; ./configure; @GMAKE@
