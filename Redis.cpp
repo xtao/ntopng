@@ -97,9 +97,9 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
   reply = (redisReply*)redisCommand(redis, "HGET %s %s", key, field);
 
   if(reply && reply->str) {
-    snprintf(rsp, rsp_len, "%s", reply->str), rc = -1;
+    snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
   } else
-    rsp[0] = 0, rc = 0;
+    rsp[0] = 0, rc = -1;
   l->unlock(__FILE__, __LINE__);
 
   if(reply) freeReplyObject(reply);

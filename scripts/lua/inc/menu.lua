@@ -100,7 +100,10 @@ end
 for k,v in pairs(names) do
     print("<li");
     if(v ~= ifname) then print(" class=\"disabled\"") end
-    print("><a href=/lua/if_stats.lua> " .. v .. " </a></li>")
+    print(">")
+    print("<a href=/lua/if_stats.lua> ")
+    if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
+    print( v .. " </a></li>")
 end
 
 
@@ -142,7 +145,7 @@ end
 
 print [[
       <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-        Admin <b class="caret"></b>
+        <i class="fa fa-cog fa-lg"></i> <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>

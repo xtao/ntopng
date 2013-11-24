@@ -8,8 +8,9 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
-page    = _GET["page"]
-host_ip = _GET["host"]
+page        = _GET["page"]
+host_ip     = _GET["host"]
+protocol_id = _GET["protocol_id"]
 
 active_page = "hosts"
 
@@ -97,9 +98,9 @@ url="/lua/host_details.lua?host="..host_ip
 print("<li><a href=\"#\">Host: "..host_ip.." </a></li>\n")
 
 if((page == "overview") or (page == nil)) then
-  print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")
+  print("<li class=\"active\"><a href=\"#\"><i class=\"fa fa-home fa-lg\"></i></a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
+  print("<li><a href=\""..url.."&page=overview\"><i class=\"fa fa-home fa-lg\"></i></a></li>")
 end
 
 if(page == "traffic") then
@@ -166,9 +167,22 @@ num = cnum + snum
 
 if(num > 0) then
    if(page == "contacts") then
-      print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
+      print("<li class=\"active\"><a href=\"#\">Current Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=contacts\">Contacts</a></li>")
+      print("<li><a href=\""..url.."&page=contacts\">Current Contacts</a></li>")
+   end
+end
+
+t = os.time()
+when = os.date("%y%m%d", t)
+base_name = when.."|host_contacts|"..ifname.."|"..host_ip
+keyname = base_name.."|contacted_peers"
+v1 = ntop.getHashKeysCache(keyname)
+if(v1 ~= nil) then
+   if(page == "todays_contacts") then
+      print("<li class=\"active\"><a href=\"#\">Today's Contacts</a></li>\n")
+   else
+      print("<li><a href=\""..url.."&page=todays_contacts\">Today's Contacts</a></li>")
    end
 end
 
@@ -222,11 +236,11 @@ if((page == "overview") or (page == nil)) then
    if(host["os"] ~= "") then print("<tr><th>OS</th><td>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
    if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
 
-   if((host["category"] ~= nil) and (host["category"] ~= "")) then 
+   if((host["category"] ~= nil) and (host["category"] ~= "")) then
       cat = getCategory(host["category"])
-      
+
       if(cat ~= "") then
-	 print("<tr><th>Category</th><td>".. cat .."</td></tr>\n") 
+	 print("<tr><th>Category</th><td>".. cat .."</td></tr>\n")
       end
    end
 
@@ -325,7 +339,7 @@ end
       if(host["bytes.sent"] > 0) then
 	 print('<tr><th class="text-center">Send Distribution</th><td colspan=5><div class="pie-chart" id="sizeSentDistro"></div></td></tr>')
       end
-      if(host["bytes.rcvd"] > 0) then 
+      if(host["bytes.rcvd"] > 0) then
 	 print('<tr><th class="text-center">Receive Distribution</th><td colspan=5><div class="pie-chart" id="sizeRecvDistro"></div></td></tr>')
       end
 
@@ -458,7 +472,6 @@ end
    end
 
    elseif(page == "flows") then
-
 print [[
       <div id="table-hosts"></div>
 	 <script>
@@ -534,6 +547,94 @@ print [[
        </script>
 
    ]]
+   elseif(page == "todays_contacts") then
+
+   t = os.time()
+   when = os.date("%y%m%d", t)
+   base_name = when.."|host_contacts|"..ifname.."|"..host_ip
+   keyname = base_name.."|contacted_peers"
+   --io.write(keyname.."\n")
+   protocols = {}
+   protocols[65535] = interface.getNdpiProtoName(65535)
+   v1 = ntop.getHashKeysCache(keyname)
+   if(v1 ~= nil) then
+      for k,_ in pairs(v1) do
+	 v = ntop.getHashCache(keyname, k)
+	 if(v ~= nil) then
+	    values = split(k, "@");
+	    protocol = tonumber(values[2])
+
+
+	    -- 254 is OperatingSystem
+	    
+	    if((protocols[protocol] == nil) and (protocol ~= 254)) then
+	       protocols[protocol] = interface.getNdpiProtoName(protocol)
+	    end
+	 end
+      end
+   end
+
+   if(protocol_id == nil) then protocol_id = "" end
+print [[
+      <div id="table-hosts"></div>
+	 <script>
+	 $("#table-hosts").datatable({
+				  ]]
+				  print("url: \"/lua/get_host_contacts.lua?host=" .. host_ip.."&protocol_id="..protocol_id.."\",\n")
+print [[
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu">]]
+url = "/lua/host_details.lua?host="..host_ip.."&page=todays_contacts"
+print('<li><a href="'.. url ..'">All</a></li>')
+
+for key,v in pairs(protocols) do
+   print('<li><a href="'..url..'&protocol_id=' .. key..'">'..v..'</a></li>')
+end
+
+print("</ul> </div>' ],\n")
+
+print [[
+	       showPagination: true,
+	       title: "Today's Contacts",
+	        columns: [
+			     {
+			     title: "Host",
+				 field: "column_ip",
+				sortable: true,
+	 	             css: {
+			        textAlign: 'left'
+			     }
+				 },
+			     {
+			     title: "Name",
+				 field: "column_name",
+				 sortable: false,
+	 	             css: {
+			        textAlign: 'left'
+			     }
+				 },
+			     {
+			     title: "Contact Type/Protocol",
+				 field: "column_protocol",
+				 sortable: true,
+	 	             css: {
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Contacts Number",
+				 field: "column_num_contacts",
+				 sortable: true,
+	 	             css: {
+			        textAlign: 'left'
+			     }
+				 }
+			     ]
+	       });
+       </script>
+
+   ]]
+
+print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&host=" .. host_ip.."'>Download "..host_ip.." contacts as JSON<A>\n") 
 elseif(page == "talkers") then
 print("<center>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
@@ -667,7 +768,7 @@ print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
 families = interface.getAggregationFamilies()
 for key,v in pairs(families) do
    print('<li><a href="/lua/host_details.lua?host='.. host_ip ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
-end 
+end
 
 print("</ul> </div>' ],")
 print("title: \"Client Host Aggregations\",\n")

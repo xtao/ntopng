@@ -124,12 +124,11 @@ static int ntop_set_active_interface_id(lua_State* vm) {
 
   iface = ntop->getInterfaceId(id);
 
-  if(iface != NULL) {
+  if(iface != NULL)
     lua_pushstring(vm, iface->get_name());
-  } else {
-    lua_pushnil(vm);
-  }
-
+  else
+    lua_pushnil(vm);  
+  
   return(CONST_LUA_OK);
 }
 
@@ -164,7 +163,7 @@ static int ntop_find_interface(lua_State* vm) {
 
 /* ****************************************** */
 
-static void handle_null_interface(lua_State* vm) {  
+static void handle_null_interface(lua_State* vm) {
   ntop->getTrace()->traceEvent(TRACE_ERROR, "Null interface: did you restart ntopng in the meantime?");
 }
 
@@ -193,6 +192,33 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_ndpi_protocol_name(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  NdpiStats stats;
+  int proto;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+  }
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  proto = (u_int32_t)lua_tonumber(vm, 1);
+
+  if(proto == HOST_FAMILY_ID)
+    lua_pushstring(vm, "Host-to-Host Contact");
+  else {
+    if(ntop_interface)
+      lua_pushstring(vm, ntop_interface->get_ndpi_proto_name(proto));
+    else
+      lua_pushnil(vm);
+  }
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_hosts(lua_State* vm) {
   NetworkInterface *ntop_interface;
 
@@ -204,7 +230,7 @@ static int ntop_get_interface_hosts(lua_State* vm) {
   }
 
   if(ntop_interface) ntop_interface->getActiveHostsList(vm, false);
-  
+
   return(CONST_LUA_OK);
 }
 
@@ -288,7 +314,7 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_is_windows(lua_State* vm) {
-  lua_pushboolean(vm, 
+  lua_pushboolean(vm,
 #ifdef WIN32
 		  1
 #else
@@ -457,10 +483,10 @@ static int ntop_zmq_receive(lua_State* vm) {
   }
 
   payload_len = h.size + 1;
-  if((payload = (char*)malloc(payload_len)) != NULL) {    
+  if((payload = (char*)malloc(payload_len)) != NULL) {
     size = zmq_recv(subscriber, payload, payload_len, 0);
     payload[h.size] = '\0';
-    
+
     if(size > 0) {
       json_object *o = json_tokener_parse(payload);
 
@@ -473,7 +499,7 @@ static int ntop_zmq_receive(lua_State* vm) {
 	  const char *value = json_object_get_string(json_object_iter_peek_value(&it));
 
 	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s]=[%s]", key, value);
-	  
+
 	  json_object_iter_next(&it);
 	}
 
@@ -487,7 +513,7 @@ static int ntop_zmq_receive(lua_State* vm) {
     } else {
       free(payload);
       return(CONST_LUA_PARAM_ERROR);
-    }    
+    }
   } else
     return(CONST_LUA_PARAM_ERROR);
 }
@@ -535,7 +561,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
     return(CONST_LUA_ERROR);
     ntop_interface = ntop->getInterfaceId(0);
   }
- 
+
   if((!ntop_interface) || !ntop_interface->getHostInfo(vm, host_ip, vlan_id))
     return(CONST_LUA_ERROR);
   else
@@ -566,14 +592,14 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
     return(CONST_LUA_ERROR);
     // ntop_interface = ntop->getInterfaceId(0);
   }
- 
+
   if(!ntop_interface)  return(CONST_LUA_ERROR);
 
-  if(!aggregated) 
+  if(!aggregated)
     h = ntop_interface->getHost(host_ip, vlan_id);
   else
     h = ntop_interface->getAggregatedHost(host_ip);
-  
+
   if(h == NULL)
     return(CONST_LUA_ERROR);
   else {
@@ -600,7 +626,7 @@ static int ntop_restore_interface_host(lua_State* vm) {
     return(CONST_LUA_ERROR);
     //ntop_interface = ntop->getInterfaceId(0);
   }
- 
+
   if((!ntop_interface) || !ntop_interface->restoreHost(host_ip))
     return(CONST_LUA_ERROR);
   else
@@ -735,7 +761,7 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
   }
 
   if(ntop_interface) {
-    endpoint = ntop_interface->getEndpoint();    
+    endpoint = ntop_interface->getEndpoint();
     lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
   }
 
@@ -818,7 +844,7 @@ static char **make_argv(const char *cmd, lua_State * L) {
 
 /* ****************************************** */
 
-static int rrd_common_call (lua_State *L, const char *cmd, 
+static int rrd_common_call (lua_State *L, const char *cmd,
 			    RRD_FUNCTION rrd_function) {
   char **argv;
   int argc = lua_gettop(L) + 1;
@@ -1218,13 +1244,16 @@ static int ntop_get_hash_keys_redis(lua_State* vm) {
   if((key    = (char*)lua_tostring(vm, 1)) == NULL)    return(CONST_LUA_PARAM_ERROR);
 
   rc = redis->hashKeys(key, &vals);
-  
-  lua_newtable(vm);
-  for(i = 0; i < rc; i++) {
-    lua_push_str_table_entry(vm, vals[i], (char*)"");
-    free(vals[i]);
-  }
-  free(vals);
+
+  if(rc > 0) {
+    lua_newtable(vm);
+    for(i = 0; i < rc; i++) {
+      lua_push_str_table_entry(vm, vals[i], (char*)"");
+      free(vals[i]);
+    }
+    free(vals);
+  } else
+    lua_pushnil(vm);
 
   return(CONST_LUA_OK);
 }
@@ -1352,6 +1381,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "find",                   ntop_find_interface },
   { "getStats",               ntop_get_interface_stats },
   { "getNdpiStats",           ntop_get_ndpi_interface_stats },
+  { "getNdpiProtoName",       ntop_get_ndpi_protocol_name },
   { "getHosts",               ntop_get_interface_hosts },
   { "getHostsInfo",           ntop_get_interface_hosts_info },
   { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },
@@ -1515,7 +1545,7 @@ static int post_iterator(void *cls,
 */
 int Lua::run_script(char *script_path, char *ifname) {
   int rc;
-  
+
   try {
     luaL_openlibs(L); /* Load base libraries */
     lua_register_classes(L, false); /* Load custom classes */
@@ -1531,7 +1561,7 @@ int Lua::run_script(char *script_path, char *ifname) {
 
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
     }
-  } catch(...) {  
+  } catch(...) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, ifname);
   }
 
@@ -1556,11 +1586,11 @@ static char to_hex(char code) {
 static char* http_encode(char *str) {
   char *pstr = str, *buf = (char*)malloc(strlen(str) * 3 + 1), *pbuf = buf;
   while (*pstr) {
-    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
       *pbuf++ = *pstr;
-    else if (*pstr == ' ') 
+    else if (*pstr == ' ')
       *pbuf++ = '+';
-    else 
+    else
       *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
     pstr++;
   }
@@ -1588,7 +1618,7 @@ static char* http_decode(char *str) {
         *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
         pstr += 2;
       }
-    } else if (*pstr == '+') { 
+    } else if (*pstr == '+') {
       *pbuf++ = ' ';
     } else {
       *pbuf++ = *pstr;

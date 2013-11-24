@@ -109,7 +109,7 @@
 //#define DEMO_WIN32              1
 #define MAX_NUM_PACKETS           2000
 
-#define MAX_NUM_HOST_CONTACTS     32
+#define MAX_NUM_HOST_CONTACTS     16
 #define CONST_DEFAULT_NTOP_PORT   3000
 
 #define CONST_NUM_OPEN_DB_CACHE   8
