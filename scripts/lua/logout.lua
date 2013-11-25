@@ -9,8 +9,8 @@ require "lua_utils"
 
 sendHTTPHeaderLogout('text/html')
 
-ntop.deleteKey("sessions.".._SESSION["session"])
-ntop.deleteKey("sessions.".._SESSION["session"]..".ifname")
+ntop.delHashCache("sessions.".._SESSION["session"])
+ntop.delHashCache("sessions.".._SESSION["session"]..".ifname")
 
 -- io.write("Deleting ".."sessions.".._SESSION["session"].."\n")
 -- io.write("Deleting ".."sessions.".._SESSION["session"]..".ifname\n")
