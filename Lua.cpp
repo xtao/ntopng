@@ -262,9 +262,13 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   u_int16_t family = 0;
+  char *host = NULL;
 
   if(lua_type(vm, 1) == LUA_TNUMBER)
     family = (u_int16_t)lua_tonumber(vm, 1);
+
+  if(lua_type(vm, 2) == LUA_TSTRING)
+    host = (char*)lua_tostring(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -272,7 +276,7 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
     return(CONST_LUA_ERROR);
   }
 
-  if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm, family);
+  if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm, family, host);
 
   return(CONST_LUA_OK);
 }

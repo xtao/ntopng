@@ -460,7 +460,9 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
   lua_newtable(vm);
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "ZREVRANGE %s %u %u WITHSCORES", key, 0, -1);
+  reply = (redisReply*)redisCommand(redis, 
+				    "ZREVRANGE %s %u %u WITHSCORES", 
+				    key, 0, -1);
 
   if(reply->type == REDIS_REPLY_ARRAY) {
     for(int i=0; i<(reply->elements-1); i++) {

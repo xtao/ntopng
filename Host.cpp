@@ -106,6 +106,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
+  // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
+
   category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();

@@ -749,6 +749,7 @@ void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
 struct aggregation_walk_hosts_info {
   lua_State* vm;
   u_int16_t family_id;
+  char *host;
 };
 
 /* **************************************************** */
@@ -758,16 +759,19 @@ static void aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
   StringHost *host = (StringHost*)h;
 
   if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
-    ((StringHost*)h)->lua(info->vm, true);
+    if((info->host == NULL) || (!strcmp(info->host, host->host_key())))
+      host->lua(info->vm, true);
   }
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family) {
+void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm,
+						    u_int16_t proto_family,
+						    char *host) {
   struct aggregation_walk_hosts_info info;
 
-  info.vm = vm, info.family_id = proto_family;
+  info.vm = vm, info.family_id = proto_family, info.host = host;
 
   lua_newtable(vm);
 

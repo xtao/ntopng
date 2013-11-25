@@ -43,34 +43,71 @@ if(protocol_id == "") then protocol_id = nil end
 host_peers = {}
 
 if((protocol_id == nil) or (protocol_id == 65535)) then
-if(host_info.contacts ~= nil) then
-   if(host_info["contacts"]["client"] ~= nil) then
-      for k,v in pairs(host_info["contacts"]["client"]) do
+   if(host_info.contacts ~= nil) then
+      if(host_info["contacts"]["client"] ~= nil) then
+	 for k,v in pairs(host_info["contacts"]["client"]) do
 
-	 if(host_peers[k] == nil) then
-	    e = {}
-	    e['protocol'] = 65535
-	    e['num_contacts'] = v
-	    host_peers[k] = e
-	 else
-	    host_peers[k]['num_contacts'] = host_peers[k]['num_contacts'] + v
+	    if(host_peers[k] == nil) then
+	       e = {}
+	       e['protocol'] = 65535
+	       e['num_contacts'] = v
+	       host_peers[k] = e
+	    else
+	       host_peers[k]['num_contacts'] = host_peers[k]['num_contacts'] + v
+	    end
 	 end
       end
-   end
 
-   if(host_info["contacts"]["server"] ~= nil) then
-      for k,v in pairs(host_info["contacts"]["server"]) do
-	 if(host_peers[k] == nil) then
-	    e = {}
-	    e['protocol'] = 65535
-	    e['num_contacts'] = v
-	    host_peers[k] = e
-	 else
-	    host_peers[k]['num_contacts'] = host_peers[k]['num_contacts'] + v
+      if(host_info["contacts"]["server"] ~= nil) then
+	 for k,v in pairs(host_info["contacts"]["server"]) do
+	    if(host_peers[k] == nil) then
+	       e = {}
+	       e['protocol'] = 65535
+	       e['num_contacts'] = v
+	       host_peers[k] = e
+	    else
+	       host_peers[k]['num_contacts'] = host_peers[k]['num_contacts'] + v
+	    end
 	 end
       end
    end
 end
+
+if((protocol_id == nil) or (protocol_id ~= 65535)) then
+   hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol))
+
+   for key, value in pairs(hosts_stats) do
+      for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
+	 if(k == host) then 
+	    --io.write(key.." ".. hosts_stats[key]["family"] .." "..v.."\n")
+
+	    if(host_peers[key] == nil) then
+	       e = {}
+	       e['protocol'] = hosts_stats[key]["family"]
+	       e['num_contacts'] = v
+	       host_peers[key] = e
+	    else
+	       host_peers[key]['num_contacts'] = host_peers[key]['num_contacts'] + v
+	    end	    
+	 end
+      end
+      
+      for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
+	 if(k == host) then 
+	    --io.write(key.." ".. hosts_stats[key]["family"] .." "..v.."\n")
+
+	    if(host_peers[key] == nil) then
+	       e = {}
+	       e['protocol'] = hosts_stats[key]["family"]
+	       e['num_contacts'] = v
+	       host_peers[key] = e
+	    else
+	       host_peers[key]['num_contacts'] = host_peers[key]['num_contacts'] + v
+	    end	    
+	 end
+      end
+   end
+   --io.write(hosts_stats)
 end
 
 t = os.time()
@@ -89,7 +126,7 @@ if(v1 ~= nil) then
 	 values = split(k, "@");
 	 name = values[1]
 	 protocol = tonumber(values[2])
-	 
+
 	 -- 254 is OperatingSystem
 	 if(not(protocol == 254)) then
 	    if(host_peers[k] == nil) then
@@ -102,7 +139,7 @@ if(v1 ~= nil) then
 	    end
 	 end
       end
-   end   
+   end
 end
 
 if(format ~= "json") then
@@ -128,11 +165,11 @@ for key, value in pairs(host_peers) do
    else
       ok = true
    end
-   
+
    if(ok) then
       num = num + 1
       postfix = string.format("0.%04u", num)
-      
+
       if(sortColumn == "column_num_contacts") then
 	 vals[tonumber(host_peers[key]["num_contacts"]+postfix)] = key
 	 elseif(sortColumn == "column_protocol") then
@@ -169,10 +206,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if(num > 0) then
 	       print ",\n"
 	    end
-	    
+
 	    print("{ \"column_ip\" : ")
 	    info = interface.getHostInfo(key)
-	    if(info ~= nil) then 
+	    if(info ~= nil) then
 	       print(" \"<A HREF='/lua/")
 	       print("host_details.lua?host=" .. key .. "'>")
 	       print(mapOS2Icon(key))
@@ -182,15 +219,19 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    print("\"column_name\" : \"")
-	    if(value["protocol"] == 65535) then	    
+	    if(value["protocol"] == 65535) then
 	       print(ntop.getResolvedAddress(key))
 	    else
 	       print(key)
 	    end
 
 	    print("\", \"column_num_contacts\" : "..value["num_contacts"])
-	    p = interface.getNdpiProtoName(value["protocol"])
-	    -- p = value["protocol"]
+	    if tonumber(value["protocol"]) ~= nil then	       
+	       -- protocol is numeric
+	       p = interface.getNdpiProtoName(value["protocol"])
+	    else
+	       p = value["protocol"]
+	    end
 	    print(", \"column_protocol\" : \""..p.."\"")
 	    print(" } ")
 	    num = num + 1
@@ -203,15 +244,15 @@ end -- for
 
 if(format ~= "json") then
    print("\n], \"perPage\" : " .. perPage .. ",\n")
-   
+
    if(sortColumn == nil) then
       sortColumn = ""
    end
-   
+
    if(sortOrder == nil) then
       sortOrder = ""
    end
-   
+
    print("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
    print("\"totalRows\" : " .. total .. " \n}")
 else
