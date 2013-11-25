@@ -110,7 +110,16 @@ httpdocs/geoip/GeoIPASNum.dat:
 httpdocs/geoip/GeoIPASNumv6.dat:
 	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip -f GeoIPASNumv6.dat.gz
 
-maketar:
+
+
+# Do NOT build package as root (http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment)
+#	mkdir -p $(HOME)/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+#	echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
+
+build-rpm: build-rpm-ntopng build-rpm-ntopng-data
+
+
+build-rpm-ntopng:
 	rm -rf ntopng-@PACKAGE_VERSION@
 	mkdir ntopng-@PACKAGE_VERSION@
 	cp -r *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party ntopng-@PACKAGE_VERSION@
@@ -118,21 +127,6 @@ maketar:
 	cd ntopng-@PACKAGE_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
 	tar cvfz ntopng-@PACKAGE_VERSION@.tgz ntopng-@PACKAGE_VERSION@
 	#
-	rm -rf ntopng-data-@PACKAGE_VERSION@
-	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
-	@if test -d ~/dat_files ; then \
-	  cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/; \
-	else \
-	  cp ./httpdocs/geoip/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/ ;\
-	fi
-	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
-	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
-
-
-build-rpm: maketar
-# Do NOT build package as root (http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment)
-#	mkdir -p $(HOME)/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-#	echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	cp ntopng-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
 	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
@@ -145,6 +139,17 @@ build-rpm: maketar
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
 	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
 	#
+
+build-rpm-ntopng-data:
+	rm -rf ntopng-data-@PACKAGE_VERSION@
+	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	@if test -d ~/dat_files ; then \
+	  cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/; \
+	else \
+	  cp ./httpdocs/geoip/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/ ;\
+	fi
+	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
+	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
 	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@PACKAGE_VERSION@.tgz
 	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
