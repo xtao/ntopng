@@ -567,7 +567,7 @@ print [[
 
 	    -- 254 is OperatingSystem
 	    
-	    if((protocols[protocol] == nil) and (protocol ~= 254)) then
+	    if((protocols[protocol] ~= nil) and (protocol ~= 254)) then
 	       protocols[protocol] = interface.getNdpiProtoName(protocol)
 	    end
 	 end
