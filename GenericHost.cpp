@@ -46,7 +46,7 @@ void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
   time_t when = time(NULL);
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
-  contacts.dbDump(daybuf, iface->get_name(), host_key, family_id);
+  contacts.dbDump(daybuf, iface, host_key, family_id);
 }
 
 /* *************************************** */

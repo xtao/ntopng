@@ -41,7 +41,7 @@ StringHost::~StringHost() {
     localHost = true; /* Hack */
     ntop->getRedis()->addIpToDBDump(iface, NULL, keyname);
     dumpContacts(keyname, family_id);
-  }
+  } 
 
   dumpStats(ntop->getPrefs()->get_aggregation_mode() == aggregations_enabled_with_bitmap_dump);
   free(keyname);

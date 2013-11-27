@@ -79,11 +79,11 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
       if(contacted_peer_as_client) {
 	me_k = me->print(me_key, sizeof(me_key));
 
-	dbDumpHost(daybuf, iface->get_name(), me_k, contacts[least_idx].host, 
+	dbDumpHost(daybuf, iface, me_k, contacts[least_idx].host, 
 		   family_id, contacts[least_idx].num_contacts);
       } else {
 	peer_k = contacts[least_idx].host->print(me_key, sizeof(me_key));
-	dbDumpHost(daybuf, iface->get_name(), peer_k, me, 
+	dbDumpHost(daybuf, iface, peer_k, me, 
 		   family_id, contacts[least_idx].num_contacts);
       }
     } else {
@@ -281,11 +281,12 @@ char* HostContacts::get_cache_key(char *daybuf, char *ifname,
 
 /* *************************************** */
 
-void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key,
+void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
 			      IpAddress *peer, u_int family_id,
 			      u_int32_t num_contacts) {
   char buf[32], full_path[MAX_PATH];
   char *host_ip = peer->print(buf, sizeof(buf));
+  char *ifname = iface->get_name();
 
 #ifdef DUMP_CONTACTS_ON_REDIS
   char *k = get_cache_key(daybuf, ifname,
@@ -310,7 +311,8 @@ void HostContacts::dbDumpHost(char *daybuf, char *ifname, char *key,
 
 #define ifdot(a) ((a == '.') ? '_' : a)
 
-void HostContacts::dbDump(char *daybuf, char *ifname, char *key, u_int16_t family_id) {
+void HostContacts::dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id) {
+  char *ifname = iface->get_name();
 #ifdef DUMP_CONTACTS_ON_REDIS
   char buf[64], cmd[MAX_PATH], *k;
 

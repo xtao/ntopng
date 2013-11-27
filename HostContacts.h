@@ -37,7 +37,7 @@ class HostContacts {
   void incrIPContacts(NetworkInterface *iface, IpAddress *me, char *me_name, IpAddress *peer, 
 		      bool contacted_peer_as_client, IPContacts *contacts,
 		      u_int32_t value, u_int family_id, bool aggregated_host);
-  void dbDumpHost(char *daybuf, char *ifname, char *key,
+  void dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
 		  IpAddress *peer, u_int family_id,
 		  u_int32_t num_contacts);
   u_int8_t get_queue_id(char *str);
@@ -50,7 +50,7 @@ class HostContacts {
   HostContacts();
   ~HostContacts();
 
-  void dbDump(char *daybuf, char *ifname, char *key, u_int16_t family_id);
+  void dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id);
   inline void incrContact(NetworkInterface *iface, IpAddress *me, 
 			  IpAddress *peer, bool contacted_peer_as_client,
 			  u_int32_t value, u_int family_id,

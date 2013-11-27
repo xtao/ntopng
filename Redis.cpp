@@ -29,15 +29,19 @@
 
 Redis::Redis(char *redis_host, int redis_port) {
   struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+  redisReply *reply;
 
   redis = redisConnectWithTimeout(redis_host, redis_port, timeout);
 
-  if(redis == NULL) {
+  if(redis) reply = (redisReply*)redisCommand(redis, "PING"); else reply = NULL;
+  
+  if((redis == NULL) || (reply == NULL)) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "ntopng requires redis server to be up and running");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Please start it and try again or use -r");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "to specify a redis server other than the default");
     exit(-1);
-  }
+  } else
+    freeReplyObject(reply);
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
 			       "Successfully connected to Redis %s:%u",
@@ -465,7 +469,7 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
 				    key, 0, -1);
 
   if(reply->type == REDIS_REPLY_ARRAY) {
-    for(int i=0; i<(reply->elements-1); i++) {
+    for(u_int i=0; i<(reply->elements-1); i++) {
       if((i % 2) == 0) {
 	const char *key = (const char*)reply->element[i]->str;
 	u_int64_t value = (u_int64_t)atol(reply->element[i+1]->str);
@@ -503,18 +507,20 @@ int Redis::incrContact(char *key, u_int16_t family_id,
   StringHosts: [name != NULL] && [ip == NULL]
 */
 int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
-  char buf[64], daybuf[32];
+  char buf[64], daybuf[32], *what;
   int rc;
   redisReply *reply;
   time_t when = time(NULL);
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
+  what = ip ? ip->print(buf, sizeof(buf)) : name;
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%s|%s", daybuf,
 				    ip ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
-				    iface->get_name(),
-				    ip ? ip->print(buf, sizeof(buf)) : name);
+				    iface->get_name(), what);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
 
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
