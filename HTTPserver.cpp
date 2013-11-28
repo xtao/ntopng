@@ -93,6 +93,7 @@ static void generate_session_id(char *buf, const char *random, const char *user)
   mg_md5(buf, random, user, NULL);
 }
 
+/* ****************************************** */
 
 // Return 1 if request is authorized, 0 otherwise.
 static int is_authorized(const struct mg_connection *conn,
@@ -116,14 +117,18 @@ static int is_authorized(const struct mg_connection *conn,
   snprintf(key, sizeof(key), "sessions.%s", session_id);
   if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
      || strcmp(user, username) /* Users don't match */) {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", session_id, username);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", 
+				 session_id, username);
     return(0);
   } else {
     ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", session_id, HTTP_SESSION_DURATION);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", 
+				 session_id, HTTP_SESSION_DURATION);
     return(1);
   }
 }
+
+/* ****************************************** */
 
 // Redirect user to the login form. In the cookie, store the original URL
 // we came from, so that after the authorization we could redirect back.
@@ -141,11 +146,15 @@ static void redirect_to_login(struct mg_connection *conn,
 	    session_id, LOGIN_URL);
 }
 
+/* ****************************************** */
+
 static void get_qsvar(const struct mg_request_info *request_info,
                       const char *name, char *dst, size_t dst_len) {
   const char *qs = request_info->query_string;
   mg_get_var(qs, strlen(qs == NULL ? "" : qs), name, dst, dst_len);
 }
+
+/* ****************************************** */
 
 // A handler for the /authorize endpoint.
 // Login page form sends user name and password to this endpoint.
@@ -153,9 +162,17 @@ static void authorize(struct mg_connection *conn,
                       const struct mg_request_info *request_info) {
   char user[32], password[32];
 
-  // Fetch user name and password.
-  get_qsvar(request_info, "user", user, sizeof(user));
-  get_qsvar(request_info, "password", password, sizeof(password));
+  if(!strcmp(request_info->request_method, "POST")) {
+    char post_data[1024];    
+    int post_data_len = mg_read(conn, post_data, sizeof(post_data));
+    
+    mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
+    mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+  } else {
+    // Fetch user name and password.
+    get_qsvar(request_info, "user", user, sizeof(user));
+    get_qsvar(request_info, "password", password, sizeof(password));
+  }
 
   if (ntop->checkUserPassword(user, password)) {
     char key[256], session_id[64], random[64];
@@ -233,7 +250,7 @@ static int handle_lua_request(struct mg_connection *conn) {
   u_int len = strlen(request_info->uri);
 
   if((ntop->getGlobals()->isShutdown())
-     || (strcmp(request_info->request_method, "GET"))
+     //|| (strcmp(request_info->request_method, "GET"))
      || (ntop->getRedis() == NULL /* Starting up... */))
     return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method"));
   
@@ -261,8 +278,10 @@ static int handle_lua_request(struct mg_connection *conn) {
      || strstr(request_info->uri, "&&")
      || strstr(request_info->uri, "??")
      || strstr(request_info->uri, "..")) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", request_info->uri);
-    return(send_error(conn, 400 /* Bad Request */, request_info->uri, "The URL specified contains invalid/dangerous characters"));
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", 
+				 request_info->uri);
+    return(send_error(conn, 400 /* Bad Request */, request_info->uri, 
+		      "The URL specified contains invalid/dangerous characters"));
   }
 
   if((strncmp(request_info->uri, "/lua/", 5) == 0)
@@ -282,7 +301,8 @@ static int handle_lua_request(struct mg_connection *conn) {
       
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start Lua interpreter");
-	return(send_error(conn, 500 /* Internal server error */, "Internal server error", "%s", "Unable to start Lua interpreter"));
+	return(send_error(conn, 500 /* Internal server error */, 
+			  "Internal server error", "%s", "Unable to start Lua interpreter"));
       } else {
 	l->handle_script_request(conn, request_info, path);
 	delete l;
