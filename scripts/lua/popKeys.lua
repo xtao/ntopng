@@ -55,7 +55,7 @@ key_name = when..".keys"
 
 --print(key_name.."\n")
 
-local debug = true
+local debug = false
 local delete_keys = true
 
 dump_dir = fixPath(dirs.workingdir .. "/datadump/")
@@ -95,7 +95,7 @@ idx = 0
 repeat
    key = ntop.setPopCache(key_name)
    if(debug) then print("====> "..key_name.."<br>\n") end
-   if(key == "") then break end
+   if((key == nil) or (key == "")) then break end
 
    if(debug) then print("=> "..key.."<br>\n") end
    k1 = when.."|"..key.."|contacted_by"
@@ -121,12 +121,12 @@ repeat
 	    contacts:write(contact_idx..","..idx..",0,"..host2id(res[1])..",".. res[2]..",".. v.."\n")
 	    contact_idx = contact_idx + 1
 	 end
+	 ntop.delHashCache(k1, k)
       end
 
       idx = idx + 1
       if(delete_keys) then ntop.delHashCache(k1) end
    end
-
 
    k2 = when.."|"..key.."|contacted_peers"
    v2 = ntop.getHashKeysCache(k2)
@@ -151,6 +151,7 @@ repeat
 	    contacts:write(contact_idx..","..idx..",1,"..host2id(res[1])..",".. res[2]..",".. v.."\n")
 	    contact_idx = contact_idx + 1
 	 end
+	 ntop.delHashCache(k1, k)
       end
 
       idx = idx + 1

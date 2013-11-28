@@ -113,6 +113,24 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
+int Redis::hashDel(char *key, char *field) {
+  int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HDEL %s %s", key, field);
+
+  if(reply) {
+    freeReplyObject(reply), rc = 0;
+  } else
+    rc = -1;
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::set(char *key, char *value, u_int expire_secs) {
   int rc;
   redisReply *reply;
