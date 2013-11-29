@@ -112,7 +112,7 @@ repeat
       name = host2id(res[4])
       activities:write(idx..",".. interface2id(res[3])..","..name..",".. r.."\n")
 
-      if(debug) then print("->"..k1.."\n") end
+      if(debug) then print("-> (1)"..k1.."\n") end
       for k,_ in pairs(v1) do
 	 v = ntop.getHashCache(k1, k)
 	 res = split(k, "@")
@@ -121,11 +121,10 @@ repeat
 	    contacts:write(contact_idx..","..idx..",0,"..host2id(res[1])..",".. res[2]..",".. v.."\n")
 	    contact_idx = contact_idx + 1
 	 end
-	 ntop.delHashCache(k1, k)
+	 if(delete_keys) then ntop.delHashCache(k1, k) end
       end
 
       idx = idx + 1
-      if(delete_keys) then ntop.delHashCache(k1) end
    end
 
    k2 = when.."|"..key.."|contacted_peers"
@@ -142,7 +141,7 @@ repeat
       name = host2id(res[4])
       activities:write(idx..",".. interface2id(res[3])..",".. name ..",".. r .."\n")
 
-      if(debug) then print("->"..k2.."\n") end
+      if(debug) then print("-> (2)"..k2.."\n") end
       for k,v in pairs(v2) do
 	 v = ntop.getHashCache(k2, k)
 	 res = split(k, "@")
@@ -151,11 +150,10 @@ repeat
 	    contacts:write(contact_idx..","..idx..",1,"..host2id(res[1])..",".. res[2]..",".. v.."\n")
 	    contact_idx = contact_idx + 1
 	 end
-	 ntop.delHashCache(k1, k)
+	 if(delete_keys) then ntop.delHashCache(k2, k) end
       end
 
       idx = idx + 1
-      if(delete_keys) then ntop.delHashCache(k2) end
    end
 
    until(key == "")

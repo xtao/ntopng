@@ -253,12 +253,12 @@ int Redis::del(char *key) {
 
 /* **************************************** */
 
-int Redis::delHash(char *key) {
+int Redis::delHash(char *key, char *member) {
   int rc;
   redisReply *reply;
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "HDEL %s", key);
+  reply = (redisReply*)redisCommand(redis, "HDEL %s %s", key, member);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
