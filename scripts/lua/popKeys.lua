@@ -191,5 +191,8 @@ tables:write('LOAD data local infile "/var/tmp/ntopng/datadump/20'..when..'_cont
 
 tables:close()
 
-print(string.format("Elapsed time: %.2f sec\n", os.clock() - begin).."<br>\n")
+sec = os.clock() - begin
+print(string.format("Elapsed time: %.2f min\n", sec/60).."<br>\n")
 print("\nDone.\n")
+
+-- redis-cli KEYS "131129|*" | xargs redis-cli DEL
