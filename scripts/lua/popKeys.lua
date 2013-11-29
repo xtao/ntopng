@@ -55,7 +55,7 @@ key_name = when..".keys"
 
 --print(key_name.."\n")
 
-local debug = false
+local debug = true
 local delete_keys = true
 
 dump_dir = fixPath(dirs.workingdir .. "/datadump/")
@@ -180,7 +180,7 @@ hosts:close()
 tables:write("CREATE DATABASE IF NOT EXISTS `20"..when.."`;\nUSE `20"..when.."`;\n\n")
 tables:write("\nCREATE TABLE IF NOT EXISTS `interfaces` (\n`idx` int(11) NOT NULL,\n`interface_name` VARCHAR(32) NOT NULL,\nPRIMARY KEY (`idx`)\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n")
 tables:write("\nCREATE TABLE IF NOT EXISTS `hosts` (\n`idx` int(11) NOT NULL,\n`host_name` VARCHAR(128) NOT NULL,\nPRIMARY KEY (`idx`)\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n")
-tables:write("\nCREATE TABLE IF NOT EXISTS `activities` (\n`idx` int(11) NOT NULL,\n`interface_idx` int(11) NOT NULL,\n`contact_idx` int(11) NOT NULL,\n`type` INT(8) NOT NULL,\nPRIMARY KEY (`idx`)\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n")
+tables:write("\nCREATE TABLE IF NOT EXISTS `activities` (\n`idx` int(11) NOT NULL,\n`interface_idx` int(11) NOT NULL,\n`host_idx` int(11) NOT NULL,\n`type` INT(8) NOT NULL,\nPRIMARY KEY (`idx`)\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n")
 tables:write("\nCREATE TABLE IF NOT EXISTS `contacts` (\n`idx` int(11) NOT NULL,\n`activity_idx` int(11) NOT NULL,\n`contact_type` int(11) NOT NULL,\n`host_idx` int(11) NOT NULL,\n`contact_family` int(8) DEFAULT NULL,\n`num_contacts` int(8) NOT NULL,\nPRIMARY KEY (`idx`)\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n")
 
 tables:write('mysql --local-infile=1 -u root -p<pass> 20'..when..'\n')
