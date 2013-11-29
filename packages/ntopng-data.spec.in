@@ -20,7 +20,8 @@ GeoIP databases for ntopng
 %build
 
 mkdir -p $RPM_BUILD_ROOT/usr/local/share/ntopng/httpdocs/geoip
-cp %{_builddir}/%{name}-%{version}/usr/local/share/ntopng/httpdocs/geoip/*.dat $RPM_BUILD_ROOT/usr/local/share/ntopng/httpdocs/geoip
+cp %{_builddir}/%{name}-%{version}/usr/local/share/ntopng/httpdocs/geoip/*.dat* $RPM_BUILD_ROOT/usr/local/share/ntopng/httpdocs/geoip
+find $RPM_BUILD_ROOT/usr/local/share/ntopng/httpdocs/geoip -name "*.gz" |xargs gunzip
 find $RPM_BUILD_ROOT -name ".svn" | xargs /bin/rm -rf
 find $RPM_BUILD_ROOT -name "*~"   | xargs /bin/rm -f
 #

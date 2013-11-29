@@ -81,4 +81,4 @@ rm -fr $RPM_BUILD_ROOT
 %post
 echo 'Setting up redis auto startup'
 /sbin/chkconfig redis on
-
+/sbin/chkconfig --add ntopng

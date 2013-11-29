@@ -129,7 +129,6 @@ build-rpm-ntopng:
 	#
 	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	cp ntopng-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
-	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
 	#
 	rpmbuild -bb ./packages/ntopng.spec --define "buildnumber $(REVISION)"
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
@@ -150,6 +149,9 @@ build-rpm-ntopng-data:
 	fi
 	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
 	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
+	#
+	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
 	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@PACKAGE_VERSION@.tgz
 	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)

@@ -2,6 +2,8 @@
 #
 # (C) 2003-13 - ntop.org
 #
+# chkconfig: 2345 80 30
+#
 ### BEGIN INIT INFO
 # Provides:          ntopng
 # Required-Start:    $local_fs $remote_fs $network $syslog $pf_ring
