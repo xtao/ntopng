@@ -150,7 +150,7 @@ build-rpm-ntopng-data:
 	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
 	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
 	#
-	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
+	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
 	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
 	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@PACKAGE_VERSION@.tgz
 	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
