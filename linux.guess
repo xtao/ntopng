@@ -1,0 +1,7 @@
+#!/bin/bash
+ver=$(cat /etc/*{issues,release,version} 2> /dev/null)
+if [[ $(echo $ver | grep DISTRIB_ID) ]]; then
+    lsb_release -d | cut -f 2
+else
+    echo $ver | cut -d ' ' -f 1 | sort -u | head -1
+fi
