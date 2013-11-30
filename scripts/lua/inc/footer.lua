@@ -31,6 +31,7 @@ print [[</font></div>
 
 key = 'ntopng.prefs.'..ifname..'.speed'
 maxSpeed = ntop.getCache(key)
+-- io.write(maxSpeed)
 if((maxSpeed == "") or (maxSpeed == nil)) then
    maxSpeed = 1000000000 -- 1 Gbit
 else

@@ -448,7 +448,10 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
 /* **************************************** */
 
 char* Redis::getVersion(char *str, u_int str_len) {
-  redisReply *reply = (redisReply*)redisCommand(redis, "INFO");
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "INFO");
 
   snprintf(str, str_len, "%s" , "????");
 
@@ -470,6 +473,7 @@ char* Redis::getVersion(char *str, u_int str_len) {
 
     freeReplyObject(reply);
   }
+  l->unlock(__FILE__, __LINE__);
 
   return(str);
 }
