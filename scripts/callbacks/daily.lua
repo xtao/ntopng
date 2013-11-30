@@ -8,6 +8,8 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
+local debug = true
+local delete_keys = true
 
 function cleanName(name)
    n = string.gsub(name, "'", "_")
@@ -47,7 +49,7 @@ end
 
 -- #########################
 
-sendHTTPHeader('text/html')
+if(debug) then sendHTTPHeader('text/html') end
 
 begin = os.clock()
 t = os.time()-86400
@@ -55,9 +57,6 @@ when = os.date("%y%m%d", t)
 key_name = when..".keys"
 
 --print(key_name.."\n")
-
-local debug = true
-local delete_keys = true
 
 dump_dir = fixPath(dirs.workingdir .. "/datadump/")
 ntop.mkdir(dump_dir)

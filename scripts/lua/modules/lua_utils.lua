@@ -5,7 +5,7 @@
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
    ifname = _GET["ifname"]
-   if(ifname == nil) then
+   if((ifname == nil) and (_SESSION ~= nil)) then
       ifname = _SESSION["ifname"]
    end
 end
@@ -26,7 +26,7 @@ function sendHTTPHeaderIfName(mime, ifname, maxage)
    print('Pragma: no-cache\r\n')
    print('Server: ntopng '..info["version"]..'\r\n')
    print('Pragma: no-cache\r\n')
-   print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; path=/; http-only\r\n')
+   if(_SESSION ~= nil) then print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; path=/; http-only\r\n') end
    if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '; path=/\r\n') end
    print('Content-Type: '.. mime ..'\r\n')
    print('\r\n')

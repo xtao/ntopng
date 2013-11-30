@@ -88,6 +88,7 @@ void PeriodicActivities::runScript(char *path) {
       return;
     }
 
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Starting script %s", path);
     l->run_script(path, NULL);
     delete l;
   } else
@@ -111,13 +112,21 @@ void PeriodicActivities::secondActivitiesLoop() {
 
 void PeriodicActivities::minuteActivitiesLoop() {
   char script[MAX_PATH];
+  u_int32_t next_run = time(NULL);
+
+  next_run -= (next_run % 60);
+  next_run += 60;
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), MINUTE_SCRIPT_PATH);
 
   while(!ntop->getGlobals()->isShutdown()) {
     u_int now = (u_int)time(NULL);
 
-    if((now % 60) == 0) runScript(script);
+    if(now >= next_run) {
+      runScript(script);
+      next_run += 60;
+    }
+
     sleep(1);
   }
 }
@@ -126,13 +135,21 @@ void PeriodicActivities::minuteActivitiesLoop() {
 
 void PeriodicActivities::hourActivitiesLoop() {
   char script[MAX_PATH];
+  u_int32_t next_run = time(NULL);
+
+  next_run -= (next_run % 3600);
+  next_run += 3600;
 
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), HOURLY_SCRIPT_PATH);
 
   while(!ntop->getGlobals()->isShutdown()) {
     u_int now = (u_int)time(NULL);
 
-    if((now % 3600) == 0) runScript(script);
+    if(now >= next_run) {
+      runScript(script);
+      next_run += 3600;
+    }
+
     sleep(1);
   }
 }
@@ -141,13 +158,24 @@ void PeriodicActivities::hourActivitiesLoop() {
 
 void PeriodicActivities::dayActivitiesLoop() {
   char script[MAX_PATH];
+  u_int32_t next_run = time(NULL);
 
-  snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), DAILY_SCRIPT_PATH);
+  next_run -= (next_run % 86400);
+  next_run -= ntop->get_time_offset();
+  next_run += 86400;
+
+  snprintf(script, sizeof(script), "%s/%s",
+           ntop->get_callbacks_dir(), DAILY_SCRIPT_PATH);
 
   while(!ntop->getGlobals()->isShutdown()) {
     u_int now = (u_int)time(NULL);
 
-    if((now % 86400) == 0) runScript(script);
+    if(now >= next_run) {
+      runScript(script);
+      next_run += 86400;
+    }
+
     sleep(1);
   }
 }
+
