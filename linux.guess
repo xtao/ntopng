@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ver=$(cat /etc/*{issues,release,version} 2> /dev/null)
 
 if [[ $(echo $ver | grep DISTRIB_ID) ]]; then
