@@ -60,7 +60,8 @@ static void __redisSetErrorFromErrno(redisContext *c, int type, const char *pref
     
     if (prefix != NULL)
         len = snprintf(buf,sizeof(buf),"%s: ",prefix);
-    (void)strerror_r(errno,buf+len,sizeof(buf)-len);
+    //(void)strerror_r(errno,buf+len,sizeof(buf)-len);
+    snprintf(buf+len,sizeof(buf)-len, "%s", strerror(errno));
     __redisSetError(c,type,buf);
 }
 

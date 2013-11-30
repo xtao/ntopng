@@ -1244,7 +1244,7 @@ static int ntop_get_hash_redis(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_del_hash_redis(lua_State* vm) {
-  char *key, *member, rsp[4096];
+  char *key, *member;
   Redis *redis = ntop->getRedis();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
