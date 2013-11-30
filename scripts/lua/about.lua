@@ -23,6 +23,7 @@ print("<tr><th>Copyright</th><td>"..info["copyright"].."</td></tr>\n")
 print("<tr><th>License</th><td><A HREF=http://www.gnu.org/licenses/gpl.html>"..info["license"].."</A>")
 
 print("<tr><th>Version</th><td>"..info["version"].."</td></tr>\n")
+print("<tr><th>Platform</th><td>"..info["platform"].."</td></tr>\n")
 print("<tr><th><i class='fa fa-user fa-lg'></i> Currently Logged User</th><td>".._SESSION["user"].."</td></tr>\n")
 print("<tr><th><i class='fa fa-time fa-lg'></i> Uptime</th><td>"..secondsToTime(info["uptime"]).."</td></tr>\n")
 print("<tr><th colspan=2 align=center>&nbsp;</th></tr>\n")

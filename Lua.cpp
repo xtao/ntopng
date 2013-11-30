@@ -1153,6 +1153,13 @@ static int ntop_get_dirs(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_uptime(lua_State* vm) {
+  lua_pushinteger(vm, ntop->getGlobals()->getUptime());
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_info(lua_State* vm) {
   char rsp[256];
   int major, minor, patch;
@@ -1161,8 +1168,11 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2013 - ntop.org");
   lua_push_str_table_entry(vm, "authors", (char*)"Luca Deri and Alfredo Cardigliano");
   lua_push_str_table_entry(vm, "license", (char*)"GNU GPLv3");
-  snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
+  snprintf(rsp, sizeof(rsp), "%s (%s)", 
+	   PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
   lua_push_str_table_entry(vm, "version", rsp);
+  snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_OSNAME, PACKAGE_MACHINE);
+  lua_push_str_table_entry(vm, "platform", rsp);
   lua_push_int_table_entry(vm, "uptime", ntop->getGlobals()->getUptime());
   lua_push_str_table_entry(vm, "version.rrd", rrd_strversion());
   lua_push_str_table_entry(vm, "version.redis", ntop->getRedis()->getVersion(rsp, sizeof(rsp)));
@@ -1428,6 +1438,7 @@ static const luaL_Reg ntop_interface_reg[] = {
 static const luaL_Reg ntop_reg[] = {
   { "getDirs",        ntop_get_dirs },
   { "getInfo",        ntop_get_info },
+  { "getUptime",      ntop_get_uptime },
   { "dumpFile",       ntop_dump_file },
 
   /* Redis */

@@ -2979,6 +2979,17 @@ fi
 MACHINE=`uname -m`
 SYSTEM=`uname -s`
 
+if test $SYSTEM = "Linux"; then
+   OSNAME=`./linux.guess`
+else
+   OSNAME=`./config.guess`
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE_OSNAME "${OSNAME}"
+_ACEOF
+
+
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
 else

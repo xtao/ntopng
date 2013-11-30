@@ -448,22 +448,29 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
 /* **************************************** */
 
 char* Redis::getVersion(char *str, u_int str_len) {
-#if 1
+  redisReply *reply = (redisReply*)redisCommand(redis, "INFO");
+
   snprintf(str, str_len, "%s" , "????");
-#else
-  // TODO
-  REDIS_INFO info;
-  redisReply *reply;
 
-  l->lock(__FILE__, __LINE__);
-  if(redis && (credis_info(redis, &info) == 0))
-    snprintf(str, str_len, "%s (%d bit)", info.redis_version, info.arch_bits);
-  else
-    str[0] = 0;
-  l->unlock(__FILE__, __LINE__);
+  if(reply) {
+    if(reply->str) {
+      char *buf, *line = strtok_r(reply->str, "\n", &buf);
+      const char *tofind = "redis_version:";
+      u_int tofind_len = strlen(tofind);
 
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
-#endif
+      while(line != NULL) {
+	if(!strncmp(line, tofind, tofind_len)) {
+	  snprintf(str, str_len, "%s" , &line[tofind_len]);
+	  break;
+	} 
+
+	line = strtok_r(NULL, "\n", &buf);
+      }
+    }
+
+    freeReplyObject(reply);
+  }
+
   return(str);
 }
 
