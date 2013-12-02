@@ -9,7 +9,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 local debug = false
-local delete_keys = false
+local delete_keys = true
 
 begin = os.clock()
 t = os.time() -86400
