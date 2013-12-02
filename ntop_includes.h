@@ -92,7 +92,7 @@ extern "C" {
 #include "mongoose.h"
 #include "ntop_defines.h"
 #include "ntop_typedefs.h"
-#include "patricia.h"
+#include "third-party/patricia/patricia.h"
 #include "Trace.h"
 #include "NtopGlobals.h"
 #include "Prefs.h"

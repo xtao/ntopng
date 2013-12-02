@@ -21,6 +21,8 @@
 
 #include "ntop_includes.h"
 
+#include "third-party/patricia/patricia.c"
+
 /* **************************************** */
 
 AddressResolution::AddressResolution() {
