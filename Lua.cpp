@@ -45,6 +45,11 @@ extern "C" {
 #endif
 };
 
+#ifdef HAVE_SQLITE
+#include "third-party/lsqlite3/lsqlite3.c"
+#endif
+
+
 /* Included by Categorization.cpp */
 extern char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len);
 
@@ -1502,6 +1507,10 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
     { "ntop",      ntop_reg },
     {NULL,         NULL}
   };
+
+#ifdef HAVE_SQLITE
+  luaopen_lsqlite3(L);
+#endif
 
   for(i=0; ntop[i].class_name != NULL; i++) {
     /* newclass = {} */
