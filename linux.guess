@@ -8,7 +8,7 @@ else
 	ver=$(cat /etc/system-release)
 	echo $ver | head -1
     else
-	ver=$(cat /etc/*{issues,release,version} 2> /dev/null)
+	ver=$(cat /etc/*{issue,release,version} 2> /dev/null)
 	echo $ver | cut -d ' ' -f 1 | sort -u | head -1
     fi
 fi
