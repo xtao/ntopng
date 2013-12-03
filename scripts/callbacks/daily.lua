@@ -43,7 +43,7 @@ db:exec[[
 -- #########################
 
 function execQuery(where, sql)
-   print(sql.."\n")
+   if(debug) then print(sql.."\n") end
    if(where:exec(sql)  ~= sqlite3.OK) then	  
       print("SQLite ERROR: ".. where:errmsg() .. " [" .. sql .. "]\n")
    end
