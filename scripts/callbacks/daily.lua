@@ -114,7 +114,6 @@ end
 -- #########################
 
 function add_to_contacts(a, b, c, d, e, f)
-   if((contact_id % 100) == 0)
    sql = 'INSERT INTO contacts(idx, activity_idx, contact_type, host_idx, contact_family, num_contacts) VALUES ('..a..','..b..','..c..','..d..','..e..','..f..');'
    execQuery(db, sql)
 end
