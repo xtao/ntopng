@@ -43,6 +43,7 @@ db:exec[[
 -- #########################
 
 function execQuery(where, sql)
+   print(sql.."\n")
    if(where:exec(sql)  ~= sqlite3.OK) then	  
       print("SQLite ERROR: ".. where:errmsg() .. " [" .. sql .. "]\n")
    end
@@ -88,8 +89,9 @@ function host2id(name)
    do return(idx) end
 
    execQuery(db, 'INSERT INTO hosts(idx, host_name) VALUES ('..host_id..', "'.. name .. '");')
+   id = host_id
    host_id = host_id + 1
-   return(host_id)
+   return(id)
 end
 
 -- #########################
@@ -115,7 +117,7 @@ repeat
    -- if(debug) then print("====> "..key_name.."\n") end
    if((key == nil) or (key == "")) then break end
 
-   if(debug) then print("=> "..key.."\n") end
+   if(debug) then print("\n\n=> "..key.."\n") end
    k1 = when.."|"..key.."|contacted_by"
    v1 = ntop.getHashKeysCache(k1)
    if(v1 ~= nil) then
@@ -143,7 +145,7 @@ repeat
 	    else
 	       if(debug) then print("\t"..k .. "=" .. v.. "\n") end
 	       if((res[1] ~= nil) and (res[2] ~= nil) and (v ~= nil)) then
-		  add_to_contacts(contact_id,id,0,host2id(res[1]),res[2],v)
+		  add_to_contacts(contact_id,activity_id,0,host2id(res[1]),res[2],v)
 		  contact_id = contact_id + 1
 	       end
 	       if(delete_keys) then ntop.delHashCache(k1, k) end
