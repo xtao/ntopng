@@ -38,14 +38,24 @@ db:exec[[
       CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY AUTOINCREMENT, `host_name` STRING KEY);
       CREATE TABLE IF NOT EXISTS `activities` (`idx` INTEGER PRIMARY KEY AUTOINCREMENT, `interface_idx` INTEGER, `host_idx` INTEGER, `type` INTEGER);
       CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY AUTOINCREMENT, `activity_idx` INTEGER KEY, `contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);
+      BEGIN;
 ]]
+
+num_db_operations = 0 
 
 -- #########################
 
 function execQuery(where, sql)
-   if(debug) then print(sql.."\n") end
+   if(debug) then print("[SQL] (".. num_db_operations .. ") "..sql.."\n") end
    if(where:exec(sql)  ~= sqlite3.OK) then	  
       print("SQLite ERROR: ".. where:errmsg() .. " [" .. sql .. "]\n")
+   end
+
+   num_db_operations = num_db_operations + 1
+
+   if(num_db_operations >= 100) then
+      num_db_operations = 0
+      execQuery(where, "COMMIT; BEGIN;");
    end
 end
 
@@ -104,6 +114,7 @@ end
 -- #########################
 
 function add_to_contacts(a, b, c, d, e, f)
+   if((contact_id % 100) == 0)
    sql = 'INSERT INTO contacts(idx, activity_idx, contact_type, host_idx, contact_family, num_contacts) VALUES ('..a..','..b..','..c..','..d..','..e..','..f..');'
    execQuery(db, sql)
 end
@@ -196,6 +207,7 @@ repeat
 
    until(key == "")
 
+execQuery(db, 'COMMIT;')
 db:close()
 
 sec = os.clock() - begin
