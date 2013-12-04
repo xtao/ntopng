@@ -120,6 +120,16 @@ end
 
 -- #########################
 
+-- Flush all hosts to disk
+ifnames = interface.getIfNames()
+for _,_ifname in pairs(ifnames) do
+   interface.find(purifyInterfaceName(_ifname))
+   interface.flushHostContacts()
+end
+
+-- #########################
+
+num_ifaces = 0
 contact_id = 0
 activity_id = 0
 repeat

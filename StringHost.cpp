@@ -37,14 +37,24 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
 /* *************************************** */
 
 StringHost::~StringHost() {
-  if(tracked_host) {
-    localHost = true; /* Hack */
-    ntop->getRedis()->addIpToDBDump(iface, NULL, keyname);
-    dumpContacts(keyname, family_id);
-  } 
+  flushContacts();
 
   dumpStats(ntop->getPrefs()->get_aggregation_mode() == aggregations_enabled_with_bitmap_dump);
   free(keyname);
+}
+
+/* *************************************** */
+
+void StringHost::flushContacts() {
+  if(tracked_host) {
+    bool _localHost = localHost;
+
+    localHost = true; /* Hack */
+    ntop->getRedis()->addIpToDBDump(iface, NULL, keyname);
+    dumpContacts(keyname, family_id);
+    contacts.purgeAll();
+    localHost = _localHost;
+  } 
 }
 
 /* *************************************** */

@@ -308,7 +308,6 @@ void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
 
 /* *************************************** */
 
-
 #define ifdot(a) ((a == '.') ? '_' : a)
 
 void HostContacts::dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id) {
@@ -425,3 +424,10 @@ void HostContacts::dbDump(char *daybuf, NetworkInterface *iface, char *key, u_in
 #endif
 }
 
+/* *************************************** */
+
+void HostContacts::purgeAll() {
+  /* Perhaps we should add a lock... */
+  memset(clientContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
+  memset(serverContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
+}

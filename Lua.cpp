@@ -82,6 +82,12 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 
 /* ****************************************** */
 
+static void handle_null_interface(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_ERROR, "Null interface: did you restart ntopng in the meantime?");
+}
+
+/* ****************************************** */
+
 static int ntop_dump_file(lua_State* vm) {
   char *fname;
   FILE *fd;
@@ -154,6 +160,24 @@ static int ntop_get_interface_names(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_flush_host_contacts(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+  }
+
+  if(ntop_interface) {
+    ntop_interface->flushHostContacts();
+    return(CONST_LUA_OK);
+  } else
+    return(CONST_LUA_ERROR);
+}
+
+/* ****************************************** */
+
 static int ntop_find_interface(lua_State* vm) {
   char *ifname;
 
@@ -164,12 +188,6 @@ static int ntop_find_interface(lua_State* vm) {
   lua_setglobal(vm, "ntop_interface");
 
   return(CONST_LUA_OK);
-}
-
-/* ****************************************** */
-
-static void handle_null_interface(lua_State* vm) {
-  ntop->getTrace()->traceEvent(TRACE_ERROR, "Null interface: did you restart ntopng in the meantime?");
 }
 
 /* ****************************************** */
@@ -1417,6 +1435,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "setActiveInterfaceId",   ntop_set_active_interface_id },
   { "getIfNames",             ntop_get_interface_names },
   { "find",                   ntop_find_interface },
+  { "flushHostContacts",      ntop_flush_host_contacts },
   { "getStats",               ntop_get_interface_stats },
   { "getNdpiStats",           ntop_get_ndpi_interface_stats },
   { "getNdpiProtoName",       ntop_get_ndpi_protocol_name },

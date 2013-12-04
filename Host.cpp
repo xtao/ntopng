@@ -101,6 +101,15 @@ Host::~Host() {
 
 /* *************************************** */
 
+void Host::flushContacts() {
+  char key[128], *k = get_string_key(key, sizeof(key));
+
+  dumpContacts(k, HOST_FAMILY_ID);
+  contacts.purgeAll();
+}
+
+/* *************************************** */
+
 void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   char key[64], redis_key[128], json[4096], *k;
 

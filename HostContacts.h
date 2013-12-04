@@ -74,6 +74,7 @@ class HostContacts {
   char* serialize();
   void deserialize(NetworkInterface *iface, GenericHost *h, json_object *o);
   json_object* getJSONObject();
+  void purgeAll();
 };
 
 #endif /* _HOST_CONTACTS_H_ */

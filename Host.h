@@ -89,6 +89,7 @@ class Host : public GenericHost {
 
   char* serialize();
   bool deserialize(char *json_str);
+  void flushContacts();
 };
 
 #endif /* _HOST_H_ */

@@ -711,6 +711,22 @@ static void update_hosts_stats(GenericHashEntry *node, void *user_data) {
 
 /* **************************************************** */
 
+static void flush_host_contacts(GenericHashEntry *node, void *user_data) {
+  Host *host = (Host*)node;
+
+  host->flushContacts();
+}
+
+/* **************************************************** */
+
+static void flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
+  StringHost *host = (StringHost*)node;
+
+  host->flushContacts();
+}
+
+/* **************************************************** */
+
 void NetworkInterface::updateHostStats() {
   struct timeval tv;
 
@@ -718,6 +734,13 @@ void NetworkInterface::updateHostStats() {
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
   hosts_hash->walk(update_hosts_stats, (void*)&tv);
   strings_hash->walk(update_hosts_stats, (void*)&tv);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::flushHostContacts() {
+  hosts_hash->walk(flush_host_contacts, NULL);
+  strings_hash->walk(flush_string_host_contacts, NULL);
 }
 
 /* **************************************************** */

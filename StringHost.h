@@ -29,6 +29,9 @@ class StringHost : public GenericHost {
   char *keyname;
   u_int16_t family_id;
   bool tracked_host;
+  /* Throughput */
+  float bytes_thpt;
+  ValueTrend bytes_thpt_trend;
 
  public:
   StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
@@ -43,9 +46,7 @@ class StringHost : public GenericHost {
   inline u_int32_t key()  { return(Utils::hashString(keyname)); };
   char* get_string_key(char *buf, u_int buf_len);
   void updateStats(struct timeval *tv);
-  /* Throughput */
-  float bytes_thpt;
-  ValueTrend bytes_thpt_trend;
+  void flushContacts();
 };
 
 #endif /* _STRING_HOST_H_ */
