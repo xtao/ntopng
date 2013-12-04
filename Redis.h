@@ -63,6 +63,8 @@ class Redis {
   int incrContact(char *key, u_int16_t family_id, char *peer, u_int32_t value);
 
   int addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name);
+
+  int smembers(lua_State* vm, char *setName);
 };
 
 #endif /* _REDIS_H_ */

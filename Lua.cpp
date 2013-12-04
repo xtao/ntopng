@@ -438,6 +438,17 @@ static int ntop_delete_redis_key(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_set_members_redis(lua_State* vm) {
+  char *key;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+  ntop->getRedis()->smembers(vm, key);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_delete_hash_redis_key(lua_State* vm) {
   char *key, *member;
 
@@ -1469,6 +1480,7 @@ static const luaL_Reg ntop_reg[] = {
   { "getCache",       ntop_get_redis },
   { "setCache",       ntop_set_redis },
   { "delCache",       ntop_delete_redis_key },
+  { "getMembersCache", ntop_get_set_members_redis },
   { "getHashCache",   ntop_get_hash_redis },
   { "delHashCache",   ntop_del_hash_redis },
   { "getHashKeysCache", ntop_get_hash_keys_redis },

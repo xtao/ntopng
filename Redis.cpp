@@ -497,7 +497,8 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
 				    "ZREVRANGE %s %u %u WITHSCORES", 
 				    key, 0, -1);
 
-  if(reply->type == REDIS_REPLY_ARRAY) {
+  if((reply->type == REDIS_REPLY_ARRAY) 
+     && (reply->elements > 0)) {
     for(u_int i=0; i<(reply->elements-1); i++) {
       if((i % 2) == 0) {
 	const char *key = (const char*)reply->element[i]->str;
@@ -552,6 +553,34 @@ int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
 
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::smembers(lua_State* vm, char *setName) {
+  int rc;
+  redisReply *reply;
+
+  lua_newtable(vm);
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "SMEMBERS %s", setName);
+
+  if(reply->type == REDIS_REPLY_ARRAY) {
+    for(u_int i=0; i<reply->elements; i++) {
+      const char *key = (const char*)reply->element[i]->str;
+      lua_pushstring(vm, key);
+      lua_rawseti(vm, -2, i + 1);
+    }
+    
+    rc = 0;
+  } else
+    rc = -1;
+
+  if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
