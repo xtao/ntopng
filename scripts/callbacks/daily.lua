@@ -129,11 +129,12 @@ end
 
 -- #########################
 
+keyset = ntop.getMembersCache(key_name)
+
 num_ifaces = 0
 contact_id = 0
 activity_id = 0
-repeat
-   key = ntop.setPopCache(key_name)
+for _,key in ipairs(keyset) do
    -- if(debug) then print("====> "..key_name.."\n") end
    if((key == nil) or (key == "")) then break end
 
@@ -213,8 +214,9 @@ repeat
 	 activity_id = activity_id + 1
       end
    end
+end
 
-   until(key == "")
+ntop.delCache(key_name)
 
 execQuery(db, 'COMMIT;')
 db:close()
