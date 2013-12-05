@@ -24,6 +24,11 @@ start_ntopng() {
 	return 0
     fi
 
+    if [ ! -f "/etc/ntopng/ntopng.conf" ]; then
+	echo "Configuration file /etc/ntopng/ntopng.conf does not exist: quitting..."
+	return 0
+    fi
+
     NTOPNG_BINARY=/usr/local/bin/ntopng
 
     if [ -f /etc/ntopng/ntopng.start ] || [ $FORCE -eq 1 ]; then
