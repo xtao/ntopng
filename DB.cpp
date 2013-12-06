@@ -77,7 +77,7 @@ void DB::termDB() {
   if(!ntop->getPrefs()->do_dump_flows_on_db()) return;
 
   if(db) {
-    execSQL((char*)"COMMIT;");
+    execSQL(db, (char*)"COMMIT;");
     sqlite3_close(db);
     db = NULL;
   }
@@ -127,7 +127,7 @@ void DB::initDB(time_t when, const char *create_sql_string) {
 				   db_path, sqlite3_errmsg(db));
       end_dump = 0, db = NULL;
     } else {
-      execSQL((char*)create_sql_string);
+      execSQL(db, (char*)create_sql_string);
       ntop->getTrace()->traceEvent(TRACE_INFO,
 				   "[DB] Created %s", db_path);
     }
@@ -157,25 +157,25 @@ bool DB::dumpFlow(time_t when, Flow *f) {
 	   f->get_protocol(), json ? json : "");
 
   if(json) free(json);
-  execSQL(sql);
+  execSQL(db, sql);
   return(true);
 }
 
 /* ******************************************* */
 
-bool DB::execSQL(char* sql) {
+bool DB::execSQL(sqlite3 *_db, char* sql) {
   if(ntop->getPrefs()->do_dump_flows_on_db()) {
     int rc;
     char *zErrMsg = 0;
 
-    if(db == NULL) {
+    if(_db == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] NULL DB handler [%s]", sql);
       return(false);
     }
 
     ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", sql);
 
-    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    rc = sqlite3_exec(_db, sql, NULL, 0, &zErrMsg);
     if(rc != SQLITE_OK) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
       sqlite3_free(zErrMsg);
@@ -305,6 +305,5 @@ bool DB::execContactsSQLStatement(char* _sql) {
   return(false);
 }
 
-/* ******************************************* */
-
 #endif
+

@@ -65,6 +65,9 @@ class Redis {
   int addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name);
 
   int smembers(lua_State* vm, char *setName);
+
+  redisReply* execCommand(char *cmd);
+  bool dumpDailyStatsKeys(char *day);
 };
 
 #endif /* _REDIS_H_ */

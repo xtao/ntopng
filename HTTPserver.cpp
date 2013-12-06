@@ -252,7 +252,7 @@ static int handle_lua_request(struct mg_connection *conn) {
   if((ntop->getGlobals()->isShutdown())
      //|| (strcmp(request_info->request_method, "GET"))
      || (ntop->getRedis() == NULL /* Starting up... */))
-    return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method"));
+    return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method or ntopng still starting up..."));
   
 #ifdef HAVE_SSL
   if(!request_info->is_ssl)
