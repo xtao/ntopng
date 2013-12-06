@@ -708,19 +708,22 @@ int redisvFormatCommand(char **target, const char *format, va_list ap) {
             if (*c == ' ') {
                 if (touched) {
 		  newargv = (char**)realloc(curargv,sizeof(char*)*(argc+1));
-                    if (newargv == NULL) goto err;
+                    if (newargv == NULL) 
+		      goto err;
                     curargv = newargv;
                     curargv[argc++] = curarg;
                     totlen += bulklen(sdslen(curarg));
 
                     /* curarg is put in argv so it can be overwritten. */
                     curarg = sdsempty();
-                    if (curarg == NULL) goto err;
+                    if (curarg == NULL) 
+		      goto err;
                     touched = 0;
                 }
             } else {
                 newarg = sdscatlen(curarg,c,1);
-                if (newarg == NULL) goto err;
+                if (newarg == NULL) 
+		  goto err;
                 curarg = newarg;
                 touched = 1;
             }
@@ -848,7 +851,8 @@ int redisvFormatCommand(char **target, const char *format, va_list ap) {
                 }
             }
 
-            if (newarg == NULL) goto err;
+            if (newarg == NULL) 
+	      goto err;
             curarg = newarg;
 
             touched = 1;
@@ -860,7 +864,8 @@ int redisvFormatCommand(char **target, const char *format, va_list ap) {
     /* Add the last argument if needed */
     if (touched) {
       newargv = (char**)realloc(curargv,sizeof(char*)*(argc+1));
-        if (newargv == NULL) goto err;
+        if (newargv == NULL) 
+	  goto err;
         curargv = newargv;
         curargv[argc++] = curarg;
         totlen += bulklen(sdslen(curarg));
@@ -876,7 +881,8 @@ int redisvFormatCommand(char **target, const char *format, va_list ap) {
 
     /* Build the command at protocol level */
     cmd = (char*)malloc(totlen+1);
-    if (cmd == NULL) goto err;
+    if (cmd == NULL) 
+      goto err;
 
     pos = sprintf(cmd,"*%d\r\n",argc);
     for (j = 0; j < argc; j++) {

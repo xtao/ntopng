@@ -26,6 +26,13 @@
 StringHost::StringHost(NetworkInterface *_iface, char *_key, 
 		       u_int16_t _family_id) : GenericHost(_iface) {
   keyname = strdup(_key), family_id = _family_id;
+
+  /* Purify name */
+  for(int i=0; keyname[i] != '\0'; i++)
+    if((keyname[i] == '%')
+       || (keyname[i] == '"')
+       || (keyname[i] == '\''))
+      keyname[i] = '_';
   /*
     Set to true if this host can be persistently
     written on disk

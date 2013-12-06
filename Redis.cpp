@@ -73,8 +73,8 @@ int Redis::expire(char *key, u_int expire_sec) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "EXPIRE %s %u", key, expire_sec);
-  l->unlock(__FILE__, __LINE__);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -92,9 +92,9 @@ int Redis::get(char *key, char *rsp, u_int rsp_len) {
     snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
   } else
     rsp[0] = 0, rc = -1;
-  l->unlock(__FILE__, __LINE__);
 
   if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -112,9 +112,8 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
     snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
   } else
     rsp[0] = 0, rc = -1;
-  l->unlock(__FILE__, __LINE__);
-
   if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -168,9 +167,9 @@ char* Redis::popSet(char *pop_name, char *rsp, u_int rsp_len) {
     snprintf(rsp, rsp_len, "%s", reply->str);
   } else
     rsp[0] = 0;
-  l->unlock(__FILE__, __LINE__);
 
   if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
 
   return(rsp);
 }
@@ -535,7 +534,7 @@ int Redis::incrContact(char *key, u_int16_t family_id,
 	   key, peer, family_id, value);
   
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, buf);
+  reply = (redisReply*)redisCommand(redis, "%s", buf);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
