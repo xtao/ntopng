@@ -181,7 +181,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    if(aggregated ~= nil) then 
-	       print(", \"column_family\" : \"" .. value["family"] .. "\"")
+	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	    end
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")

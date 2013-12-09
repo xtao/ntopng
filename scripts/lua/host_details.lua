@@ -178,6 +178,7 @@ when = os.date("%y%m%d", t)
 base_name = when.."|host_contacts|"..ifname.."|"..host_ip
 keyname = base_name.."|contacted_peers"
 v1 = ntop.getHashKeysCache(keyname)
+print(keyname.."\n")
 if(v1 ~= nil) then
    if(page == "todays_contacts") then
       print("<li class=\"active\"><a href=\"#\">Today's Contacts</a></li>\n")

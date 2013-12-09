@@ -164,11 +164,16 @@ print [[
 
 dofile(dirs.installdir .. "/scripts/lua/inc/search_host_box.lua")
 
-print [[
-  </ul>
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
 
-        <h3 class="muted"><A href=http://www.ntop.org><img src="/img/logo.png"></A></h3>
-      </div>
+if(file_exists(dirs.installdir .. "/httpdocs/img/custom_logo.jpg")) then
+   logo_path = "/img/custom_logo.jpg"
+else
+   logo_path = "/img/logo.png"
+end
 
-]]
+print ("</ul>\n<h3 class=\"muted\"><A href=http://www.ntop.org><img src=\""..logo_path.."\"></A></h3>\n</div>\n")
 
