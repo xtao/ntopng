@@ -66,7 +66,6 @@ class Redis {
 
   int smembers(lua_State* vm, char *setName);
 
-  redisReply* execCommand(char *cmd);
   bool dumpDailyStatsKeys(char *day);
 };
 

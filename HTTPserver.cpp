@@ -297,7 +297,7 @@ static int handle_lua_request(struct mg_connection *conn) {
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       Lua *l = new Lua();
       
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[HTTP] %s [%s]", request_info->uri, path);
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", request_info->uri, path);
       
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start Lua interpreter");

@@ -12,7 +12,7 @@ local debug = false
 local delete_keys = true
 
 begin = os.clock()
-t = os.time() -- -86400
+t = os.time()-86400
 
 if((_GET ~= nil) and (_GET["debug"] ~= nil)) then
    debug = true

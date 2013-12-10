@@ -49,14 +49,6 @@ Redis::Redis(char *redis_host, int redis_port) {
 			       redis_host, redis_port);
   l = new Mutex();
   setDefaults();
-
-#if 0  
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Begin...");
-  dumpDailyStatsKeys((char*)"131206");
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Done...");
-
-  exit(0);
-#endif
 }
 
 /* **************************************** */
@@ -628,73 +620,57 @@ int Redis::smembers(lua_State* vm, char *setName) {
   return(rc);
 }
 
-/* **************************************** */
+//* ******************************************* */
 
-redisReply* Redis::execCommand(char *cmd) {
-  redisReply *reply;
+struct host_find_entry_info {
+  SimpleStringHost *host;
+  char *key;
+};
 
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, cmd);
-  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-  l->unlock(__FILE__, __LINE__);
-  return(reply);
+static void find_host_by_name(GenericHashEntry *h, void *user_data) {
+  struct host_find_entry_info *info = (host_find_entry_info*)user_data;
+  SimpleStringHost *host            = (SimpleStringHost*)h;
+
+  if(info->host) return; /* Already found */
+
+  if(!strcmp(info->key, host->host_key()))
+    info->host = host;
 }
 
 /* ******************************************* */
 
-static u_int host2idx(sqlite3 *mem_db, sqlite3 *db, char *host, u_int *host_idx) {
-  char buf[256];
-  char *zErrMsg;
-  sqlite3_stmt *stmt;
-  u_int idx;
-  int rc, i;
+static u_int32_t host2idx(StringHash *hostsHash, char *host_key, u_int32_t *host_idx) {
+  u_int32_t idx = *host_idx;
+  struct host_find_entry_info info;
+  SimpleStringHost *host;
 
-  for(i=0; host[i] != '\0'; i++)
-    if((host[i] == '\'') 
-       || (host[i] == '"'))
-      host[i] = '_';
-  
-  snprintf(buf, sizeof(buf), "SELECT idx FROM hosts WHERE host_name='%s'", host);
-  sqlite3_prepare_v2(mem_db, buf, -1, &stmt, 0);
+  info.key = host_key, info.host = NULL;
 
-  while((rc = sqlite3_step(stmt)) != SQLITE_DONE) {
-    if(rc == SQLITE_ROW) 
-      break;
-    else if(rc == SQLITE_BUSY) 
-      usleep(10);
-    else {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [rc=%d][%s]", rc, buf);
-      break;
-    }
-  }
+  hostsHash->walk(find_host_by_name, (void*)&info);
 
-  if(rc == SQLITE_ROW) {
-    idx = sqlite3_column_int(stmt, 0);
+  if(info.host != NULL)
+    return(info.host->get_id());
+
+  host = new SimpleStringHost(host_key, idx);
+
+  if(!host) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): not enough memory", __FUNCTION__);
   } else {
-    idx = (*host_idx)++;
+    hostsHash->add(host);  
+    (*host_idx)++;
 
-    snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');", idx, host);
 
-    if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
-      sqlite3_free(zErrMsg);
-    }
-
-    if(sqlite3_exec(mem_db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
-      sqlite3_free(zErrMsg);
-    }
+    if((*host_idx % 10000) == 0)
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u hosts created", *host_idx);
   }
-
-  sqlite3_finalize(stmt);
 
   return(idx);
 }
 
 /* ******************************************* */
 
-static u_int iface2idx(sqlite3 *db, char *iface) {
-  return(1);
+static u_int32_t iface2idx(sqlite3 *db, char *iface) {
+  return(1); // FIX
 }
 
 /* ******************************************* */
@@ -703,12 +679,13 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   bool rc = false;
 #ifdef HAVE_SQLITE
   redisReply *reply;
-  sqlite3 *db, *mem_db;
+  sqlite3 *db;
   char buf[256];
   char *zErrMsg;
-  u_int activity_idx = 0, contact_idx = 0, host_idx = 0;
+  u_int32_t activity_idx = 0, contact_idx = 0, host_idx = 0;
   char path[MAX_PATH];
   time_t begin = time(NULL);
+  StringHash *hostsHash = new StringHash(NULL, 1000, 10000);
 
   snprintf(path, sizeof(path), "%s/datadump",
 	   ntop->get_working_dir());
@@ -716,21 +693,6 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   snprintf(path, sizeof(path), "%s/datadump/20%s.sqlite",
 	   ntop->get_working_dir(), day);
-
-  if(sqlite3_open(":memory:", &mem_db) != 0) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create memory db");
-    return(false);
-  }
-
-  if(sqlite3_exec(mem_db,
-		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);\n"
-		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);\n"
-		  "BEGIN;\n",  NULL, 0, &zErrMsg) != SQLITE_OK) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
-    sqlite3_free(zErrMsg);
-    sqlite3_close(mem_db);
-    return(false);
-  }
   
   if(sqlite3_open(path, &db) != 0) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create file %s", path);
@@ -746,22 +708,24 @@ bool Redis::dumpDailyStatsKeys(char *day) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
     sqlite3_free(zErrMsg);
     sqlite3_close(db);
+    delete hostsHash;
     return(false);
   }
 
   /* *************************************** */
 
-  snprintf(buf, sizeof(buf), "SPOP %s.keys", day);
-
   while(true) {
-    reply = execCommand(buf);
+    l->lock(__FILE__, __LINE__);
+    reply = (redisReply*)redisCommand(redis, "SPOP %s.keys", day);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+    l->unlock(__FILE__, __LINE__);
 
     if(reply && reply->str) {
       char *_key = (char*)reply->str, key[256];
       char hash_key[512], buf[512];
       redisReply *r, *r1;
       bool to_add = false;
-      u_int activity_type;
+      u_int32_t activity_type;
       char *what, *iface, *host, *token;
 
       snprintf(key, sizeof(key), "%s", _key);
@@ -770,24 +734,28 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       if((what = strtok_r(key, "|", &token)) != NULL) {
 	if((iface = strtok_r(NULL, "|", &token)) != NULL) {
 	  if((host = strtok_r(NULL, "|", &token)) != NULL) {
-	    u_int host_index = host2idx(mem_db, db, host, &host_idx);
-	    u_int interface_idx = iface2idx(db, iface);
+	    u_int32_t host_index = host2idx(hostsHash, host, &host_idx);
+	    u_int32_t interface_idx = iface2idx(db, iface);
 
 	    activity_type = (what[0] == 'a' /* aggregations */) ? 1 : 0;
 
-	    for(u_int loop=0; loop<2; loop++) {
+	    for(u_int32_t loop=0; loop<2; loop++) {
 	      snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
-		       (loop == 0) ? "contacted_by" : "contacted_peer");
-	      snprintf(buf, sizeof(buf), "HKEYS %s", hash_key);
+		       (loop == 0) ? "contacted_by" : "contacted_peer");	      
 
-	      r = execCommand(buf);
+	      l->lock(__FILE__, __LINE__);
+	      r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
+	      if(r && (r->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	      l->unlock(__FILE__, __LINE__);	      
 
 	      if(r && (r->type == REDIS_REPLY_ARRAY)) {
 		to_add = true;
 
-		for(u_int j = 0; j < r->elements; j++) {
-		  snprintf(buf, sizeof(buf), "HGET %s %s", hash_key, r->element[j]->str);
-		  r1 = execCommand(buf);
+		for(u_int32_t j = 0; j < r->elements; j++) {		  
+		  l->lock(__FILE__, __LINE__);
+		  r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
+		  if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
+		  l->unlock(__FILE__, __LINE__);	      	       
 
 		  if(r1 && r1->str) {
 		    // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
@@ -798,11 +766,12 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
 		      if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-			u_int contact_host_index = host2idx(mem_db, db, contact_host, &host_idx);
+			u_int32_t contact_host_index = host2idx(hostsHash, contact_host, &host_idx);
 
 			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%u,%u,%u,%s,%s);\n",
 				 contact_idx++, activity_idx, loop, contact_host_index, contact_family, r1->str);
 
+			// ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", buf);
 			if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
 			  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
 			  sqlite3_free(zErrMsg);
@@ -812,8 +781,11 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 		    freeReplyObject(r1);
 		    
-		    snprintf(buf, sizeof(buf), "HDEL %s %s", hash_key, r->element[j]->str);
-		    r1 = execCommand(buf);
+		    l->lock(__FILE__, __LINE__);
+		    r1 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
+		    if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
+		    l->unlock(__FILE__, __LINE__);	      
+
 		    if(r1) freeReplyObject(r1);
 		  }
 		}
@@ -824,13 +796,17 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      if(to_add) {
 		snprintf(buf, sizeof(buf), "INSERT INTO activities VALUES (%u,%u,%u,%u);\n",
 			 activity_idx++, interface_idx, host_index, activity_type);
+		//ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", buf);
 		if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
 		  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
 		  sqlite3_free(zErrMsg);
-		}
-		
-		snprintf(buf, sizeof(buf), "DEL %s", hash_key);
-		r1 = execCommand(buf);
+		}	       	       
+
+		l->lock(__FILE__, __LINE__);
+		r1 = (redisReply*)redisCommand(redis, "DEL %s", hash_key);
+		if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
+		l->unlock(__FILE__, __LINE__);
+	     
 		if(r1) freeReplyObject(r1);
 	      }
 	    }
@@ -855,7 +831,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 			       host_idx, contact_idx, activity_idx, begin, ((float)activity_idx)/((float)begin), day);
 
   sqlite3_close(db);
-  sqlite3_close(mem_db);
+  delete hostsHash;
 #endif
+
   return(rc);
 }

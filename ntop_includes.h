@@ -110,6 +110,7 @@ extern "C" {
 #include "GenericHost.h"
 #include "GenericHash.h"
 #include "Redis.h"
+#include "SimpleStringHost.h"
 #include "StringHost.h"
 #include "StringHash.h"
 #include "NetworkInterface.h"
