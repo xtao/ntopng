@@ -34,6 +34,7 @@ Redis::Redis(char *redis_host, int redis_port) {
   redis = redisConnectWithTimeout(redis_host, redis_port, timeout);
 
   if(redis) reply = (redisReply*)redisCommand(redis, "PING"); else reply = NULL;
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if((redis == NULL) || (reply == NULL)) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "ntopng requires redis server to be up and running");
@@ -73,6 +74,7 @@ int Redis::expire(char *key, u_int expire_sec) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "EXPIRE %s %u", key, expire_sec);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -87,6 +89,7 @@ int Redis::get(char *key, char *rsp, u_int rsp_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "GET %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str) {
     snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
@@ -107,6 +110,7 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HGET %s %s", key, field);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str) {
     snprintf(rsp, rsp_len, "%s", reply->str), rc = 0;
@@ -126,6 +130,7 @@ int Redis::hashDel(char *key, char *field) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HDEL %s %s", key, field);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply) {
     freeReplyObject(reply), rc = 0;
@@ -144,10 +149,12 @@ int Redis::set(char *key, char *value, u_int expire_secs) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SET %s %s", key, value);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
 
   if((rc == 0) && (expire_secs != 0)) {
     reply = (redisReply*)redisCommand(redis, "EXPIRE %s %u", key, expire_secs);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   }
   l->unlock(__FILE__, __LINE__);
@@ -162,6 +169,7 @@ char* Redis::popSet(char *pop_name, char *rsp, u_int rsp_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SPOP %s", pop_name);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str) {
     snprintf(rsp, rsp_len, "%s", reply->str);
@@ -185,10 +193,12 @@ int Redis::zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len) 
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "ZINCRBY %s %u", key, value);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
 
   if((rc == 0) && (trim_len > 0)) {
     reply = (redisReply*)redisCommand(redis, "ZREMRANGEBYRANK %s 0 %u", key, -1*trim_len);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   }
   l->unlock(__FILE__, __LINE__);
@@ -205,6 +215,8 @@ int Redis::keys(const char *pattern, char ***keys_p) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "KEYS %s", pattern);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
   if(reply && (reply->type == REDIS_REPLY_ARRAY)) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
     rc = reply->elements;
@@ -229,6 +241,8 @@ int Redis::hashKeys(const char *pattern, char ***keys_p) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HKEYS %s", pattern);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
   if(reply && (reply->type == REDIS_REPLY_ARRAY)) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
     rc = reply->elements;
@@ -252,6 +266,8 @@ int Redis::del(char *key) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "DEL %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -266,6 +282,8 @@ int Redis::delHash(char *key, char *member) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HDEL %s %s", key, member);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -294,6 +312,8 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, boo
     */
 
     reply = (redisReply*)redisCommand(redis, "GET %s", key);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
     if(reply && reply->str)
       found = false;
     else
@@ -304,17 +324,19 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, boo
 
   if(!found) {
     /* Add to the list of addresses to resolve */
-
+    
     reply = (redisReply*)redisCommand(redis, "%s %s %s",
-			 localHost ? "LPUSH" : "RPUSH",
-			 DNS_TO_RESOLVE, hostname);
+				      localHost ? "LPUSH" : "RPUSH",
+				      DNS_TO_RESOLVE, hostname);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
-
+       
     /*
       We make sure that no more than MAX_NUM_QUEUED_ADDRS entries are in queue
       This is important in order to avoid the cache to grow too much
     */
     reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", DNS_TO_RESOLVE, MAX_NUM_QUEUED_ADDRS);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   } else
     reply = 0;
@@ -332,6 +354,7 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "LPOP %s", DNS_TO_RESOLVE);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str)
     snprintf(hostname, hostname_len, "%s", reply->str), rc = 0;
@@ -368,6 +391,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
     Add only if the domain has not been categorized yet
   */
   reply = (redisReply*)redisCommand(redis, "GET %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str) {
     snprintf(buf, buf_len, "%s", reply->str);
@@ -377,6 +401,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
 
     if(categorize_if_unknown) {
       reply = (redisReply*)redisCommand(redis, "RPUSH %s %s", DOMAIN_TO_CATEGORIZE, domainname);
+      if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
       if(reply) freeReplyObject(reply);
     }
   }
@@ -394,6 +419,7 @@ int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "LPOP %s", DOMAIN_TO_CATEGORIZE);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && reply->str)
     snprintf(domainname, domainname_len, "%s", reply->str);
@@ -459,6 +485,7 @@ char* Redis::getVersion(char *str, u_int str_len) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "INFO");
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   snprintf(str, str_len, "%s" , "????");
 
@@ -503,6 +530,7 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
   reply = (redisReply*)redisCommand(redis,
 				    "ZREVRANGE %s %u %u WITHSCORES",
 				    key, 0, -1);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply
      && (reply->type == REDIS_REPLY_ARRAY)
@@ -530,11 +558,11 @@ int Redis::incrContact(char *key, u_int16_t family_id,
   redisReply *reply;
   char buf[128];
 
-  snprintf(buf, sizeof(buf), "HINCRBY %s %s@%u %u",
-	   key, peer, family_id, value);
-  
+  snprintf(buf, sizeof(buf), "%s@%u", peer, family_id);
+
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "%s", buf);
+  reply = (redisReply*)redisCommand(redis, "HINCRBY %s %s %u", key, buf, value);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -560,6 +588,7 @@ int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%s|%s", daybuf,
 				    ip ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
 				    iface->get_name(), what);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
 
@@ -579,6 +608,7 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SMEMBERS %s", setName);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply && (reply->type == REDIS_REPLY_ARRAY)) {
     for(u_int i=0; i<reply->elements; i++) {
@@ -605,6 +635,7 @@ redisReply* Redis::execCommand(char *cmd) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, cmd);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   l->unlock(__FILE__, __LINE__);
   return(reply);
 }
