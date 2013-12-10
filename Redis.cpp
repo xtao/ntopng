@@ -622,6 +622,7 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 //* ******************************************* */
 
+#ifdef HAVE_SQLITE
 struct host_find_entry_info {
   SimpleStringHost *host;
   char *key;
@@ -636,9 +637,11 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
   if(!strcmp(info->key, host->host_key()))
     info->host = host;
 }
+#endif
 
 /* ******************************************* */
 
+#ifdef HAVE_SQLITE
 static u_int32_t host2idx(StringHash *hostsHash, char *host_key, u_int32_t *host_idx) {
   u_int32_t idx = *host_idx;
   struct host_find_entry_info info;
@@ -666,12 +669,15 @@ static u_int32_t host2idx(StringHash *hostsHash, char *host_key, u_int32_t *host
 
   return(idx);
 }
+#endif
 
 /* ******************************************* */
 
+#ifdef HAVE_SQLITE
 static u_int32_t iface2idx(sqlite3 *db, char *iface) {
   return(1); // FIX
 }
+#endif
 
 /* ******************************************* */
 
