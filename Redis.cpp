@@ -639,6 +639,21 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
 }
 #endif
 
+static void dump_host_to_db(GenericHashEntry *h, void *user_data) {
+  char *zErrMsg;
+  char buf[256];
+  sqlite3 *db            = (sqlite3*)user_data;
+  SimpleStringHost *host = (SimpleStringHost*)h;
+
+  snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');\n",
+	   host->get_id(), host->host_key());
+  
+  if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+    sqlite3_free(zErrMsg);
+  } 
+}
+
 /* ******************************************* */
 
 #ifdef HAVE_SQLITE
@@ -709,7 +724,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);\n"
 		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);\n"
 		  "CREATE TABLE IF NOT EXISTS `activities` (`idx` INTEGER PRIMARY KEY, `interface_idx` INTEGER, `host_idx` INTEGER, `activity_type` INTEGER);\n"
-		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, `activity_idx` INTEGER KEY, `contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);\n"
+		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, `activity_idx` INTEGER KEY, "
+		  "`contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);\n"
 		  "BEGIN;\n",  NULL, 0, &zErrMsg) != SQLITE_OK) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
     sqlite3_free(zErrMsg);
@@ -835,6 +851,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   begin = time(NULL)-begin;
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Processed %u hosts, %u activities, %u contacts in %u sec [%.1f activities/sec][%s]", 
 			       host_idx, contact_idx, activity_idx, begin, ((float)activity_idx)/((float)begin), day);
+
+  /* Time to dump hosts into the DB */
+  hostsHash->walk(dump_host_to_db, (void*)db);
 
   sqlite3_close(db);
   delete hostsHash;

@@ -167,6 +167,11 @@ void NetworkInterface::deleteDataStructures() {
 /* **************************************************** */
 
 NetworkInterface::~NetworkInterface() {
+  if(getNumPackets() > 0) {
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flushing host contacts for interface %s", get_name());
+    flushHostContacts();
+  }
+
   deleteDataStructures();
 #ifdef HAVE_SQLITE
   delete db;
@@ -1243,10 +1248,9 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
 	    printf("   %d. %s\n", numInterfaces, devpointer->name);
 #endif
 	  } else if(!help_printed)
-	    ntop->getTrace()->traceEvent(TRACE_NORMAL, " %d. %s (%s)\n",
-					 numInterfaces,
-					 devpointer->description ? devpointer->description : "",
-					 devpointer->name);
+	    ntop->getTrace()->traceEvent(TRACE_NORMAL, "%d. %s (%s)\n",
+					 numInterfaces, devpointer->name,
+					 devpointer->description ? devpointer->description : devpointer->name);
 	} else if(numInterfaces == idx) {
 	  snprintf(ifname, ifname_len, "%s", devpointer->name);
 	  break;

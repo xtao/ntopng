@@ -56,8 +56,6 @@ PF_RINGInterface::~PF_RINGInterface() {
 
   if(pfring_handle)
     pfring_close(pfring_handle);
-
-  deleteDataStructures();
 }
 
 /* **************************************************** */

@@ -555,6 +555,7 @@ print [[
    base_name = when.."|host_contacts|"..ifname.."|"..host_ip
    keyname = base_name.."|contacted_peers"
    --io.write(keyname.."\n")
+   -- print(keyname.."\n") 
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
    v1 = ntop.getHashKeysCache(keyname)
@@ -565,10 +566,8 @@ print [[
 	    values = split(k, "@");
 	    protocol = tonumber(values[2])
 
-
-	    -- 254 is OperatingSystem
-	    
-	    if((protocols[protocol] ~= nil) and (protocol ~= 254)) then
+	    -- 254 is OperatingSystem	    
+	    if((protocols[protocol] == nil) and (protocol ~= 254)) then
 	       protocols[protocol] = interface.getNdpiProtoName(protocol)
 	    end
 	 end
@@ -626,7 +625,7 @@ print [[
 				 field: "column_num_contacts",
 				 sortable: true,
 	 	             css: {
-			        textAlign: 'left'
+			        textAlign: 'right'
 			     }
 				 }
 			     ]

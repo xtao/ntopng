@@ -65,8 +65,6 @@ PcapInterface::~PcapInterface() {
 
   if(pcap_handle)
     pcap_close(pcap_handle);
-
-  deleteDataStructures();
 }
 
 /* **************************************************** */
