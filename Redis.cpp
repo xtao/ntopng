@@ -688,13 +688,8 @@ static u_int32_t host2idx(StringHash *hostsHash, char *host_key, u_int32_t *host
 
 /* ******************************************* */
 
-#ifdef HAVE_SQLITE
-static u_int32_t iface2idx(sqlite3 *db, char *iface) {
-  return(1); // FIX
-}
-#endif
-
-/* ******************************************* */
+#define MAX_NUM_INTERFACES      16
+#define MAX_INTERFACE_NAME_LEN   8
 
 bool Redis::dumpDailyStatsKeys(char *day) {
   bool rc = false;
@@ -707,6 +702,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   char path[MAX_PATH];
   time_t begin = time(NULL);
   StringHash *hostsHash = new StringHash(NULL, 1000, 10000);
+  u_int num_interfaces = 0;
+  u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];     
 
   snprintf(path, sizeof(path), "%s/datadump",
 	   ntop->get_working_dir());
@@ -757,7 +754,30 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	if((iface = strtok_r(NULL, "|", &token)) != NULL) {
 	  if((host = strtok_r(NULL, "|", &token)) != NULL) {
 	    u_int32_t host_index = host2idx(hostsHash, host, &host_idx);
-	    u_int32_t interface_idx = iface2idx(db, iface);
+	    u_int32_t interface_idx = (u_int32_t)-1;
+
+	    for(int i=0; i<num_interfaces; i++) {
+	      if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
+		interface_idx = i;
+		break;
+	      }
+	    }
+
+	    if(interface_idx == (u_int32_t)-1) {
+	      if(num_interfaces < MAX_NUM_INTERFACES) {
+		snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
+		
+		snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');\n",
+			 num_interfaces, iface);
+		if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+		  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+		  sqlite3_free(zErrMsg);
+		} 
+
+		interface_idx = num_interfaces;
+		num_interfaces++;
+	      }
+	    }
 
 	    activity_type = (what[0] == 'a' /* aggregations */) ? 1 : 0;
 
