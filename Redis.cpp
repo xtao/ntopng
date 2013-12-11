@@ -756,7 +756,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	    u_int32_t host_index = host2idx(hostsHash, host, &host_idx);
 	    u_int32_t interface_idx = (u_int32_t)-1;
 
-	    for(int i=0; i<num_interfaces; i++) {
+	    for(u_int i=0; i<num_interfaces; i++) {
 	      if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
 		interface_idx = i;
 		break;
