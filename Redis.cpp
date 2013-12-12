@@ -690,7 +690,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   u_int32_t activity_idx = 0, contact_idx = 0;
   char path[MAX_PATH];
   time_t begin = time(NULL);
-  u_int num_interfaces = 0, num_hosts = 0;
+  u_int num_interfaces = 0, num_hosts = 0, num_activities = 0;
   u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];
 
   snprintf(path, sizeof(path), "%s/datadump",
@@ -704,6 +704,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create file %s", path);
     return(false);
   }
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started dump on %s", path);
 
   if(sqlite3_exec(db,
 		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);\n"
@@ -733,6 +735,11 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       bool to_add = false;
       u_int32_t activity_type;
       char *what, *iface, *host, *token;
+
+      num_activities++;
+
+      if((num_activities % 10000) == 0)
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed", num_activities);
 
       snprintf(key, sizeof(key), "%s", _key);
 
