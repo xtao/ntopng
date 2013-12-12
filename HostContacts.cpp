@@ -271,25 +271,12 @@ char* HostContacts::get_cache_key(char *daybuf, char *ifname,
 				  const char *key_type, char *key,
 				  bool client_mode,
 				  char *buf, u_int buf_len) {
-  u_int32_t id;
-  char rsp[32], host_id[16];
-
-  /* Add host key if missing */
-  snprintf(buf, buf_len, "%s.hostkeys", daybuf);
-  id = ntop->getRedis()->hashGet(buf, key, rsp, sizeof(rsp));
-  
-  if(id == -1) {
-    /* Not found */
-
-    snprintf(host_id, sizeof(host_id), "%u", id = ntop->getUniqueHostId());
-    ntop->getRedis()->hashSet(buf, key, host_id);
-  } else
-    id = atol(rsp);
+  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, key);
 
   /* <date>|<CONST_HOST_CONTACTS|CONST_AGGREGATIONS>|<iface>|<host IP>|<CONST_CONTACTED_BY|CONST_CONTACTS> <peer IP> <value> */
 
   snprintf(buf, buf_len, "%s|%s|%s|%u|%s",
-	   daybuf, key_type, ifname, id,
+	   daybuf, key_type, ifname, host_id,
 	   client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY);
   return(buf);
 }
@@ -302,23 +289,14 @@ void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
   char buf[32], full_path[MAX_PATH];
   char *host_ip = peer->print(buf, sizeof(buf));
   char *ifname = iface->get_name();
-
-#ifdef DUMP_CONTACTS_ON_REDIS
   char *k = get_cache_key(daybuf, ifname,
 			  CONST_HOST_CONTACTS, key,
 			  true /* client */,
 			  full_path, sizeof(full_path));
+  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, host_ip);
 
-  ntop->getRedis()->incrContact(k, family_id, host_ip, num_contacts);
-#else
-  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%s/%c/%c|%s",
-	   ntop->get_working_dir(), ifname, daybuf, CONST_HOST_CONTACTS,
-	   key[0], ifdot(key[1]), key);
-  ntop->fixPath(full_path);
-
-  ntop->getRedis()->queueContactToDump(full_path, true, get_queue_id(key),
-				       host_ip, HOST_FAMILY_ID, num_contacts);
-#endif
+  snprintf(buf, sizeof(buf), "%u", host_id);
+  ntop->getRedis()->incrContact(k, family_id, buf, num_contacts);
 }
 
 /* *************************************** */
@@ -327,7 +305,6 @@ void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
 
 void HostContacts::dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id) {
   char *ifname = iface->get_name();
-#ifdef DUMP_CONTACTS_ON_REDIS
   char buf[64], cmd[MAX_PATH], *k;
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
@@ -377,66 +354,6 @@ void HostContacts::dbDump(char *daybuf, NetworkInterface *iface, char *key, u_in
       } /* if */
     } /* if */
   }
-#else
-  char buf[64], full_path[MAX_PATH], alt_full_path[MAX_PATH];
-
-  snprintf(full_path, sizeof(full_path), "%s/%s/%s/%s/%c/%c|%s",
-	   ntop->get_working_dir(), ifname, daybuf,
-	   (family_id == HOST_FAMILY_ID) ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
-	   key[0], ifdot(key[1]), key);
-  ntop->fixPath(full_path);
-
-  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
-    if(clientContacts[i].host != NULL) {
-
-      if(Utils::dumpHostToDB(clientContacts[i].host,
-			     (family_id == HOST_FAMILY_ID) ?
-			     ntop->getPrefs()->get_dump_hosts_to_db_policy() :
-			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
-	char *host_ip = clientContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path,
-					     (family_id == HOST_FAMILY_ID) ? true : false,
-					     get_queue_id(key),
-					     host_ip, family_id,
-					     clientContacts[i].num_contacts);
-
-	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%s/%c/%c|%s",
-		   ntop->get_working_dir(), ifname, daybuf,
-		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
-	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
-					       key, family_id,
-					       clientContacts[i].num_contacts);
-	}
-      }
-    }
-
-    if(serverContacts[i].host != NULL) {
-      if(Utils::dumpHostToDB(serverContacts[i].host,
-			     (family_id == HOST_FAMILY_ID) ?
-			     ntop->getPrefs()->get_dump_hosts_to_db_policy() :
-			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
-	char *host_ip;
-
-	host_ip = serverContacts[i].host->print(buf, sizeof(buf));
-	ntop->getRedis()->queueContactToDump(full_path, false, get_queue_id(key),
-					     host_ip, family_id,
-					     serverContacts[i].num_contacts);
-
-	if(family_id != HOST_FAMILY_ID) {
-	  snprintf(alt_full_path, sizeof(alt_full_path), "%s/%s/%s/%s/%c/%c|%s",
-		   ntop->get_working_dir(), ifname, daybuf,
-		   CONST_HOST_CONTACTS, host_ip[0], ifdot(host_ip[1]), host_ip);
-	  ntop->fixPath(alt_full_path);
-	  ntop->getRedis()->queueContactToDump(alt_full_path, true, get_queue_id(host_ip),
-					       key, family_id,
-					       serverContacts[i].num_contacts);
-	}
-      } /* if */
-    } /* if */
-  } /* for */
-#endif
 }
 
 /* *************************************** */

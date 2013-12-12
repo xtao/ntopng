@@ -2186,6 +2186,7 @@ static void MD5Update(MD5_CTX *ctx, unsigned char const *buf, unsigned len) {
 static void MD5Final(unsigned char digest[16], MD5_CTX *ctx) {
   unsigned count;
   unsigned char *p;
+  uint32_t *c = (uint32_t*)ctx->in;
 
   count = (ctx->bits[0] >> 3) & 0x3F;
 
@@ -2202,8 +2203,8 @@ static void MD5Final(unsigned char digest[16], MD5_CTX *ctx) {
   }
   byteReverse(ctx->in, 14);
 
-  ((uint32_t *) ctx->in)[14] = ctx->bits[0];
-  ((uint32_t *) ctx->in)[15] = ctx->bits[1];
+  c[14] = ctx->bits[0];
+  c[15] = ctx->bits[1];
 
   MD5Transform(ctx->buf, (uint32_t *) ctx->in);
   byteReverse((unsigned char *) ctx->buf, 4);

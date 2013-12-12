@@ -69,6 +69,9 @@ class Redis {
   int smembers(lua_State* vm, char *setName);
 
   bool dumpDailyStatsKeys(char *day);
+
+  u_int32_t host_to_id(char *daybuf, char *host_name);
+  int id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len);
 };
 
 #endif /* _REDIS_H_ */

@@ -612,7 +612,7 @@ u_int32_t Ntop::getUniqueHostId() {
   /* Mutex jeopardized */
   rrd_lock->lock(__FILE__, __LINE__);
   id = host_unique_id++;
-  rrd_lock->lock(__FILE__, __LINE__);
+  rrd_lock->unlock(__FILE__, __LINE__);
   
   return(id);
 }
