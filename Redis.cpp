@@ -116,6 +116,43 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
+int Redis::hashLen(char *key) {
+  int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HLEN %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) 
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
+  if(reply && reply->str)
+    rc = atoi(reply->str);
+  else
+    rc = -1;
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+int Redis::hashSet(char *key, char *field, char *value) {
+  int rc = 0;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "HSET %s %s %s", key, field, value);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) 
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str), rc = -1;
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::hashDel(char *key, char *field) {
   int rc;
   redisReply *reply;
@@ -258,22 +295,6 @@ int Redis::del(char *key) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "DEL %s", key);
-  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
-  l->unlock(__FILE__, __LINE__);
-
-  return(rc);
-}
-
-/* **************************************** */
-
-int Redis::delHash(char *key, char *member) {
-  int rc;
-  redisReply *reply;
-
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "HDEL %s %s", key, member);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
 
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
@@ -874,6 +895,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   /* Time to dump hosts into the DB */
   hostsHash->walk(dump_host_to_db, (void*)db);
+
+  snprintf(buf, sizeof(buf), "%s.hostkeys", day);
+  del(buf);
 
   sqlite3_close(db);
   delete hostsHash;

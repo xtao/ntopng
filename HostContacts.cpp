@@ -271,10 +271,25 @@ char* HostContacts::get_cache_key(char *daybuf, char *ifname,
 				  const char *key_type, char *key,
 				  bool client_mode,
 				  char *buf, u_int buf_len) {
-  /* <date>|CONST_HOST_CONTACTS|<iface>|<host IP>|<CONST_CONTACTED_BY|CONST_CONTACTS> <peer IP> <value> */
+  u_int32_t id;
+  char rsp[32], host_id[16];
 
-  snprintf(buf, buf_len, "%s|%s|%s|%s|%s",
-	   daybuf, key_type, ifname, key,
+  /* Add host key if missing */
+  snprintf(buf, buf_len, "%s.hostkeys", daybuf);
+  id = ntop->getRedis()->hashGet(buf, key, rsp, sizeof(rsp));
+  
+  if(id == -1) {
+    /* Not found */
+
+    snprintf(host_id, sizeof(host_id), "%u", id = ntop->getUniqueHostId());
+    ntop->getRedis()->hashSet(buf, key, host_id);
+  } else
+    id = atol(rsp);
+
+  /* <date>|<CONST_HOST_CONTACTS|CONST_AGGREGATIONS>|<iface>|<host IP>|<CONST_CONTACTED_BY|CONST_CONTACTS> <peer IP> <value> */
+
+  snprintf(buf, buf_len, "%s|%s|%s|%u|%s",
+	   daybuf, key_type, ifname, id,
 	   client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY);
   return(buf);
 }

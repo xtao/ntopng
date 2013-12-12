@@ -40,14 +40,16 @@ class Redis {
 
   int expire(char *key, u_int expire_sec);
   int get(char *key, char *rsp, u_int rsp_len);
+  int hashLen(char *key);
   int hashGet(char *key, char *member, char *rsp, u_int rsp_len);
   int hashDel(char *key, char *field);
+  int hashSet(char *key, char *field, char *value);
+  int delHash(char *key, char *member); 
   int set(char *key, char *value, u_int expire_secs=0);
   char* popSet(char *pop_name, char *rsp, u_int rsp_len);
   int keys(const char *pattern, char ***keys_p);
   int hashKeys(const char *pattern, char ***keys_p);
   int del(char *key); 
-  int delHash(char *key, char *member); 
   int zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len);
 
   int queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost);

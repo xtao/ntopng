@@ -40,7 +40,8 @@ class Ntop {
   Categorization *categorization;
   Mutex *rrd_lock;
   long time_offset;
-
+  u_int32_t host_unique_id;
+  
  public:
   Ntop(char *appName);
   void registerPrefs(Prefs *_prefs);
@@ -50,6 +51,7 @@ class Ntop {
   inline char* getCustomnDPIProtos()                 { return(custom_ndpi_protos);                 };
   inline long get_time_offset()                      { return(time_offset);                        };
   void initTimezone();
+  u_int32_t getUniqueHostId();
   char* getValidPath(char *path);
   void loadGeolocation(char *dir);
   void setLocalNetworks(char *nets);

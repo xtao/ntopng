@@ -158,11 +158,23 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
+  int rc;
+  char daybuf[64], buf[32];
+  time_t when = time(NULL);
+
   getTrace()->traceEvent(TRACE_NORMAL,
 			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
 
   redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
+
+  strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
+  snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
+
+  if((rc = redis->hashLen(buf)) == -1)
+    host_unique_id = 0;
+  else
+    host_unique_id = (u_int32_t)rc;
 
   pa->startPeriodicActivitiesLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
@@ -592,3 +604,15 @@ void Ntop::shutdown() {
   }
 }
 
+/* ******************************************* */
+
+u_int32_t Ntop::getUniqueHostId() {
+  u_int32_t id;
+
+  /* Mutex jeopardized */
+  rrd_lock->lock(__FILE__, __LINE__);
+  id = host_unique_id++;
+  rrd_lock->lock(__FILE__, __LINE__);
+  
+  return(id);
+}
