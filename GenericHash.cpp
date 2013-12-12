@@ -125,7 +125,9 @@ bool GenericHash::remove(GenericHashEntry *h) {
 
 /* ************************************ */
 
-void GenericHash::walk(void (*walker)(GenericHashEntry *h, void *user_data), void *user_data) {
+void GenericHash::walk(bool (*walker)(GenericHashEntry *h, void *user_data), void *user_data) {
+  bool found = false;
+
   if(ntop->getGlobals()->isShutdown()) return;
 
   for(u_int hash_id = 0; hash_id < num_hashes; hash_id++) {
@@ -139,12 +141,18 @@ void GenericHash::walk(void (*walker)(GenericHashEntry *h, void *user_data), voi
       while(head) {
 	GenericHashEntry *next = head->next();
 
-	walker(head, user_data);
+	if(walker(head, user_data)) {
+	  found = true;
+	  break;
+	}
 	head = next;
       } /* while */
 
       locks[hash_id]->unlock(__FILE__, __LINE__);
       // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Unlocked %d", hash_id);
+
+      if(found)
+	break;
     }
   }
 }

@@ -10,7 +10,7 @@ require "graph_utils"
 
 page        = _GET["page"]
 host_ip     = _GET["host"]
-protocol_id = _GET["protocol_id"]
+protocol_id = _GET["protocol"]
 
 active_page = "hosts"
 
@@ -21,6 +21,8 @@ if(host_ip == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
    return
 end
+
+if(protocol_id == nil) then protocol_id = "" end
 
 _ifname = tostring(interface.name2id(ifname))
 interface.find(ifname)
@@ -175,10 +177,16 @@ end
 
 t = os.time()
 when = os.date("%y%m%d", t)
-base_name = when.."|host_contacts|"..ifname.."|"..host_ip
+base_name = when.."|host_contacts|"..ifname.."|"..ntop.getHostId(host_ip)
 keyname = base_name.."|contacted_peers"
 v1 = ntop.getHashKeysCache(keyname)
 --print(keyname.."\n")
+
+if(v1 == nil) then
+   keyname = base_name.."|contacted_by"
+   v1 = ntop.getHashKeysCache(keyname)
+end
+
 if(v1 ~= nil) then
    if(page == "todays_contacts") then
       print("<li class=\"active\"><a href=\"#\">Today's Contacts</a></li>\n")
@@ -552,9 +560,9 @@ print [[
 
    t = os.time()
    when = os.date("%y%m%d", t)
-   base_name = when.."|host_contacts|"..ifname.."|"..host_ip
+   base_name = when.."|host_contacts|"..ifname.."|"..ntop.getHostId(host_ip)
    keyname = base_name.."|contacted_peers"
-   --io.write(keyname.."\n")
+   io.write(keyname.."\n")
    -- print(keyname.."\n") 
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
@@ -562,6 +570,7 @@ print [[
    if(v1 ~= nil) then
       for k,_ in pairs(v1) do
 	 v = ntop.getHashCache(keyname, k)
+	 --io.write(v.."\n")
 	 if(v ~= nil) then
 	    values = split(k, "@");
 	    protocol = tonumber(values[2])
@@ -574,20 +583,19 @@ print [[
       end
    end
 
-   if(protocol_id == nil) then protocol_id = "" end
 print [[
       <div id="table-hosts"></div>
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/lua/get_host_contacts.lua?host=" .. host_ip.."&protocol_id="..protocol_id.."\",\n")
+				  print("url: \"/lua/get_host_contacts.lua?host=" .. host_ip.."&protocol="..protocol_id.."\",\n")
 print [[
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu">]]
 url = "/lua/host_details.lua?host="..host_ip.."&page=todays_contacts"
 print('<li><a href="'.. url ..'">All</a></li>')
 
 for key,v in pairs(protocols) do
-   print('<li><a href="'..url..'&protocol_id=' .. key..'">'..v..'</a></li>')
+   print('<li><a href="'..url..'&protocol=' .. key..'">'..v..'</a></li>')
 end
 
 print("</ul> </div>' ],\n")
@@ -695,8 +703,12 @@ if(num > 0) then
       -- Client
       sortTable = {}
       for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
-
+      
+      num = 0
+      max_num = 64 -- Do not create huge maps
       for _v,k in pairsByKeys(sortTable, rev) do
+	 if(num >= max_num) then break end
+	 num = num + 1
 	 name = interface.getHostInfo(k)
 	 v = host["contacts"]["client"][k]
 	 if(name ~= nil) then
@@ -758,7 +770,7 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 					url: "/lua/get_hosts_data.lua?aggregated=1]]
-					print("&client="..host_ip)
+					print("&protocol="..protocol_id.."&client="..host_ip)
 print [[",
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]

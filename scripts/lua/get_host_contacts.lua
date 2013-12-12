@@ -12,7 +12,7 @@ currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
-protocol_id = _GET["protocol_id"]
+protocol_id = _GET["protocol"]
 mode        = _GET["mode"]
 host        = _GET["host"]
 format      = _GET["format"]
@@ -39,9 +39,10 @@ interface.find(ifname)
 hosts_stats = interface.getHostsInfo()
 host_info = interface.getHostInfo(host)
 if(protocol_id == "") then protocol_id = nil end
-
+if(protocol_id ~= nil) then protocol_id = tonumber(protocol_id) end
 host_peers = {}
 
+-- io.write(protocol_id.."\n")
 if((protocol_id == nil) or (protocol_id == 65535)) then
    if(host_info.contacts ~= nil) then
       if(host_info["contacts"]["client"] ~= nil) then

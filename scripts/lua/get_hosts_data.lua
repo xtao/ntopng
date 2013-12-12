@@ -100,6 +100,8 @@ for key, value in pairs(hosts_stats) do
 	 vals[hosts_stats[key]["name"]..postfix] = key
 	 elseif(sortColumn == "column_since") then
 	 vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
+	 elseif(sortColumn == "column_family") then
+	 vals[(now-hosts_stats[key]["family"])+postfix] = key
 	 elseif(sortColumn == "column_last") then
 	 vals[(now-hosts_stats[key]["seen.last"]+1)+postfix] = key
 	 elseif(sortColumn == "column_category") then

@@ -20,7 +20,15 @@ if(ifname ~= nil) then
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-  print("<div class=\"alert alert-success\">The selected interface <b>" .. ifname .. "</b> is now active</div>")
+   print("<div class=\"alert alert-success\">The selected interface <b>" .. ifname)
+   key = 'ntopng.prefs.'..ifname..'.name'
+   custom_name = ntop.getCache(key)
+   
+   if((custom_name ~= nil) and (custom_name ~= "")) then
+      print(" (".. custom_name ..")")
+   end
+
+   print("</b> is now active</div>")
 else
   sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")

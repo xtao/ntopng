@@ -738,8 +738,12 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
       num_activities++;
 
-      if((num_activities % 10000) == 0)
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed", num_activities);
+      if((num_activities % 10000) == 0) {
+	u_int diff = time(NULL)-begin;
+
+	if(diff == 0) diff = 1;
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed [%.f activities/sec]", num_activities, (float)num_activities/(float)diff);
+      }
 
       snprintf(key, sizeof(key), "%s", _key);
 
@@ -887,7 +891,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   }
 
   begin = time(NULL)-begin;
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Processed %u hosts, %u activities, %u contacts in %u sec [%.1f activities/sec][%s]",
+  if(begin == 0) begin = 1;
+  ntop->getTrace()->traceEvent(TRACE_NORMAL,
+			       "Processed %u hosts, %u activities, %u contacts in %u sec [%.1f activities/sec][%s]",
 			       num_hosts, contact_idx, activity_idx, 
 			       begin, ((float)activity_idx)/((float)begin), day);
 

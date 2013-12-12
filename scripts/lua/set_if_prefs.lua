@@ -15,6 +15,14 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 print('<hr><h2>'..ifname..' Preferences</H2>\n')
 
+key = 'ntopng.prefs.'..ifname..'.name'
+if(_GET["ifName"] ~= nil) then
+   custom_name = tostring(_GET["ifName"])
+   ntop.setCache(key, custom_name)
+else
+   custom_name = ntop.getCache(key)
+end
+
 key = 'ntopng.prefs.'..ifname..'.speed'
 if(_GET["ifSpeed"] ~= nil) then
    ifSpeed = _GET["ifSpeed"]
@@ -47,6 +55,13 @@ print [[
     <label class="control-label" for="ifSpeed">Interface Speed (Mbit):</label>
     <div class="controls">
  <input type="number" min="1" max="10000" step="1" name="ifSpeed" id="IfSpeed" value="]] print(ifSpeed) print [["/>
+    </div>
+</div>
+
+<div class="control-group">
+    <label class="control-label" for="ifName">Custom Name:</label>
+    <div class="controls">
+ <input type="text" name="ifName" id="IfName" value="]] print(custom_name) print [["/>
     </div>
 </div>
 

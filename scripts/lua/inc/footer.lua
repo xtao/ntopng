@@ -24,6 +24,14 @@ info = ntop.getInfo()
 
 print ("v."..info["version"].." for user ")
 print(_SESSION["user"].. " and interface " .. ifname)
+
+key = 'ntopng.prefs.'..ifname..'.name'
+custom_name = ntop.getCache(key)
+
+if((custom_name ~= nil) and (custom_name ~= "")) then
+   print(" (".. custom_name ..")")
+end
+
 print [[</font></div>
 
   <div class="span1">

@@ -190,10 +190,12 @@ bool NetworkInterface::dumpFlow(time_t when, Flow *f) {
 
 /* **************************************************** */
 
-static void node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
+static bool node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
 
   flow->print();
+ 
+   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -676,11 +678,12 @@ void NetworkInterface::findFlowHosts(u_int16_t vlanId,
 
 /* **************************************************** */
 
-static void flow_sum_protos(GenericHashEntry *f, void *user_data) {
+static bool flow_sum_protos(GenericHashEntry *f, void *user_data) {
   NdpiStats *stats = (NdpiStats*)user_data;
   Flow *flow = (Flow*)f;
 
   flow->sumStats(stats);
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -693,16 +696,17 @@ void NetworkInterface::getnDPIStats(NdpiStats *stats) {
 
 /* **************************************************** */
 
-static void flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
+static bool flow_update_hosts_stats(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
   struct timeval *tv = (struct timeval*)user_data;
 
   flow->update_hosts_stats(tv);
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void update_hosts_stats(GenericHashEntry *node, void *user_data) {
+static bool update_hosts_stats(GenericHashEntry *node, void *user_data) {
   GenericHost *host = (GenericHost*)node;
   struct timeval *tv = (struct timeval*)user_data;
 
@@ -712,22 +716,26 @@ static void update_hosts_stats(GenericHashEntry *node, void *user_data) {
 			       ((StringHost*)node)->host_key(),
 			       host->getThptTrend());
   */
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void flush_host_contacts(GenericHashEntry *node, void *user_data) {
+static bool flush_host_contacts(GenericHashEntry *node, void *user_data) {
   Host *host = (Host*)node;
 
   host->flushContacts();
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
+static bool flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
   StringHost *host = (StringHost*)node;
 
   host->flushContacts();
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -750,18 +758,22 @@ void NetworkInterface::flushHostContacts() {
 
 /* **************************************************** */
 
-static void hosts_get_list(GenericHashEntry *h, void *user_data) {
+static bool hosts_get_list(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
   ((Host*)h)->lua(vm, false, false, false);
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void hosts_get_list_details(GenericHashEntry *h, void *user_data) {
+static bool hosts_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
   ((Host*)h)->lua(vm, true, false, false);
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -782,14 +794,17 @@ struct aggregation_walk_hosts_info {
 
 /* **************************************************** */
 
-static void aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
+static bool aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
   struct aggregation_walk_hosts_info *info = (struct aggregation_walk_hosts_info*)user_data;
   StringHost *host = (StringHost*)h;
 
   if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
-    if((info->host == NULL) || (!strcmp(info->host, host->host_key())))
+    if((info->host == NULL) || (!strcmp(info->host, host->host_key()))) {
       host->lua(info->vm, true);
+    }
   }
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -824,7 +839,7 @@ struct host_find_aggregation_info {
 
 /* **************************************************** */
 
-static void find_host_by_name(GenericHashEntry *h, void *user_data) {
+static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   Host *host                  = (Host*)h;
 
@@ -845,44 +860,55 @@ static void find_host_by_name(GenericHashEntry *h, void *user_data) {
 	if(rc == 0 /* found */) host->setName(name_buf, false);
       }
 
-      if(host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+      if(host->get_name() && (!strcmp(host->get_name(), info->host_to_find))) {
 	info->h = host;
+	return(true); /* found */
+      }
     }
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
+static bool find_aggregated_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_info *info = (struct host_find_info*)user_data;
   StringHost *host            = (StringHost*)h;
 
   if((info->s == NULL)
      && host->host_key()
      && info->host_to_find
-     && (!strcmp(host->host_key(), info->host_to_find)))
+     && (!strcmp(host->host_key(), info->host_to_find))) {
     info->s = host;
+    return(true);
+  }
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_data) {
+static bool find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_data) {
   struct host_find_aggregation_info *info = (host_find_aggregation_info*)user_data;
   StringHost *host                        = (StringHost*)h;
   u_int n;
 
-  if(!info->host_to_find) return;
+  if(!info->host_to_find) return(false);
 
   if((n = host->get_num_contacts_by(info->host_to_find)) > 0)
     lua_push_int_table_entry(info->vm, host->host_key(), n);
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-static void find_aggregation_families(GenericHashEntry *h, void *user_data) {
+static bool find_aggregation_families(GenericHashEntry *h, void *user_data) {
   NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
   StringHost *host                = (StringHost*)h;
 
   NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -1013,11 +1039,12 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
 
 /* **************************************************** */
 
-static void flows_get_list_details(GenericHashEntry *h, void *user_data) {
+static bool flows_get_list_details(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
   Flow *flow = (Flow*)h;
 
   flow->lua(vm, false /* Minimum details */);
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -1035,12 +1062,14 @@ struct flow_peers_info {
   char *numIP;
 };
 
-static void flow_peers_walker(GenericHashEntry *h, void *user_data) {
+static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
   Flow *flow = (Flow*)h;
   struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
   if((info->numIP == NULL) || flow->isFlowPeer(info->numIP))
     flow->print_peers(info->vm, (info->numIP == NULL) ? false : true);
+
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */

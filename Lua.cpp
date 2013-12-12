@@ -1356,6 +1356,40 @@ static int ntop_get_redis_set_pop(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_redis_get_host_id(lua_State* vm) {
+  char *host_name;
+  Redis *redis = ntop->getRedis();
+  char daybuf[32];
+  time_t when = time(NULL);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((host_name = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
+  lua_pushinteger(vm, redis->host_to_id(daybuf, host_name));
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_redis_get_id_to_host(lua_State* vm) {
+  char *host_idx, rsp[256];
+  Redis *redis = ntop->getRedis();
+  char daybuf[32];
+  time_t when = time(NULL);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((host_idx = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
+  lua_pushfstring(vm, "%d", redis->id_to_host(daybuf, host_idx, rsp, sizeof(rsp)));
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_redis_dump_daily_stats(lua_State* vm) {
   char *day;
   Redis *redis = ntop->getRedis();
@@ -1522,6 +1556,8 @@ static const luaL_Reg ntop_reg[] = {
   { "delHashCache",   ntop_delete_hash_redis_key },
   { "setPopCache",    ntop_get_redis_set_pop },
   { "dumpDailyStats", ntop_redis_dump_daily_stats },
+  { "getHostId",      ntop_redis_get_host_id },
+  { "getIdToHost",    ntop_redis_get_id_to_host },
 
   { "mkdir",          ntop_mkdir_tree },
   { "exists",         ntop_get_file_dir_exists },
