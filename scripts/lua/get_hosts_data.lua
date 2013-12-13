@@ -54,7 +54,7 @@ now = os.time()
 vals = {}
 num = 0
 
---for k,v in pairs(hosts_stats) do io.write(k.."\n") end
+-- for k,v in pairs(hosts_stats) do io.write(k.."\n") end
 
 for key, value in pairs(hosts_stats) do
    num = num + 1
@@ -73,11 +73,15 @@ for key, value in pairs(hosts_stats) do
 	 ok = false
 	 
 	 for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
+	    --io.write(k.."\n")
 	    if((ok == false) and (k == client)) then ok = true end
 	 end
-	 
-	 for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
-	    if((ok == false) and (k == client)) then ok = true end
+	
+	 if(ok == false) then
+	    for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
+	       -- io.write(k.."\n")
+	       if((ok == false) and (k == client)) then ok = true end
+	    end
 	 end
       else
 	 ok = true

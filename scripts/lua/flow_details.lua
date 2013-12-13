@@ -55,11 +55,18 @@ else
    end
    print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["cli.ip"] .. "\">")
    if(flow["cli.host"] ~= "") then print(flow["cli.host"]) else print(flow["cli.ip"]) end
-   print("</A>:<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"].. "</A></td></tr>\n")
+   print("</A>")
+   if(flow["cli.port"] > 0) then
+      print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"])
+   end
+   print("</A></td></tr>\n")
    print("<tr><th width=30%>Server</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["srv.ip"] .. "\">")
    if(flow["srv.host"] ~= "") then print(flow["srv.host"]) else print(flow["srv.ip"]) end
-   print("</A>:<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A></td></tr>\n")
-
+   print("</A>")
+   if(flow["srv.port"] > 0) then
+      print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A>")
+   end
+   print("</td></tr>\n")
    if(flow["category"] ~= "") then
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end

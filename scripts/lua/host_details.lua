@@ -235,7 +235,7 @@ if((page == "overview") or (page == nil)) then
       end
    end
 
-   if((host["city"] ~= "") and (host["country"] ~= "")) then
+   if((host["city"] ~= "") or (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
 
@@ -562,7 +562,7 @@ print [[
    when = os.date("%y%m%d", t)
    base_name = when.."|host_contacts|"..ifname.."|"..ntop.getHostId(host_ip)
    keyname = base_name.."|contacted_peers"
-   io.write(keyname.."\n")
+   --io.write(keyname.."\n")
    -- print(keyname.."\n") 
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
@@ -717,6 +717,13 @@ if(num > 0) then
 	 else
 	    url = k
 	 end
+
+	 info = interface.getHostInfo(k)
+	 if(info ~= nil) then
+	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
+	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
+	    end
+	 end
 	 print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
       end
       print("</table></td>\n")
@@ -740,6 +747,12 @@ if(num > 0) then
 	    url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
 	 else
 	    url = k
+	 end
+	 info = interface.getHostInfo(k)
+	 if(info ~= nil) then
+	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
+	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
+	    end
 	 end
 	 print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
       end

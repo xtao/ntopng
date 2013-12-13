@@ -214,7 +214,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print(" \"<A HREF='/lua/")
 	       print("host_details.lua?host=" .. key .. "'>")
 	       print(mapOS2Icon(key))
-	       print(" </A> ".. getOSIcon(value["os"]).. "\",")
+	       print(" </A> ".. getOSIcon(value["os"]))
+	       if((info["country"] ~= nil) and (info["country"] ~= "")) then
+		  print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> ")
+	       end
+	       print("\",")
 	    else
 	       print(" \""..key.."\", ")
 	    end

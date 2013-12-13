@@ -83,6 +83,7 @@ char* Utils::l4proto2name(u_int8_t proto) {
   case 47:  return((char*)"GRE");
   case 50:  return((char*)"ESP");
   case 58:  return((char*)"IPv6-ICMP");
+  case 89:  return((char*)"OSPF");
   case 103: return((char*)"PIM");
   case 112: return((char*)"VRRP");
 

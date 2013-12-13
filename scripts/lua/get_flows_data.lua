@@ -155,8 +155,28 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
 	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
-	 print ("\", \"column_client\" : \"" .. src_key .. src_port)
-	 print ("\", \"column_server\" : \"" .. dst_key .. dst_port)
+	 print ("\", \"column_client\" : \"" .. src_key)
+
+	 info = interface.getHostInfo(value["cli.ip"])
+	 if(info ~= nil) then
+	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
+	       print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> ")
+	    end
+	 end
+
+	 print(src_port)
+
+	 print ("\", \"column_server\" : \"" .. dst_key)
+
+	 info = interface.getHostInfo(value["srv.ip"])
+	 if(info ~= nil) then
+	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
+	       print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> ")
+	    end
+	 end
+
+
+	 print(dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
 
 	 if((value["vlan"] ~= nil) and (value["vlan"] ~= 0)) then 
