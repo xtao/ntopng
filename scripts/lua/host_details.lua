@@ -86,6 +86,12 @@ else
       host_ip = host["ip"]
    end
 
+   if(_GET["custom_name"] ~=nil) then
+      ntop.setHashCache("ntop.alternate_names", host_ip, _GET["custom_name"])   
+   end
+
+   host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", host_ip)
+
    rrdname = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host_ip .. "/bytes.rrd"
    --print(rrdname)
 print [[
@@ -262,11 +268,25 @@ if((page == "overview") or (page == nil)) then
       end
 
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
-
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
-   print("</td></tr>\n")
-end
+      print("</td></tr>\n")
+   end
+
+print [[
+<tr><th>Alternate Name</th><td>
+<form class="form-inline">
+	 <input type="hidden" name="host" value="]]
+      print(host_ip)
+print [[">
+	 <input type="text" name="custom_name" class="input-small" placeholder="Custom Name" value="]] 
+      if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
+print [["></input>
+  <button type="submit" class="btn">Save</button>
+</form>
+	 <span class="help-block"><i class="fa fa-comment-o"></i> Permanently set an alternate name for host ]] print(host_ip) print [[.</span>
+</td></tr>
+   ]]
 
    print("<tr><th>First Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td></tr>\n")
    print("<tr><th>Last Seen</th><td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")

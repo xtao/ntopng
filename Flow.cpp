@@ -163,6 +163,11 @@ void Flow::processDetectedProtocol() {
     }
     break;
 
+  case NDPI_PROTOCOL_NETBIOS:
+    if(ndpi_flow->host_server_name[0] != '\0')
+      get_cli_host()->set_alternate_name((char*)ndpi_flow->host_server_name);    
+    break;
+
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
       protocol_processed = true;

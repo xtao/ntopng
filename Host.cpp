@@ -53,6 +53,27 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 
 /* *************************************** */
 
+void Host::read_alternate_name() {
+  if(alternate_name) {
+    char buf[64], rsp[64], *host = ip->print(buf, sizeof(buf));
+
+    if(ntop->getRedis()->hashGet((char*)HOST_ALTERNATE_NAME, host, rsp, sizeof(rsp)) == 0)
+      alternate_name = strdup(rsp);
+  }
+}
+
+/* *************************************** */
+
+void Host::save_alternate_name() {
+  if(alternate_name) {
+    char buf[64], *host = ip->print(buf, sizeof(buf));
+
+    ntop->getRedis()->hashSet((char*)HOST_ALTERNATE_NAME, host, alternate_name);
+  }
+}
+
+/* *************************************** */
+
 Host::~Host() {
   char key[128], *k;
 
@@ -83,6 +104,8 @@ Host::~Host() {
 
   dumpContacts(k, HOST_FAMILY_ID);
 
+  save_alternate_name();
+
   if(localHost && ntop->getPrefs()->is_host_persistency_enabled()) {
     char *json = serialize();
     snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
@@ -90,8 +113,9 @@ Host::~Host() {
     //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
     free(json);
   }
-  
-  if(symbolic_name) free(symbolic_name);
+
+  if(symbolic_name)  free(symbolic_name);
+  if(alternate_name) free(alternate_name);
   if(country)       free(country);
   if(city)          free(city);
   if(asname)        free(asname);
@@ -118,7 +142,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
   category[0] = '\0', os[0] = '\0';
-  num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
+  num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
   asn = 0, asname = NULL, country = NULL, city = NULL;
@@ -153,6 +177,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       if(country) { free(country); country = NULL; }
       if(city)    { free(city); city = NULL; }
       ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
+      read_alternate_name();
     } else {
       char buf[32];
 
@@ -221,7 +246,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     char *ipaddr = NULL;
 
     lua_newtable(vm);
-    
+
     lua_push_bool_table_entry(vm, "privatehost", isPrivateHost());
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
 
@@ -237,6 +262,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
       ntop->getRedis()->queueHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
       lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
+      lua_push_str_table_entry(vm, "alternate_name", alternate_name ? alternate_name : (char*)"");
     }
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
@@ -335,6 +361,18 @@ void Host::setName(char *name, bool update_categorization) {
 
 /* ***************************************** */
 
+void Host::set_alternate_name(char *name) {
+  if(alternate_name) {
+    free(alternate_name);
+    alternate_name = NULL;
+  }
+
+  alternate_name = strdup(name);
+  save_alternate_name();
+}
+
+/* ***************************************** */
+
 void Host::refreshCategory() {
   if((symbolic_name != NULL) && (category[0] == '\0')) {
     ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), false);
@@ -382,9 +420,25 @@ int Host::compare(Host *h) {
 /* ***************************************** */
 
 bool Host::isIdle(u_int max_idleness) {
+  switch(ntop->getPrefs()->get_host_stickness()) {
+  case location_none:
+    break;
+
+  case location_local_only:
+    if(localHost) return(false);
+    break;
+
+  case location_remote_only:
+    if(!localHost) return(false);
+    break;
+
+  case location_all:
+    return(false);
+    break;
+  }
+
   return(((num_uses == 0)
-	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness)))
-	 ? true : false);
+	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness))) ? true : false);
 }
 
 /* ***************************************** */
@@ -553,12 +607,12 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(iface, this, obj);
   if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);
-  
+
   json_object_put(o);
 
   /* We need to update too the stats for traffic */
-  bytes_thpt = 0, last_bytes = sent.getNumBytes()+rcvd.getNumBytes(), 
-    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = (long)time(NULL), 
+  bytes_thpt = 0, last_bytes = sent.getNumBytes()+rcvd.getNumBytes(),
+    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = (long)time(NULL),
     last_update_time.tv_usec = 0;
 
   return(true);

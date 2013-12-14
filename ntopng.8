@@ -55,6 +55,8 @@ or
 .IR <dump-hosts> ]
 .RB [ -E
 .IR <dump-aggregations> ]
+.RB [ -S
+.IR <sticky-hosts> ]
 .RB [ -v ] 
 .RB [ -h ]
 
@@ -226,6 +228,10 @@ If ntopng is compiled with sqlite support, hosts contacts can dumped persistentl
 Databases are created daily under <data directory>/<interface>/contacts. This options supports three dump
 modes: local (dumps only aggregations contacted by local hosts), remote (dumps only aggregations contacted by
 remote hosts), all (dumps all aggregations). If not specified, no hosts are dumped to disk.
+
+.It -S|--sticky-hosts
+ntopng periodically purges idle hosts. With this option you can modify this behaviour by telling ntopng
+not to purge the hosts specified by -S.
 
 .It -v|--verbose
 Verbose tracing

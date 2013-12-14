@@ -79,6 +79,7 @@
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
 #define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
+#define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 
 #ifndef TH_FIN
 #define	TH_FIN	0x01

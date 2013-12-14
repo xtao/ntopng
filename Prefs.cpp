@@ -24,7 +24,7 @@
 /* ******************************************* */
 
 Prefs::Prefs(Ntop *_ntop) {
-  ntop = _ntop, dump_timeline = false;
+  ntop = _ntop, dump_timeline = false, sticky_hosts = location_none;
   local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, resolve_all_host_ip = false;
@@ -169,6 +169,12 @@ void usage() {
 	 "                                    | local  - Dump only local hosts\n"
 	 "                                    | remote - Dump only remote hosts\n"
 #endif
+	 "[--sticky-hosts|-S] <mode>          | Dont flush hosts (default: none).\n"
+	 "                                    | Values:\n"
+	 "                                    | all    - Keep all hosts in memory\n"
+	 "                                    | local  - Keep only local hosts\n"
+	 "                                    | remote - Keep only remote hosts\n"
+	 "                                    | none   - Flush hosts when idle\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE,
@@ -195,35 +201,37 @@ static const struct option long_options[] = {
 #ifndef WIN32
   { "data-dir",                          required_argument, NULL, 'd' },
 #endif
-  { "packet-filter",                     required_argument, NULL, 'B' },
   { "categorization-key",                required_argument, NULL, 'c' },
-  { "dump-timeline",                     no_argument,       NULL, 'C' },
   { "daemonize",                         required_argument, NULL, 'e' },
-  { "http-port",                         required_argument, NULL, 'w' },
+  { "core-affinity",                     required_argument, NULL, 'g' },
+  { "help",                              no_argument,       NULL, 'h' },
+  { "disable-login",                     no_argument,       NULL, 'l' },
   { "local-networks",                    required_argument, NULL, 'm' },
   { "ndpi-protocols",                    required_argument, NULL, 'p' },
-  { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "redis",                             required_argument, NULL, 'r' },
-  { "core-affinity",                     required_argument, NULL, 'g' },
   { "dont-change-user",                  no_argument,       NULL, 's' },
-  { "disable-login",                     no_argument,       NULL, 'l' },
   { "verbose",                           no_argument,       NULL, 'v' },
-  { "help",                              no_argument,       NULL, 'h' },
+  { "max-num-hosts",                     required_argument, NULL, 'x' },
+  { "http-port",                         required_argument, NULL, 'w' },
   { "enable-aggregations",               no_argument,       NULL, 'A' },
+  { "packet-filter",                     required_argument, NULL, 'B' },
+  { "dump-timeline",                     no_argument,       NULL, 'C' },
 #ifdef HAVE_SQLITE
-  { "dump-flows",                        no_argument,       NULL, 'F' },
   { "dump-hosts",                        required_argument, NULL, 'D' },
   { "dump-aggregations",                 required_argument, NULL, 'E' },
+  { "dump-flows",                        no_argument,       NULL, 'F' },
 #endif
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
-  { "max-num-flows",                     required_argument, NULL, 'X' },
-  { "max-num-hosts",                     required_argument, NULL, 'x' },
+  { "disable-host-persistency",          no_argument,       NULL, 'P' },
+  { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
+  { "max-num-flows",                     required_argument, NULL, 'X' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
+
   /* End of options */
   { NULL,                                no_argument,       NULL,  0 }
 };
@@ -457,7 +465,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CD:E:FG:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CD:E:FG:S:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

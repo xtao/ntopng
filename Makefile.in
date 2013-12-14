@@ -30,7 +30,7 @@ ifeq ($(HAS_LIBRRDTOOL), 0)
 	LIBRRDTOOL_LIB = $(shell pkg-config --libs librrd)
 else
 	LIBRRDTOOL_INC=-I$(LIBRRDTOOL_HOME)/src/
-	LIBRRDTOOL_LIB=$(LIBRRDTOOL_HOME)/src/.libs/librrd_th.a -lxml2
+	LIBRRDTOOL_LIB=$(LIBRRDTOOL_HOME)/src/.libs/librrd_th.a
 endif
 ######
 HTTPCLIENT_INC=third-party/http-client-c/src/
@@ -59,7 +59,7 @@ EWH_HOME=third-party/EWAHBoolArray
 EWH_INC=$(EWH_HOME)/headers
 ######
 TARGET = ntopng
-LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) @SQLITE_LIB@ @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ @Z_LIB@ @DL_LIB@ -lm -lpthread
+LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) -lxml2 $(ZEROMQ_LIB) $(JSON_LIB) @SQLITE_LIB@ @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ @Z_LIB@ @DL_LIB@ -lm -lpthread
 CPPFLAGS = -g @CFLAGS@ $(HIREDIS_INC) $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) # -D_GLIBCXX_DEBUG
 ######
 # ntopng-1.0_1234.x86_64.rpm 
