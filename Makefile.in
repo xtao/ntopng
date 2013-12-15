@@ -75,9 +75,28 @@ ifeq ($(OS),Linux)
 LIBS += -lrt
 endif
 
+LIB_TARGETS =
+
+ifneq ($(HAS_LUAJIT), 0)
+LIB_TARGETS += $(LUAJIT_LIB)
+ endif
+ 
+ifneq ($(HAS_ZEROMQ), 0)
+LIB_TARGETS += $(ZEROMQ_LIB)
+endif
+
+ifneq ($(HAS_RRDTOOL), 0)
+LIB_TARGETS += $(LIBRRDTOOL_LIB)
+endif
+
+ifneq ($(HAS_JSON), 0)
+LIB_TARGETS += $(JSON_LIB)
+endif
+
 .PHONY: default all clean
 
-default: $(NDPI_LIB) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) $(TARGET)
+default: $(NDPI_LIB) $(LIB_TARGETS) $(TARGET)
+
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
@@ -94,7 +113,7 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS) $(LIBRRDTOOL) Makefile
 	$(GPP) $(OBJECTS) -Wall $(LIBS) -o $@
 
-$(NDPI_LIB):
+$(NDPI_LIB): nDPI
 	cd nDPI; ./configure; @GMAKE@
 
 nDPI:
