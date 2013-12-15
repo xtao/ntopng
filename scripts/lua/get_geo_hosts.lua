@@ -38,7 +38,9 @@ for key, values in pairs(peers) do
       and not(values["server.private"])
       and not(isBroadMulticast(values["client"])) 
       and not(isBroadMulticast(values["server"]))) then
-      if(pctg >= min_threshold) then 
+      if((pctg >= min_threshold) 
+         and (values["client.latitude"] ~= nil)
+         and (values["client.longitude"] ~= nil)) then 
 	 if(num > 0) then print(",") end
 	 print('{\n"host":\n[	\n{\n')
 	 print('"lat": '..values["client.latitude"]..',\n')
