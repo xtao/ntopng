@@ -53,12 +53,12 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 
 /* *************************************** */
 
-void Host::read_alternate_name() {
-  if(alternate_name) {
-    char buf[64], rsp[64], *host = ip->print(buf, sizeof(buf));
-
-    if(ntop->getRedis()->hashGet((char*)HOST_ALTERNATE_NAME, host, rsp, sizeof(rsp)) == 0)
-      alternate_name = strdup(rsp);
+void Host::read_alternate_name() {  
+  char buf[64], rsp[64], *host = ip->print(buf, sizeof(buf));
+  
+  if(ntop->getRedis()->hashGet((char*)HOST_ALTERNATE_NAME, host, rsp, sizeof(rsp)) == 0) {
+    if(alternate_name) free(alternate_name);
+    alternate_name = strdup(rsp);  
   }
 }
 
@@ -564,6 +564,28 @@ char* Host::serialize() {
   json_object_put(my_object);
 
   return(rsp);
+}
+
+/* *************************************** */
+
+bool Host::addIfMatching(lua_State* vm, char *key) {
+  char keybuf[32] = { 0 } , *r;
+
+  if(symbolic_name && strcasestr(symbolic_name, key)) {
+    lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), symbolic_name);
+    return(true);
+  } else if(alternate_name && strcasestr(alternate_name, key)) {
+    lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), alternate_name);
+    return(true);
+  } else if(strcasestr((r = get_mac(keybuf, sizeof(keybuf))), key)) {
+    lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), r);
+    return(true);
+  } else if(ip && strcasestr((r = ip->print(keybuf, sizeof(keybuf))), key)) {
+    lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), r);
+    return(true);
+  }
+
+  return(false);
 }
 
 /* *************************************** */

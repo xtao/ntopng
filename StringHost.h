@@ -47,6 +47,7 @@ class StringHost : public GenericHost {
   char* get_string_key(char *buf, u_int buf_len);
   void updateStats(struct timeval *tv);
   void flushContacts();
+  bool addIfMatching(lua_State* vm, char *key);
 };
 
 #endif /* _STRING_HOST_H_ */

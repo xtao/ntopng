@@ -762,7 +762,7 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_get_interface_flow_by_key(lua_State* vm) {
+static int ntop_get_interface_find_flow_by_key(lua_State* vm) {
   NetworkInterface *ntop_interface;
   u_int32_t key;
   Flow *f;
@@ -787,6 +787,28 @@ static int ntop_get_interface_flow_by_key(lua_State* vm) {
     f->lua(vm, true);
     return(true);
   }
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_find_host(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *key;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  key = (char*)lua_tostring(vm, 1);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
+  }
+
+  if(!ntop_interface) return(false);
+
+  ntop_interface->findHostsByName(vm, key);
+  return(true);
 }
 
 /* ****************************************** */
@@ -1539,7 +1561,8 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getAggregationsForHost", ntop_get_aggregregations_for_host },
   { "getFlowsInfo",           ntop_get_interface_flows_info },
   { "getFlowPeers",           ntop_get_interface_flows_peers },
-  { "findFlowByKey",          ntop_get_interface_flow_by_key },
+  { "findFlowByKey",          ntop_get_interface_find_flow_by_key },
+  { "findHost",               ntop_get_interface_find_host },
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "incrDrops",              ntop_increase_drops },
   { "isRunning",              ntop_interface_is_running },

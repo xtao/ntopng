@@ -94,6 +94,7 @@ class Host : public GenericHost {
   char* serialize();
   bool deserialize(char *json_str);
   void flushContacts();
+  bool addIfMatching(lua_State* vm, char *key);
 };
 
 #endif /* _HOST_H_ */

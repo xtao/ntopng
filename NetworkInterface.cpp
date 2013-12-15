@@ -860,7 +860,8 @@ static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
 	if(rc == 0 /* found */) host->setName(name_buf, false);
       }
 
-      if(host->get_name() && (!strcmp(host->get_name(), info->host_to_find))) {
+      if((host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+	 || (host->get_alternate_name() && (!strcmp(host->get_alternate_name(), info->host_to_find)))) {
 	info->h = host;
 	return(true); /* found */
       }
@@ -935,7 +936,8 @@ Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
   Host *h = NULL;
 
   /* Check if address is invalid */
-  if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0) && (inet_pton(AF_INET6, (const char*)host_ip, &a6) == 0)) {
+  if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0) 
+     && (inet_pton(AF_INET6, (const char*)host_ip, &a6) == 0)) {
     /* Looks like a symbolic name */
     struct host_find_info info;
 
@@ -1224,6 +1226,54 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 
 Flow* NetworkInterface::findFlowByKey(u_int32_t key) {
   return((Flow*)(flows_hash->findByKey(key)));
+}
+
+/* **************************************************** */
+
+struct search_host_info {
+  lua_State *vm;
+  char *host_name_or_ip;
+  u_int num_matches;
+};
+
+/* **************************************************** */
+
+static bool hosts_search_walker(GenericHashEntry *h, void *user_data) {
+  Host *host = (Host*)h;
+  struct search_host_info *info = (struct search_host_info*)user_data;
+
+  if(host->addIfMatching(info->vm, info->host_name_or_ip))
+    info->num_matches++;
+
+  /* Stop after CONST_MAX_NUM_FIND_HITS matches */
+  return((info->num_matches > CONST_MAX_NUM_FIND_HITS) ? true /* stop */ : false /* keep walking */);
+}
+
+/* **************************************************** */
+
+static bool aggregations_search_walker(GenericHashEntry *h, void *user_data) {
+  StringHost *host = (StringHost*)h;
+  struct search_host_info *info = (struct search_host_info*)user_data;
+
+  if(host->addIfMatching(info->vm, info->host_name_or_ip))
+    info->num_matches++;
+
+  /* Stop after CONST_MAX_NUM_FIND_HITS matches */
+  return((info->num_matches > CONST_MAX_NUM_FIND_HITS) ? true /* stop */ : false /* keep walking */);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::findHostsByName(lua_State* vm, char *key) {
+  struct search_host_info info;
+
+  info.vm = vm, info.host_name_or_ip = key, info.num_matches = 0;
+
+  lua_newtable(vm);
+  hosts_hash->walk(hosts_search_walker, (void*)&info);
+
+  if(info.num_matches < CONST_MAX_NUM_FIND_HITS)
+    strings_hash->walk(aggregations_search_walker, (void*)&info);
 }
 
 /* **************************************************** */

@@ -101,6 +101,16 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
 
 /* *************************************** */
 
+bool StringHost::addIfMatching(lua_State* vm, char *key) {
+  if(strcasestr(host_key(), key)) {
+    lua_push_str_table_entry(vm, host_key(), host_key());
+    return(true);
+  } else
+    return(false);
+}
+
+/* *************************************** */
+
 char* StringHost::get_string_key(char *buf, u_int buf_len) {
   snprintf(buf, buf_len, "%s", host_key());
   return(buf);

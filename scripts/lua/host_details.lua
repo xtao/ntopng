@@ -27,14 +27,14 @@ if(protocol_id == nil) then protocol_id = "" end
 _ifname = tostring(interface.name2id(ifname))
 interface.find(ifname)
 
-ip_elems = split(host_ip, " ");
-host_ip = ip_elems[1]
+--ip_elems = split(host_ip, " ");
+--host_ip = ip_elems[1]
 host = nil
 family = nil
 
 --print(">>>") print(host_ip) print("<<<")
 
-if(ip_elems[2] == nil) then
+--if(ip_elems[2] == nil) then
    host = interface.getHostInfo(host_ip)
    restoreFailed = false
 
@@ -43,9 +43,9 @@ if(ip_elems[2] == nil) then
       host = interface.getHostInfo(host_ip)
       restoreFailed = true
    end
-else
-   family = ip_elems[2]
-end
+--else
+--   family = ip_elems[2]
+--end
 
 if(host == nil) then
    -- We need to check if this is an aggregated host
@@ -279,7 +279,7 @@ print [[
 	 <input type="hidden" name="host" value="]]
       print(host_ip)
 print [[">
-	 <input type="text" name="custom_name" class="input-small" placeholder="Custom Name" value="]] 
+	 <input type="text" name="custom_name" placeholder="Custom Name" value="]] 
       if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
 print [["></input>
   <button type="submit" class="btn">Save</button>

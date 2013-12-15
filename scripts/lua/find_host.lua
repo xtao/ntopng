@@ -16,10 +16,23 @@ print [[
 	 "results": [
       ]]
 
-      interface.find(ifname)
-      hosts_stats = interface.getHostsInfo(true)
-      num = 0
       query = _GET["query"]
+      if(query == nil) then query = "" end
+      num = 0
+
+      interface.find(ifname)
+      if(true) then
+	 res = interface.findHost(query)
+	 
+	 for k, v in pairs(res) do
+	    if(v ~= "") then 
+	       if(num > 0) then print(",\n") end
+	       print('\t"'..v..'"')
+	       num = num + 1
+	    end
+	 end
+      else
+      hosts_stats = interface.getHostsInfo(true)
       --   query = "192"
 
       if(query ~= nil) then
@@ -82,6 +95,7 @@ print [[
 	    end
 	 end
       end
+   end
 
       print [[
 

@@ -11,9 +11,7 @@ print [[
 
 print [[
 	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead"></input>
-
 	 </form>
-
 	 </li>
 
 	 <script type='text/javascript'>
