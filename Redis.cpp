@@ -904,6 +904,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   snprintf(buf, sizeof(buf), "%s.hostkeys", day);
   del(buf);
 
+  snprintf(buf, sizeof(buf), "%s.keys", day);
+  del(buf);
+
   sqlite3_close(db);
 #endif
 
