@@ -193,6 +193,10 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
   if(!o) return;
 
   /* Reset all */
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].host != NULL) delete clientContacts[i].host;
+    if(serverContacts[i].host != NULL) delete serverContacts[i].host;
+  }
   memset(clientContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
   memset(serverContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
 
@@ -271,7 +275,8 @@ char* HostContacts::get_cache_key(char *daybuf, char *ifname,
 				  const char *key_type, char *key,
 				  bool client_mode,
 				  char *buf, u_int buf_len) {
-  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, key);
+  bool new_key;
+  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, key, &new_key);
 
   /* <date>|<CONST_HOST_CONTACTS|CONST_AGGREGATIONS>|<iface>|<host IP>|<CONST_CONTACTED_BY|CONST_CONTACTS> <peer IP> <value> */
 
@@ -293,7 +298,8 @@ void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
 			  CONST_HOST_CONTACTS, key,
 			  true /* client */,
 			  full_path, sizeof(full_path));
-  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, host_ip);
+  bool new_key;
+  u_int32_t host_id =  ntop->getRedis()->host_to_id(daybuf, host_ip, &new_key);
 
   snprintf(buf, sizeof(buf), "%u", host_id);
   ntop->getRedis()->incrContact(k, family_id, buf, num_contacts);

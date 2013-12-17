@@ -371,15 +371,17 @@ char* Ntop::getValidPath(char *__path) {
     snprintf(_path, MAX_PATH, "%s/%s", startup_dir, &__path[2]);
     fixPath(_path);
 
-    if(stat(_path, &buf) == 0)
+    if(stat(_path, &buf) == 0) {
+      free(__path);
       return(strdup(_path));
+    }
   }
 
   if((__path[0] == '/') || (__path[0] == '\\')) {
     /* Absolute paths */
 
     if(stat(__path, &buf) == 0) {
-      return(strdup(__path));
+      return(__path);
     }
   } else
     snprintf(_path, MAX_PATH, "%s", __path);
@@ -392,10 +394,12 @@ char* Ntop::getValidPath(char *__path) {
     fixPath(path);
 
     if(stat(path, &buf) == 0) {
+      free(__path);
       return(strdup(path));
     }
   }
 
+  free(__path);
   return(strdup(""));
 }
 

@@ -114,10 +114,10 @@ $(TARGET): $(OBJECTS) $(LIBRRDTOOL) Makefile
 	$(GPP) $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(NDPI_LIB): nDPI
-	cd nDPI; ./configure; @GMAKE@
+	cd nDPI; make
 
 nDPI:
-	svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/
+	if test -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi 
 
 $(LUAJIT_LIB):
 	cd $(LUAJIT_HOME); @GMAKE@

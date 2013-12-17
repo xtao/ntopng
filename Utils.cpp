@@ -23,7 +23,7 @@
 
 /* ****************************************************** */
 
-char* Utils::formatTraffic(float numBits, bool bits, char *buf) {
+char* Utils::formatTraffic(float numBits, bool bits, char *buf, u_int buf_len) {
   char unit;
 
   if(bits)
@@ -32,21 +32,21 @@ char* Utils::formatTraffic(float numBits, bool bits, char *buf) {
     unit = 'B';
 
   if(numBits < 1024) {
-    snprintf(buf, 32, "%lu %c", (unsigned long)numBits, unit);
+    snprintf(buf, buf_len, "%lu %c", (unsigned long)numBits, unit);
   } else if(numBits < 1048576) {
-    snprintf(buf, 32, "%.2f K%c", (float)(numBits)/1024, unit);
+    snprintf(buf, buf_len, "%.2f K%c", (float)(numBits)/1024, unit);
   } else {
     float tmpMBits = ((float)numBits)/1048576;
 
     if(tmpMBits < 1024) {
-      snprintf(buf, 32, "%.2f M%c", tmpMBits, unit);
+      snprintf(buf, buf_len, "%.2f M%c", tmpMBits, unit);
     } else {
       tmpMBits /= 1024;
 
       if(tmpMBits < 1024) {
-	snprintf(buf, 32, "%.2f G%c", tmpMBits, unit);
+	snprintf(buf, buf_len, "%.2f G%c", tmpMBits, unit);
       } else {
-	snprintf(buf, 32, "%.2f T%c", (float)(tmpMBits)/1024, unit);
+	snprintf(buf, buf_len, "%.2f T%c", (float)(tmpMBits)/1024, unit);
       }
     }
   }
@@ -56,14 +56,14 @@ char* Utils::formatTraffic(float numBits, bool bits, char *buf) {
 
 /* ****************************************************** */
 
-char* Utils::formatPackets(float numPkts, char *buf) {
+char* Utils::formatPackets(float numPkts, char *buf, u_int buf_len) {
   if(numPkts < 1000) {
-    snprintf(buf, 32, "%.2f", numPkts);
+    snprintf(buf, buf_len, "%.2f", numPkts);
   } else if(numPkts < 1000000) {
-    snprintf(buf, 32, "%.2f K", numPkts/(float)1000);
+    snprintf(buf, buf_len, "%.2f K", numPkts/(float)1000);
   } else {
     numPkts /= 1000000;
-    snprintf(buf, 32, "%.2f M", numPkts);
+    snprintf(buf, buf_len, "%.2f M", numPkts);
   }
 
   return(buf);

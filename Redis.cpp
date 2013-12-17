@@ -590,23 +590,25 @@ int Redis::incrContact(char *key, u_int16_t family_id,
 */
 int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   char buf[64], daybuf[32], *what;
-  int rc;
+  int rc = 0;
   redisReply *reply;
   time_t when = time(NULL);
   u_int32_t id;
+  bool new_key;
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   what = ip ? ip->print(buf, sizeof(buf)) : name;
-  id = host_to_id(daybuf, what);
+  id = host_to_id(daybuf, what, &new_key);
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%s|%u", daybuf,
 				    ip ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
 				    iface->get_name(), id);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-
-  ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
-
+  
+  if(new_key)
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
+  
   if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   l->unlock(__FILE__, __LINE__);
 
@@ -645,7 +647,7 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 /* *************************************** */
 
-u_int32_t Redis::host_to_id(char *daybuf, char *host_name) {
+u_int32_t Redis::host_to_id(char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
   char buf[32], rsp[32], host_id[16];
@@ -659,8 +661,9 @@ u_int32_t Redis::host_to_id(char *daybuf, char *host_name) {
     snprintf(host_id, sizeof(host_id), "%u", id = ntop->getUniqueHostId());
     hashSet(buf, host_name, host_id); /* Forth */
     hashSet(buf, host_id, host_name); /* ...and back */
+    *new_key = true;
   } else
-    id = atol(rsp);
+    id = atol(rsp), *new_key = false;
 
   return(id);
 }
@@ -692,6 +695,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   time_t begin = time(NULL);
   u_int num_interfaces = 0, num_hosts = 0, num_activities = 0;
   u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];
+  bool new_key;
 
   snprintf(path, sizeof(path), "%s/datadump",
 	   ntop->get_working_dir());
@@ -708,12 +712,12 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started dump on %s", path);
 
   if(sqlite3_exec(db,
-		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);\n"
-		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);\n"
-		  "CREATE TABLE IF NOT EXISTS `activities` (`idx` INTEGER PRIMARY KEY, `interface_idx` INTEGER, `host_idx` INTEGER, `activity_type` INTEGER);\n"
+		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);"
+		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);"
+		  "CREATE TABLE IF NOT EXISTS `activities` (`idx` INTEGER PRIMARY KEY, `interface_idx` INTEGER, `host_idx` INTEGER, `activity_type` INTEGER);"
 		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, `activity_idx` INTEGER KEY, "
-		  "`contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);\n"
-		  "BEGIN;\n",  NULL, 0, &zErrMsg) != SQLITE_OK) {
+		  "`contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);"
+		  "BEGIN;",  NULL, 0, &zErrMsg) != SQLITE_OK) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
     sqlite3_free(zErrMsg);
     sqlite3_close(db);
@@ -769,7 +773,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      char *zErrMsg;
 	      char buf[256];
 
-	      snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');\n",
+	      snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');",
 		       host_index, host_buf);
 
 	      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
@@ -786,7 +790,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      if(num_interfaces < MAX_NUM_INTERFACES) {
 		snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
 
-		snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');\n",
+		snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');",
 			 num_interfaces, iface);
 		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
 
@@ -829,9 +833,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
 		      if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-			u_int32_t contact_host_index = host_to_id(day, contact_host);
+			u_int32_t contact_host_index = host_to_id(day, contact_host, &new_key);
 
-			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%u,%u,%u,%s,%s);\n",
+			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%u,%u,%u,%s,%s);",
 				 contact_idx++, activity_idx, loop, contact_host_index, contact_family, r1->str);
 
 			ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
@@ -857,7 +861,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      if(r) freeReplyObject(r);
 
 	      if(to_add) {
-		snprintf(buf, sizeof(buf), "INSERT INTO activities VALUES (%u,%u,%u,%u);\n",
+		snprintf(buf, sizeof(buf), "INSERT INTO activities VALUES (%u,%u,%u,%u);",
 			 activity_idx++, interface_idx, host_index, activity_type);
 
 		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);

@@ -30,8 +30,8 @@ class Utils {
  private:
 
  public:
-  static char* formatTraffic(float numBits, bool bits, char *buf);
-  static char* formatPackets(float numPkts, char *buf);
+  static char* formatTraffic(float numBits, bool bits, char *buf, u_int buf_len);
+  static char* formatPackets(float numPkts, char *buf, u_int buf_len);
   static char* l4proto2name(u_int8_t proto);
   static bool  isIPAddress(char *name);
   static void  setThreadAffinity(pthread_t thread, int core_id);
