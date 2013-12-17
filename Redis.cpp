@@ -731,7 +731,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
     if(reply && reply->str) {
       char *_key = (char*)reply->str, key[256];
       char hash_key[512], buf[512];
-      redisReply *r, *r1;
+      redisReply *r, *r1, *r2;
       bool to_add = false;
       u_int32_t activity_type;
       char *what, *iface, *host, *token;
@@ -842,19 +842,19 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		      }
 		    }
 
-		    freeReplyObject(r1);
-
 		    l->lock(__FILE__, __LINE__);
-		    r1 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
-		    if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
+		    r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
+		    if(r2 && (r2->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
 		    l->unlock(__FILE__, __LINE__);
 
-		    if(r1) freeReplyObject(r1);
+		    if(r2) freeReplyObject(r2);
 		  }
-		}
 
-		if(r) freeReplyObject(r);
+		  if(r1) freeReplyObject(r1);
+		}
 	      }
+
+	      if(r) freeReplyObject(r);
 
 	      if(to_add) {
 		snprintf(buf, sizeof(buf), "INSERT INTO activities VALUES (%u,%u,%u,%u);\n",
