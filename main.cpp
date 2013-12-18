@@ -142,8 +142,7 @@ int main(int argc, char *argv[])
     char pid[MAX_PATH];
     FILE *fd;
 
-    snprintf(pid, MAX_PATH, "%s/ntopng.pid", prefs->get_pid_path());
-    fd = fopen(pid, "w");
+    fd = fopen(prefs->get_pid_path(), "w");
     if(fd != NULL) {
       fprintf(fd, "%u\n", getpid());
       fclose(fd);
