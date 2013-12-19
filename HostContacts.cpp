@@ -92,8 +92,7 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
     }
   }
 
-  delete contacts[least_idx].host;
-  contacts[least_idx].host = new IpAddress(peer),
+  contacts[least_idx].host->set(peer),
     contacts[least_idx].num_contacts = value;
 }
 
@@ -195,10 +194,11 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
   /* Reset all */
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].host != NULL) delete clientContacts[i].host;
+    clientContacts[i].host = NULL, clientContacts[i].num_contacts = 0;
+
     if(serverContacts[i].host != NULL) delete serverContacts[i].host;
+    serverContacts[i].host = NULL, serverContacts[i].num_contacts = 0;
   }
-  memset(clientContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
-  memset(serverContacts, 0, sizeof(IPContacts)*MAX_NUM_HOST_CONTACTS);
 
   if(json_object_object_get_ex(o, "client", &obj)) {
     struct json_object_iterator it = json_object_iter_begin(obj);

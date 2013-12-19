@@ -38,8 +38,7 @@ IpAddress::IpAddress(char *string) {
 /* ******************************************* */
 
 IpAddress::IpAddress(IpAddress *ip) {
-  memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
-  compute_key();
+  set(ip);
 }
 
 /* ******************************************* */
@@ -55,6 +54,13 @@ IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
   set_ipv6(_ipv6);
   addr.privateIP = false;
   compute_key();
+}
+
+/* ******************************************* */
+
+void IpAddress::set(IpAddress *ip) {
+  memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
+  ip_key = ip->ip_key;
 }
 
 /* ******************************************* */

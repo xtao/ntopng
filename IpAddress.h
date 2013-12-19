@@ -69,6 +69,7 @@ class IpAddress {
   void set_from_string(char *string);
   int compare(IpAddress *ip);
   inline u_int32_t key()                               { return(ip_key);         };
+  void set(IpAddress *ip);
   void dump(struct sockaddr *sa);
   inline bool isPrivateAddress()                       { return(addr.privateIP); };
   char* print(char *str, u_int str_len);
