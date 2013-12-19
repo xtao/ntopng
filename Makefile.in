@@ -114,7 +114,7 @@ $(TARGET): $(OBJECTS) $(LIBRRDTOOL) Makefile
 	$(GPP) $(OBJECTS) -Wall $(LIBS) -o $@
 
 $(NDPI_LIB): nDPI
-	cd nDPI; make
+	cd nDPI;  if test ! -f Makefile; then ./configure; fi; make
 
 nDPI:
 	if test ! -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi 
