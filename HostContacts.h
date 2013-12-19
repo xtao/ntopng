@@ -45,7 +45,6 @@ class HostContacts {
 		      const char *key_type, char *key,
 		      bool client_mode,
 		      char *buf, u_int buf_len);
-
  public:
   HostContacts();
   ~HostContacts();

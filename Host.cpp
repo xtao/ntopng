@@ -129,7 +129,7 @@ void Host::flushContacts() {
   char key[128], *k = get_string_key(key, sizeof(key));
 
   dumpContacts(k, HOST_FAMILY_ID);
-  contacts.purgeAll();
+  contacts->purgeAll();
 }
 
 /* *************************************** */
@@ -554,7 +554,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "sent", sent.getJSONObject());
   json_object_object_add(my_object, "rcvd", rcvd.getJSONObject());
   json_object_object_add(my_object, "ndpiStats", ndpiStats->getJSONObject(iface));
-  json_object_object_add(my_object, "contacts", contacts.getJSONObject());
+  json_object_object_add(my_object, "contacts", contacts->getJSONObject());
   json_object_object_add(my_object, "activityStats", activityStats.getJSONObject());
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
@@ -626,7 +626,7 @@ bool Host::deserialize(char *json_str) {
   activityStats.reset();
   if(json_object_object_get_ex(o, "activityStats", &obj)) activityStats.deserialize(obj);
 
-  if(json_object_object_get_ex(o, "contacts", &obj)) contacts.deserialize(iface, this, obj);
+  if(json_object_object_get_ex(o, "contacts", &obj)) contacts->deserialize(iface, this, obj);
   if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);
 

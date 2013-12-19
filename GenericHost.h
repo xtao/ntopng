@@ -30,7 +30,7 @@ class GenericHost : public GenericHashEntry {
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   ActivityStats activityStats;
-  HostContacts contacts;
+  HostContacts *contacts;
   /* Throughput */
   float bytes_thpt;
   ValueTrend bytes_thpt_trend;
@@ -53,18 +53,18 @@ class GenericHost : public GenericHashEntry {
   inline void incrContact(NetworkInterface *iface, IpAddress *me, IpAddress *peer, 
 			  bool contacted_peer_as_client,
 			  u_int family_id = HOST_FAMILY_ID, bool aggregated_host = false) {
-    contacts.incrContact(iface, me, peer, contacted_peer_as_client, 1,
+    contacts->incrContact(iface, me, peer, contacted_peer_as_client, 1,
 			 family_id, aggregated_host); 
   }
   inline void incrContact(NetworkInterface *iface, char *me_str, IpAddress *peer, 
 			  bool contacted_peer_as_client,
 			  u_int family_id = HOST_FAMILY_ID, bool aggregated_host = false) {
-    contacts.incrContact(iface, me_str, peer, contacted_peer_as_client, 1, 
+    contacts->incrContact(iface, me_str, peer, contacted_peer_as_client, 1, 
 			 family_id, aggregated_host); 
   }
-  inline void flushContacts()         { contacts.purgeAll();               }
-  void getHostContacts(lua_State* vm) { contacts.getIPContacts(vm);        };
-  inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts.get_num_contacts_by(host_ip)); };
+  inline void flushContacts()         { contacts->purgeAll();               }
+  void getHostContacts(lua_State* vm) { contacts->getIPContacts(vm);        };
+  inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts->get_num_contacts_by(host_ip)); };
   void updateStats(struct timeval *tv);
   void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };

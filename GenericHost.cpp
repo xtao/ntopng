@@ -29,6 +29,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   localHost = false, last_activity_update = 0;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
+  contacts = new HostContacts();
   // readStats(); - Commented as if put here it's too early and the key is not yet set
 }
 
@@ -37,6 +38,8 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
 GenericHost::~GenericHost() {
   if(ndpiStats)
     delete ndpiStats;
+
+  delete contacts;
 }
 
 /* *************************************** */
@@ -46,7 +49,7 @@ void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
   time_t when = time(NULL);
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
-  contacts.dbDump(daybuf, iface, host_key, family_id);
+  contacts->dbDump(daybuf, iface, host_key, family_id);
 }
 
 /* *************************************** */
