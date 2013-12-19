@@ -117,7 +117,8 @@ $(NDPI_LIB): nDPI
 	cd nDPI; make
 
 nDPI:
-	if test -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi 
+	if test ! -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi 
+	make
 
 $(LUAJIT_LIB):
 	cd $(LUAJIT_HOME); @GMAKE@
