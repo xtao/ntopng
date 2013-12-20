@@ -25,7 +25,7 @@
 #include "ntop_includes.h"
 
 typedef struct {
-  IpAddress *host;
+  IpAddress host;
   u_int32_t num_contacts;
 } IPContacts;
 
@@ -47,7 +47,6 @@ class HostContacts {
 		      char *buf, u_int buf_len);
  public:
   HostContacts();
-  ~HostContacts();
 
   void dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id);
   inline void incrContact(NetworkInterface *iface, IpAddress *me, 
