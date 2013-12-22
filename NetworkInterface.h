@@ -23,13 +23,23 @@
 #define _NETWORK_INTERFACE_H_
 
 #include "ntop_includes.h"
+/** @defgroup NetworkInterface Network Interface
+ * ............
+ */
+
 
 class Flow;
 class FlowHash;
 class Host;
 class HostHash;
 class DB;
-
+/**
+ * @struct ether80211q
+ * @details [long description]
+ * 
+ * @param  [description]
+ * @return [description]
+ */
 typedef struct ether80211q {
   u_int16_t vlanId;
   u_int16_t protoType;
@@ -45,21 +55,27 @@ typedef struct zmq_flow {
   json_object *additional_fields;
   u_int8_t src_mac[6], dst_mac[6];
 } ZMQ_Flow;
-
+/** @class NetworkInterface
+ *  @brief Main class of network interface of ntopng.
+ *  @details .......
+ *
+ *  @ingroup NetworkInterface
+ *
+ */
 class NetworkInterface {
  protected:
-  char *ifname;
-  EthStats ethStats;
-  int pcap_datalink_type;
+  char *ifname; /**< Network interface name.*/
+  EthStats ethStats; 
+  int pcap_datalink_type; /**< Datalink type of pcap.*/
   pthread_t pollLoop;
-  int cpu_affinity;
-  NdpiStats ndpiStats;
-  PacketStats pktStats;
-  FlowHash *flows_hash;
+  int cpu_affinity; /**< Index of physical core where the network interface works.*/
+  NdpiStats ndpiStats; 
+  PacketStats pktStats; 
+  FlowHash *flows_hash; /**< Hash used to memorize the flows informations.*/
   /* Hosts */
-  HostHash *hosts_hash;
+  HostHash *hosts_hash; /**< Hash used to memorize the hosts informations.*/
   /* String hash (Aggregation) */
-  StringHash *strings_hash;
+  StringHash *strings_hash; /**< Hash used to memorize the aggregation informations.*/
   bool purge_idle_flows_hosts;
   DB *db;
 
@@ -78,6 +94,12 @@ class NetworkInterface {
   bool validInterface(char *name);
 
  public:
+  /**
+  * @brief A Constructor
+  * @details Creating a new NeworkInteface with all instance variables set to NULL.
+  *
+  * @return A new instance of NetworkInteface.
+  */
   NetworkInterface();
   NetworkInterface(const char *name);
   virtual ~NetworkInterface();

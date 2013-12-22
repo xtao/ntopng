@@ -23,25 +23,100 @@
 #define _GENERIC_HASH_H_
 
 #include "ntop_includes.h"
- 
-class GenericHash {
- protected:
-  GenericHashEntry **table;
-  u_int num_hashes, current_size, max_hash_size;
-  Mutex **locks;
-  NetworkInterface *iface;
-  u_int last_purged_hash;
 
- public:
+/** @defgroup Monitoring Data
+ * This is the group that contains all classes and datastructures that handle monitoring data.
+ */
+
+/** @class GenericHash
+ *  @brief Base hash class.
+ *  @details Defined the base hash class for ntopng.
+ *
+ *  @ingroup Hash
+ *
+ */
+ class GenericHash {
+ protected:
+  GenericHashEntry **table; /**< Entry table. It is used for maintain an update history.*/
+
+ u_int num_hashes; /**< Number of hash.*/
+ u_int current_size; /**< Current size of hash.*/
+ u_int max_hash_size; /**< Max size of hash.*/
+
+ Mutex **locks;
+ NetworkInterface *iface; /**< Pointer of network interface for this generic hash.*/
+ u_int last_purged_hash; /**< Index of last purged hash.*/
+
+public:
+ /**
+  * @brief A Constructor
+  * @details Creating a new GenericHash.
+  *
+  * @param _iface Network interface pointer for the new hash.
+  * @param _num_hashes Number of hashes.
+  * @param _max_hash_size Max size of new hash.
+  * @return A new Instance of GenericHash.
+  */
   GenericHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max_hash_size);
+
+  /**
+   * @brief A Destructor
+   */
   ~GenericHash();
- 
+  /**
+   * @brief Get number of entries.
+   * @details Inline method.
+   *
+   * @return Current size of hash.
+   */
   inline u_int getNumEntries() { return(current_size); };
+  /**
+   * @brief Add new entry to generic hash.
+   * @details If current_size < max_hash_size, this method calculate a new hash key for the new entry, add it and update the current_size value.
+   *
+   * @param h Pointer of new entry to add.
+   * @return True if the entry has been added successfully,
+   *         False otherwise.
+   *
+   */
   bool add(GenericHashEntry *h);
-  bool remove(GenericHashEntry *h); /* Note: GenericHashEntry* memory is NOT freed */
+  /**
+   * @brief Remove entry from generic hash
+   * @details Check if the entry is present inside the hash, remove it and update the hash.
+   *
+   * @param h Pointer of entry to remove.
+   * @return True if the entry has been remove successfully,
+   *         False otherwise.
+   * @warning GenericHashEntry* memory is NOT freed.
+   */
+  bool remove(GenericHashEntry *h);
+  /**
+   * @brief generic walker for the hash.
+   * @details This method uses the walker function to compare each elements of the hash with the user data.
+   *
+   * @param walker A pointer to the comparison function.
+   * @param user_data Value to be compared with the values of hash.
+   */
   void walk(bool (*walker)(GenericHashEntry *h, void *user_data), void *user_data);
+  /**
+   * @brief Purge the hash.
+   *
+   * @return Numbers of purged entry, 0 otherwise.
+   */
   u_int purgeIdle();
+  /**
+   * @brief Return the network interface instance associated with the hash.
+   * @details Inline method.
+   *
+   * @return Pointer of network interface instance.
+   */
   inline NetworkInterface* getInterface() { return(iface); };
+  /**
+   * @brief Find an entry by key value.
+   *
+   * @param key Key value to be found in the hash.
+   * @return Pointer of entry that matches with the key parameter, NULL if there isn't entry with the key parameter or if the hash is empty.
+   */
   GenericHashEntry* findByKey(u_int32_t key);
 };
 

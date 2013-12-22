@@ -24,21 +24,65 @@
 
 #include "ntop_includes.h"
 
+/** @class GenericHashEntry
+ *  @brief Base hash entry class.
+ *  @details Defined the base hash entry class for ntopng.
+ *
+ *  @ingroup Hash
+ *
+ */
 class GenericHashEntry {
  private:
-  GenericHashEntry *hash_next;
+  GenericHashEntry *hash_next; /**< Pointer of next hash entry.*/
 
  protected:
-  time_t first_seen, last_seen;
-  NetworkInterface *iface;
+  time_t first_seen;   /**< Time of first seen.*/
+  time_t last_seen;    /**< Time of last seen.*/
+  NetworkInterface *iface; /**< Pointer of network interface.*/
 
  public:
+   /**
+    * @brief A Constructor
+    * @details Creating a new GenericHashEntry.
+    * 
+    * @param _iface Network interface pointer for the new hash.
+    * @return A new Instance of GenericHashEntry.
+    */
   GenericHashEntry(NetworkInterface *_iface);
+  /**
+   * @brief A destructor.
+   * @details Virtual method.
+   * 
+   * @return Delete the instance.
+   */
   virtual ~GenericHashEntry();
-
+  /**
+   * @brief Get the first seen time.
+   * @details Inline method.
+   * 
+   * @return Time of first seen.
+   */
   inline time_t get_first_seen()     { return(first_seen); };
+  /**
+   * @brief Get the last seen time.
+   * @details Inline method.
+   * 
+   * @return Time of last seen.
+   */
   inline time_t get_last_seen()      { return(last_seen); };
+  /**
+   * @brief Get the next hash entry.
+   * @details Inline method.
+   * 
+   * @return Return the next hash entry.
+   */
   inline GenericHashEntry* next()    { return(hash_next); };
+  /**
+   * @brief Set the next hash entry.
+   * @details Inline method.
+   * 
+   * @param n Hash entry to set as next hash entry.
+   */
   inline void set_next(GenericHashEntry *n) { hash_next = n;     };
   void updateSeen();
   void updateSeen(time_t _last_seen);

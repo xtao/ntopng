@@ -205,6 +205,8 @@ build-rpm-ntopng-data:
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)"
 	-rm -rf ntopng-data-@PACKAGE_VERSION@ ntopng-data_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
 
+doc:
+	doxygen doxygen.conf
 
 install: ntopng geoip
 	@echo "While we provide you an install make target, we encourage you"
