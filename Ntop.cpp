@@ -158,7 +158,6 @@ Ntop::~Ntop() {
 /* ******************************************* */
 
 void Ntop::start() {
-  int rc;
   char daybuf[64], buf[32];
   time_t when = time(NULL);
 
@@ -170,11 +169,6 @@ void Ntop::start() {
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
-
-  if((rc = redis->hashLen(buf)) == -1)
-    host_unique_id = 0;
-  else
-    host_unique_id = (u_int32_t)rc;
 
   pa->startPeriodicActivitiesLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
@@ -609,15 +603,3 @@ void Ntop::shutdown() {
   }
 }
 
-/* ******************************************* */
-
-u_int32_t Ntop::getUniqueHostId() {
-  u_int32_t id;
-
-  /* Mutex jeopardized */
-  rrd_lock->lock(__FILE__, __LINE__);
-  id = host_unique_id++;
-  rrd_lock->unlock(__FILE__, __LINE__);
-  
-  return(id);
-}

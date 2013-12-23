@@ -72,6 +72,13 @@ class Redis {
 
   u_int32_t host_to_id(char *daybuf, char *host_name, bool *new_key);
   int id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len);
+
+  /**
+   * @brief Increment a redis key and return its new value
+   *
+   * @param key The key whose value will be incremented.
+   */
+  u_int32_t incrKey(char *key);
 };
 
 #endif /* _REDIS_H_ */

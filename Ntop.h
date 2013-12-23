@@ -55,7 +55,6 @@
    Categorization *categorization;
    Mutex *rrd_lock;
    long time_offset;
-  u_int32_t host_unique_id; /**< Unique ID of host.*/
 
  public:
  /**
@@ -72,10 +71,10 @@
    */
    ~Ntop();
   /**
-   * @brief Register the nTopng preferences.
-   * @details Setting the nTopng preferences defined in a Prefs instance.
+   * @brief Register the ntopng preferences.
+   * @details Setting the ntopng preferences defined in a Prefs instance.
    *
-   * @param _prefs Prefs instance containing the nTopng preferences.
+   * @param _prefs Prefs instance containing the ntopng preferences.
    */
  void registerPrefs(Prefs *_prefs);
  /**
@@ -105,13 +104,6 @@
    *
    */
   void initTimezone();
-  /**
-   * @brief Get new unique host id.
-   * @details Increment the variable @ref host_unique_id.
-   *
-   * @return A new unique id for a new host.
-   */
-  u_int32_t getUniqueHostId();
   /**
    * @brief Get a valid path.
    * @details Processes the input path and return a valid path.
@@ -144,7 +136,7 @@
    */
   inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
   /**
-   * @brief Star nTopng instance.
+   * @brief Star ntopng instance.
    */
   void start();
   /**

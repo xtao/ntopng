@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
 
 #ifndef WIN32
   if(prefs->get_pid_path() != NULL) {
-    char pid[MAX_PATH];
     FILE *fd;
 
     fd = fopen(prefs->get_pid_path(), "w");
@@ -147,9 +146,11 @@ int main(int argc, char *argv[])
       fprintf(fd, "%u\n", getpid());
       fclose(fd);
       chmod(prefs->get_pid_path(), 0777);
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "PID stored in file %s", pid);
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "PID stored in file %s", 
+				   prefs->get_pid_path());
     } else
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s", pid);
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s",
+				   prefs->get_pid_path());
   }
 #endif
 

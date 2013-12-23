@@ -80,7 +80,7 @@
 #define DNS_TO_RESOLVE          "dns.toresolve"
 #define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
-
+#define NTOP_HOSTS_SERIAL       "ntop.host_serial"
 #ifndef TH_FIN
 #define	TH_FIN	0x01
 #endif

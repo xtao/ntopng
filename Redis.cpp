@@ -214,7 +214,29 @@ char* Redis::popSet(char *pop_name, char *rsp, u_int rsp_len) {
 /* **************************************** */
 
 /*
-  Incrememnt key.member of +value and keeps at most trim_len elements
+  Increment a key and return its update value
+*/
+u_int32_t Redis::incrKey(char *key) {
+  u_int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "INCR %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR))
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str), rc = 0;
+  else
+    rc = reply->integer;
+
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
+}
+
+/* **************************************** */
+
+/*
+  Increment key.member of +value and keeps at most trim_len elements
 */
 int Redis::zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len) {
   int rc;
@@ -658,7 +680,9 @@ u_int32_t Redis::host_to_id(char *daybuf, char *host_name, bool *new_key) {
 
   if(rc == -1) {
     /* Not found */
-    snprintf(host_id, sizeof(host_id), "%u", id = ntop->getUniqueHostId());
+    snprintf(host_id, sizeof(host_id), "%u", id = incrKey((char*)NTOP_HOSTS_SERIAL));
+
+    /* Set the data */
     hashSet(buf, host_name, host_id); /* Forth */
     hashSet(buf, host_id, host_name); /* ...and back */
     *new_key = true;
