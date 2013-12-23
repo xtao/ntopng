@@ -27,6 +27,7 @@
 class GenericHost : public GenericHashEntry {
  protected:
   bool localHost;
+  u_int32_t host_serial;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   ActivityStats activityStats;
@@ -65,6 +66,7 @@ class GenericHost : public GenericHashEntry {
   inline void flushContacts()         { contacts->purgeAll();               }
   void getHostContacts(lua_State* vm) { contacts->getIPContacts(vm);        };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts->get_num_contacts_by(host_ip)); };
+  inline u_int32_t get_host_serial()  { return(host_serial);               };
   void updateStats(struct timeval *tv);
   void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };

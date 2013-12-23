@@ -26,7 +26,7 @@
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ndpiStats = new NdpiStats();
 
-  localHost = false, last_activity_update = 0;
+  localHost = false, last_activity_update = 0, host_serial = 0;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   contacts = new HostContacts();

@@ -6,7 +6,7 @@ HIREDIS_HOME=third-party/hiredis
 HIREDIS_INC=-I$(HIREDIS_HOME)
 ######
 NDPI_INC=-I./nDPI/src/include
-NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a 
+NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a
 ######
 LIBPCAP=-lpcap
 ######
@@ -52,7 +52,7 @@ ifeq ($(HAS_ZEROMQ), 0)
 else
 	ZEROMQ_HOME=./third-party/zeromq-3.2.3
 	ZEROMQ_INC=-I$(ZEROMQ_HOME)/include
-	ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a 
+	ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a
 endif
 ######
 EWH_HOME=third-party/EWAHBoolArray
@@ -62,7 +62,7 @@ TARGET = ntopng
 LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) -lxml2 $(ZEROMQ_LIB) $(JSON_LIB) @SQLITE_LIB@ @LINK_OPTS@ @LIBGNUTLS@ @GEOIP_LIB@ @Z_LIB@ @DL_LIB@ -lm -lpthread
 CPPFLAGS = -g @CFLAGS@ $(HIREDIS_INC) $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) # -D_GLIBCXX_DEBUG
 ######
-# ntopng-1.0_1234.x86_64.rpm 
+# ntopng-1.0_1234.x86_64.rpm
 PLATFORM = `uname -p`
 REVISION = @SVN_RELEASE@
 PACKAGE_VERSION = @PACKAGE_VERSION@
@@ -80,7 +80,7 @@ LIB_TARGETS =
 ifneq ($(HAS_LUAJIT), 0)
 LIB_TARGETS += $(LUAJIT_LIB)
  endif
- 
+
 ifneq ($(HAS_ZEROMQ), 0)
 LIB_TARGETS += $(ZEROMQ_LIB)
 endif
@@ -93,7 +93,7 @@ ifneq ($(HAS_JSON), 0)
 LIB_TARGETS += $(JSON_LIB)
 endif
 
-.PHONY: default all clean
+.PHONY: default all clean docs
 
 default: $(NDPI_LIB) $(LIB_TARGETS) $(TARGET)
 
@@ -117,7 +117,7 @@ $(NDPI_LIB): nDPI
 	cd nDPI;  if test ! -f Makefile; then ./configure; fi; make
 
 nDPI:
-	if test ! -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi 
+	if test ! -d nDPI; then svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd nDPI; ./configure; fi
 	make
 
 $(LUAJIT_LIB):

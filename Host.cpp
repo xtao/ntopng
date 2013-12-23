@@ -193,9 +193,10 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     if(localHost && ip) readStats();
   }
 
-  if(ip && iface
+  if(ip
+     && iface
      && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    ntop->getRedis()->addIpToDBDump(iface, ip, NULL);
+    host_serial = ntop->getRedis()->addIpToDBDump(iface, ip, NULL);
   }
 }
 
