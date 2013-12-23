@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-/** @defgroup Monitoring Data
+/** @defgroup MonitoringData Monitoring Data
  * This is the group that contains all classes and datastructures that handle monitoring data.
  */
 
@@ -32,7 +32,7 @@
  *  @brief Base hash class.
  *  @details Defined the base hash class for ntopng.
  *
- *  @ingroup Hash
+ *  @ingroup MonitoringData
  *
  */
  class GenericHash {

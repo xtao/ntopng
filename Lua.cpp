@@ -67,6 +67,16 @@ Lua::~Lua() {
 
 /* ******************************* */
 
+/**
+ * @brief Check the expected type of lua function.
+ * @details Find in the lua stack the function and check the function parameters types.
+ * 
+ * @param vm The lua state.
+ * @param func The function name.
+ * @param pos Index of lua stack.
+ * @param expected_type Index of expected type.
+ * @return @ref CONST_LUA_ERROR if the expected type is equal to function type, @ref CONST_LUA_PARAM_ERROR otherwise.
+ */
 static int ntop_lua_check(lua_State* vm, const char* func,
 			  int pos, int expected_type) {
   if(lua_type(vm, pos) != expected_type) {
@@ -119,6 +129,13 @@ static int ntop_dump_file(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Get default interface name.
+ * @details Push the default interface name of ntopng into the lua stack.
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK.
+ */
 static int ntop_get_default_interface_name(lua_State* vm) {
   lua_pushstring(vm, ntop->getInterfaceId(0)->get_name());
   return(CONST_LUA_OK);
@@ -126,6 +143,12 @@ static int ntop_get_default_interface_name(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Set the name of active interface id to lua stack.
+ * 
+ * @param vm The lua stack.
+ * @return @ref CONST_LUA_OK.
+ */
 static int ntop_set_active_interface_id(lua_State* vm) {
   NetworkInterface *iface;
   u_int32_t id;
@@ -144,7 +167,12 @@ static int ntop_set_active_interface_id(lua_State* vm) {
 }
 
 /* ****************************************** */
-
+/**
+ * @brief Get the ntopng interface names.
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK.
+ */
 static int ntop_get_interface_names(lua_State* vm) {
   lua_newtable(vm);
 
@@ -159,7 +187,12 @@ static int ntop_get_interface_names(lua_State* vm) {
 }
 
 /* ****************************************** */
-
+/**
+ * @brief Flush the host contacts of the network interface defined into lua.
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK if the network_interface lua variable is not NULL, @ref CONST_LUA_ERROR otherwise.
+ */
 static int ntop_flush_host_contacts(lua_State* vm) {
   NetworkInterface *ntop_interface;
 
@@ -178,6 +211,12 @@ static int ntop_flush_host_contacts(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Find the network interface and set it as global variable to lua.
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK
+ */
 static int ntop_find_interface(lua_State* vm) {
   char *ifname;
 
@@ -192,6 +231,13 @@ static int ntop_find_interface(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Get the ndpi interface stats.
+ * @details Get the ntop_interface variable of lua, get nDpistats of interface and push the stats into lua stack. 
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK
+ */
 static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface;
   NdpiStats stats;

@@ -28,7 +28,7 @@
  *  @brief Base hash entry class.
  *  @details Defined the base hash entry class for ntopng.
  *
- *  @ingroup Hash
+ *  @ingroup MonitoringData
  *
  */
 class GenericHashEntry {

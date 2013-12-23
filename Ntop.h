@@ -24,7 +24,7 @@
 
 #include "ntop_includes.h"
 
-/** @defgroup Ntop
+/** @defgroup Ntop Ntop
  * Main ntopng group.
  */
 
@@ -33,7 +33,7 @@
  *  @brief Main class of ntopng.
  *  @details .......
  *
- *  @ingroup nTop
+ *  @ingroup Ntop
  *
  */
  class Ntop {
