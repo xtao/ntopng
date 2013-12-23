@@ -206,7 +206,7 @@ build-rpm-ntopng-data:
 	-rm -rf ntopng-data-@PACKAGE_VERSION@ ntopng-data_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
 
 doc:
-	doxygen doxygen.conf
+	cd doc && doxygen doxygen.conf
 
 install: ntopng geoip
 	@echo "While we provide you an install make target, we encourage you"
