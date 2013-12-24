@@ -125,9 +125,25 @@ Host::~Host() {
 
 /* *************************************** */
 
+void Host::computeHostSerial() {
+  if(ip
+     && iface
+     && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
+    host_serial = ntop->getRedis()->addHostToDBDump(iface, ip, NULL);
+  }
+}
+
+/* *************************************** */
+
 void Host::flushContacts() {
   dumpHostContacts(HOST_FAMILY_ID);
   contacts->purgeAll();
+
+  /*
+    Recompute it so that if the day wrapped
+    we have a new one
+  */
+  computeHostSerial();
 }
 
 /* *************************************** */
@@ -191,11 +207,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
     if(localHost && ip) readStats();
   }
 
-  if(ip
-     && iface
-     && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    host_serial = ntop->getRedis()->addHostToDBDump(iface, ip, NULL);
-  }
+  computeHostSerial();
 }
 
 /* *************************************** */

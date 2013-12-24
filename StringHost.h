@@ -33,6 +33,8 @@ class StringHost : public GenericHost {
   float bytes_thpt;
   ValueTrend bytes_thpt_trend;
 
+  void computeHostSerial();
+
  public:
   StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
   ~StringHost();

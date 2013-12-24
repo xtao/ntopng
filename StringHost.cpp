@@ -52,15 +52,27 @@ StringHost::~StringHost() {
 
 /* *************************************** */
 
+void StringHost::computeHostSerial() {
+  host_serial = ntop->getRedis()->addHostToDBDump(iface, NULL, keyname);
+}
+
+/* *************************************** */
+
 void StringHost::flushContacts() {
   if(tracked_host) {
     bool _localHost = localHost;
 
     localHost = true; /* Hack */
-    host_serial = ntop->getRedis()->addHostToDBDump(iface, NULL, keyname);
+    computeHostSerial();
     dumpHostContacts(family_id);
     contacts->purgeAll();
     localHost = _localHost;
+
+    /*
+      Recompute it so that if the day wrapped
+      we have a new one
+    */
+    computeHostSerial();
   } 
 }
 

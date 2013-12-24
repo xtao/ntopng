@@ -44,6 +44,7 @@ class Host : public GenericHost {
   void refreshCategory();
   void read_alternate_name();
   void save_alternate_name();
+  void computeHostSerial();
 
  public:
   Host(NetworkInterface *_iface);

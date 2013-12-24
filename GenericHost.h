@@ -42,6 +42,8 @@ class GenericHost : public GenericHashEntry {
   void dumpStats(bool forceDump);
   void readStats();
 
+  virtual void computeHostSerial() { ; }
+
  public:
   GenericHost(NetworkInterface *_iface);
   ~GenericHost();
