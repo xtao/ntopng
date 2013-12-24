@@ -734,7 +734,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   if(sqlite3_exec(db,
 		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);"
-		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);"
+		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `interface_idx` INTEGER, `host_name` STRING KEY);"
 		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, "
 		  "`client_host_idx` KEY INTEGER, `server_host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);"
 		  "BEGIN;",  NULL, 0, &zErrMsg) != SQLITE_OK) {
@@ -764,7 +764,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	u_int diff = time(NULL)-begin;
 
 	if(diff == 0) diff = 1;
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed [%.f activities/sec]", num_activities, (float)num_activities/(float)diff);
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed [%.f activities/sec]", 
+				     num_activities, (float)num_activities/(float)diff);
       }
 
       snprintf(key, sizeof(key), "%s", _key);
@@ -790,8 +791,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	    char *zErrMsg;
 	    char buf[256];
 
-	    snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');",
-		     host_index, host_buf);
+	    snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
+		     host_index, interface_idx, host_buf);
 
 	    ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
 
