@@ -34,41 +34,33 @@ class GenericHost;
 class HostContacts {
  protected:
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
-  void incrIPContacts(NetworkInterface *iface, IpAddress *me, char *me_name, IpAddress *peer, 
+  void incrIPContacts(NetworkInterface *iface, u_int32_t me_serial, IpAddress *peer, 
 		      bool contacted_peer_as_client, IPContacts *contacts,
 		      u_int32_t value, u_int family_id, bool aggregated_host);
-  void dbDumpHost(char *daybuf, NetworkInterface *iface, char *key,
-		  IpAddress *peer, u_int family_id,
+  void dbDumpHost(char *daybuf, NetworkInterface *iface, u_int32_t host_id,
+		  u_int32_t peer_id, u_int family_id,
 		  u_int32_t num_contacts);
   u_int8_t get_queue_id(char *str);
   char* get_cache_key(char *daybuf, char *ifname,
-		      const char *key_type, char *key,
+		      u_int32_t host_id,
 		      bool client_mode,
 		      char *buf, u_int buf_len);
  public:
   HostContacts();
 
-  void dbDump(char *daybuf, NetworkInterface *iface, char *key, u_int16_t family_id);
-  inline void incrContact(NetworkInterface *iface, IpAddress *me, 
+  void dbDumpAllHosts(char *daybuf, NetworkInterface *iface, u_int32_t host_id, u_int16_t family_id);
+  inline void incrContact(NetworkInterface *iface, u_int32_t me_serial, 
 			  IpAddress *peer, bool contacted_peer_as_client,
 			  u_int32_t value, u_int family_id,
 			  bool aggregated_host) { 
-    incrIPContacts(iface, me, NULL, peer, contacted_peer_as_client,
-		   contacted_peer_as_client ? clientContacts : serverContacts, value, 
-		   family_id, aggregated_host);
-  };
-
-  inline void incrContact(NetworkInterface *iface, char *me, 
-			  IpAddress *peer, bool contacted_peer_as_client,
-			  u_int32_t value, u_int family_id,
-			  bool aggregated_host) { 
-    incrIPContacts(iface, NULL, me, peer, contacted_peer_as_client,
+    incrIPContacts(iface, me_serial, peer, contacted_peer_as_client,
 		   contacted_peer_as_client ? clientContacts : serverContacts, value, 
 		   family_id, aggregated_host);
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);
-  void getIPContacts(lua_State* vm);
+  void getContacts(lua_State* vm);
+  bool hasHostContacts(char *host);    
   char* serialize();
   void deserialize(NetworkInterface *iface, GenericHost *h, json_object *o);
   json_object* getJSONObject();

@@ -62,9 +62,9 @@ class Redis {
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
 
   void getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts);
-  int incrContact(char *key, u_int16_t family_id, char *peer, u_int32_t value);
+  int incrHostContacts(char *key, u_int16_t family_id, u_int32_t peer_id, u_int32_t value);
 
-  int addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name);
+  int addHostToDBDump(NetworkInterface *iface, IpAddress *ip, char *name);
 
   int smembers(lua_State* vm, char *setName);
 

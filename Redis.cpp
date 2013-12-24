@@ -587,13 +587,13 @@ void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts)
 
 /* **************************************** */
 
-int Redis::incrContact(char *key, u_int16_t family_id,
-		       char *peer, u_int32_t value) {
+int Redis::incrHostContacts(char *key, u_int16_t family_id,
+			    u_int32_t peer_id, u_int32_t value) {
   int rc;
   redisReply *reply;
   char buf[128];
 
-  snprintf(buf, sizeof(buf), "%s@%u", peer, family_id);
+  snprintf(buf, sizeof(buf), "%u@%u", peer_id, family_id);
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "HINCRBY %s %s %u", key, buf, value);
@@ -610,9 +610,8 @@ int Redis::incrContact(char *key, u_int16_t family_id,
   Hosts:       [name == NULL] && [ip != NULL]
   StringHosts: [name != NULL] && [ip == NULL]
 */
-int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
+int Redis::addHostToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   char buf[64], daybuf[32], *what;
-  int rc = 0;
   redisReply *reply;
   time_t when = time(NULL);
   u_int32_t id;
@@ -623,18 +622,17 @@ int Redis::addIpToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   id = host_to_id(daybuf, what, &new_key);
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%s|%u", daybuf,
-				    ip ? CONST_HOST_CONTACTS : CONST_AGGREGATIONS,
+  reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u", daybuf,
 				    iface->get_name(), id);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-  
+
   if(new_key)
     ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
-  
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+
+  if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
 
-  return(rc);
+  return(id);
 }
 
 /* **************************************** */
@@ -714,12 +712,11 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   sqlite3 *db;
   char buf[256];
   char *zErrMsg;
-  u_int32_t activity_idx = 0, contact_idx = 0;
+  u_int32_t contact_idx = 0;
   char path[MAX_PATH];
   time_t begin = time(NULL);
   u_int num_interfaces = 0, num_hosts = 0, num_activities = 0;
   u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];
-  bool new_key;
 
   snprintf(path, sizeof(path), "%s/datadump",
 	   ntop->get_working_dir());
@@ -738,9 +735,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   if(sqlite3_exec(db,
 		  (char*)"CREATE TABLE IF NOT EXISTS `interfaces` (`idx` INTEGER PRIMARY KEY, `interface_name` STRING);"
 		  "CREATE TABLE IF NOT EXISTS `hosts` (`idx` INTEGER PRIMARY KEY, `host_name` STRING KEY);"
-		  "CREATE TABLE IF NOT EXISTS `activities` (`idx` INTEGER PRIMARY KEY, `interface_idx` INTEGER, `host_idx` INTEGER, `activity_type` INTEGER);"
-		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, `activity_idx` INTEGER KEY, "
-		  "`contact_type` INTEGER, `host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);"
+		  "CREATE TABLE IF NOT EXISTS `contacts` (`idx` INTEGER PRIMARY KEY, "
+		  "`client_host_idx` KEY INTEGER, `server_host_idx` INTEGER KEY, `contact_family` INTEGER, `num_contacts` INTEGER);"
 		  "BEGIN;",  NULL, 0, &zErrMsg) != SQLITE_OK) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: [%s][%s]", zErrMsg, buf);
     sqlite3_free(zErrMsg);
@@ -760,9 +756,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       char *_key = (char*)reply->str, key[256];
       char hash_key[512], buf[512];
       redisReply *r, *r1, *r2;
-      bool to_add = false;
-      u_int32_t activity_type;
-      char *what, *iface, *host, *token;
+      char *iface, *host, *token;
 
       num_activities++;
 
@@ -775,31 +769,46 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
       snprintf(key, sizeof(key), "%s", _key);
 
-      // key = aggregations|ethX|mail.xxxxxx.com
-      if((what = strtok_r(key, "|", &token)) != NULL) {
-	if((iface = strtok_r(NULL, "|", &token)) != NULL) {
-	  if((host = strtok_r(NULL, "|", &token)) != NULL) {
-	    u_int32_t host_index = atol(host);
-	    u_int32_t interface_idx = (u_int32_t)-1;
-	    char host_buf[256];
+      // key = ethX|mail.xxxxxx.com
+      if((iface = strtok_r(key, "|", &token)) != NULL) {
+	if((host = strtok_r(NULL, "|", &token)) != NULL) {
+	  u_int32_t host_index = atol(host);
+	  u_int32_t interface_idx = (u_int32_t)-1;
+	  char host_buf[256];
 
-	    /* Compute interface id */
-	    for(u_int i=0; i<num_interfaces; i++) {
-	      if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
-		interface_idx = i;
-		break;
-	      }
+	  /* Compute interface id */
+	  for(u_int i=0; i<num_interfaces; i++) {
+	    if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
+	      interface_idx = i;
+	      break;
+	    }
+	  }
+
+	  if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
+	  } else {
+	    char *zErrMsg;
+	    char buf[256];
+
+	    snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');",
+		     host_index, host_buf);
+
+	    ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+
+	    if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+	      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+	      sqlite3_free(zErrMsg);
 	    }
 
-	    if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
-	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
-	    } else {
-	      char *zErrMsg;
-	      char buf[256];
+	    num_hosts++;
+	  }
 
-	      snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,'%s');",
-		       host_index, host_buf);
+	  if(interface_idx == (u_int32_t)-1) {
+	    if(num_interfaces < MAX_NUM_INTERFACES) {
+	      snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
 
+	      snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');",
+		       num_interfaces, iface);
 	      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
 
 	      if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
@@ -807,101 +816,67 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		sqlite3_free(zErrMsg);
 	      }
 
-	      num_hosts++;
+	      interface_idx = num_interfaces;
+	      num_interfaces++;
 	    }
+	  }
 
-	    if(interface_idx == (u_int32_t)-1) {
-	      if(num_interfaces < MAX_NUM_INTERFACES) {
-		snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
+	  for(u_int32_t loop=0; loop<2; loop++) {
+	    snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
+		     (loop == 0) ? "contacted_by" : "contacted_peer");
 
-		snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');",
-			 num_interfaces, iface);
-		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+	    l->lock(__FILE__, __LINE__);
+	    r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
+	    if(r && (r->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	    l->unlock(__FILE__, __LINE__);
 
-		if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-		  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-		  sqlite3_free(zErrMsg);
-		}
-
-		interface_idx = num_interfaces;
-		num_interfaces++;
-	      }
-	    }
-
-	    activity_type = (what[0] == 'a' /* aggregations */) ? 1 : 0;
-
-	    for(u_int32_t loop=0; loop<2; loop++) {
-	      snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
-		       (loop == 0) ? "contacted_by" : "contacted_peer");
-
-	      l->lock(__FILE__, __LINE__);
-	      r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
-	      if(r && (r->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
-	      l->unlock(__FILE__, __LINE__);
-
-	      if(r && (r->type == REDIS_REPLY_ARRAY)) {
-		to_add = true;
-
-		for(u_int32_t j = 0; j < r->elements; j++) {
-		  l->lock(__FILE__, __LINE__);
-		  r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
-		  if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
-		  l->unlock(__FILE__, __LINE__);
-
-		  if(r1 && r1->str) {
-		    // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
-		    // r->element[j]->str = 77.73.57.30@5
-		    // r1->str = 2
-		    //fprintf(contacts_file, "%s,%s,%s\n", hash_key, r->element[j]->str, r1->str);
-		    char *contact_host, *contact_family, *subtoken;
-
-		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
-		      if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-			u_int32_t contact_host_index = host_to_id(day, contact_host, &new_key);
-
-			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%u,%u,%u,%s,%s);",
-				 contact_idx++, activity_idx, loop, contact_host_index, contact_family, r1->str);
-
-			ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-			if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-			  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-			  sqlite3_free(zErrMsg);
-			}
-		      }
-		    }
-
-		    l->lock(__FILE__, __LINE__);
-		    r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
-		    if(r2 && (r2->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
-		    l->unlock(__FILE__, __LINE__);
-
-		    if(r2) freeReplyObject(r2);
-		  }
-
-		  if(r1) freeReplyObject(r1);
-		}
-	      }
-
-	      if(r) freeReplyObject(r);
-
-	      if(to_add) {
-		snprintf(buf, sizeof(buf), "INSERT INTO activities VALUES (%u,%u,%u,%u);",
-			 activity_idx++, interface_idx, host_index, activity_type);
-
-		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-		if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-		  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-		  sqlite3_free(zErrMsg);
-		}
-
+	    if(r && (r->type == REDIS_REPLY_ARRAY)) {
+	      for(u_int32_t j = 0; j < r->elements; j++) {
 		l->lock(__FILE__, __LINE__);
-		r1 = (redisReply*)redisCommand(redis, "DEL %s", hash_key);
+		r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
 		if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
 		l->unlock(__FILE__, __LINE__);
+
+		if(r1 && r1->str) {
+		  // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
+		  // r->element[j]->str = 77.73.57.30@5
+		  // r1->str = 2
+		  //fprintf(contacts_file, "%s,%s,%s\n", hash_key, r->element[j]->str, r1->str);
+		  char *contact_host, *contact_family, *subtoken;
+
+		  if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
+		    if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
+		      char *client_idx, *server_idx;
+
+		      if(loop == 0)
+			client_idx = contact_host, server_idx = host; /* contacted_by */
+		      else
+			client_idx = host, server_idx = contact_host; /* contacted_peer */
+
+		      snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%s,%s,%s,%s);",
+			       contact_idx++, client_idx, server_idx, contact_family, r1->str);
+
+		      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+		      if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+			ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+			sqlite3_free(zErrMsg);
+		      }
+		    }
+		  }
+
+		  l->lock(__FILE__, __LINE__);
+		  r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
+		  if(r2 && (r2->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
+		  l->unlock(__FILE__, __LINE__);
+
+		  if(r2) freeReplyObject(r2);
+		}
 
 		if(r1) freeReplyObject(r1);
 	      }
 	    }
+
+	    if(r) freeReplyObject(r);
 	  }
 	}
       }
@@ -909,7 +884,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       freeReplyObject(reply);
     } else
       break;
-  }
+  } /* while */
 
   rc = true;
 
@@ -921,9 +896,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   begin = time(NULL)-begin;
   if(begin == 0) begin = 1;
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
-			       "Processed %u hosts, %u activities, %u contacts in %u sec [%.1f activities/sec][%s]",
-			       num_hosts, contact_idx, activity_idx, 
-			       begin, ((float)activity_idx)/((float)begin), day);
+			       "Processed %u hosts, %u contacts in %u sec [%.1f contacts/sec][%s]",
+			       num_hosts, contact_idx,
+			       begin, ((float)contact_idx)/((float)begin), day);
 
   snprintf(buf, sizeof(buf), "%s.hostkeys", day);
   del(buf);

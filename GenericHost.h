@@ -46,25 +46,21 @@ class GenericHost : public GenericHashEntry {
   GenericHost(NetworkInterface *_iface);
   ~GenericHost();
 
-  void dumpContacts(char *host_key, u_int16_t family_id);
+  void dumpHostContacts(u_int16_t family_id);
   inline bool isLocalHost()          { return(localHost); };
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
-  inline void incrContact(NetworkInterface *iface, IpAddress *me, IpAddress *peer, 
+  inline void incrContact(NetworkInterface *iface, u_int32_t me_serial, IpAddress *peer, 
 			  bool contacted_peer_as_client,
 			  u_int family_id = HOST_FAMILY_ID, bool aggregated_host = false) {
-    contacts->incrContact(iface, me, peer, contacted_peer_as_client, 1,
+    contacts->incrContact(iface, me_serial, peer, contacted_peer_as_client, 1,
 			 family_id, aggregated_host); 
   }
-  inline void incrContact(NetworkInterface *iface, char *me_str, IpAddress *peer, 
-			  bool contacted_peer_as_client,
-			  u_int family_id = HOST_FAMILY_ID, bool aggregated_host = false) {
-    contacts->incrContact(iface, me_str, peer, contacted_peer_as_client, 1, 
-			 family_id, aggregated_host); 
-  }
-  inline void flushContacts()         { contacts->purgeAll();               }
-  void getHostContacts(lua_State* vm) { contacts->getIPContacts(vm);        };
+
+  inline void flushContacts()         { contacts->purgeAll();                    };
+  void getHostContacts(lua_State* vm) { contacts->getContacts(vm);               };
+  bool hasHostContacts(char *host)    { return(contacts->hasHostContacts(host)); };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts->get_num_contacts_by(host_ip)); };
   inline u_int32_t get_host_serial()  { return(host_serial);               };
   void updateStats(struct timeval *tv);

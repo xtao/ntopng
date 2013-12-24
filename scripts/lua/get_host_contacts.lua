@@ -113,7 +113,7 @@ end
 
 t = os.time()
 when = os.date("%y%m%d", t)
-base_name = when.."|host_contacts|"..ifname.."|"..host
+base_name = when.."|"..ifname.."|"..host
 keyname = base_name.."|"..mode
 
 v1 = ntop.getHashKeysCache(keyname)

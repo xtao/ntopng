@@ -44,12 +44,12 @@ GenericHost::~GenericHost() {
 
 /* *************************************** */
 
-void GenericHost::dumpContacts(char *host_key, u_int16_t family_id) {
+void GenericHost::dumpHostContacts(u_int16_t family_id) {
   char daybuf[64];
   time_t when = time(NULL);
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
-  contacts->dbDump(daybuf, iface, host_key, family_id);
+  contacts->dbDumpAllHosts(daybuf, iface, host_serial, family_id);
 }
 
 /* *************************************** */

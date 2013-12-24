@@ -756,6 +756,17 @@ function mapOS2Icon(name)
    return(getOSIcon(name) .. name)
 end
 
+function getItemsNumber(n) 
+   tot = 0
+   for k,v in pairs(n) do
+      --io.write(k.."\n")
+      tot = tot + 1
+   end
+
+   --io.write(tot.."\n")
+   return(tot)
+end
+
 -- version is major.minor.veryminor
 function version2int(v)
    e = string.split(v, "%.");

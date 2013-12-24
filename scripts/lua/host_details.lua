@@ -183,7 +183,7 @@ end
 
 t = os.time()
 when = os.date("%y%m%d", t)
-base_name = when.."|host_contacts|"..ifname.."|"..ntop.getHostId(host_ip)
+base_name = when.."|"..ifname.."|"..ntop.getHostId(host_ip)
 keyname = base_name.."|contacted_peers"
 v1 = ntop.getHashKeysCache(keyname)
 --print(keyname.."\n")
@@ -201,12 +201,12 @@ if(v1 ~= nil) then
    end
 end
 
-if(interface.getNumAggregatedHosts() > 0) then
-if(page == "aggregations") then
-  print("<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
-else
-  print("<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
-end
+if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
+   if(page == "aggregations") then
+      print("<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
+   else
+      print("<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
+   end
 end
 
 
@@ -580,7 +580,7 @@ print [[
 
    t = os.time()
    when = os.date("%y%m%d", t)
-   base_name = when.."|host_contacts|"..ifname.."|"..ntop.getHostId(host_ip)
+   base_name = when.."|"..ifname.."|"..ntop.getHostId(host_ip)
    keyname = base_name.."|contacted_peers"
    --io.write(keyname.."\n")
    -- print(keyname.."\n") 

@@ -59,6 +59,9 @@ Defaults
 The ntopng default user is 'admin' (without ') and the default
 passoword is also 'admin' (without ').
 
+Debugging ntopng
+----------------
+handle SIGPIPE nostop noprint pass
 
 -------------------------------------
 Luca Deri <deri@ntop.org> - July 2013

@@ -799,9 +799,8 @@ static bool aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
   StringHost *host = (StringHost*)h;
 
   if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
-    if((info->host == NULL) || (!strcmp(info->host, host->host_key()))) {
-      host->lua(info->vm, true);
-    }
+    if((info->host == NULL) || host->hasHostContacts(info->host))
+      host->lua(info->vm, true);    
   }
 
   return(false); /* false = keep on walking */

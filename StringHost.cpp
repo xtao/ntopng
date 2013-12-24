@@ -57,8 +57,8 @@ void StringHost::flushContacts() {
     bool _localHost = localHost;
 
     localHost = true; /* Hack */
-    host_serial = ntop->getRedis()->addIpToDBDump(iface, NULL, keyname);
-    dumpContacts(keyname, family_id);
+    host_serial = ntop->getRedis()->addHostToDBDump(iface, NULL, keyname);
+    dumpHostContacts(family_id);
     contacts->purgeAll();
     localHost = _localHost;
   } 

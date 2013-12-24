@@ -102,7 +102,7 @@ Host::~Host() {
     }
   }
 
-  dumpContacts(k, HOST_FAMILY_ID);
+  dumpHostContacts(HOST_FAMILY_ID);
 
   save_alternate_name();
 
@@ -126,9 +126,7 @@ Host::~Host() {
 /* *************************************** */
 
 void Host::flushContacts() {
-  char key[128], *k = get_string_key(key, sizeof(key));
-
-  dumpContacts(k, HOST_FAMILY_ID);
+  dumpHostContacts(HOST_FAMILY_ID);
   contacts->purgeAll();
 }
 
@@ -196,7 +194,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   if(ip
      && iface
      && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    host_serial = ntop->getRedis()->addIpToDBDump(iface, ip, NULL);
+    host_serial = ntop->getRedis()->addHostToDBDump(iface, ip, NULL);
   }
 }
 
@@ -466,7 +464,7 @@ u_int32_t Host::key() {
 
 void Host::incrContact(Host *_peer, bool contacted_peer_as_client) {
   if(_peer->get_ip() != NULL)
-    ((GenericHost*)this)->incrContact(iface, get_ip(), _peer->get_ip(),
+    ((GenericHost*)this)->incrContact(iface, get_host_serial(), _peer->get_ip(),
 				      contacted_peer_as_client);
 }
 
