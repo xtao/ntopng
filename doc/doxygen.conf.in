@@ -38,7 +38,7 @@ PROJECT_NAME           = ntopng
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = 1.1
+PROJECT_NUMBER         = @NTOPNG_VERSION@
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -776,6 +776,7 @@ FILE_PATTERNS          = *.c \
                          *.i++ \
                          *.inl \
                          *.idl \
+                         *.lua \
                          *.ddl \
                          *.odl \
                          *.h \
@@ -902,7 +903,7 @@ INPUT_FILTER           =
 # filters are used. If the FILTER_PATTERNS tag is empty or if none of the
 # patterns match the file name, INPUT_FILTER is applied.
 
-FILTER_PATTERNS        = 
+FILTER_PATTERNS        = *.lua=/opt/local/bin/lua2dox
 
 # If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using
 # INPUT_FILTER ) will also be used to filter the input files that are used for

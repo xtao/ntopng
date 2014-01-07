@@ -622,6 +622,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 SVN_WC_DB
 SVN_DATE
+NTOPNG_VERSION
 DL_LIB
 SVN
 GPP
@@ -2953,7 +2954,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-NTOPNG_VERS=`cat ./configure.in | head -2 | grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
+NTOPNG_VERSION=`cat ./configure.in | head -2 | grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
 CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"
 CPPFLAGS="${CPPFLAGS} -I/usr/local/include -I/opt/local/include"
 LDFLAGS="${LDFLAGS} -L/usr/local/lib -L/opt/local/lib"
@@ -2970,7 +2971,7 @@ cat >>confdefs.h <<_ACEOF
 #define NTOPNG_SVN_DATE "${SVN_DATE}"
 _ACEOF
 
-PACKAGE_VERSION="${NTOPNG_VERS}_${SVN_RELEASE}"
+PACKAGE_VERSION="${NTOPNG_VERSION}_${SVN_RELEASE}"
 
 if test -f ".svn/wc.db"; then
    SVN_WC_DB=".svn/wc.db"
@@ -3879,6 +3880,7 @@ _ACEOF
 
 
 
+
 ac_config_headers="$ac_config_headers config.h"
 
 ac_config_files="$ac_config_files packages/ntopng.spec"
@@ -3886,6 +3888,8 @@ ac_config_files="$ac_config_files packages/ntopng.spec"
 ac_config_files="$ac_config_files packages/ntopng-data.spec"
 
 ac_config_files="$ac_config_files Makefile"
+
+ac_config_files="$ac_config_files doc/doxygen.conf"
 
 
 cat >confcache <<\_ACEOF
@@ -4581,6 +4585,7 @@ do
     "packages/ntopng.spec") CONFIG_FILES="$CONFIG_FILES packages/ntopng.spec" ;;
     "packages/ntopng-data.spec") CONFIG_FILES="$CONFIG_FILES packages/ntopng-data.spec" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "doc/doxygen.conf") CONFIG_FILES="$CONFIG_FILES doc/doxygen.conf" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
