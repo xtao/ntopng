@@ -612,27 +612,12 @@ int Redis::incrHostContacts(char *key, u_int16_t family_id,
 */
 int Redis::addHostToDBDump(NetworkInterface *iface, IpAddress *ip, char *name) {
   char buf[64], daybuf[32], *what;
-  redisReply *reply;
   time_t when = time(NULL);
-  u_int32_t id;
   bool new_key;
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   what = ip ? ip->print(buf, sizeof(buf)) : name;
-  id = host_to_id(daybuf, what, &new_key);
-
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u", daybuf,
-				    iface->get_name(), id);
-  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-
-  if(new_key)
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %s", what);
-
-  if(reply) freeReplyObject(reply);
-  l->unlock(__FILE__, __LINE__);
-
-  return(id);
+  return(host_to_id(iface, daybuf, what, &new_key));
 }
 
 /* **************************************** */
@@ -667,10 +652,11 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 /* *************************************** */
 
-u_int32_t Redis::host_to_id(char *daybuf, char *host_name, bool *new_key) {
+u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
   char buf[32], rsp[32], host_id[16];
+  redisReply *reply;
 
   /* Add host key if missing */
   snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
@@ -684,6 +670,16 @@ u_int32_t Redis::host_to_id(char *daybuf, char *host_name, bool *new_key) {
     hashSet(buf, host_name, host_id); /* Forth */
     hashSet(buf, host_id, host_name); /* ...and back */
     *new_key = true;
+
+    l->lock(__FILE__, __LINE__);
+    reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u", daybuf,
+				      iface->get_name(), id);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+    
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %u", host_id);
+    
+    if(reply) freeReplyObject(reply);
+    l->unlock(__FILE__, __LINE__);
   } else
     id = atol(rsp), *new_key = false;
 
@@ -824,60 +820,68 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 	  for(u_int32_t loop=0; loop<2; loop++) {
 	    snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
-		     (loop == 0) ? "contacted_by" : "contacted_peer");
+		     (loop == 0) ? "contacted_by" : "contacted_peers");
 
 	    l->lock(__FILE__, __LINE__);
 	    r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
 	    if(r && (r->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
 	    l->unlock(__FILE__, __LINE__);
 
-	    if(r && (r->type == REDIS_REPLY_ARRAY)) {
-	      for(u_int32_t j = 0; j < r->elements; j++) {
-		l->lock(__FILE__, __LINE__);
-		r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
-		if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
-		l->unlock(__FILE__, __LINE__);
-
-		if(r1 && r1->str) {
-		  // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
-		  // r->element[j]->str = 77.73.57.30@5
-		  // r1->str = 2
-		  //fprintf(contacts_file, "%s,%s,%s\n", hash_key, r->element[j]->str, r1->str);
-		  char *contact_host, *contact_family, *subtoken;
-
-		  if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
-		    if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-		      char *client_idx, *server_idx;
-
-		      if(loop == 0)
-			client_idx = contact_host, server_idx = host; /* contacted_by */
-		      else
-			client_idx = host, server_idx = contact_host; /* contacted_peer */
-
-		      snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%s,%s,%s,%s);",
-			       contact_idx++, client_idx, server_idx, contact_family, r1->str);
-
-		      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-		      if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-			ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-			sqlite3_free(zErrMsg);
-		      }
-		    }
-		  }
-
+	    if(r) {
+	      if(r->type == REDIS_REPLY_ARRAY) {
+		for(u_int32_t j = 0; j < r->elements; j++) {
 		  l->lock(__FILE__, __LINE__);
-		  r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
-		  if(r2 && (r2->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
+		  r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
+		  if(r1 && (r1->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
 		  l->unlock(__FILE__, __LINE__);
 
-		  if(r2) freeReplyObject(r2);
-		}
+		  if(r1 && r1->str) {
+		    // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
+		    // r->element[j]->str = 77.73.57.30@5
+		    // r1->str = 2
+		    //fprintf(contacts_file, "%s,%s,%s\n", hash_key, r->element[j]->str, r1->str);
+		    char *contact_host, *contact_family, *subtoken;
 
-		if(r1) freeReplyObject(r1);
+		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
+		      if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
+			char *client_idx, *server_idx;
+
+			if(loop == 0)
+			  client_idx = contact_host, server_idx = host; /* contacted_by */
+			else
+			  client_idx = host, server_idx = contact_host; /* contacted_peer */
+
+			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%s,%s,%s,%s);",
+				 contact_idx++, client_idx, server_idx, contact_family, r1->str);
+
+			ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+			if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+			  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+			  sqlite3_free(zErrMsg);
+			}
+		      }
+		    }
+
+		    l->lock(__FILE__, __LINE__);
+		    r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
+		    if(r2 && (r2->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
+		    l->unlock(__FILE__, __LINE__);
+
+		    if(r2) freeReplyObject(r2);
+		  }
+
+		  if(r1) freeReplyObject(r1);
+		}
 	      }
+
+	      freeReplyObject(r);
 	    }
 
-	    if(r) freeReplyObject(r);
+	    l->lock(__FILE__, __LINE__);
+	    r = (redisReply*)redisCommand(redis, "DEL %s", hash_key);
+	    if(r && (r->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	    l->unlock(__FILE__, __LINE__);
+	    freeReplyObject(r);
 	  }
 	}
       }

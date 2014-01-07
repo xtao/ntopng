@@ -1439,12 +1439,20 @@ static int ntop_redis_get_host_id(lua_State* vm) {
   char daybuf[32];
   time_t when = time(NULL);
   bool new_key;
+  NetworkInterface *ntop_interface;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((host_name = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    // ntop_interface = ntop->getInterfaceId(0);
+  }
+
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
-  lua_pushinteger(vm, redis->host_to_id(daybuf, host_name, &new_key));
+  lua_pushinteger(vm, redis->host_to_id(ntop_interface, daybuf, host_name, &new_key));
 
   return(CONST_LUA_OK);
 }

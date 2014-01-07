@@ -70,7 +70,7 @@ class Redis {
 
   bool dumpDailyStatsKeys(char *day);
 
-  u_int32_t host_to_id(char *daybuf, char *host_name, bool *new_key);
+  u_int32_t host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key);
   int id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len);
 
   /**

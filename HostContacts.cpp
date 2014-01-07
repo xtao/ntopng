@@ -68,7 +68,8 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
       u_int32_t peer_serial;
       
       strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
-      peer_serial = ntop->getRedis()->host_to_id(daybuf, contacts[least_idx].host.print(buf, sizeof(buf)), &new_key);
+      peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, 
+						 contacts[least_idx].host.print(buf, sizeof(buf)), &new_key);
 
       if(contacted_peer_as_client)
 	dbDumpHost(daybuf, iface, me_serial, peer_serial,
@@ -337,7 +338,7 @@ void HostContacts::dbDumpAllHosts(char *daybuf, NetworkInterface *iface,
 			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
 	char *peer_ip = clientContacts[i].host.print(buf, sizeof(buf));
 	bool new_key;
-	u_int32_t peer_serial = ntop->getRedis()->host_to_id(daybuf, peer_ip, &new_key);
+	u_int32_t peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, peer_ip, &new_key);
 
 	k = get_cache_key(daybuf, ifname,
 			  host_id,
@@ -361,7 +362,7 @@ void HostContacts::dbDumpAllHosts(char *daybuf, NetworkInterface *iface,
 			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
 	bool new_key;
 	char *peer_ip = serverContacts[i].host.print(buf, sizeof(buf));
-	u_int32_t peer_serial = ntop->getRedis()->host_to_id(daybuf, peer_ip, &new_key);
+	u_int32_t peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, peer_ip, &new_key);
 
 	k = get_cache_key(daybuf, ifname,
 			  host_id, false, cmd, sizeof(cmd));
