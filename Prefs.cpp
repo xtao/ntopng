@@ -69,6 +69,7 @@ Prefs::~Prefs() {
   if(config_file_path) free(config_file_path);
   if(user) free(user);
   if(pid_path) free(pid_path);
+  if(packet_filter) free(packet_filter);
 }
 
 /* ******************************************* */
@@ -259,7 +260,11 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'B':
-    packet_filter = optarg;
+    if((optarg[0] == '\"') && (strlen(optarg) > 2)) {
+      packet_filter = strdup(&optarg[1]);      
+      packet_filter[strlen(packet_filter)-1] = '\0';
+    } else
+      packet_filter = strdup(optarg);
     break;
 
   case 'c':
