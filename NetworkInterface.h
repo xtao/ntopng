@@ -64,6 +64,7 @@ typedef struct zmq_flow {
  */
 class NetworkInterface {
  protected:
+  
   char *ifname; /**< Network interface name.*/
   EthStats ethStats; 
   int pcap_datalink_type; /**< Datalink type of pcap.*/

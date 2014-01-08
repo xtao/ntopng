@@ -655,27 +655,39 @@ int Redis::smembers(lua_State* vm, char *setName) {
 u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
-  char buf[32], rsp[32], host_id[16];
+  char buf[32], keybuf[384], rsp[32], host_id[16];
   redisReply *reply;
+
+  snprintf(keybuf, sizeof(keybuf), "%s|%s", iface->get_name(), host_name);
 
   /* Add host key if missing */
   snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
-  rc = hashGet(buf, host_name, rsp, sizeof(rsp));
+  rc = hashGet(buf, keybuf, rsp, sizeof(rsp));
 
   if(rc == -1) {
     /* Not found */
     snprintf(host_id, sizeof(host_id), "%u", id = incrKey((char*)NTOP_HOSTS_SERIAL));
 
     /* Set the data */
-    hashSet(buf, host_name, host_id); /* Forth */
-    hashSet(buf, host_id, host_name); /* ...and back */
+    hashSet(buf, keybuf, host_id); /* Forth */
+    hashSet(buf, host_id, keybuf); /* ...and back */
     *new_key = true;
 
     l->lock(__FILE__, __LINE__);
-    reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u", daybuf,
-				      iface->get_name(), id);
-    if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
-    
+    reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u",
+				      daybuf, iface->get_name(), id);
+
+    if(reply) {
+      if(reply->type == REDIS_REPLY_INTEGER) {
+	if(reply->integer != 1)
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "'SADD %s.keys %s|%u' returned %lld",
+				       daybuf, iface->get_name(), id, reply->integer);
+      } else if(reply->type == REDIS_REPLY_ERROR)
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+      else
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid reply type [%d]", reply->type);
+    }
+
     ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %u", host_id);
     
     if(reply) freeReplyObject(reply);
@@ -820,7 +832,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 	  for(u_int32_t loop=0; loop<2; loop++) {
 	    snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
-		     (loop == 0) ? "contacted_by" : "contacted_peers");
+		     (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
 
 	    l->lock(__FILE__, __LINE__);
 	    r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
