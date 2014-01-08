@@ -72,11 +72,11 @@ class NetworkInterface {
   int cpu_affinity; /**< Index of physical core where the network interface works.*/
   NdpiStats ndpiStats; 
   PacketStats pktStats; 
-  FlowHash *flows_hash; /**< Hash used to memorize the flows informations.*/
+  FlowHash *flows_hash; /**< Hash used to memorize the flows information.*/
   /* Hosts */
-  HostHash *hosts_hash; /**< Hash used to memorize the hosts informations.*/
+  HostHash *hosts_hash; /**< Hash used to memorize the hosts information.*/
   /* String hash (Aggregation) */
-  StringHash *strings_hash; /**< Hash used to memorize the aggregation informations.*/
+  StringHash *strings_hash; /**< Hash used to memorize the aggregation information.*/
   bool purge_idle_flows_hosts;
   DB *db;
 

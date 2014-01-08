@@ -81,7 +81,7 @@ if(page == "overview") then
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Query Number</th><td><span id=contacts>" .. formatValue(host["pkts.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
+   print("<tr><th>Query Number</th><td><span id=contacts></span> <span id=contacts_trend></span></td></tr>\n")
 
 
    print [[
@@ -180,7 +180,7 @@ end
 end
 
 
-print("<script>\nvar contacts = " .. host["pkts.rcvd"] .. ";")
+print("<script>\nvar contacts = 0;")
 print [[
 
 setInterval(function() {
@@ -192,14 +192,14 @@ setInterval(function() {
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
-			$('#contacts').html(addCommas(rsp.num_contacts));
+			$('#contacts').html(addCommas(rsp.num_queries));
 
-			if(contacts == rsp.num_contacts) {
+			if(contacts == rsp.num_queries) {
 			   $('#contacts_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
 			   $('#contacts_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
-			contacts = rsp.num_contacts;
+			contacts = rsp.num_queries;
 
 			for (var i = 0; i < rsp.contacts.length; i++) {
 			   var key = '#'+rsp.contacts[i].key.replace(/\./g, '_');

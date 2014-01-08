@@ -37,7 +37,7 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
     Set to true if this host can be persistently
     written on disk
   */
-  tracked_host = false;
+  tracked_host = false, queriesReceived = 0;
   readStats();
 }
 
@@ -93,6 +93,7 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
   lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
   lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
+  lua_push_int_table_entry(vm, "queries.rcvd", queriesReceived);
   lua_push_int_table_entry(vm, "seen.first", first_seen);
   lua_push_int_table_entry(vm, "seen.last", last_seen);
   lua_push_int_table_entry(vm, "duration", get_duration());

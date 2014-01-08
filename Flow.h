@@ -32,7 +32,7 @@ class Flow : public GenericHashEntry {
   u_int8_t protocol, tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
   bool detection_completed, protocol_processed;
-  u_int16_t detected_protocol;
+  u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
   struct {
@@ -43,6 +43,10 @@ class Flow : public GenericHashEntry {
   /* Stats */
   u_int32_t cli2srv_packets, srv2cli_packets;
   u_int64_t cli2srv_bytes, srv2cli_bytes;
+
+  struct {
+    char *name;
+  } aggregationInfo;
 
   /* Counter values at last host update */
   struct timeval last_update_time;
@@ -92,15 +96,16 @@ class Flow : public GenericHashEntry {
   inline u_int64_t get_bytes()                    { return(cli2srv_bytes+srv2cli_bytes);     };
   inline u_int64_t get_packets()                  { return(cli2srv_packets+srv2cli_packets); };
   inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol));   };
-  inline u_int16_t get_detected_protocol()        { return(detected_protocol);               };
-  inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol)); };
+  inline u_int16_t get_detected_protocol()        { return(ndpi_detected_protocol);          };
+  inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), ndpi_detected_protocol)); };
   inline Host* get_cli_host()                     { return(cli_host);                        };
   inline Host* get_srv_host()                     { return(srv_host);                        };
   inline char* get_json_info()			  { return(json_info);                       };
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
   void aggregateInfo(char *name, u_int8_t l4_proto, 
-		     u_int16_t ndpi_proto_id, bool aggregation_to_track);
+		     u_int16_t ndpi_proto_id,
+		     bool aggregation_to_track);
   bool idle();
   int compare(Flow *fb);
   void print();

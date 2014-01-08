@@ -32,7 +32,7 @@ Flow::Flow(NetworkInterface *_iface,
   cli2srv_packets = 0, cli2srv_bytes = 0, srv2cli_packets = 0, srv2cli_bytes = 0, cli2srv_last_packets = 0,
     cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
 
-  detection_completed = false, detected_protocol = NDPI_PROTOCOL_UNKNOWN;
+  detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL;
   json_info = strdup("{}");
   tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
@@ -45,6 +45,8 @@ Flow::Flow(NetworkInterface *_iface,
   categorization.category = NULL, categorization.flow_categorized = false;
   bytes_thpt_trend = trend_unknown;
   protocol_processed = false;
+
+  aggregationInfo.name = NULL;
   /*
     NOTE
 
@@ -98,6 +100,7 @@ Flow::~Flow() {
   if(categorization.category != NULL) free(categorization.category);
   if(json_info) free(json_info);
 
+  if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
 }
 
@@ -109,14 +112,18 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
 			    i.e. it is not here for an error (such as NXDOMAIN)
 			    so we do not store persistently on disk aggregations
 			    due to errors that might fill-up the disk quickly
-			  */
-			 ) {
+			 */) {
   if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
     StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
 
     if(host != NULL) {
+      if(aggregationInfo.name) 
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "INTERNAL ERROR: %s(%s)", __FUNCTION__, name);
+      else
+	aggregationInfo.name = strdup(name);
+
+      host->inc_num_queries_rcvd();
       host->set_tracked_host(aggregation_to_track);
-      host->incStats(l4_proto, ndpi_proto_id, 0, 0, 1, 1 /* Dummy */);
       host->updateSeen();
       host->updateActivities();
       if(cli_host) host->incrContact(iface, host->get_host_serial(), cli_host->get_ip(), true, true);
@@ -129,7 +136,7 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
 void Flow::processDetectedProtocol() {
   if(protocol_processed || (ndpi_flow == NULL)) return;
 
-  switch(detected_protocol) {
+  switch(ndpi_detected_protocol) {
   case NDPI_PROTOCOL_DNS:
     if(ntop->getPrefs()->decode_dns_responses()) {
       if(ndpi_flow->host_server_name[0] != '\0') {
@@ -157,7 +164,7 @@ void Flow::processDetectedProtocol() {
 	    }
 	  }
 
-	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, to_track);
+	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, to_track);
 	}
       }
     }
@@ -175,7 +182,7 @@ void Flow::processDetectedProtocol() {
       for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
 	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
 
-      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, true);
+      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, true);
     }
     break;
 
@@ -194,7 +201,7 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
-	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, detected_protocol, true);
+	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, true);
 
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
 					     buf, sizeof(buf), true) != NULL) {
@@ -224,7 +231,7 @@ void Flow::processDetectedProtocol() {
 void Flow::setDetectedProtocol(u_int16_t proto_id) {
   if((ndpi_flow != NULL) || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
-      detected_protocol = proto_id;
+      ndpi_detected_protocol = proto_id;
       processDetectedProtocol();
       detection_completed = true;
     } else if((((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
@@ -234,9 +241,9 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
       detection_completed = true; /* We give up */
 
       /* We can guess the protocol */
-      detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							 ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
-							 ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
+      ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
+							      ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
+							      ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
     }
 
     //if(detection_completed) deleteFlowMemory();
@@ -384,7 +391,7 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
     if(verbose) {
       if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-	 || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
+	 || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN)
 	 || iface->is_ndpi_enabled())
 	lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
       else
@@ -420,8 +427,8 @@ void Flow::print() {
 	 get_protocol_name(),
 	 cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
 	 srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
-	 detected_protocol,
-	 ndpi_get_proto_name(iface->get_ndpi_struct(), detected_protocol),
+	 ndpi_detected_protocol,
+	 ndpi_get_proto_name(iface->get_ndpi_struct(), ndpi_detected_protocol),
 	 cli2srv_packets, srv2cli_packets,
 	 (long long unsigned) cli2srv_bytes, (long long unsigned) srv2cli_bytes);
 }
@@ -443,11 +450,19 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
 
   if(cli_host)
-    cli_host->incStats(protocol,  detected_protocol, diff_sent_packets, diff_sent_bytes,
+    cli_host->incStats(protocol,  ndpi_detected_protocol, diff_sent_packets, diff_sent_bytes,
 		       diff_rcvd_packets, diff_rcvd_bytes);
   if(srv_host)
-    srv_host->incStats(protocol, detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
+    srv_host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
 		       diff_sent_packets, diff_sent_bytes);
+
+  if(aggregationInfo.name) {
+    StringHost *host = iface->findHostByString(aggregationInfo.name, ndpi_detected_protocol, true);
+    
+    if(host)
+      host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
+		     diff_sent_packets, diff_sent_bytes);    
+  }
 
   if(last_update_time.tv_sec > 0) {
     float tdiff_msec = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000)+((tv->tv_usec-last_update_time.tv_usec)/(float)1000);
@@ -519,7 +534,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_str_table_entry(vm, "proto.l4", get_protocol_name());
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN)
+     || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN)
      || iface->is_ndpi_enabled())
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   else
@@ -613,7 +628,7 @@ char* Flow::getDomainCategory() {
 /* *************************************** */
 
 void Flow::sumStats(NdpiStats *stats) {
-  stats-> incStats(detected_protocol,
+  stats-> incStats(ndpi_detected_protocol,
 		   cli2srv_packets, cli2srv_bytes,
 		   srv2cli_packets, srv2cli_bytes);
 }
@@ -649,7 +664,7 @@ char* Flow::serialize() {
   inner = json_object_new_object();
   json_object_object_add(inner, "l4", json_object_new_int(protocol));
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
-     || (detected_protocol != NDPI_PROTOCOL_UNKNOWN))
+     || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     json_object_object_add(inner, "ndpi", json_object_new_string(get_detected_protocol_name()));
   json_object_object_add(my_object, "proto", inner);
 
