@@ -117,10 +117,15 @@ void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
     StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
 
     if(host != NULL) {
-      if(aggregationInfo.name) 
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "INTERNAL ERROR: %s(%s)", __FUNCTION__, name);
-      else
-	aggregationInfo.name = strdup(name);
+      if(aggregationInfo.name && strcmp(aggregationInfo.name, name)) {
+	struct timeval tv;
+
+	tv.tv_sec = iface->getTimeLastPktRcvd(), tv.tv_usec = 0;
+	update_hosts_stats(&tv);
+	free(aggregationInfo.name);
+      }
+
+      aggregationInfo.name = strdup(name);
 
       host->inc_num_queries_rcvd();
       host->set_tracked_host(aggregation_to_track);
