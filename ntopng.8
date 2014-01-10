@@ -254,7 +254,7 @@ common ones is very limited.  Testing has included Safari, Chrome, Firefox and I
 with very limited testing on other current common browsers such as Opera.
 
 .SH NOTES
-.B ntop
+.B ntopng
 requires a number of external tools and libraries to operate.
 Certain other tools are optional, but add to the program's capabilities.
 
@@ -304,27 +304,6 @@ should not need to specifically install such libraries.
 .BR pcap (3).
 .
 .
-
-.SH PRIVACY NOTICE
-By default at startup and at periodic intervals, the 
-.B ntop
-program will retrieve current ntopng program version information.
-Retrieving this information allows this 
-.B ntop
-instance to confirm that it is running the most current version.
-
-The retrieval is done using standard http:// requests, which will create log 
-records on the hosting system. These log records do contain information which 
-identifies a specific 
-.B ntop
-site. Accordingly, you are being notified that this individually identifiable
-information is being transmitted and recorded.
-
-You may request - via the 
-.B --skip-version-check
-run-time option - that this check be eliminated.  If you use this option, no 
-individually identifiable information is transmitted or recorded, because the
-entire retrieval and check is skipped.
 
 .SH USER SUPPORT
 Please send bug reports to the ntop-dev <ntop-dev@ntop.org> mailing list. The
