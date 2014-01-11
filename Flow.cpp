@@ -106,15 +106,39 @@ Flow::~Flow() {
 
 /* *************************************** */
 
-void Flow::aggregateInfo(char *name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
+void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
 			 bool aggregation_to_track
 			 /*
 			    i.e. it is not here for an error (such as NXDOMAIN)
 			    so we do not store persistently on disk aggregations
 			    due to errors that might fill-up the disk quickly
 			 */) {
+  if((_name == NULL) || (_name[0] == '\0'))
+    return; /* Nothing to do */
+
   if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
-    StringHost *host = iface->findHostByString(name, ndpi_proto_id, true);
+    StringHost *host;
+    char *name = _name;
+
+    if(ntop->getPrefs()->use_short_aggregation_names()) {
+      u_int num = 0, i;
+
+    /* In order to reduce the number of hosts we can shorten
+       the host name and limit it to two levels in domain name
+    */
+
+      for(i=strlen(_name)-2; i>0; i--) {
+	if(_name[i] == '.') {
+	  num++;
+	  if(num == 2) {
+	    name = &_name[i+1];
+	    break;
+	  }
+	}	
+      }
+    }
+
+    host = iface->findHostByString(name, ndpi_proto_id, true);
 
     if(host != NULL) {
       if(aggregationInfo.name && strcmp(aggregationInfo.name, name)) {
@@ -152,7 +176,8 @@ void Flow::processDetectedProtocol() {
 	/* Consider only positive DNS replies */
 	if(at != NULL)
 	  name = &at[1], at[0] = '\0', to_track = true;
-	else if(!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
+	else if((!strstr((const char*)ndpi_flow->host_server_name, ".in-addr.arpa"))
+		&& (!strstr((const char*)ndpi_flow->host_server_name, ".ip6.arpa")))
 	  name = (char*)ndpi_flow->host_server_name;
 
 	if(name) {
@@ -183,10 +208,6 @@ void Flow::processDetectedProtocol() {
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
       protocol_processed = true;
-
-      for(int i=0; ndpi_flow->host_server_name[i] != '\0'; i++)
-	ndpi_flow->host_server_name[i] = tolower(ndpi_flow->host_server_name[i]);
-
       aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, true);
     }
     break;

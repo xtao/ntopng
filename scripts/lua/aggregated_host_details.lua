@@ -71,18 +71,20 @@ print [[
 if(page == "overview") then
    print("<table class=\"table table-bordered\">\n")
    print("<tr><th>Name</th><td>")
-   if(host["family"] == "Operating System") then
+   host["family_name"] = interface.getNdpiProtoName(host["family"])
+
+   if(host["family_name"] == "Operating System") then
       print(host["name"])
    else
       print("<A HREF=http://" .. host["name"].. ">".. host["name"].."</A> <i class=\"fa fa-external-link fa-lg\"></i>")
    end
    print("</td></tr>\n")
-   print("<tr><th>Family</th><td>" .. host["family"].. "</td></tr>\n")
+   print("<tr><th>Family</th><td>" .. host["family_name"].. "</td></tr>\n")
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Query Number</th><td><span id=contacts></span> <span id=contacts_trend></span></td></tr>\n")
-
+   print("<tr><th>Query Number</th><td><span id=contacts>" .. formatValue(host["queries.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
+   print("<tr><th>Traffic Volume</th><td><span id=traffic_volume>".. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).."</span></td></tr>\n")
 
    print [[
 	    <tr><th>Activity Map</th><td>
@@ -193,7 +195,7 @@ setInterval(function() {
 			var rsp = jQuery.parseJSON(content);
 			$('#last_seen').html(rsp.last_seen);
 			$('#contacts').html(addCommas(rsp.num_queries));
-
+			$('#traffic_volume').html(rsp.traffic_volume);
 			if(contacts == rsp.num_queries) {
 			   $('#contacts_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {

@@ -52,7 +52,7 @@ Prefs::Prefs(Ntop *_ntop) {
   enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
   dump_hosts_to_db = location_none, dump_aggregations_to_db = location_none;
-
+  shorten_aggregation_names = true; // TODO: make it configurable
 #ifdef WIN32
   daemonize = true;
 #endif
