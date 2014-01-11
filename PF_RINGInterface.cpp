@@ -92,7 +92,7 @@ static void* packetPollLoop(void* ptr) {
       
       FD_ZERO(&fdset);
       FD_SET(fd, &fdset);
-      timeout.tv_sec = 1, timeout.tv_usec = 0;
+      timeout.tv_sec = 0, timeout.tv_usec = 1;
       
       if(select(fd+1, &fdset, NULL, NULL, &timeout) == 0)
 	iface->purgeIdle(time(NULL));
