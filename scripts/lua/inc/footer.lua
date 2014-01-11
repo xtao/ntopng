@@ -200,8 +200,14 @@ setInterval(function() {
 	    rsp = jQuery.parseJSON(content);
 
 	    if(prev_bytes > 0) {
+
+	      if (rsp.packets < prev_packets) {
+	        prev_bytes   = rsp.bytes;
+	        prev_packets = rsp.packets;
+	      }
+
 	      var values = updatingChart.text().split(",")
-		var bytes_diff = rsp.bytes-prev_bytes;
+	      var bytes_diff = rsp.bytes-prev_bytes;
 	      var packets_diff = rsp.packets-prev_packets;
 	      var epoch_diff = rsp.epoch - prev_epoch;
 
