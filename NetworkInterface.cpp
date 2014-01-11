@@ -1174,7 +1174,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
   lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
   lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
-  lua_push_int_table_entry(vm, "stats_drops", getNumDrops());
+  lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
 
   ethStats.lua(vm);
   ndpiStats.lua(this, vm);

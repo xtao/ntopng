@@ -40,7 +40,7 @@ class CollectorInterface : public NetworkInterface {
   inline bool is_ndpi_enabled()         { return(false);      };
   char *getEndpoint()                   { return endpoint;    };
   inline void incrDrops(u_int32_t num)  { num_drops += num;   };
-  u_int32_t getNumDrops()               { return(num_drops);  };
+  u_int getNumDroppedPackets()          { return(num_drops);  };
   void collect_flows();
 
   void startPacketPolling();
