@@ -141,7 +141,7 @@
   void start();
   /**
    * @brief Resolve the host name.
-   * @details Use the redis database to resolve the host name.
+   * @details Use the redis database to resolve the IP address and get the host name.
    *
    * @param numeric_ip Address IP.
    * @param symbolic Symbolic name.
@@ -221,15 +221,30 @@
    */
   inline void setCategorization(Categorization *c)   { categorization = c; };
   /**
-   * @brief Get Net
-   * @details [long description]
+   * @brief Get the network interface identified by name or Id.
+   * @details This method accepts both interface names or Ids.
    * 
-   * @param name [description]
-   * @return [description]
+   * @param name Names or Id of network interface.
+   * @return The network interface instance if exists, NULL otherwise.
    */
   NetworkInterface* getNetworkInterface(const char *name);
+  /**
+   * @brief Get the current HTTPserver instance.
+   * 
+   * @return The current instance of HTTP server.
+   */
   inline HTTPserver*       get_HTTPserver()          { return(httpd);            };
+  /**
+   * @brief Get the current working directory.
+   * 
+   * @return The absolute path of working directory.
+   */
   inline char* get_working_dir()                     { return(working_dir);      };
+  /**
+   * @brief Get the installation path of ntopng.
+   * 
+   * @return The path of installed directory.
+   */
   inline char* get_install_dir()                     { return(install_dir);      };
 
   inline NtopGlobals*      getGlobals()              { return(globals); };

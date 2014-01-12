@@ -85,11 +85,11 @@ function getHosts ()
 function getHostsInfo (show_details)
 
 --! @memberof interface
---! @brief Get the aggregated hosts informations of network interface.
+--! @brief Get the aggregated hosts information of network interface.
 --! @details For more information please read the @ref NetworkInterface::getActiveAggregatedHostsList documentation.
 --! @tparam string family The family Id.
 --! @tparam string host_name The host name.
---! @return An hashtable of hashtables containing the aggregated host informations.
+--! @return An hashtable of hashtables containing the aggregated host information.
 function getAggregatedHostsInfo(family,host_name)
 
 --! @memberof interface
@@ -105,7 +105,7 @@ function getAggregationFamilies()
 function getNumAggregatedHosts()
 
 --! @memberof interface
---! @brief Get the host informations of network interface.
+--! @brief Get the host information of network interface.
 --! @details For more information please read the @ref ntop_get_interface_host_info documentation.
 --! @tparam string host_ip The IP address of host.
 --! @tparam number vlan_id Optional, the vlan Id.
@@ -128,10 +128,10 @@ function getHostActivityMap(host_ip,aggregated,vlan_id)
 function restoreHost(host_ip)
 
 --! @memberof interface
---! @brief Get the aggregated host informations of network interface.
+--! @brief Get the aggregated host information of network interface.
 --! @details For more information please read the @ref ntop_get_interface_aggregated_host_info documentation.
 --! @tparam string host_name The host name.
---! @return An hashtable of hashtables containing the aggregated host informations.
+--! @return An hashtable of hashtables containing the aggregated host information.
 function getAggregatedHostInfo(host_name)
 
 --! @memberof interface
@@ -142,30 +142,30 @@ function getAggregatedHostInfo(host_name)
 function getAggregationsForHost(host_name)
 
 --! @memberof interface
---! @brief Get the flow informations (minimal details) of network interface.
+--! @brief Get the flow information (minimal details) of network interface.
 --! @details For more information please read the @ref ntop_get_interface_flows_info documentation.
---! @return An hashtable containing the flow informations of network interface with minimal details.
+--! @return An hashtable containing the flow information of network interface with minimal details.
 function getFlowsInfo()
 
 --! @memberof interface
---! @brief Get the flow peers informations of network interface.
+--! @brief Get the flow peers information of network interface.
 --! @details For more information please read the @ref ntop_get_interface_flows_peers documentation.
 --! @tparam string host_name The host name.
 --! @return An hashtable of hashtable containing the flow peers information of network interface.
 function getFlowPeers(host_name)
 
 --! @memberof interface
---! @brief Get the flow peers informations identified by key of network interface.
+--! @brief Get the flow peers information identified by key of network interface.
 --! @details For more information please read the @ref ntop_get_interface_find_flow_by_key documentation.
 --! @tparam number key The flow key.
---! @return An hashtable containing the flow informations identified by the key parameter of network interface if it exists.
+--! @return An hashtable containing the flow information identified by the key parameter of network interface if it exists.
 function findFlowByKey(key)
 
 --! @memberof interface
---! @brief Get the host and aggregation informations identified by key of network interface.
+--! @brief Get the host and aggregation information identified by key of network interface.
 --! @details For more information please read the @ref ntop_get_interface_find_host documentation.
 --! @tparam string key The host key (host name).
---! @return An hashtable containing the flow and aggregation informations identified by the key parameter of network interface if it exists.
+--! @return An hashtable containing the flow and aggregation information identified by the key parameter of network interface if it exists.
 function findHost(key)
 
 --! @memberof interface
@@ -202,9 +202,9 @@ function name2id(if_name)
 function getDirs()
 
 --! @memberof ntop
---! @brief Get the main ntop informations like version, platform, uptime.
+--! @brief Get the main ntop information like version, platform, uptime.
 --! @details For more information please read the @ref ntop_get_info documentation.
---! @return An hashtable containing the main ntop informations.
+--! @return An hashtable containing the main ntop information.
 function getInfo()
 
 --! @memberof ntop
@@ -218,6 +218,12 @@ function getUptime()
 --! @details For more information please read the @ref ntop_dump_file documentation.
 --! @tparam string path The path of the file to be dumped.
 function dumpFile()
+
+--! @memberof ntop
+--! @brief Check if ntop is running on windows.
+--! @details For more information please read the @ref ntop_is_windows documentation.
+--! @return True if ntop is running on windows, false otherwise.
+function isWindows()
 
 ------------------ REDIS ------------------
 
@@ -398,9 +404,9 @@ function getPrefs()
 ------------------ ADMIN ------------------
 
 --! @memberof ntop
---! @brief Get the ntop users informations.
+--! @brief Get the ntop users information.
 --! @details For more information please read the @ref ntop_get_users documentation.
---! @return An hashtable containing the users informations.
+--! @return An hashtable containing the users information.
 function getUsers()
 
 --! @memberof ntop
@@ -441,10 +447,5 @@ function resolveAddress(numIP)
 --! @return The host name of IP address.
 function getResolvedAddress(key)
 
---! @memberof ntop
---! @brief Check if ntop is running on windows.
---! @details For more information please read the @ref ntop_is_windows documentation.
---! @return True if ntop is running on windows, false otherwise.
-function isWindows()
 
 
