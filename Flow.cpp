@@ -120,7 +120,8 @@ void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id
     StringHost *host;
     char *name = _name;
 
-    if(ntop->getPrefs()->use_short_aggregation_names()) {
+    if(ntop->getPrefs()->use_short_aggregation_names() 
+       && (strlen(name) > 3 /* .XX */)) {
       u_int num = 0, i;
 
     /* In order to reduce the number of hosts we can shorten
