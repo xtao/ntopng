@@ -301,6 +301,13 @@ int Prefs::setOption(int optkey, char *optarg) {
     else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unknown value %s for -E", optarg);
     break;
 
+  case 'S':
+    if(!strcmp(optarg, "all")) sticky_hosts = location_all;
+    else if(!strcmp(optarg, "local")) sticky_hosts = location_local_only;
+    else if(!strcmp(optarg, "remote")) sticky_hosts = location_remote_only;
+    else if(!strcmp(optarg, "none")) sticky_hosts = location_none;
+    else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unknown value %s for -S", optarg);
+    break;
   case 'g':
     cpu_affinity = atoi(optarg);
     break;
