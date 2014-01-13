@@ -36,7 +36,7 @@ print('<h1>Examples of ntop lua class</h1>')
 print('<p>This class provides a set of general functions used to interact with ntopng configuration. In the following page we provide an example of which information can you get by this class.<br><b>For more information, please read the source code of this file and the doxygen of API Lua.</b></p>')
 
 
-print('<br><h2>Gloabal variables</h2>')
+print('<br><h2>Global variables</h2>')
 print('<p>There are a few global variables that are defined by default when ntopng is running. The following list show the main variables:</p>')
 print('<ul>')
 print('<li>ifname = ' .. ifname)
