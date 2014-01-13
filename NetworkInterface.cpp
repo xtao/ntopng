@@ -1116,8 +1116,9 @@ u_int NetworkInterface::purgeIdleFlows() {
 
 /* **************************************************** */
 
-u_int NetworkInterface::getNumFlows() { return(flows_hash->getNumEntries()); };
-u_int NetworkInterface::getNumHosts() { return(hosts_hash->getNumEntries()); };
+u_int NetworkInterface::getNumFlows()        { return(flows_hash->getNumEntries());   };
+u_int NetworkInterface::getNumHosts()        { return(hosts_hash->getNumEntries());   };
+u_int NetworkInterface::getNumAggregations() { return(strings_hash->getNumEntries()); };
 
 /* **************************************************** */
 
@@ -1174,6 +1175,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
   lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
   lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
+  lua_push_int_table_entry(vm, "stats_aggregations", getNumAggregations());
   lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
 
   ethStats.lua(vm);

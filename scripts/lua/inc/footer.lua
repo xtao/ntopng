@@ -50,12 +50,8 @@ addGauge('gauge', '/lua/set_if_prefs.lua', maxSpeed, 100, 50)
 
 print [[
 </div>
-
   <div class="span1"> <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a></div>
   <div class="span3"><div id="network-load"></div></div>
-
-
-
 </div> <!-- /row -->
 </div><!-- /footer -->
 
@@ -83,7 +79,6 @@ function addCommas(nStr)
 function formatPackets(n) {
       return(addCommas(n)+" Pkts");
 }
-
 
 function bytesToVolume(bytes) {
       var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -212,7 +207,6 @@ setInterval(function() {
 	      var epoch_diff = rsp.epoch - prev_epoch;
 
 	      if(epoch_diff > 0) {
-
 		if(bytes_diff > 0) {
 		  values.shift();
 		  values.push(bytes_diff);
@@ -222,7 +216,7 @@ setInterval(function() {
 		pps = Math.floor(packets_diff / epoch_diff);
 		bps = Math.round((bytes_diff*8) / epoch_diff);
 		msg = ""+bitsToSize(bps, 1000)+" [" + addCommas(pps) + " pps]<br>";
-		msg += "<i class=\"fa fa-time fa-lg\"></i> Uptime: "+rsp.uptime+"<br>";
+		msg += "<i class=\"fa fa-time fa-lg\"></i>Uptime: "+rsp.uptime+"<br>";
 
 		var alarm_threshold_low = 60;  /* 60% */
 		var alarm_threshold_high = 90; /* 90% */
@@ -238,8 +232,22 @@ setInterval(function() {
 		  msg += "<span class=\"label label-important\">";
 		}
 
-		msg += addCommas(rsp.num_hosts)+" hosts</span> ";
-		
+		msg += addCommas(rsp.num_hosts)+" Hosts</span> ";
+
+		if(rsp.num_aggregations > 0) {
+		   if(rsp.aggregations_pctg < alarm_threshold_low) {
+		      msg += "<span class=\"label\">";
+		   } else if(rsp.aggregations_pctg < alarm_threshold_high) {
+		      alert = 1;
+		      msg += "<span class=\"label label-warning\">";
+		   } else {
+		      alert = 1;
+		      msg += "<span class=\"label label-important\">";
+		   }
+		   
+		   msg += addCommas(rsp.num_aggregations)+" Aggregations</span> ";
+		}
+
 		if(rsp.flows_pctg < alarm_threshold_low) {
 		  msg += "<span class=\"label\">";
 		} else if(rsp.flows_pctg < alarm_threshold_high) {
@@ -250,7 +258,7 @@ setInterval(function() {
 		  msg += "<span class=\"label label-important\">";
 		}
 
-		msg += addCommas(rsp.num_flows)+" flows ";
+		msg += addCommas(rsp.num_flows)+" Flows ";
 
 		$('#network-load').html(msg);
 		gauge.set(Math.min(bps, gauge.maxValue));
