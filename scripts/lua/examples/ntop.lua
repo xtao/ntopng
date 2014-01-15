@@ -161,6 +161,20 @@ print('<ul>')
 print("<li>127.0.0.1 = "..ntop.resolveAddress("127.0.0.1").."<br>")
 print('</ul>')
 
+print('<br><h2>Logging</h2>')
+-- print('<p>The ntopng lua class provide a few methods to get information about the address resolution.</p>')
+
+print('<h4>Syslog</h4>')
+print('<pre><code>ntop.syslog(true,"Sample syslog LOG_ERROR message by ntopng lua API.")\nntop.syslog(false,"Sample syslog LOG_INFO message by ntopng lua API.")</code></pre>')
+
+ntop.syslog(true,"Sample syslog LOG_ERROR message by ntopng lua API.")
+ntop.syslog(false,"Sample syslog LOG_INFO message by ntopng lua API.")
+
+print('<ul>')
+print("<li>Check the output: tail -f /var/log/system.log .<br>By default, syslog configuration does not show in the system.log file the messages with Level set to info.<br>")
+print('</ul>')
+
+
 print('<br><h4>TDB</h4>')
 print('<p><ul>')
 print('<li>getMembersCache')
