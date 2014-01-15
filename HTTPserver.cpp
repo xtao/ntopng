@@ -344,7 +344,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     (char*)"extra_mime_types", (char*)".inc=text/html,.css=text/css,.js=application/javascript",
     (char*)"num_threads", (char*)"5",
 #ifdef HAVE_SSL
-    (char*)"ssl_certificate", (char*)"ntop-cert.pem",
+    (char*)"ssl_certificate", (char*)"ntopng-cert.pem",
 #endif
     NULL
   };
@@ -366,7 +366,11 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   /* ***************************** */
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
-				      port, docs_dir, scripts_dir);
+			       port, docs_dir, scripts_dir);
+#ifdef HAVE_SSL
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d [%s][%s]",
+			       port+1, docs_dir, scripts_dir);
+#endif
 };
 
 /* ****************************************** */

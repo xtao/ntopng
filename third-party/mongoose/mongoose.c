@@ -4732,6 +4732,7 @@ static void close_connection(struct mg_connection *conn) {
   // Must be done AFTER socket is closed
   if (conn->ssl != NULL) {
     SSL_free(conn->ssl);
+    conn->ssl = NULL; /* ntop */
   }
 #endif
 }
