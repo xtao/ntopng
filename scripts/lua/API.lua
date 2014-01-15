@@ -328,7 +328,7 @@ function mkdir(dir)
 --! @details Available only on non-Windows systems, it allows a message to be sent to the system syslog. For more information please read the @ref ntop_syslog documentation.
 --! @tparam bool msgType Set it to true if this is an error message (LOG_ERR) or informational (LOG_INFO)
 --! @tparam string msg The message to send on the syslog.
-function syslog(dir)
+function syslog(msgType,msg)
 
 --! @memberof ntop
 --! @brief Check if the file or directory exists.
