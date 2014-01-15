@@ -47,7 +47,7 @@ Prefs::Prefs(Ntop *_ntop) {
   pid_path = strdup(DEFAULT_PID_PATH);
   packet_filter = NULL;
   disable_host_persistency = false;
-  num_interfaces = 0;
+  num_interfaces = 0, enable_auto_logout = true;
   dump_flows_on_db = false;
   enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
@@ -78,7 +78,7 @@ Prefs::~Prefs() {
 void usage() {
   NetworkInterface n;
 
-  printf("ntopng %s v.%s (%s) - (C) 1998-13 ntop.org\n\n"
+  printf("ntopng %s v.%s (%s) - "NTOP_COPYRIGHT"\n\n"
 	 "Usage:\n"
 	 "  ntopng <configuration file>\n"
 	 "  or\n"
@@ -209,6 +209,7 @@ static const struct option long_options[] = {
   { "disable-login",                     no_argument,       NULL, 'l' },
   { "local-networks",                    required_argument, NULL, 'm' },
   { "ndpi-protocols",                    required_argument, NULL, 'p' },
+  { "disable-autologout",                no_argument,       NULL, 'q' },
   { "redis",                             required_argument, NULL, 'r' },
   { "dont-change-user",                  no_argument,       NULL, 's' },
   { "verbose",                           no_argument,       NULL, 'v' },
@@ -340,6 +341,10 @@ int Prefs::setOption(int optkey, char *optarg) {
   case 'p':
     ndpi_proto_path = strdup(optarg);
     ntop->setCustomnDPIProtos(ndpi_proto_path);
+    break;
+
+  case 'q':
+    enable_auto_logout = false;
     break;
 
   case 'P':
@@ -477,7 +482,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:d:x:1:2:3:lvA:B:CD:E:FG:S:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:S:U:X:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

@@ -114,18 +114,21 @@ static int is_authorized(const struct mg_connection *conn,
   
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Received session %s/%s", session_id, username);
 
-  snprintf(key, sizeof(key), "sessions.%s", session_id);
-  if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
-     || strcmp(user, username) /* Users don't match */) {
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", 
-				 session_id, username);
-    return(0);
-  } else {
-    ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", 
-				 session_id, HTTP_SESSION_DURATION);
+  if(ntop->getPrefs()->do_auto_logout()) {
+    snprintf(key, sizeof(key), "sessions.%s", session_id);
+    if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
+       || strcmp(user, username) /* Users don't match */) {
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", 
+				   session_id, username);
+      return(0);
+    } else {
+      ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", 
+				   session_id, HTTP_SESSION_DURATION);
+      return(1);
+    }
+  } else
     return(1);
-  }
 }
 
 /* ****************************************** */

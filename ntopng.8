@@ -34,6 +34,7 @@ or
 .IR <local_subnets> ]
 .RB [ -p
 .IR <protocols> ]
+.RB [ -q ]
 .RB [ -r
 .IR <redis_host:port> ]
 .RB [ -s ] 
@@ -176,6 +177,9 @@ The format is <tcp|udp>:<port>,<tcp|udp>:<port>,.....@<proto> where
 <port> is a port number and <proto> is a name of a protocol supported by nDPI protocol,
 or host:"<string>"@<proto> where string is part of an host name.
 As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
+
+.It -q|--disable-autologout
+Disable web interface logout for inactivity.
 
 .It -r|--redis
 Specifies the redis database host and port. For more information about redis, please refer 
