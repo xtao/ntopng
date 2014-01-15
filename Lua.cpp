@@ -1440,6 +1440,32 @@ static int ntop_get_resolved_address(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Send a message to the system syslog
+ * @details Send a message to the syslog syslog: callers can specify if it is an error or informational message
+ * 
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_ERROR if the expected type is equal to function type, @ref CONST_LUA_PARAM_ERROR otherwise.
+ */
+static int ntop_syslog(lua_State* vm) {
+  char *msg;
+  bool is_error;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING))  return(CONST_LUA_ERROR);
+
+  is_error = lua_toboolean(vm, 1) ? true : false;
+  msg = (char*)lua_tostring(vm, 2);
+
+#ifndef WIN32
+  syslog(is_error ? LOG_ERR : LOG_INFO, "%s", msg);
+#endif
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_mkdir_tree(lua_State* vm) {
   char *dir;
 
@@ -1797,6 +1823,9 @@ static const luaL_Reg ntop_reg[] = {
   /* Address Resolution */
   { "resolveAddress",     ntop_resolve_address },
   { "getResolvedAddress", ntop_get_resolved_address },
+
+  /* Logging */
+  { "syslog",         ntop_syslog },
 
   { "isWindows",      ntop_is_windows },
   { NULL,          NULL}

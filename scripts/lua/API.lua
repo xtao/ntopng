@@ -324,6 +324,13 @@ function getIdToHost(host_idx)
 function mkdir(dir)
 
 --! @memberof ntop
+--! @brief Sends a string on the system syslog
+--! @details Available only on non-Windows systems, it allows a message to be sent to the system syslog. For more information please read the @ref ntop_syslog documentation.
+--! @tparam bool msgType Set it to true if this is an error message (LOG_ERR) or informational (LOG_INFO)
+--! @tparam string msg The message to send on the syslog.
+function syslog(dir)
+
+--! @memberof ntop
 --! @brief Check if the file or directory exists.
 --! @details For more information please read the @ref ntop_get_file_dir_exists documentation.
 --! @tparam string path The absolute path of file or directory.
