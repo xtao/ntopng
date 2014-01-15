@@ -326,15 +326,27 @@ static int handle_lua_request(struct mg_connection *conn) {
 
 HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir) {
   struct mg_callbacks callbacks;
-  static char ports[32];
-  
+  static char ports[32], ssl_cert_path[MAX_PATH] = { 0 };
+  bool use_ssl = false;
+#ifdef HAVE_SSL
+  struct stat buf;
+#endif
+
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
   httpserver = this;
 
-#ifdef HAVE_SSL
-  snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
-#else
   snprintf(ports, sizeof(ports), "%d", port);
+
+#ifdef HAVE_SSL
+  snprintf(ssl_cert_path, sizeof(ssl_cert_path), "%s/ssl/%s",
+	   docs_dir, CONST_HTTPS_CERT_NAME);
+	   
+  if(stat(ssl_cert_path, &buf) == 0) {
+    use_ssl = true;
+    snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Found SSL certificate %s", ssl_cert_path);
+  } else
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Missing SSL certificate %s", ssl_cert_path);
 #endif
 
   static char *http_options[] = { 
@@ -343,9 +355,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     (char*)"document_root",  (char*)_docs_dir,
     (char*)"extra_mime_types", (char*)".inc=text/html,.css=text/css,.js=application/javascript",
     (char*)"num_threads", (char*)"5",
-#ifdef HAVE_SSL
-    (char*)"ssl_certificate", (char*)"ntopng-cert.pem",
-#endif
+    (char*)"ssl_certificate", ssl_cert_path,
     NULL
   };
 
@@ -365,11 +375,11 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   /* ***************************** */
 
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d [%s][%s]",
-			       port, docs_dir, scripts_dir);
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Web server dirs [%s][%s]", docs_dir, scripts_dir);
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
 #ifdef HAVE_SSL
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d [%s][%s]",
-			       port+1, docs_dir, scripts_dir);
+  if(use_ssl)
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", port+1);
 #endif
 };
 
