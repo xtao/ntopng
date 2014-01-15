@@ -1,0 +1,21 @@
+In order to use SSL with ntopng (i.e. HTTPS) you need to
+
+1. Install OpenSSL
+   On OSX do: sudo port install openssl
+
+2. Create your SSL certificate
+   make cert
+
+3. Copy in the directory where ntopng is running
+   the shared libraries needed to enable SSL.
+
+   - Linux
+   ln -s /usr/lib/x86_64-linux-gnu/libssl.so .
+
+   - OSX
+   ln -s /opt/local/lib/libssl.dylib /opt/local/lib/libcrypto.dylib .
+
+4. Start ntopng
+
+----------------------------
+(C) ntop.org - January 2013
