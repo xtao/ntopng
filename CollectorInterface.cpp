@@ -237,6 +237,10 @@ void CollectorInterface::collect_flows() {
 
 static void* packetPollLoop(void* ptr) {
   CollectorInterface *iface = (CollectorInterface*)ptr;
+
+  /* Wait until the initialization completes */
+  while(!iface->isRunning()) sleep(1);
+
   iface->collect_flows();
   return(NULL);
 }

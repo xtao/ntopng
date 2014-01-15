@@ -73,7 +73,7 @@ static void* packetPollLoop(void* ptr) {
   PcapInterface *iface = (PcapInterface*)ptr;
   pcap_t  *pd = iface->get_pcap_handle();
 
-  /* Wait until the initialization competes */
+  /* Wait until the initialization completes */
   while(!iface->isRunning()) sleep(1);
 
   while(iface->isRunning() 

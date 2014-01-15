@@ -65,7 +65,7 @@ static void* packetPollLoop(void* ptr) {
   pfring  *pd = iface->get_pfring_handle();
   int fd = pfring_get_selectable_fd(pd);
 
-  /* Wait until the initialization competes */
+  /* Wait until the initialization completes */
   while(!iface->isRunning()) sleep(1);
   pfring_enable_ring(pd);
 

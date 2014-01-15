@@ -21,6 +21,8 @@
 
 #include "ntop_includes.h"
 
+#define HAVE_SSL
+
 #define USE_LUA
 #include "./third-party/mongoose/mongoose.c"
 #undef USE_LUA
