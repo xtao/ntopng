@@ -128,13 +128,7 @@ to create multiple interfaces.
 If a collector endpoint is specified, 
 .B ntopng
 open a ZeroMQ connection to the specified endpoint as a subscriber whose format
-is  "script_name@endpoint". ntopng will connect to the endpoint and let incoming
-flows to be handled by script_name that is a lua script present in
-scripts/callbacks (relative path). If just the endpoint is specified the script
-used will be scripts/callbacks/nprobe-collector.lua
-
-. Example of valid
-collector endpoints are "nprobe-collector.lua@tcp://127.0.0.1:5556" or ipc://flows.ipc
+is  <ZMQ endpoint>. Example of valid collector endpoints are "tcp://127.0.0.1:5556" or ipc://flows.ipc
 
 If you want you can pass a path of a pcap file (e.g. -i dummy.pcap) and ntopng
 will read packets from the specified pcap file.
