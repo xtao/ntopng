@@ -637,6 +637,7 @@ bool Host::deserialize(char *json_str) {
   activityStats.reset();
   if(json_object_object_get_ex(o, "activityStats", &obj)) activityStats.deserialize(obj);
 
+  computeHostSerial();
   if(json_object_object_get_ex(o, "contacts", &obj)) contacts->deserialize(iface, this, obj);
   if(json_object_object_get_ex(o, "pktStats.sent", &obj)) sent_stats.deserialize(obj);
   if(json_object_object_get_ex(o, "pktStats.recv", &obj)) recv_stats.deserialize(obj);

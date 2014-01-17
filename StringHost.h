@@ -40,7 +40,7 @@ class StringHost : public GenericHost {
   StringHost(NetworkInterface *_iface, char *_key, u_int16_t _family_id);
   ~StringHost();
   
-  inline void set_tracked_host(bool tracked) { tracked_host = tracked;    };
+  inline void set_tracked_host(bool tracked) { tracked_host = tracked; computeHostSerial(); };
   inline bool is_tracked_host()              { return(tracked_host);      };
   inline char* host_key()                    { return(keyname);           };
   inline u_int16_t get_family_id()           { return(family_id);         };

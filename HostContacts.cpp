@@ -42,6 +42,11 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
   if(value == 0)
     ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(): zero contacts", __FUNCTION__);
 
+  if(me_serial == 0) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s(): zero serial", __FUNCTION__);
+    return;
+  }
+
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(contacts[i].num_contacts == 0) {
       /* Empty slot */

@@ -21,8 +21,6 @@
 
 #include "ntop_includes.h"
 
-#define HAVE_SSL
-
 #define USE_LUA
 #include "./third-party/mongoose/mongoose.c"
 #undef USE_LUA
@@ -70,7 +68,6 @@ int send_error(struct mg_connection *conn, int status, const char *reason, const
 
 /* ****************************************** */
 
-#ifdef HAVE_SSL
 static void redirect_to_ssl(struct mg_connection *conn,
                             const struct mg_request_info *request_info) {
   const char *p, *host = mg_get_header(conn, "Host");
@@ -84,7 +81,6 @@ static void redirect_to_ssl(struct mg_connection *conn,
     mg_printf(conn, "%s", "HTTP/1.1 500 Error\r\n\r\nHost: header is not set");
   }
 }
-#endif
 
 /* ****************************************** */
 
@@ -259,10 +255,8 @@ static int handle_lua_request(struct mg_connection *conn) {
      || (ntop->getRedis() == NULL /* Starting up... */))
     return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method or ntopng still starting up..."));
   
-#ifdef HAVE_SSL
-  if(!request_info->is_ssl)
+  if(ntop->get_HTTPserver()->is_ssl_enabled() && (!request_info->is_ssl))
     redirect_to_ssl(conn, request_info);
-#endif
 
   if(enable_users_login) {
     if((len > 4)
@@ -327,17 +321,15 @@ static int handle_lua_request(struct mg_connection *conn) {
 HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scripts_dir) {
   struct mg_callbacks callbacks;
   static char ports[32], ssl_cert_path[MAX_PATH] = { 0 };
+  char *_a = NULL, *_b = NULL;
   bool use_ssl = false;
-#ifdef HAVE_SSL
   struct stat buf;
-#endif
 
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
   httpserver = this;
 
   snprintf(ports, sizeof(ports), "%d", port);
 
-#ifdef HAVE_SSL
   snprintf(ssl_cert_path, sizeof(ssl_cert_path), "%s/ssl/%s",
 	   docs_dir, CONST_HTTPS_CERT_NAME);
 	   
@@ -345,9 +337,10 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     use_ssl = true;
     snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
     ntop->getTrace()->traceEvent(TRACE_INFO, "Found SSL certificate %s", ssl_cert_path);
+    _a = (char*)"ssl_certificate", _b = ssl_cert_path;
+    ssl_enabled = true;
   } else
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Missing SSL certificate %s", ssl_cert_path);
-#endif
 
   static char *http_options[] = { 
     (char*)"listening_ports", ports, 
@@ -355,7 +348,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     (char*)"document_root",  (char*)_docs_dir,
     (char*)"extra_mime_types", (char*)".inc=text/html,.css=text/css,.js=application/javascript",
     (char*)"num_threads", (char*)"5",
-    (char*)"ssl_certificate", ssl_cert_path,
+    _a, _b,
     NULL
   };
 
@@ -377,10 +370,9 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Web server dirs [%s][%s]", docs_dir, scripts_dir);
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
-#ifdef HAVE_SSL
-  if(use_ssl)
+
+  if(use_ssl & ssl_enabled)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", port+1);
-#endif
 };
 
 /* ****************************************** */
