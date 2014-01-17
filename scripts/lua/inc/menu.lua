@@ -13,6 +13,7 @@ for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
 
 print [[
       <div class="masthead">
+
         <ul class="nav nav-pills pull-right">
    ]]
 
@@ -25,6 +26,8 @@ else
 end
 
 print [[
+
+
       <a class="dropdown-toggle" data-toggle="dropdown" href="#">
         Home <b class="caret"></b>
       </a>
@@ -174,9 +177,34 @@ print [[
 
 print [[
     </ul>
-  </li>
-
+    </li>
    ]]
+
+
+num_alerts = ntop.getNumQueuedAlerts()
+
+
+if(num_alerts > 0) then
+print [[
+
+
+
+<li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+<font color=red>
+   ]]
+
+print(string.format("%u", num_alerts))
+print [[
+</font>
+        <i class="fa fa-bell-o fa-lg" style="color:red"></i> <b class="caret"></b>
+      </a>
+    <ul class="dropdown-menu">
+      <li><a href="/lua/show_alerts.lua"><i class="fa fa-exclamation"></i>&nbsp; Show Alerts</a></li>
+    </ul>
+    </li>
+   ]]
+end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/search_host_box.lua")
 
