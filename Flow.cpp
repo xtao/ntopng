@@ -147,7 +147,11 @@ void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id
 
 	tv.tv_sec = iface->getTimeLastPktRcvd(), tv.tv_usec = 0;
 	update_hosts_stats(&tv);
+      }
+
+      if(aggregationInfo.name) {
 	free(aggregationInfo.name);
+	aggregationInfo.name = NULL;
       }
 
       aggregationInfo.name = strdup(name);
