@@ -63,8 +63,10 @@ PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
 PcapInterface::~PcapInterface() {
   shutdown();
 
-  if(pcap_handle)
+  if(pcap_handle) {
     pcap_close(pcap_handle);
+    pcap_handle = NULL;
+  }
 }
 
 /* **************************************************** */
