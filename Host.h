@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@ class Host : public GenericHost {
   float latitude, longitude;
   IpAddress *ip;
   Mutex *m;
+  time_t time_last_syn_rcvd, time_last_syn_flood_reported;
+  u_int16_t num_syn_rcvd_last_second;
   TrafficStats tcp_sent, tcp_rcvd;
   TrafficStats udp_sent, udp_rcvd;
   TrafficStats icmp_sent, icmp_rcvd;
@@ -96,6 +98,7 @@ class Host : public GenericHost {
   bool deserialize(char *json_str);
   void flushContacts();
   bool addIfMatching(lua_State* vm, char *key);
+  void updateSynFlags(time_t when, u_int8_t flags, Flow *f);
 };
 
 #endif /* _HOST_H_ */

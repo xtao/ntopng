@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -75,7 +75,7 @@ class Flow : public GenericHashEntry {
   void deleteFlowMemory();
   char* serialize();
   inline u_int8_t getTcpFlags()              { return(tcp_flags);  };
-  inline void updateTcpFlags(u_int8_t flags) { tcp_flags |= flags; };
+  void updateTcpFlags(time_t when, u_int8_t flags);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(const char *json);
@@ -108,7 +108,7 @@ class Flow : public GenericHashEntry {
 		     bool aggregation_to_track);
   bool idle();
   int compare(Flow *fb);
-  void print();
+  char* print(char *buf, u_int buf_len);
   void update_hosts_stats(struct timeval *tv);
   void print_peers(lua_State* vm, bool verbose);
   u_int32_t key();

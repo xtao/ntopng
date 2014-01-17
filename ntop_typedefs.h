@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,5 +35,15 @@ typedef enum {
   location_remote_only,
   location_all,
 } LocationPolicy;
+
+typedef enum {
+  alert_syn_flood
+} AlertType;
+
+typedef enum {
+  alert_level_info,
+  alert_level_warning,
+  alert_level_error,
+} AlertLevel;
 
 #endif /* _NTOP_TYPEDEFS_H_ */

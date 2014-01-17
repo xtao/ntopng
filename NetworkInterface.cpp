@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -192,8 +192,9 @@ bool NetworkInterface::dumpFlow(time_t when, Flow *f) {
 
 static bool node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   Flow *flow = (Flow*)node;
+  char buf[512];
 
-  flow->print();
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", flow->print(buf, sizeof(buf)));
  
    return(false); /* false = keep on walking */
 }
@@ -269,7 +270,7 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 
   if(flow == NULL) return;
 
-  if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(zflow->tcp_flags);
+  if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(last_pkt_rcvd, zflow->tcp_flags);
   flow->addFlowStats(src2dst_direction,
 		     zflow->pkt_sampling_rate*zflow->in_pkts,
 		     zflow->pkt_sampling_rate*zflow->in_bytes,
@@ -391,7 +392,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     return;
   } else {
     flow->incStats(src2dst_direction, rawsize);
-    if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(tcp_flags);
+    if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(when, tcp_flags);
   }
 
   /* Protocol Detection */

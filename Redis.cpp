@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -928,3 +928,70 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   return(rc);
 }
+
+/* ******************************************* */
+
+void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
+  redisReply *reply;
+  char what[1024];
+  
+  snprintf(what, sizeof(what), "%u|%u|%u|%s", 
+	   (unsigned int)time(NULL), (unsigned int)level,
+	   (unsigned int)t, msg);
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "RPUSH %s %s",
+				    CONST_ALERT_MSG_QUEUE, what);
+  
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+
+  reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", CONST_ALERT_MSG_QUEUE, CONST_MAX_ALERT_MSG_QUEUE_LEN);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+  l->unlock(__FILE__, __LINE__);
+}
+
+/* ******************************************* */
+
+u_int Redis::getNumQueuedAlerts() {
+  redisReply *reply;
+  u_int num = 0;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "LLEN %s", CONST_ALERT_MSG_QUEUE);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+  else num = reply->integer;
+  l->unlock(__FILE__, __LINE__);
+
+  return(num);
+}
+
+/* **************************************** */
+
+u_int Redis::getQueuedAlerts(char **alerts, u_int num) {
+  u_int i = 0;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  while(i < num) {
+    reply = (redisReply*)redisCommand(redis, "LPOP %s", CONST_ALERT_MSG_QUEUE);
+    if(reply && (reply->type == REDIS_REPLY_ERROR)) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+      break;
+    }
+    
+    if(reply && reply->str) {
+      alerts[i++] = strdup(reply->str);
+      if(reply) {
+	freeReplyObject(reply);
+	reply = NULL;
+      }
+    } else
+      break;    
+  }
+
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(i);
+}
+

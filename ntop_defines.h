@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -138,17 +138,21 @@
 #define CONST_DEFAULT_INSTALL_DIR   "/usr/local/share/ntopng"
 #define CONST_DEFAULT_NTOP_USER     "nobody"
 #define CONST_TOO_EARLY             "(Too Early)"
-
 #define CONST_HTTP_CONN                "http.conn"
 #define CONST_LUA_OK                   1
 #define CONST_LUA_ERROR                0
 #define CONST_LUA_PARAM_ERROR         -1
-
+#define CONST_MAX_NUM_SYN_PER_SECOND   5
+#define CONST_SYN_FLOOD_GRACE_PERIOD   60 /* No more than 1 alarm/min */
 #define CONST_CONTACTED_BY            "contacted_by"
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
 
 #define CONST_AGGREGATIONS            "aggregations"
 #define CONST_HOST_CONTACTS           "host_contacts"
+
+#define CONST_ALERT_MSG_QUEUE         "ntopng.alert_queue"
+#define CONST_MAX_ALERT_MSG_QUEUE_LEN 512
+#define CONST_MAX_NUM_READ_ALERTS     32
 
 #define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */
 #define CONST_TREND_TIME_GRANULARITY   1 /* sec */

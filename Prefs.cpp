@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@ Prefs::Prefs(Ntop *_ntop) {
   callbacks_dir = strdup(CONST_DEFAULT_CALLBACKS_DIR);
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
+  https_port = CONST_DEFAULT_NTOP_PORT+1;
   change_user = true, daemonize = false;
   user = strdup(CONST_DEFAULT_NTOP_USER);
   categorization_key = NULL;
@@ -90,7 +91,7 @@ void usage() {
 	 "[-g <core>] "
 #endif
 	 "[-n mode] [-i <iface|pcap file>]\n"
-	 "         [-w <http port>] [-p <protos>] [-P] [-d <path>]\n"
+	 "         [-w <http port>] [-W <https port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "         [-c <categorization key>] [-r <redis>]\n"
 	 "         [-l] [-U <sys user>] [-s] [-v] [-C]\n"
 #ifdef HAVE_SQLITE
@@ -127,6 +128,7 @@ void usage() {
 	 "                                    | Please read README.categorization for\n"
 	 "                                    | more info.\n"
 	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
+	 "[--https-port|-W] <http port>       | HTTPS port. Default: %u\n"
 	 "[--local-networks|-m] <local nets>  | Local nets list (default: 192.168.1.0/24)\n"
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
@@ -183,7 +185,7 @@ void usage() {
 	 CONST_DEFAULT_DATA_DIR,
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
-         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT,
+         CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, CONST_DEFAULT_NTOP_PORT+1,
          CONST_DEFAULT_NTOP_USER,
 	 MAX_NUM_INTERFACE_HOSTS, MAX_NUM_INTERFACE_HOSTS/2,
 	 CONST_DEFAULT_USERS_FILE);
@@ -230,6 +232,7 @@ static const struct option long_options[] = {
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
   { "max-num-flows",                     required_argument, NULL, 'X' },
+  { "https-port",                        required_argument, NULL, 'W' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
@@ -366,6 +369,10 @@ int Prefs::setOption(int optkey, char *optarg) {
     http_port = atoi(optarg);
     break;
 
+  case 'W':
+    https_port = atoi(optarg);
+    break;
+
   case 'r':
     {
       char buf[64], *r;
@@ -482,7 +489,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:S:U:X:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:S:U:X:W:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

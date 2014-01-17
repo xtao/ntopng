@@ -28,6 +28,8 @@ or
 .RB [ -e ]
 .RB [ -w 
 .IR <http_port> ]
+.RB [ -W
+.IR <https_port> ]
 .RB [ -c
 .IR <categorization_key> ]
 .RB [ -m
@@ -157,6 +159,9 @@ This parameter causes ntop to become a daemon, i.e. a task which runs in the bac
 
 .It -w|--http-port
 Sets the HTTP port of the embedded web server.
+
+.It -W|--https-port
+Sets the HTTPS port of the embedded web server. If not set, it will be set to the value of -w plus one.
 
 .It -m|--local-networks
 .B ntopng

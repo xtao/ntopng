@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -161,6 +161,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   m = new Mutex();
   asn = 0, asname = NULL, country = NULL, city = NULL;
   longitude = 0, latitude = 0;
+  time_last_syn_rcvd = 0, num_syn_rcvd_last_second = 0;
+  time_last_syn_flood_reported = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
 
@@ -650,5 +652,28 @@ bool Host::deserialize(char *json_str) {
     last_update_time.tv_usec = 0;
 
   return(true);
+}
+
+/* *************************************** */
+
+void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
+  if(time_last_syn_rcvd != when) 
+    time_last_syn_rcvd = when, num_syn_rcvd_last_second = 1;
+  else {
+    num_syn_rcvd_last_second++;
+    
+    if(num_syn_rcvd_last_second > CONST_MAX_NUM_SYN_PER_SECOND) {
+      if(when > (time_last_syn_flood_reported+CONST_SYN_FLOOD_GRACE_PERIOD)) {
+	char ip_buf[48], flow_buf[256], msg[512];
+
+	snprintf(msg, sizeof(msg), "Host %s on flow %s", 
+		 ip->print(ip_buf, sizeof(ip_buf)), f->print(flow_buf, sizeof(flow_buf)));
+	
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "SYN Flood detected: %s", msg);
+	ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
+	time_last_syn_flood_reported = when;
+      }
+    }
+  }
 }
 

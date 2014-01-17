@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -71,12 +71,12 @@ int send_error(struct mg_connection *conn, int status, const char *reason, const
 static void redirect_to_ssl(struct mg_connection *conn,
                             const struct mg_request_info *request_info) {
   const char *p, *host = mg_get_header(conn, "Host");
-  u_int16_t port = ntop->get_HTTPserver()->get_port();
+  //  u_int16_t port = ntop->get_HTTPserver()->get_port();
 
   if (host != NULL && (p = strchr(host, ':')) != NULL) {
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
               "Location: https://%.*s:%u/%s\r\n\r\n",
-              (int) (p - host), host, port+1, request_info->uri);
+              (int) (p - host), host, ntop->getPrefs()->get_https_port(), request_info->uri);
   } else {
     mg_printf(conn, "%s", "HTTP/1.1 500 Error\r\n\r\nHost: header is not set");
   }
@@ -335,7 +335,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 	   
   if(stat(ssl_cert_path, &buf) == 0) {
     use_ssl = true;
-    snprintf(ports, sizeof(ports), "%d,%ds", port, port+1);
+    snprintf(ports, sizeof(ports), "%d,%ds", port, ntop->getPrefs()->get_https_port());
     ntop->getTrace()->traceEvent(TRACE_INFO, "Found SSL certificate %s", ssl_cert_path);
     _a = (char*)"ssl_certificate", _b = ssl_cert_path;
     ssl_enabled = true;
@@ -372,7 +372,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
 
   if(use_ssl & ssl_enabled)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", port+1);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", ntop->getPrefs()->get_https_port());
 };
 
 /* ****************************************** */

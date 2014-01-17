@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -1384,8 +1384,8 @@ static int ntop_get_info(lua_State* vm) {
   int major, minor, patch;
 
   lua_newtable(vm);
-  lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2013 - ntop.org");
-  lua_push_str_table_entry(vm, "authors", (char*)"Luca Deri and Alfredo Cardigliano");
+  lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2014 - ntop.org");
+  lua_push_str_table_entry(vm, "authors", (char*)"The ntop.org team");
   lua_push_str_table_entry(vm, "license", (char*)"GNU GPLv3");
   snprintf(rsp, sizeof(rsp), "%s (%s)", 
 	   PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
@@ -1619,6 +1619,43 @@ static int ntop_redis_get_id_to_host(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_num_queued_alerts(lua_State* vm) {
+  Redis *redis = ntop->getRedis();
+
+  lua_pushinteger(vm, redis->getNumQueuedAlerts());
+
+  return(CONST_LUA_OK);
+}
+
+
+/* ****************************************** */
+
+static int ntop_get_queued_alerts(lua_State* vm) {
+  Redis *redis = ntop->getRedis();
+  u_int32_t num, i = 0;
+  char *alerts[CONST_MAX_NUM_READ_ALERTS] = { NULL };
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num = (u_int32_t)lua_tonumber(vm, 1);
+  
+  if(num < 1) num = 1;
+  else if(num > CONST_MAX_NUM_READ_ALERTS) num = CONST_MAX_NUM_READ_ALERTS;
+
+  redis->getQueuedAlerts(alerts, num);
+
+  lua_newtable(vm);
+
+  while((i < CONST_MAX_NUM_READ_ALERTS) && (alerts[i] != NULL)){
+    lua_push_str_table_entry(vm, alerts[i], alerts[i]);
+    free(alerts[i]);
+    i++;
+  }
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_redis_dump_daily_stats(lua_State* vm) {
   char *day;
   Redis *redis = ntop->getRedis();
@@ -1795,6 +1832,10 @@ static const luaL_Reg ntop_reg[] = {
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },
   { "zmq_receive",    ntop_zmq_receive },
+
+  /* Alerts */
+  { "getNumQueuedAlerts", ntop_get_num_queued_alerts },
+  { "getQueuedAlerts",    ntop_get_queued_alerts },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

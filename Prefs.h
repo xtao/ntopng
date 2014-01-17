@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ class Prefs {
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
-  u_int http_port;
+  u_int http_port, https_port;
   u_int8_t num_interfaces;
   bool dump_flows_on_db;
   AggregationMode enable_aggregations;
@@ -96,6 +96,7 @@ class Prefs {
   inline bool  do_auto_logout()                         { return(enable_auto_logout);        };
   inline int get_cpu_affinity()                         { return(cpu_affinity);   };
   inline u_int get_http_port()                          { return(http_port);      };
+  inline u_int get_https_port()                         { return(https_port);     };
   inline char* get_redis_host()                         { return(redis_host);     }
   inline u_int get_redis_port()                         { return(redis_port);     };
   inline char* get_pid_path()                           { return(pid_path);       };

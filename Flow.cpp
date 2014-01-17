@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013 - ntop.org
+ * (C) 2013-14 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -449,19 +449,24 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
 /* *************************************** */
 
-void Flow::print() {
+char* Flow::print(char *buf, u_int buf_len) {
   char buf1[32], buf2[32];
 
-  if((cli_host == NULL) || (srv_host == NULL)) return;
+  buf[0] = '\0';
 
-  printf("\t%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
-	 get_protocol_name(),
-	 cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
-	 srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
-	 ndpi_detected_protocol,
-	 ndpi_get_proto_name(iface->get_ndpi_struct(), ndpi_detected_protocol),
-	 cli2srv_packets, srv2cli_packets,
-	 (long long unsigned) cli2srv_bytes, (long long unsigned) srv2cli_bytes);
+  if((cli_host == NULL) || (srv_host == NULL)) return(buf);
+
+  snprintf(buf, buf_len,
+	   "%s %s:%u > %s:%u [proto: %u/%s][%u/%u pkts][%llu/%llu bytes]\n",
+	   get_protocol_name(),
+	   cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
+	   srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
+	   ndpi_detected_protocol,
+	   ndpi_get_proto_name(iface->get_ndpi_struct(), ndpi_detected_protocol),
+	   cli2srv_packets, srv2cli_packets,
+	   (long long unsigned) cli2srv_bytes, (long long unsigned) srv2cli_bytes);
+
+  return(buf);
 }
 
 /* *************************************** */
@@ -763,4 +768,13 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
     cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes;
 
   updateActivities();
+}
+
+/* *************************************** */
+
+void Flow::updateTcpFlags(time_t when, u_int8_t flags) { 
+  tcp_flags |= flags; 
+
+  if((flags == TH_SYN) && cli_host)
+    cli_host->updateSynFlags(when, flags, this);
 }
