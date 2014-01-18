@@ -1630,19 +1630,17 @@ static int ntop_get_num_queued_alerts(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_delete_queued_alert(lua_State* vm) {
-  Redis *redis = ntop->getRedis();
-
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  redis->deleteQueuedAlert((u_int32_t)lua_tonumber(vm, 1));
+  ntop->getRedis()->deleteQueuedAlert((u_int32_t)lua_tonumber(vm, 1));
+  lua_pushnil(vm); /* Always return a value to Lua */
   return(CONST_LUA_OK);
 }
   
 /* ****************************************** */
 
 static int ntop_flush_all_queued_alerts(lua_State* vm) {
-  Redis *redis = ntop->getRedis();
-
-  redis->flushAllQueuedAlerts();
+  ntop->getRedis()->flushAllQueuedAlerts();
+  lua_pushnil(vm); /* Always return a value to Lua */
   return(CONST_LUA_OK);
 }
   
