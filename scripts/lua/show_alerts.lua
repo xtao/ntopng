@@ -10,6 +10,10 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+if(_GET["id_to_delete"] ~= nil) then
+   ntop.deleteQueuedAlert(tonumber(_GET["id_to_delete"]))
+end
+
 active_page = "alerts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
@@ -20,10 +24,16 @@ print [[
 	 $("#table-alerts").datatable({
 			url: "/lua/get_alerts_data.lua",
 	       showPagination: true,
+
+				   ]]
+
+				   if(_GET["currentPage"] ~= nil) then print("currentPage: ".._GET["currentPage"]..",\n") end
+				   if(_GET["perPage"] ~= nil) then print("perPage: ".._GET["perPage"]..",\n") end
+print [[
 	        title: "Queued Alerts",
 	         columns: [
  {
-         title: "Info",
+         title: "Action",
      field: "column_key",
                  css: { 
 		            textAlign: 'center'
@@ -54,7 +64,7 @@ print [[
 	      },
 
  {
-         title: "Message",
+         title: "Description",
      field: "column_msg",
                  css: { 
 		            textAlign: 'left'

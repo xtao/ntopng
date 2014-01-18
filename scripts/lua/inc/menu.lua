@@ -197,7 +197,7 @@ print [[
 print(string.format("%u", num_alerts))
 print [[
 </font>
-        <i class="fa fa-bell-o fa-lg" style="color:red"></i> <b class="caret"></b>
+        <i class="fa fa-warning fa-lg" style="color:red"></i> <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/show_alerts.lua"><i class="fa fa-exclamation"></i>&nbsp; Show Alerts</a></li>

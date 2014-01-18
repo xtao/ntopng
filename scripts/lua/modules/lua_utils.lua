@@ -110,19 +110,44 @@ function shortHostName(name)
    return(name)
 end
 
-function l4Label(proto)
+function _handleArray(name, sev)
    local id
 
-   for id, _ in ipairs(l4_keys) do
-      local l = l4_keys[id][1]
-      local key = l4_keys[id][2]
+   for id, _ in ipairs(name) do
+      local l = name[id][1]
+      local key = name[id][2]
 
-      if(key == proto) then
+      if(key == sev) then
 	 return(l)
       end
    end
 
-   return(firstToUpper(proto))
+   return(firstToUpper(sev))
+end
+
+
+function l4Label(proto)
+   return(_handleArray(l4_keys, proto))
+end
+
+-- Alerts (see ntop_typedefs.h)
+
+alert_level_keys = {
+   { "<span class='label label-info'>Info</span>", 0 },
+   { "<span class='label label-warning'>Warning</span>", 1 },
+   { "<span class='label label-important'>Error</span>", 2 }
+}
+
+alert_type_keys = {
+   { "TCP SYN Flood", 0 }
+}
+
+function alertSeverityLabel(v)
+   return(_handleArray(alert_level_keys, v))
+end
+
+function alertTypeLabel(v)
+   return(_handleArray(alert_type_keys, v))
 end
 
 function firstToUpper(str)

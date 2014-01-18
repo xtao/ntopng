@@ -940,7 +940,8 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
 	   (unsigned int)t, msg);
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "RPUSH %s %s",
+  /* Put the latest messages on top so old messages (if any) will be discarded */
+  reply = (redisReply*)redisCommand(redis, "LPUSH %s %s",
 				    CONST_ALERT_MSG_QUEUE, what);
   
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
@@ -965,15 +966,28 @@ u_int Redis::getNumQueuedAlerts() {
   return(num);
 }
 
+/* ******************************************* */
+
+void Redis::deleteQueuedAlert(u_int32_t idx_to_delete) {
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "LSET %s %u __deleted__", CONST_ALERT_MSG_QUEUE, idx_to_delete);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+  reply = (redisReply*)redisCommand(redis, "LREM %s 0 __deleted__", CONST_ALERT_MSG_QUEUE, idx_to_delete);
+  if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+  l->unlock(__FILE__, __LINE__);
+}
+
 /* **************************************** */
 
-u_int Redis::getQueuedAlerts(char **alerts, u_int num) {
+u_int Redis::getQueuedAlerts(char **alerts, u_int start_idx, u_int num) {
   u_int i = 0;
   redisReply *reply;
 
   l->lock(__FILE__, __LINE__);
   while(i < num) {
-    reply = (redisReply*)redisCommand(redis, "LPOP %s", CONST_ALERT_MSG_QUEUE);
+    reply = (redisReply*)redisCommand(redis, "LINDEX %s %u", CONST_ALERT_MSG_QUEUE, start_idx++);
     if(reply && (reply->type == REDIS_REPLY_ERROR)) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
       break;

@@ -1630,25 +1630,40 @@ static int ntop_get_num_queued_alerts(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_delete_queued_alert(lua_State* vm) {
+  Redis *redis = ntop->getRedis();
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  redis->deleteQueuedAlert((u_int32_t)lua_tonumber(vm, 1));
+  return(CONST_LUA_OK);
+}
+  
+/* ****************************************** */
+
 static int ntop_get_queued_alerts(lua_State* vm) {
   Redis *redis = ntop->getRedis();
-  u_int32_t num, i = 0;
+  u_int32_t num, i = 0, start_idx = 0, n = 0;
   char *alerts[CONST_MAX_NUM_READ_ALERTS] = { NULL };
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  num = (u_int32_t)lua_tonumber(vm, 1);
+  start_idx = (u_int32_t)lua_tonumber(vm, 1);
+  
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num = (u_int32_t)lua_tonumber(vm, 2);
   
   if(num < 1) num = 1;
   else if(num > CONST_MAX_NUM_READ_ALERTS) num = CONST_MAX_NUM_READ_ALERTS;
 
-  redis->getQueuedAlerts(alerts, num);
+  redis->getQueuedAlerts(alerts, start_idx, num);
 
   lua_newtable(vm);
 
-  while((i < CONST_MAX_NUM_READ_ALERTS) && (alerts[i] != NULL)){
-    lua_push_str_table_entry(vm, alerts[i], alerts[i]);
+  while((i < CONST_MAX_NUM_READ_ALERTS) && (alerts[i] != NULL)) {
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u\t%s", start_idx+n, alerts[i]);
+    lua_pushstring(vm, alerts[i]);
+    lua_rawseti(vm, -2, n);
     free(alerts[i]);
-    i++;
+    i++, n++;
   }
 
   return(CONST_LUA_OK);
@@ -1836,6 +1851,7 @@ static const luaL_Reg ntop_reg[] = {
   /* Alerts */
   { "getNumQueuedAlerts", ntop_get_num_queued_alerts },
   { "getQueuedAlerts",    ntop_get_queued_alerts },
+  { "deleteQueuedAlert",  ntop_delete_queued_alert },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },
