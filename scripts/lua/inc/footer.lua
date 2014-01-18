@@ -218,7 +218,10 @@ setInterval(function() {
 		msg += "<i class=\"fa fa-time fa-lg\"></i>Uptime: "+rsp.uptime+"<br>";
 
 		if(rsp.alerts > 0) {
-		   msg += "<a href=/lua/show_alerts.lua><i class=\"fa fa-warning fa-lg\" style=\"color: #B94A48;\"></i> <span class=\"badge badge-important\">"+rsp.alerts+" Alarms</span></A><br>"
+		   msg += "<a href=/lua/show_alerts.lua><i class=\"fa fa-warning fa-lg\" style=\"color: #B94A48;\"></i> <span class=\"badge badge-important\">"+rsp.alerts+" Alarm";
+		   if(rsp.alerts > 1) msg += "s";
+
+		   msg += "</span></A><br>";
 		}
 
 		var alarm_threshold_low = 60;  /* 60% */

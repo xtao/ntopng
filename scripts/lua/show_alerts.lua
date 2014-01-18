@@ -83,7 +83,27 @@ print [[
 
 if(ntop.getNumQueuedAlerts() > 0) then
    print [[
-	    <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=id_to_delete value="__all__"><button class="btn btn-mini" type="submit"><i type="submit" class="fa fa-trash-o"></i> Purge All Alarms</button></form>
+
+<a href="#myModal" role="button" class="btn btn-mini" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alarms</button></a>
+ 
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <h3 id="myModalLabel">Confirm Action</h3>
+  </div>
+  <div class="modal-body">
+    <p>Do you really want to purge all alarms?</p>
+  </div>
+  <div class="modal-footer">
+
+    <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=id_to_delete value="__all__">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary" type="submit">Purge All</button>
+</form>
+  </div>
+</div>
+
       ]]
 end
 
