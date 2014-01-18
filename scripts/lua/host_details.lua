@@ -288,6 +288,11 @@ print [["></input>
 </td></tr>
    ]]
 
+
+if(host["num_alerts"] > 0) then
+   print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF=/lua/show_alerts.lua>Alerts</A></th><td></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
+end
+
    print("<tr><th>First Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td></tr>\n")
    print("<tr><th>Last Seen</th><td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
 
@@ -846,6 +851,7 @@ print [[
 
 print("var last_pkts_sent = " .. host["pkts.sent"] .. ";\n")
 print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";\n")
+print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
 
 print [[
 setInterval(function() {
@@ -863,8 +869,15 @@ setInterval(function() {
 			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
 			$('#name').html(host["name"]);
+			$('#num_alerts').html(host["num_alerts"]);
 
 			/* **************************************** */
+
+			if(last_num_alerts == host["num_alerts"]) {
+			   $('#alerts_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#alerts_trend').html("<i class=\"fa fa-arrow-up\" style=\"color: #B94A48;\"></i>");
+			}
 
 			if(last_pkts_sent == host["pkts.sent"]) {
 			   $('#sent_trend').html("<i class=\"fa fa-minus\"></i>");
@@ -878,6 +891,7 @@ setInterval(function() {
 			   $('#rcvd_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
+			last_num_alerts = host["num_alerts"];
 			last_pkts_sent = host["pkts.sent"];
 			last_pkts_rcvd = host["pkts.rcvd"];
 

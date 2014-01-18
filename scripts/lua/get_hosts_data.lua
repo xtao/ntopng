@@ -164,6 +164,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
 	    print(shortHostName(value["name"]))
+
+	    if(value["num_alerts"] > 0) then
+	       print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
+	    end
+
 	    --   print("</div>")
 
 	    if(value["country"] ~= nil) then

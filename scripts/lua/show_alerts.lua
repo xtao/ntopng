@@ -84,7 +84,7 @@ print [[
 if(ntop.getNumQueuedAlerts() > 0) then
    print [[
 
-<a href="#myModal" role="button" class="btn btn-mini" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alarms</button></a>
+<a href="#myModal" role="button" class="btn btn-mini" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alerts</button></a>
  
 <!-- Modal -->
 <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -93,7 +93,7 @@ if(ntop.getNumQueuedAlerts() > 0) then
     <h3 id="myModalLabel">Confirm Action</h3>
   </div>
   <div class="modal-body">
-    <p>Do you really want to purge all alarms?</p>
+    <p>Do you really want to purge all alerts?</p>
   </div>
   <div class="modal-footer">
 

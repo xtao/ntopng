@@ -281,6 +281,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_bool_table_entry(vm, "localhost", localHost);
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
+
     lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
     lua_push_str_table_entry(vm, "os", os);
 
@@ -323,6 +324,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "duration", get_duration());
     lua_push_float_table_entry(vm, "throughput", bytes_thpt);
     lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
+    lua_push_int_table_entry(vm, "num_alerts", getNumAlerts());
 
     if(ip) lua_push_str_table_entry(vm, "category", get_category());
 
@@ -564,6 +566,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
   /* Generic Host */
+  json_object_object_add(my_object, "num_alerts", json_object_new_int(getNumAlerts()));
   json_object_object_add(my_object, "sent", sent.getJSONObject());
   json_object_object_add(my_object, "rcvd", rcvd.getJSONObject());
   json_object_object_add(my_object, "ndpiStats", ndpiStats->getJSONObject(iface));
@@ -630,6 +633,7 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "other_ip_sent", &obj))  other_ip_sent.deserialize(obj);
   if(json_object_object_get_ex(o, "other_ip_rcvd", &obj))  other_ip_rcvd.deserialize(obj);
 
+  if(json_object_object_get_ex(o, "num_alerts", &obj)) num_alerts_detected = json_object_get_int(obj);
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
 
@@ -667,12 +671,13 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
 	char ip_buf[48], flow_buf[256], msg[512], *h;
 
 	h = ip->print(ip_buf, sizeof(ip_buf));
-	snprintf(msg, sizeof(msg), "Host <A HREF=/lua/host_details.lua?host=%s>%s</A> on flow %s", 
-		 h, h, f->print(flow_buf, sizeof(flow_buf)));
+	snprintf(msg, sizeof(msg), "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
+		 h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
 	
 	ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood detected: %s", msg);
 	ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
 	time_last_syn_flood_reported = when;
+	incNumAlerts();
       }
     }
   }

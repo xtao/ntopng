@@ -32,6 +32,8 @@ class GenericHost : public GenericHashEntry {
   TrafficStats sent, rcvd;
   ActivityStats activityStats;
   HostContacts *contacts;
+  u_int32_t num_alerts_detected;
+
   /* Throughput */
   float bytes_thpt;
   ValueTrend bytes_thpt_trend;
@@ -65,6 +67,8 @@ class GenericHost : public GenericHashEntry {
   bool hasHostContacts(char *host)    { return(contacts->hasHostContacts(host)); };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts->get_num_contacts_by(host_ip)); };
   inline u_int32_t get_host_serial()  { return(host_serial);               };
+  inline void incNumAlerts()          { num_alerts_detected++;             };
+  inline u_int32_t getNumAlerts()     { return(num_alerts_detected);       };
   void updateStats(struct timeval *tv);
   void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };
