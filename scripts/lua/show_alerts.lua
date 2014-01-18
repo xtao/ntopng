@@ -11,11 +11,18 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 if(_GET["id_to_delete"] ~= nil) then
-   ntop.deleteQueuedAlert(tonumber(_GET["id_to_delete"]))
+   if(_GET["id_to_delete"] == "all") then
+      ntop.flushAllQueuedAlerts()
+      print("")
+   else
+      ntop.deleteQueuedAlert(tonumber(_GET["id_to_delete"]))
+   end
 end
 
 active_page = "alerts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
+print(_GET["id_to_delete"])
 
 print [[
       <hr>
@@ -24,11 +31,11 @@ print [[
 	 $("#table-alerts").datatable({
 			url: "/lua/get_alerts_data.lua",
 	       showPagination: true,
+]]
 
-				   ]]
+if(_GET["currentPage"] ~= nil) then print("currentPage: ".._GET["currentPage"]..",\n") end
+if(_GET["perPage"] ~= nil)     then print("perPage: ".._GET["perPage"]..",\n") end
 
-				   if(_GET["currentPage"] ~= nil) then print("currentPage: ".._GET["currentPage"]..",\n") end
-				   if(_GET["perPage"] ~= nil) then print("perPage: ".._GET["perPage"]..",\n") end
 print [[
 	        title: "Queued Alerts",
 	         columns: [
@@ -76,5 +83,10 @@ print [[
 	      ]]
 
 
+if(ntop.getNumQueuedAlerts() > 0) then
+   print [[
+	    <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=id_to_delete value="all"><button class="btn btn-mini" type="submit"><i type="submit" class="fa fa-trash-o"></i> Purge All Alarms</button></form>
+      ]]
+end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

@@ -113,6 +113,11 @@ class Redis {
    */
   void deleteQueuedAlert(u_int32_t idx);
 
+  /**
+   * @brief Flush all queued alerts
+   *
+   */
+  inline void flushAllQueuedAlerts() { del((char*)CONST_ALERT_MSG_QUEUE); };
 };
 
 #endif /* _REDIS_H_ */

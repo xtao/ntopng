@@ -949,6 +949,7 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
   reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", CONST_ALERT_MSG_QUEUE, CONST_MAX_ALERT_MSG_QUEUE_LEN);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   l->unlock(__FILE__, __LINE__);
+  if(reply) freeReplyObject(reply);
 }
 
 /* ******************************************* */
@@ -962,6 +963,7 @@ u_int Redis::getNumQueuedAlerts() {
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   else num = reply->integer;
   l->unlock(__FILE__, __LINE__);
+  if(reply) freeReplyObject(reply);
 
   return(num);
 }
@@ -974,9 +976,12 @@ void Redis::deleteQueuedAlert(u_int32_t idx_to_delete) {
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "LSET %s %u __deleted__", CONST_ALERT_MSG_QUEUE, idx_to_delete);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
+  if(reply) freeReplyObject(reply);
+
   reply = (redisReply*)redisCommand(redis, "LREM %s 0 __deleted__", CONST_ALERT_MSG_QUEUE, idx_to_delete);
   if(reply && (reply->type == REDIS_REPLY_ERROR)) ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str);
   l->unlock(__FILE__, __LINE__);
+  if(reply) freeReplyObject(reply);
 }
 
 /* **************************************** */
@@ -1008,4 +1013,4 @@ u_int Redis::getQueuedAlerts(char **alerts, u_int start_idx, u_int num) {
 
   return(i);
 }
-
+ 
