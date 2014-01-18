@@ -664,12 +664,13 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
     
     if(num_syn_rcvd_last_second > CONST_MAX_NUM_SYN_PER_SECOND) {
       if(when > (time_last_syn_flood_reported+CONST_SYN_FLOOD_GRACE_PERIOD)) {
-	char ip_buf[48], flow_buf[256], msg[512];
+	char ip_buf[48], flow_buf[256], msg[512], *h;
 
-	snprintf(msg, sizeof(msg), "Host %s on flow %s", 
-		 ip->print(ip_buf, sizeof(ip_buf)), f->print(flow_buf, sizeof(flow_buf)));
+	h = ip->print(ip_buf, sizeof(ip_buf));
+	snprintf(msg, sizeof(msg), "Host <A HREF=/lua/host_details.lua?host=%s>%s</A> on flow %s", 
+		 h, h, f->print(flow_buf, sizeof(flow_buf)));
 	
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "SYN Flood detected: %s", msg);
+	ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood detected: %s", msg);
 	ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
 	time_last_syn_flood_reported = when;
       }

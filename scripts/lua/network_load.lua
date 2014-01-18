@@ -20,4 +20,4 @@ aggregations_pctg = math.floor(1+((ifstats.stats_aggregations*100)/prefs.max_num
 sendHTTPHeader('text/html')
 --sendHTTPHeader('application/json')
 
-print('{ "packets": '.. ifstats.stats_packets .. ', "bytes": ' .. ifstats.stats_bytes .. ', "drops": ' .. ifstats.stats_drops .. ', "num_flows": '.. ifstats.stats_flows .. ', "num_hosts": ' .. ifstats.stats_hosts .. ', "num_aggregations": ' .. ifstats.stats_aggregations .. ', "epoch": ' .. os.time()..' , "uptime": " ' .. secondsToTime(uptime) .. '", "hosts_pctg": ' .. hosts_pctg .. ', "aggregations_pctg": ' .. aggregations_pctg .. ', "flows_pctg": ' .. flows_pctg.. ' }\n')
+print('{ "packets": '.. ifstats.stats_packets .. ', "bytes": ' .. ifstats.stats_bytes .. ', "drops": ' .. ifstats.stats_drops .. ', "alerts": '.. ntop.getNumQueuedAlerts() ..', "num_flows": '.. ifstats.stats_flows .. ', "num_hosts": ' .. ifstats.stats_hosts .. ', "num_aggregations": ' .. ifstats.stats_aggregations .. ', "epoch": ' .. os.time()..' , "uptime": " ' .. secondsToTime(uptime) .. '", "hosts_pctg": ' .. hosts_pctg .. ', "aggregations_pctg": ' .. aggregations_pctg .. ', "flows_pctg": ' .. flows_pctg.. ' }\n')

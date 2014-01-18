@@ -571,9 +571,9 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN)
-     || iface->is_ndpi_enabled())
+     || iface->is_ndpi_enabled()) {
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
-  else
+  } else
     lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
