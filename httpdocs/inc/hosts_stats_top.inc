@@ -29,6 +29,15 @@
 
 				 },			     
 			     {
+			     title: "Alerts",
+				 field: "column_alerts",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
+				 },			     
+			     {
 			     title: "Name",
 				 field: "column_name",
 				 sortable: true,

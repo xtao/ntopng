@@ -104,6 +104,8 @@ for key, value in pairs(hosts_stats) do
 	 vals[hosts_stats[key]["name"]..postfix] = key
 	 elseif(sortColumn == "column_since") then
 	 vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
+	 elseif(sortColumn == "column_alerts") then
+	 vals[(now-hosts_stats[key]["num_alerts"])+postfix] = key
 	 elseif(sortColumn == "column_family") then
 	 vals[(now-hosts_stats[key]["family"])+postfix] = key
 	 elseif(sortColumn == "column_last") then
@@ -217,6 +219,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
 	    end
 
+	    print ("\", \"column_alerts\" : \"")
+	    if(value["num_alerts"] > 0) then 
+	       print(""..value["num_alerts"])
+	    end
 	    if(value["localhost"] ~= nil) then
 	       print ("\", \"column_location\" : \"")
 	       if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end
