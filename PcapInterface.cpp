@@ -51,6 +51,20 @@ PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
       read_pkts_from_pcap_dump = true, purge_idle_flows_hosts = false;
     }
   } else {
+	  char *bl = strrchr(ifname, 
+#ifdef WIN32
+		  '\\'
+#else
+		  '/'
+#endif
+		  );
+
+      if(bl != NULL) {
+		char *tmp = ifname;
+		ifname = strdup(&bl[1]);
+		free(tmp);
+	  }
+
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reading packets from interface %s...", ifname);
     read_pkts_from_pcap_dump = false;
   }
