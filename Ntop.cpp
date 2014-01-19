@@ -91,9 +91,7 @@ Ntop::Ntop(char *appName) {
 
 void Ntop::initTimezone() {
   time_t now = time(NULL);
-  struct tm *t = localtime(&now);
-
-  time_offset = t->tm_gmtoff;
+  time_offset = mktime(localtime(&now)) - mktime(gmtime(&now));
 }
 
 /* ******************************************* */

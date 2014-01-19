@@ -56,6 +56,10 @@
 
 /* ***************************************************** */
 
+#ifdef WIN32
+#define PACKAGE_OSNAME          "Win32"
+#endif
+
 #define LOGIN_URL               "/login.html"
 #define AUTHORIZE_URL           "/authorize.html"
 #define HTTP_SESSION_DURATION   3600
@@ -212,5 +216,9 @@
 #endif
 
 #define ifdot(a) ((a == '.') ? '_' : a)
+
+#ifdef WIN32
+#define unlink(a) _unlink(a)
+#endif
 
 #endif /* _NTOP_DEFINES_H_ */

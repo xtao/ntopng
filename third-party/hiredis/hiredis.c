@@ -32,7 +32,11 @@
 #include "fmacros.h"
 #include <string.h>
 #include <stdlib.h>
+#ifdef WIN32
+#define strerror_r(a,b,c) strerror_s(b, c, a)
+#else
 #include <unistd.h>
+#endif
 #include <assert.h>
 #include <errno.h>
 #include <ctype.h>

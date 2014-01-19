@@ -21,9 +21,11 @@
 
 #include "ntop_includes.h"
 
+#ifndef WIN32
 #include "third-party/hiredis/hiredis.c"
 #include "third-party/hiredis/net.c"
 #include "third-party/hiredis/sds.c"
+#endif
 
 /* **************************************** */
 
@@ -233,7 +235,7 @@ u_int32_t Redis::incrKey(char *key) {
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = 0;
   else
-    rc = reply->integer;
+    rc = (u_int)reply->integer;
 
   if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
@@ -994,7 +996,7 @@ u_int Redis::getNumQueuedAlerts() {
   reply = (redisReply*)redisCommand(redis, "LLEN %s", CONST_ALERT_MSG_QUEUE);
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-  else num = reply->integer;
+  else num = (u_int)reply->integer;
   l->unlock(__FILE__, __LINE__);
   if(reply) freeReplyObject(reply);
 

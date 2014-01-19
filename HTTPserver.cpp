@@ -339,8 +339,10 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     ntop->getTrace()->traceEvent(TRACE_INFO, "Found SSL certificate %s", ssl_cert_path);
     _a = (char*)"ssl_certificate", _b = ssl_cert_path;
     ssl_enabled = true;
-  } else
+  } else {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Missing SSL certificate %s", ssl_cert_path);
+	ssl_enabled = false;
+  }
 
   static char *http_options[] = { 
     (char*)"listening_ports", ports, 

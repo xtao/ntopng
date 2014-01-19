@@ -135,5 +135,8 @@ extern "C" {
 #include "HTTPserver.h"
 #include "Ntop.h"
 
+#ifdef WIN32
+extern const char *strcasestr(const char *haystack, const char *needle);
+#endif
 
 #endif /* _NTOP_H_ */

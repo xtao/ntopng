@@ -119,7 +119,7 @@ bool ActivityStats::writeDump(char* path) {
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)(%s)(%d)", __FUNCTION__, path, encoded.c_str(), expire_time-now);
  
   /* Save it both in redis and disk */
-  ntop->getRedis()->set(path, (char*)encoded.c_str(), expire_time-now);
+  ntop->getRedis()->set(path, (char*)encoded.c_str(), (u_int)(expire_time-now));
 
   try {
     ofstream dumpFile(path);

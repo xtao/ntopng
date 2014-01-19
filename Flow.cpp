@@ -145,7 +145,7 @@ void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id
       if(aggregationInfo.name && strcmp(aggregationInfo.name, name)) {
 	struct timeval tv;
 
-	tv.tv_sec = iface->getTimeLastPktRcvd(), tv.tv_usec = 0;
+	tv.tv_sec = (long)iface->getTimeLastPktRcvd(), tv.tv_usec = 0;
 	update_hosts_stats(&tv);
       }
 
