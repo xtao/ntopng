@@ -1025,7 +1025,7 @@ void Redis::deleteQueuedAlert(u_int32_t idx_to_delete) {
 
 u_int Redis::getQueuedAlerts(char **alerts, u_int start_idx, u_int num) {
   u_int i = 0;
-  redisReply *reply;
+  redisReply *reply = NULL;
 
   l->lock(__FILE__, __LINE__);
   while(i < num) {
