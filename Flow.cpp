@@ -773,8 +773,13 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 /* *************************************** */
 
 void Flow::updateTcpFlags(time_t when, u_int8_t flags) { 
-  tcp_flags |= flags; 
-
-  if((flags == TH_SYN) && cli_host)
+  if((flags == TH_SYN) 
+	  && (tcp_flags == TH_SYN) /* SYN was already received */
+	  && (cli2srv_packets > 2 /* We tolerate two SYN at the beginning of the connection */)
+	  && ((last_seen-first_seen) < 2 /* (sec) SYN flood must be quick */)
+	  && cli_host) 
     cli_host->updateSynFlags(when, flags, this);
+
+  /* The update below must be after the above check */
+  tcp_flags |= flags; 
 }
