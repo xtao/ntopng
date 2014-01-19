@@ -49,6 +49,7 @@ HAS_ZEROMQ=$(shell pkg-config --exists libzmq; echo $$?)
 ifeq ($(HAS_ZEROMQ), 0)
 	ZEROMQ_INC = $(shell pkg-config --cflags libzmq)
 	ZEROMQ_LIB = $(shell pkg-config --libs libzmq)
+        test -s $(ZMQ_STATIC) || { ZEROMQ_LIB=$(ZMQ_STATIC) }
 else
 	ZEROMQ_HOME=./third-party/zeromq-3.2.3
 	ZEROMQ_INC=-I$(ZEROMQ_HOME)/include
