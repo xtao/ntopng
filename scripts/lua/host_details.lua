@@ -232,12 +232,12 @@ if((page == "overview") or (page == nil)) then
       -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
 
       if(host["mac"] ~= "00:00:00:00:00:00") then
-	 print("<tr><th width=35%>(Router) MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+	 print("<tr><th width=35%>(Router) MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
       end
-      print("<tr><th>IP Address</th><td>" .. host["ip"])
+      print("<tr><th>IP Address</th><td colspan=2>" .. host["ip"])
    else
       if(host["mac"] ~= nil) then
-	 print("<tr><th>MAC Address</th><td>" .. host["mac"].. "</td></tr>\n")
+	 print("<tr><th>MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
       end
    end
 
@@ -247,15 +247,15 @@ if((page == "overview") or (page == nil)) then
 
    print("</td></tr>\n")
 
-   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td>"..host["vlan"].."</td></tr>\n") end
-   if(host["os"] ~= "") then print("<tr><th>OS</th><td>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
-   if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
+   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td colspan=2>"..host["vlan"].."</td></tr>\n") end
+   if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
+   if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td colspan=2>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
 
    if((host["category"] ~= nil) and (host["category"] ~= "")) then
       cat = getCategory(host["category"])
 
       if(cat ~= "") then
-	 print("<tr><th>Category</th><td>".. cat .."</td></tr>\n")
+	 print("<tr><th>Category</th><td colspan=2>".. cat .."</td></tr>\n")
       end
    end
 
@@ -270,12 +270,12 @@ if((page == "overview") or (page == nil)) then
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
-      print("</td></tr>\n")
+      print("</td>\n")
    end
 
 print [[
-<tr><th>Alternate Name</th><td>
-<form class="form-inline">
+<td>
+<form class="form-inline" style="margin-bottom: 0px;">
 	 <input type="hidden" name="host" value="]]
       print(host_ip)
 print [[">
@@ -284,30 +284,32 @@ print [[">
 print [["></input>
   <button type="submit" class="btn">Save</button>
 </form>
-	 <span class="help-block"><i class="fa fa-comment-o"></i> Permanently set an alternate name for host ]] print(host_ip) print [[.</span>
 </td></tr>
    ]]
 
 
 if(host["num_alerts"] > 0) then
-   print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF=/lua/show_alerts.lua>Alerts</A></th><td></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
+   print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF=/lua/show_alerts.lua>Alerts</A></th><td colspan=2></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
 end
 
-   print("<tr><th>First Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td></tr>\n")
-   print("<tr><th>Last Seen</th><td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
+   print("<tr><th>First / Last Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td>\n")
+   print("<td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
+
 
    if((host["bytes.sent"]+host["bytes.rcvd"]) > 0) then
-      print("<tr><th>Sent vs Received Traffic Breakdown</th><td>")
+      print("<tr><th>Sent vs Received Traffic Breakdown</th><td colspan=2>")
       breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
       print("</td></tr>\n")
    end
 
-   print("<tr><th>Traffic Sent</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
-   print("<tr><th>Traffic Received</th><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
-   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?host="..host_ip..">Download<A></td></tr>\n") end
+   print("<tr><th>Traffic Sent / Received</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
+
+   print("<tr><th>Flows 'As Client' / 'As Server'</th><td><span id=flows_as_client>" .. formatValue(host["flows.as_client"]) .. "</span> <span id=as_client_trend></span></td><td><span id=flows_as_server>" .. formatValue(host["flows.as_server"]) .. "</span> <span id=as_server_trend></td></tr>\n")
+
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?host="..host_ip..">Download<A></td></tr>\n") end
 
    print [[
-	    <tr><th>Activity Map</th><td>
+	    <tr><th>Activity Map</th><td colspan=2>
 	    <span id="sentHeatmap"></span>
 	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-left fa-lg""></i></button>
 	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-refresh fa-lg"></i></button>
@@ -852,6 +854,8 @@ print [[
 print("var last_pkts_sent = " .. host["pkts.sent"] .. ";\n")
 print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";\n")
 print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
+print("var last_flows_as_server = " .. host["flows.as_server"] .. ";\n")
+print("var last_flows_as_client = " .. host["flows.as_client"] .. ";\n")
 
 print [[
 setInterval(function() {
@@ -871,7 +875,22 @@ setInterval(function() {
 			$('#name').html(host["name"]);
 			$('#num_alerts').html(host["num_alerts"]);
 
+			$('#flows_as_client').html(addCommas(host["flows.as_client"]));
+			$('#flows_as_server').html(addCommas(host["flows.as_server"]));
+
 			/* **************************************** */
+
+			if(host["flows.as_client"] == last_flows_as_client) {
+			   $('#as_client_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#as_client_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+			}
+
+			if(host["flows.as_server"] == last_flows_as_server) {
+			   $('#as_server_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#as_server_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+			}
 
 			if(last_num_alerts == host["num_alerts"]) {
 			   $('#alerts_trend').html("<i class=\"fa fa-minus\"></i>");
@@ -894,6 +913,8 @@ setInterval(function() {
 			last_num_alerts = host["num_alerts"];
 			last_pkts_sent = host["pkts.sent"];
 			last_pkts_rcvd = host["pkts.rcvd"];
+			last_flows_as_server = host["flows.as_server"];
+			last_flows_as_client = host["flows.as_client"];
 
 			/* **************************************** */
 

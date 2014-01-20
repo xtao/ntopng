@@ -171,14 +171,19 @@ print [[
       <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
       <li class="divider"></li>
       <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
-
-]]
-
-
-print [[
     </ul>
     </li>
    ]]
+
+if(ntop.getNumQueuedAlerts() > 0) then
+print [[
+<li>
+<a  href="/lua/show_alerts.lua">
+<i class="fa fa-warning fa-lg" style="color: #B94A48;"></i>
+</a>
+</li>
+   ]]
+end
 
 
 dofile(dirs.installdir .. "/scripts/lua/inc/search_host_box.lua")

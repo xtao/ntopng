@@ -39,6 +39,7 @@ class Host : public GenericHost {
   TrafficStats icmp_sent, icmp_rcvd;
   TrafficStats other_ip_sent, other_ip_rcvd;
   PacketStats sent_stats, recv_stats;
+  u_int32_t num_flows_as_client, num_flows_as_server;
 
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
@@ -56,8 +57,8 @@ class Host : public GenericHost {
 
   inline PacketStats* get_sent_stats() { return(&sent_stats); };
   inline PacketStats* get_recv_stats() { return(&recv_stats); };
-  inline void set_ipv4(u_int32_t _ipv4)        { ip->set_ipv4(_ipv4);   }
-  inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); }
+  inline void set_ipv4(u_int32_t _ipv4)             { ip->set_ipv4(_ipv4); };
+  inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); };
   u_int32_t key();
   char* getJSON();
   inline void setOS(char *_os)                 { if(os[0] == '\0') snprintf(os, sizeof(os), "%s", _os); }
@@ -98,6 +99,8 @@ class Host : public GenericHost {
   void flushContacts();
   bool addIfMatching(lua_State* vm, char *key);
   void updateSynFlags(time_t when, u_int8_t flags, Flow *f);
+
+  inline void incNumFlows(bool as_client) { if(as_client) num_flows_as_client++; else num_flows_as_server++; };
 };
 
 #endif /* _HOST_H_ */

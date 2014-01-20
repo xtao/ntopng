@@ -297,6 +297,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
     lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
     lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "flows.as_client", num_flows_as_client);
+    lua_push_int_table_entry(vm, "flows.as_server", num_flows_as_server);
 
     if(ip) {
       lua_push_int_table_entry(vm, "udp.pkts.sent",  udp_sent.getNumPkts());
@@ -565,6 +567,8 @@ char* Host::serialize() {
   json_object_object_add(my_object, "pktStats.recv", recv_stats.getJSONObject());
   json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
   json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+  json_object_object_add(my_object, "flows.as_client", json_object_new_int(num_flows_as_client));
+  json_object_object_add(my_object, "flows.as_server", json_object_new_int(num_flows_as_server));
 
   /* Generic Host */
   json_object_object_add(my_object, "num_alerts", json_object_new_int(getNumAlerts()));
@@ -633,6 +637,8 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "icmp_rcvd", &obj))  icmp_rcvd.deserialize(obj);
   if(json_object_object_get_ex(o, "other_ip_sent", &obj))  other_ip_sent.deserialize(obj);
   if(json_object_object_get_ex(o, "other_ip_rcvd", &obj))  other_ip_rcvd.deserialize(obj);
+  if(json_object_object_get_ex(o, "flows.as_client", &obj))  num_flows_as_client = json_object_get_int(obj);
+  if(json_object_object_get_ex(o, "flows.as_server", &obj))  num_flows_as_server = json_object_get_int(obj);
 
   if(json_object_object_get_ex(o, "num_alerts", &obj)) num_alerts_detected = json_object_get_int(obj);
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);

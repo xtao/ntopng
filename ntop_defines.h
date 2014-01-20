@@ -147,7 +147,7 @@
 #define CONST_LUA_ERROR               0
 #define CONST_LUA_PARAM_ERROR         -1
 #define CONST_MAX_NUM_SYN_PER_SECOND  10
-#define CONST_MAX_NEW_FLOWS_SECOND    10
+#define CONST_MAX_NEW_FLOWS_SECOND    25
 #define CONST_ALARM_GRACE_PERIOD      60 /* No more than 1 alarm/min */
 #define CONST_CONTACTED_BY            "contacted_by"
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */

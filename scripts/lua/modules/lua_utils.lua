@@ -139,8 +139,8 @@ alert_level_keys = {
 }
 
 alert_type_keys = {
-   { "TCP SYN Flood", 0 },
-   { "Flows Flood",   1 }
+   { "<i class='fa fa-tint'></i> TCP SYN Flood", 0 },
+   { "<i class='fa fa-tint'></i> Flows Flood",   1 }
 }
 
 function alertSeverityLabel(v)

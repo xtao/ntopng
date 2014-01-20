@@ -400,8 +400,15 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(when, tcp_flags);
   }
 
-  if(new_flow && flow->get_cli_host())
-    flow->get_cli_host()->incFlowCount(when, flow);  
+  if(new_flow) {
+    if(flow->get_cli_host()) {
+      flow->get_cli_host()->incFlowCount(when, flow);  
+      flow->get_cli_host()->incNumFlows(true);
+    }
+
+    if(flow->get_srv_host())
+      flow->get_srv_host()->incNumFlows(false);
+  }
 
   /* Protocol Detection */
   flow->updateActivities();
