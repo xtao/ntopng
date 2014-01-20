@@ -31,6 +31,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   contacts = new HostContacts();
   num_alerts_detected = 0;
+  flow_count_alarm = new AlarmCounter(CONST_MAX_NEW_FLOWS_SECOND);
   // readStats(); - Commented as if put here it's too early and the key is not yet set
 }
 
@@ -41,6 +42,7 @@ GenericHost::~GenericHost() {
     delete ndpiStats;
 
   delete contacts;
+  delete flow_count_alarm;
 }
 
 /* *************************************** */
@@ -147,4 +149,28 @@ void GenericHost::updateStats(struct timeval *tv) {
   }
 
   memcpy(&last_update_time, tv, sizeof(struct timeval));
+}
+
+/* *************************************** */
+
+/**
+ * @brief Increments flow count.
+ * @details Increments the number of new flows and thus checks for flow scan.
+ *
+ * @param when Time of the event
+ */
+void GenericHost::incFlowCount(time_t when, Flow *f) {
+  if(flow_count_alarm->incHits(when)) {
+    char ip_buf[48], flow_buf[256], msg[512], *h;
+    
+    h = get_string_key(ip_buf, sizeof(ip_buf));
+    snprintf(msg, sizeof(msg),
+	     "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
+	     h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
+    
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Flow flood detected: %s", msg);
+    ntop->getRedis()->queueAlert(alert_level_error, alert_flow_flood, msg);
+    incNumAlerts();
+  }  
+
 }

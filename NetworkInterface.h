@@ -90,7 +90,8 @@ class NetworkInterface {
   		u_int16_t src_port, u_int16_t dst_port,
 		u_int8_t l4_proto,
 		bool *src2dst_direction,
-		time_t first_seen, time_t last_seen);
+		time_t first_seen, time_t last_seen,
+		bool *new_flow);
   bool isNumber(const char *str);
   bool validInterface(char *name);
 

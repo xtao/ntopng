@@ -116,9 +116,11 @@ Host::~Host() {
 
   if(symbolic_name)  free(symbolic_name);
   if(alternate_name) free(alternate_name);
-  if(country)       free(country);
-  if(city)          free(city);
-  if(asname)        free(asname);
+  if(country)        free(country);
+  if(city)           free(city);
+  if(asname)         free(asname);
+
+  delete syn_flood_alarm;
   delete ip;
   delete m;
 }
@@ -155,14 +157,13 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
+  syn_flood_alarm = new AlarmCounter(CONST_MAX_NUM_SYN_PER_SECOND);
   category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   m = new Mutex();
   asn = 0, asname = NULL, country = NULL, city = NULL;
   longitude = 0, latitude = 0;
-  time_last_syn_rcvd = 0, num_syn_rcvd_last_second = 0;
-  time_last_syn_flood_reported = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
 
@@ -661,25 +662,17 @@ bool Host::deserialize(char *json_str) {
 /* *************************************** */
 
 void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
-  if(time_last_syn_rcvd != when) 
-    time_last_syn_rcvd = when, num_syn_rcvd_last_second = 1;
-  else {
-    num_syn_rcvd_last_second++;
+  if(syn_flood_alarm->incHits(when)) {
+    char ip_buf[48], flow_buf[256], msg[512], *h;
     
-    if(num_syn_rcvd_last_second > CONST_MAX_NUM_SYN_PER_SECOND) {
-      if(when > (time_last_syn_flood_reported+CONST_SYN_FLOOD_GRACE_PERIOD)) {
-	char ip_buf[48], flow_buf[256], msg[512], *h;
-
-	h = ip->print(ip_buf, sizeof(ip_buf));
-	snprintf(msg, sizeof(msg), "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
-		 h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
-	
-	ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood detected: %s", msg);
-	ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
-	time_last_syn_flood_reported = when;
-	incNumAlerts();
-      }
-    }
-  }
+    h = ip->print(ip_buf, sizeof(ip_buf));
+    snprintf(msg, sizeof(msg),
+	     "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
+	     h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
+    
+    ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood detected: %s", msg);
+    ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
+    incNumAlerts();
+  }  
 }
 

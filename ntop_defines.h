@@ -131,23 +131,24 @@
 #define CONST_PATH_SEP                    '/'
 #endif
 
-#define NTOPNG_NDPI_OS_PROTO_ID     (NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS-2)
-#define CONST_DEFAULT_HOME_NET      "192.168.1.0/24"
-#define CONST_DEFAULT_DATA_DIR      "data"
-#define CONST_DEFAULT_DOCS_DIR      "httpdocs"
-#define CONST_DEFAULT_SCRIPTS_DIR   "scripts"
-#define CONST_DEFAULT_CALLBACKS_DIR "scripts/callbacks"
-#define CONST_DEFAULT_USERS_FILE    "ntopng-users.conf"
-#define CONST_DEFAULT_WRITABLE_DIR  "/var/tmp"
-#define CONST_DEFAULT_INSTALL_DIR   "/usr/local/share/ntopng"
-#define CONST_DEFAULT_NTOP_USER     "nobody"
-#define CONST_TOO_EARLY             "(Too Early)"
-#define CONST_HTTP_CONN                "http.conn"
-#define CONST_LUA_OK                   1
-#define CONST_LUA_ERROR                0
+#define NTOPNG_NDPI_OS_PROTO_ID      (NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS-2)
+#define CONST_DEFAULT_HOME_NET       "192.168.1.0/24"
+#define CONST_DEFAULT_DATA_DIR       "data"
+#define CONST_DEFAULT_DOCS_DIR       "httpdocs"
+#define CONST_DEFAULT_SCRIPTS_DIR    "scripts"
+#define CONST_DEFAULT_CALLBACKS_DIR  "scripts/callbacks"
+#define CONST_DEFAULT_USERS_FILE     "ntopng-users.conf"
+#define CONST_DEFAULT_WRITABLE_DIR   "/var/tmp"
+#define CONST_DEFAULT_INSTALL_DIR    "/usr/local/share/ntopng"
+#define CONST_DEFAULT_NTOP_USER      "nobody"
+#define CONST_TOO_EARLY              "(Too Early)"
+#define CONST_HTTP_CONN              "http.conn"
+#define CONST_LUA_OK                  1
+#define CONST_LUA_ERROR               0
 #define CONST_LUA_PARAM_ERROR         -1
-#define CONST_MAX_NUM_SYN_PER_SECOND   10
-#define CONST_SYN_FLOOD_GRACE_PERIOD   60 /* No more than 1 alarm/min */
+#define CONST_MAX_NUM_SYN_PER_SECOND  10
+#define CONST_MAX_NEW_FLOWS_SECOND    10
+#define CONST_ALARM_GRACE_PERIOD      60 /* No more than 1 alarm/min */
 #define CONST_CONTACTED_BY            "contacted_by"
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
 

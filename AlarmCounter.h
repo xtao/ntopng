@@ -19,32 +19,30 @@
  *
  */
 
-#ifndef _NTOP_TYPEDEFS_H_
-#define _NTOP_TYPEDEFS_H_
+#ifndef _ALARM_COUNTER_H_
+#define _ALARM_COUNTER_H_
 
-typedef enum {
-  trend_unknown = 0,
-  trend_up = 1,
-  trend_down = 2,
-  trend_stable = 3
-} ValueTrend;
+#include "ntop_includes.h"
 
-typedef enum {
-  location_none = 0,
-  location_local_only,
-  location_remote_only,
-  location_all,
-} LocationPolicy;
+/** @class AlarmCounter
+ *  @brief Base class for alarms.
+ *  @details Defines a basic class for handling generated alarms.
+ *
+ *  @ingroup MonitoringData
+ *
+ */
 
-typedef enum {
-  alert_syn_flood = 0,
-  alert_flow_flood
-} AlertType;
+class AlarmCounter {
+ private:
+  u_int16_t max_num_hits_sec; /**< Threshold above which we trigger an alarm. */
+  time_t time_last_hit; /**< Time of last hit received. */ 
+  time_t time_last_alarm_reported; /**< Time of last alarm issued. */ 
+  u_int16_t num_hits_rcvd_last_second; /**< Number of hits reported in the last second. */ 
 
-typedef enum {
-  alert_level_info = 0,
-  alert_level_warning,
-  alert_level_error,
-} AlertLevel;
+ public:
+  AlarmCounter(u_int16_t _max_num_hits_sec);
+  
+  bool incHits(time_t when);
+};
 
-#endif /* _NTOP_TYPEDEFS_H_ */
+#endif /* _ALARM_COUNTER_H_ */

@@ -19,32 +19,31 @@
  *
  */
 
-#ifndef _NTOP_TYPEDEFS_H_
-#define _NTOP_TYPEDEFS_H_
+#include "ntop_includes.h"
 
-typedef enum {
-  trend_unknown = 0,
-  trend_up = 1,
-  trend_down = 2,
-  trend_stable = 3
-} ValueTrend;
+/* *************************************** */
 
-typedef enum {
-  location_none = 0,
-  location_local_only,
-  location_remote_only,
-  location_all,
-} LocationPolicy;
+AlarmCounter::AlarmCounter(u_int16_t _max_num_hits_sec) {
+  time_last_hit = time_last_alarm_reported = 0;
+  num_hits_rcvd_last_second = 0;
+  max_num_hits_sec = _max_num_hits_sec;
+}
 
-typedef enum {
-  alert_syn_flood = 0,
-  alert_flow_flood
-} AlertType;
+/* *************************************** */
 
-typedef enum {
-  alert_level_info = 0,
-  alert_level_warning,
-  alert_level_error,
-} AlertLevel;
+bool AlarmCounter::incHits(time_t when) {
+  if(time_last_hit != when) 
+    time_last_hit = when, num_hits_rcvd_last_second = 1;
+  else {
+    num_hits_rcvd_last_second++;
+    
+    if(num_hits_rcvd_last_second > max_num_hits_sec) {
+      if(when > (time_last_alarm_reported+CONST_ALARM_GRACE_PERIOD)) {
+	time_last_alarm_reported = when;
+	return(true);
+      }
+    }
+  }
 
-#endif /* _NTOP_TYPEDEFS_H_ */
+  return(false);
+}

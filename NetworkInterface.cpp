@@ -212,13 +212,16 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
   				u_int16_t src_port, u_int16_t dst_port,
 				u_int8_t l4_proto,
 				bool *src2dst_direction,
-				time_t first_seen, time_t last_seen) {
+				time_t first_seen, time_t last_seen,
+				bool *new_flow) {
   Flow *ret;
 
   ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port,
 			 vlan_id, l4_proto, src2dst_direction);
 
   if(ret == NULL) {
+    *new_flow = true;
+
     try {
       ret = new Flow(this, vlan_id, l4_proto,
 		     src_eth, src_ip, src_port,
@@ -244,15 +247,17 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many flows");
       return(NULL);
     }
-  } else
+  } else {
+    *new_flow = false;
     return(ret);
+  }
 }
 
 /* **************************************************** */
 
 void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 {
-  bool src2dst_direction;
+  bool src2dst_direction, new_flow;
   Flow *flow;
 
   if((time_t)zflow->last_switched > (time_t)last_pkt_rcvd)
@@ -266,7 +271,7 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 		 zflow->src_port, zflow->dst_port,
 		 zflow->l4_proto, &src2dst_direction,
 		 zflow->first_switched,
-		 zflow->last_switched);
+		 zflow->last_switched, &new_flow);
 
   if(flow == NULL) return;
 
@@ -310,7 +315,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   u_int16_t l4_packet_len;
   u_int8_t *l4, tcp_flags = 0;
   u_int8_t *ip;
-  bool is_fragment = false;
+  bool is_fragment = false, new_flow;
 
   if(iph != NULL) {
     /* IPv4 */
@@ -385,7 +390,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
   /* Updating Flow */
   flow = getFlow(eth_src, eth_dst, vlan_id, &src_ip, &dst_ip, src_port, dst_port,
-		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd);
+		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd, &new_flow);
 
   if(flow == NULL) {
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
@@ -394,6 +399,9 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     flow->incStats(src2dst_direction, rawsize);
     if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(when, tcp_flags);
   }
+
+  if(new_flow && flow->get_cli_host())
+    flow->get_cli_host()->incFlowCount(when, flow);  
 
   /* Protocol Detection */
   flow->updateActivities();

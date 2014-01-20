@@ -24,6 +24,8 @@
 
 #include "ntop_includes.h"
 
+class Flow;
+
 class GenericHost : public GenericHashEntry {
  protected:
   bool localHost;
@@ -33,6 +35,9 @@ class GenericHost : public GenericHashEntry {
   ActivityStats activityStats;
   HostContacts *contacts;
   u_int32_t num_alerts_detected;
+
+  /* Alarms */
+  AlarmCounter *flow_count_alarm;
 
   /* Throughput */
   float bytes_thpt;
@@ -53,6 +58,7 @@ class GenericHost : public GenericHashEntry {
   void dumpHostContacts(u_int16_t family_id);
   inline bool isLocalHost()          { return(localHost); };
   inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
+  void incFlowCount(time_t when, Flow *f);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
   inline void incrContact(NetworkInterface *iface, u_int32_t me_serial, IpAddress *peer, 
