@@ -120,7 +120,7 @@ Host::~Host() {
   if(city)           free(city);
   if(asname)         free(asname);
 
-  delete syn_flood_alarm;
+  delete syn_flood_alert;
   delete ip;
   delete m;
 }
@@ -157,7 +157,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
-  syn_flood_alarm = new AlarmCounter(CONST_MAX_NUM_SYN_PER_SECOND);
+  syn_flood_alert = new AlertCounter(CONST_MAX_NUM_SYN_PER_SECOND, CONST_MAX_THRESHOLD_CROSS_DURATION);
   category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
@@ -668,7 +668,7 @@ bool Host::deserialize(char *json_str) {
 /* *************************************** */
 
 void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
-  if(syn_flood_alarm->incHits(when)) {
+  if(syn_flood_alert->incHits(when)) {
     char ip_buf[48], flow_buf[256], msg[512], *h;
     
     h = ip->print(ip_buf, sizeof(ip_buf));

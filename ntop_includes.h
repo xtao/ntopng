@@ -106,7 +106,7 @@ extern "C" {
 #include "ProtoStats.h"
 #include "EthStats.h"
 #include "GenericHashEntry.h"
-#include "AlarmCounter.h"
+#include "AlertCounter.h"
 #include "HostContacts.h"
 #include "GenericHost.h"
 #include "GenericHash.h"

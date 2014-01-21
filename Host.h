@@ -33,7 +33,7 @@ class Host : public GenericHost {
   float latitude, longitude;
   IpAddress *ip;
   Mutex *m;
-  AlarmCounter *syn_flood_alarm;
+  AlertCounter *syn_flood_alert;
   TrafficStats tcp_sent, tcp_rcvd;
   TrafficStats udp_sent, udp_rcvd;
   TrafficStats icmp_sent, icmp_rcvd;

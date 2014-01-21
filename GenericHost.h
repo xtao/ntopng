@@ -36,8 +36,8 @@ class GenericHost : public GenericHashEntry {
   HostContacts *contacts;
   u_int32_t num_alerts_detected;
 
-  /* Alarms */
-  AlarmCounter *flow_count_alarm;
+  /* Alerts */
+  AlertCounter *flow_count_alert;
 
   /* Throughput */
   float bytes_thpt;

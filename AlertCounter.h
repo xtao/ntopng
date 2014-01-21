@@ -19,30 +19,34 @@
  *
  */
 
-#ifndef _ALARM_COUNTER_H_
-#define _ALARM_COUNTER_H_
+#ifndef _ALERT_COUNTER_H_
+#define _ALERT_COUNTER_H_
 
 #include "ntop_includes.h"
 
-/** @class AlarmCounter
- *  @brief Base class for alarms.
- *  @details Defines a basic class for handling generated alarms.
+/** @class AlertCounter
+ *  @brief Base class for alerts.
+ *  @details Defines a basic class for handling generated alerts.
  *
  *  @ingroup MonitoringData
  *
  */
 
-class AlarmCounter {
+class AlertCounter {
  private:
-  u_int16_t max_num_hits_sec; /**< Threshold above which we trigger an alarm. */
+  u_int16_t max_num_hits_sec; /**< Threshold above which we trigger an alert. */
+  u_int8_t over_threshold_duration_sec; /**< Consecutive duration of threshold trepassing before triggering an alert. */
   time_t time_last_hit; /**< Time of last hit received. */ 
-  time_t time_last_alarm_reported; /**< Time of last alarm issued. */ 
+  time_t time_last_alert_reported; /**< Time of last alert issued. */ 
+  time_t last_trepassed_threshold; /**< Time of last event that trepassed the threshold. */
+  u_int16_t num_trepassed_threshold; /**< Number of consecutives threshold trepassing. */
   u_int16_t num_hits_rcvd_last_second; /**< Number of hits reported in the last second. */ 
 
  public:
-  AlarmCounter(u_int16_t _max_num_hits_sec);
+  AlertCounter(u_int16_t _max_num_hits_sec,
+	       u_int8_t _over_threshold_duration_sec);
   
   bool incHits(time_t when);
 };
 
-#endif /* _ALARM_COUNTER_H_ */
+#endif /* _ALERT_COUNTER_H_ */
