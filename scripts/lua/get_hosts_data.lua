@@ -167,7 +167,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 	    print(shortHostName(value["name"]))
 
-	    if(value["num_alerts"] > 0) then
+	    if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
 	       print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
 	    end
 
@@ -220,8 +220,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    print ("\", \"column_alerts\" : \"")
-	    if(value["num_alerts"] > 0) then 
+	    if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
 	       print(""..value["num_alerts"])
+	    else
+	       print("0")
 	    end
 	    if(value["localhost"] ~= nil) then
 	       print ("\", \"column_location\" : \"")
