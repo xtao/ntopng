@@ -673,10 +673,12 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
     
     h = ip->print(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
-	     h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> on flow %s [%u hits]", 
+	     h, iface->get_name(), h,
+	     f->print(flow_buf, sizeof(flow_buf)),
+	     syn_flood_alert->getCurrentHits());
     
-    ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood detected: %s", msg);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
     incNumAlerts();
   }  

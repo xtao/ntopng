@@ -165,10 +165,12 @@ void GenericHost::incFlowCount(time_t when, Flow *f) {
     
     h = get_string_key(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s>%s@%s</A> on flow %s", 
-	     h, h, iface->get_name(), f->print(flow_buf, sizeof(flow_buf)));
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> on flow %s [%u hits]", 
+	     h, iface->get_name(), 
+	     h, f->print(flow_buf, sizeof(flow_buf)),
+	     flow_count_alert->getCurrentHits());
     
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Flow flood detected: %s", msg);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Flow flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_flow_flood, msg);
     incNumAlerts();
   }  

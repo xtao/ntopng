@@ -31,15 +31,19 @@ AlertCounter::AlertCounter(u_int16_t _max_num_hits_sec,
   max_num_hits_sec = _max_num_hits_sec;
   over_threshold_duration_sec = _over_threshold_duration_sec;
   if(over_threshold_duration_sec < 1) over_threshold_duration_sec = 1;
+  num_hits_since_first_alert = 0;
 }
 
 /* *************************************** */
 
 bool AlertCounter::incHits(time_t when) {
-  if(time_last_hit != when)
+  if(time_last_hit != when) {
+    if(time_last_hit < (when-1))
+      num_hits_since_first_alert = 1;
+
     time_last_hit = when, num_hits_rcvd_last_second = 1;
-  else {
-    num_hits_rcvd_last_second++;
+  } else {
+    num_hits_rcvd_last_second++, num_hits_since_first_alert++;
 
     if((num_hits_rcvd_last_second > max_num_hits_sec)
        && (last_trepassed_threshold != when)) {
@@ -48,16 +52,23 @@ bool AlertCounter::incHits(time_t when) {
       else
 	num_trepassed_threshold = 1;
 
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Trepass [num: %u][last: %u][now: %u][duration: %u][%p]",
+#ifdef ALERT_DEBUG
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				   "Trepass [num: %u][last: %u][now: %u][duration: %u]",
 				   num_trepassed_threshold, last_trepassed_threshold, when,
-				   over_threshold_duration_sec, this);
+				   over_threshold_duration_sec);
+#endif
 
       last_trepassed_threshold = when;
       
       if(num_trepassed_threshold > over_threshold_duration_sec) {
 	if(when > (time_last_alert_reported+CONST_ALERT_GRACE_PERIOD)) {
-	  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Alert emitted [num: %u][now: %u][duration: %u][%p]",
-				       num_trepassed_threshold, when, over_threshold_duration_sec, this);
+#ifdef ALERT_DEBUG
+	  ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+				       "Alert emitted [num: %u][now: %u][duration: %u][tot_hits: %u]",
+				       num_trepassed_threshold, when, 
+				       over_threshold_duration_sec, num_hits_since_first_alert);
+#endif
 	  time_last_alert_reported = when;
 	  return(true);
 	}
