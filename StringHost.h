@@ -50,7 +50,7 @@ class StringHost : public GenericHost {
   inline void inc_num_queries_rcvd() { queriesReceived++;                  };
   char* get_string_key(char *buf, u_int buf_len);
   void updateStats(struct timeval *tv);
-  void flushContacts();
+  void flushContacts(bool freeHost);
   bool addIfMatching(lua_State* vm, char *key);
 };
 

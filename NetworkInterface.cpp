@@ -741,7 +741,7 @@ static bool update_hosts_stats(GenericHashEntry *node, void *user_data) {
 static bool flush_host_contacts(GenericHashEntry *node, void *user_data) {
   Host *host = (Host*)node;
 
-  host->flushContacts();
+  host->flushContacts(false);
   return(false); /* false = keep on walking */
 }
 
@@ -750,7 +750,7 @@ static bool flush_host_contacts(GenericHashEntry *node, void *user_data) {
 static bool flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
   StringHost *host = (StringHost*)node;
 
-  host->flushContacts();
+  host->flushContacts(false);
   return(false); /* false = keep on walking */
 }
 

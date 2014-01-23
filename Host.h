@@ -96,7 +96,7 @@ class Host : public GenericHost {
 
   char* serialize();
   bool deserialize(char *json_str);
-  void flushContacts();
+  void flushContacts(bool freeHost);
   bool addIfMatching(lua_State* vm, char *key);
   void updateSynFlags(time_t when, u_int8_t flags, Flow *f);
 

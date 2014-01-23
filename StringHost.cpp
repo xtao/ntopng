@@ -44,7 +44,7 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
 /* *************************************** */
 
 StringHost::~StringHost() {
-  flushContacts();
+  flushContacts(true);
 
   dumpStats(ntop->getPrefs()->get_aggregation_mode() == aggregations_enabled_with_bitmap_dump);
   free(keyname);
@@ -62,21 +62,23 @@ void StringHost::computeHostSerial() {
 
 /* *************************************** */
 
-void StringHost::flushContacts() {
+void StringHost::flushContacts(bool freeHost) {
   if(tracked_host) {
     bool _localHost = localHost;
 
     localHost = true; /* Hack */
-    computeHostSerial();
+    if(!host_serial) computeHostSerial();
     dumpHostContacts(family_id);
     contacts->purgeAll();
     localHost = _localHost;
 
-    /*
-      Recompute it so that if the day wrapped
-      we have a new one
-    */
-    computeHostSerial();
+    if(!freeHost) {
+      /*
+	Recompute it so that if the day wrapped
+	we have a new one
+      */
+      computeHostSerial();
+    }
   } 
 }
 
