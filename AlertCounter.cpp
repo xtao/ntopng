@@ -21,6 +21,8 @@
 
 #include "ntop_includes.h"
 
+// #define ALERT_DEBUG 1
+
 /* *************************************** */
 
 AlertCounter::AlertCounter(u_int16_t _max_num_hits_sec,
@@ -43,17 +45,15 @@ void AlertCounter::init() {
 /* *************************************** */
 
 bool AlertCounter::incHits(time_t when) {
-  if(time_last_hit != when)
+  /* We care only consecutive alerts */
+  if(time_last_hit < (when-1))
     init(); 
 
-  num_hits_rcvd_last_second++, num_hits_since_first_alert++;
+  num_hits_rcvd_last_second++, num_hits_since_first_alert++, time_last_hit = when;
 
-  if((num_hits_rcvd_last_second > max_num_hits_sec)
+  if((num_hits_rcvd_last_second > max_num_hits_sec) 
      && (last_trepassed_threshold != when)) {
-    if((last_trepassed_threshold > 0) || (last_trepassed_threshold == (when-1)))
-      num_trepassed_threshold++;
-    else
-      num_trepassed_threshold = 1;
+    num_trepassed_threshold++, last_trepassed_threshold = when;
 
 #ifdef ALERT_DEBUG
     ntop->getTrace()->traceEvent(TRACE_NORMAL,
@@ -61,10 +61,16 @@ bool AlertCounter::incHits(time_t when) {
 				 num_trepassed_threshold, last_trepassed_threshold, when,
 				 over_threshold_duration_sec);
 #endif
-
-    last_trepassed_threshold = when;
+    
       
     if(num_trepassed_threshold > over_threshold_duration_sec) {
+#ifdef ALERT_DEBUG
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				   "Alarm triggered [num: %u][last: %u][now: %u][duration: %u]",
+				   num_trepassed_threshold, last_trepassed_threshold, when,
+				   over_threshold_duration_sec);
+#endif
+
       if(when > (time_last_alert_reported+CONST_ALERT_GRACE_PERIOD)) {
 #ifdef ALERT_DEBUG
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, 

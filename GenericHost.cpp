@@ -161,14 +161,14 @@ void GenericHost::updateStats(struct timeval *tv) {
  */
 void GenericHost::incFlowCount(time_t when, Flow *f) {
   if(flow_count_alert->incHits(when)) {
-    char ip_buf[48], flow_buf[256], msg[512], *h;
+    char ip_buf[48], msg[512], *h;
     
     h = get_string_key(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> on flow %s [%u hits]", 
-	     h, iface->get_name(), 
-	     h, f->print(flow_buf, sizeof(flow_buf)),
-	     flow_count_alert->getCurrentHits());
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a flooder [%u new flows in the last %u sec]", 
+	     h, iface->get_name(), h, 
+	     flow_count_alert->getCurrentHits(),
+	     flow_count_alert->getOverThresholdDuration());
     
     ntop->getTrace()->traceEvent(TRACE_INFO, "Flow flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_flow_flood, msg);

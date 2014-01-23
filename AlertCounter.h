@@ -51,6 +51,7 @@ class AlertCounter {
   
   bool incHits(time_t when);
   inline u_int16_t getCurrentHits() { return(num_hits_since_first_alert); };
+  inline u_int8_t getOverThresholdDuration() { return(over_threshold_duration_sec); };
 };
 
 #endif /* _ALERT_COUNTER_H_ */

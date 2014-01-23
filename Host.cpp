@@ -673,10 +673,11 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
     
     h = ip->print(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> on flow %s [%u hits]", 
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a SYN flooder [%u SYNs in the last %u sec] %s", 
 	     h, iface->get_name(), h,
-	     f->print(flow_buf, sizeof(flow_buf)),
-	     syn_flood_alert->getCurrentHits());
+	     syn_flood_alert->getCurrentHits(),
+	     syn_flood_alert->getOverThresholdDuration(),
+	     f->print(flow_buf, sizeof(flow_buf)));
     
     ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
