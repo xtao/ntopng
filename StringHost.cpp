@@ -53,7 +53,11 @@ StringHost::~StringHost() {
 /* *************************************** */
 
 void StringHost::computeHostSerial() {
-  host_serial = ntop->getRedis()->addHostToDBDump(iface, NULL, keyname);
+  if(host_serial) {
+    /* We need to reconfirm the id (e.g. after a day wrap) */
+    ntop->getRedis()->setHostId(iface, NULL, keyname, host_serial);
+  } else
+    host_serial = ntop->getRedis()->addHostToDBDump(iface, NULL, keyname);
 }
 
 /* *************************************** */

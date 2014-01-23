@@ -679,11 +679,51 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 /* *************************************** */
 
+void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_int32_t id) { 
+  char buf[32], keybuf[384], host_id[16], _daybuf[32], value[32];
+  redisReply *reply;
+
+  if(daybuf == NULL) {
+    time_t when = time(NULL);
+    
+    strftime(_daybuf, sizeof(_daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
+    daybuf = _daybuf;
+  }
+
+  snprintf(keybuf, sizeof(keybuf), "%s|%s", iface->get_name(), host_name);
+
+  /* Set the data */
+  snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
+  snprintf(host_id, sizeof(host_id), "%u", id);
+  hashSet(buf, keybuf, host_id); /* Forth */
+  hashSet(buf, host_id, keybuf); /* ...and back */
+  snprintf(value, sizeof(value), "%s|%u", iface->get_name(), id);
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s", daybuf, value);
+
+  if(reply) {
+    if(reply->type == REDIS_REPLY_INTEGER) {
+      if(reply->integer != 1)
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "'SADD %s.keys %s|%u' returned %lld",
+				     daybuf, iface->get_name(), id, reply->integer);
+    } else if(reply->type == REDIS_REPLY_ERROR)
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
+    else
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid reply type [%d]", reply->type);
+  }
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %u", host_id);
+
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+}
+
+/* *************************************** */
+
 u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
   char buf[32], keybuf[384], rsp[32], host_id[16];
-  redisReply *reply;
 
   snprintf(keybuf, sizeof(keybuf), "%s|%s", iface->get_name(), host_name);
 
@@ -694,31 +734,8 @@ u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_na
   if(rc == -1) {
     /* Not found */
     snprintf(host_id, sizeof(host_id), "%u", id = incrKey((char*)NTOP_HOSTS_SERIAL));
-
-    /* Set the data */
-    hashSet(buf, keybuf, host_id); /* Forth */
-    hashSet(buf, host_id, keybuf); /* ...and back */
+    setHostId(iface, daybuf, host_name, id);
     *new_key = true;
-
-    l->lock(__FILE__, __LINE__);
-    reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s|%u",
-				      daybuf, iface->get_name(), id);
-
-    if(reply) {
-      if(reply->type == REDIS_REPLY_INTEGER) {
-	if(reply->integer != 1)
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "'SADD %s.keys %s|%u' returned %lld",
-				       daybuf, iface->get_name(), id, reply->integer);
-      } else if(reply->type == REDIS_REPLY_ERROR)
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-      else
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "Invalid reply type [%d]", reply->type);
-    }
-
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Dumping %u", host_id);
-
-    if(reply) freeReplyObject(reply);
-    l->unlock(__FILE__, __LINE__);
   } else
     id = atol(rsp), *new_key = false;
 

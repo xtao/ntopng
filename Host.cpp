@@ -131,7 +131,13 @@ void Host::computeHostSerial() {
   if(ip
      && iface
      && Utils::dumpHostToDB(ip, ntop->getPrefs()->get_dump_hosts_to_db_policy())) {
-    host_serial = ntop->getRedis()->addHostToDBDump(iface, ip, NULL);
+    if(host_serial) {
+      char buf[64];
+
+      /* We need to reconfirm the id (e.g. after a day wrap) */
+      ntop->getRedis()->setHostId(iface, NULL, ip->print(buf, sizeof(buf)), host_serial);
+    } else
+      host_serial = ntop->getRedis()->addHostToDBDump(iface, ip, NULL);
   }
 }
 
