@@ -48,6 +48,8 @@ bool AlertCounter::incHits(time_t when) {
   /* We care only consecutive alerts */
   if(time_last_hit < (when-1))
     init(); 
+  else if(time_last_hit == (when-1))
+    num_hits_rcvd_last_second = 0;
 
   num_hits_rcvd_last_second++, num_hits_since_first_alert++, time_last_hit = when;
 
