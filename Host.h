@@ -101,6 +101,12 @@ class Host : public GenericHost {
   void updateSynFlags(time_t when, u_int8_t flags, Flow *f);
 
   inline void incNumFlows(bool as_client) { if(as_client) num_flows_as_client++; else num_flows_as_server++; };
+
+  /* TODO */
+  inline void incNumDNSQueriesSent() { ; };
+  inline void incNumDNSQueriesRcvd() { ; };
+  inline void incNumDNSResponsesSent(u_int8_t ret_code) { ; };
+  inline void incNumDNSResponsesRcvd(u_int8_t ret_code) { ; };
 };
 
 #endif /* _HOST_H_ */

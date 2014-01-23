@@ -313,7 +313,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
   u_int16_t l4_packet_len;
-  u_int8_t *l4, tcp_flags = 0;
+  u_int8_t *l4, tcp_flags = 0, *payload;
   u_int8_t *ip;
   bool is_fragment = false, new_flow;
 
@@ -351,14 +351,17 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     tcph = (struct ndpi_tcphdr *)l4;
     src_port = tcph->source, dst_port = tcph->dest;
     tcp_flags = l4[13];
+    payload = &l4[sizeof(struct ndpi_tcphdr)];
   } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
     /* udp */
     udph = (struct ndpi_udphdr *)l4;
     src_port = udph->source,  dst_port = udph->dest;
+    payload = &l4[sizeof(struct ndpi_udphdr)];
   } else {
     /* non tcp/udp protocols */
 
     src_port = dst_port = 0;
+    payload = NULL;
   }
 
   if(iph != NULL) {
@@ -413,15 +416,48 @@ void NetworkInterface::packet_processing(const u_int32_t when,
   /* Protocol Detection */
   flow->updateActivities();
 
+  if(!is_fragment) {
+    struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
+    struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
+    struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
+
+    flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
+							    ip, ipsize, (u_int32_t)time,
+							    cli, srv));
+  } else {
+    // FIX - only handle unfragmented packets
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
+  }
+
   if(flow->isDetectionCompleted()) {
     /* Handle aggregations here */
     switch(flow->get_detected_protocol()) {
     case NDPI_PROTOCOL_DNS:
       struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
-      struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
-      struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
+
+
+      if(payload) {
+	u_int16_t dns_flags = ntohs(*(u_int16_t*)&payload[2]);
+	u_int8_t is_query   = dns_flags & 0x8000;
+	
+	if(flow->get_cli_host() && flow->get_srv_host()) {
+	  Host *client = src2dst_direction ? flow->get_cli_host() : flow->get_srv_host();
+	  Host *server = src2dst_direction ? flow->get_srv_host() : flow->get_cli_host();
+	  
+	  if(is_query)
+	    client->incNumDNSQueriesSent(), server->incNumDNSQueriesRcvd();
+	  else {
+	    u_int8_t ret_code = is_query ? 0 : (dns_flags & 0x0F);
+
+	    client->incNumDNSResponsesSent(ret_code), server->incNumDNSResponsesRcvd(ret_code);	      
+	  }
+	}      
+      }
 
       if(ndpi_flow) {
+	struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
+	struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
+	
 	memset(&ndpi_flow->detected_protocol_stack, 
 	       0, sizeof(ndpi_flow->detected_protocol_stack));
 	
@@ -446,19 +482,6 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     return;
   } else
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-
-  if(!is_fragment) {
-    struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
-    struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
-    struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
-
-    flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
-							    ip, ipsize, (u_int32_t)time,
-							    cli, srv));
-  } else {
-    // FIX - only handle unfragmented packets
-    // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
-  }
 }
 
 /* **************************************************** */
