@@ -45,9 +45,8 @@ void AlertCounter::init() {
 /* *************************************** */
 
 bool AlertCounter::incHits(time_t when) {
-  /* We care only consecutive alerts */
   if(time_last_hit < (when-1))
-    init(); 
+    init(); /* Only consecutive alerts matter */
   else if(time_last_hit == (when-1))
     num_hits_rcvd_last_second = 0;
 
@@ -63,8 +62,7 @@ bool AlertCounter::incHits(time_t when) {
 				 num_trepassed_threshold, last_trepassed_threshold, when,
 				 over_threshold_duration_sec);
 #endif
-    
-      
+          
     if(num_trepassed_threshold > over_threshold_duration_sec) {
 #ifdef ALERT_DEBUG
       ntop->getTrace()->traceEvent(TRACE_NORMAL,

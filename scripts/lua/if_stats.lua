@@ -11,7 +11,7 @@ require "graph_utils"
 sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-
+print("<link href=\"/css/tablesorted.css\" rel=\"stylesheet\">")
 active_page = "if_stats"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
@@ -106,7 +106,6 @@ end
    print("</table>\n")
 elseif((page == "packets")) then
       print [[
-
       <table class="table table-bordered table-striped">
       	<tr><th class="text-center">Size Distribution</th><td colspan=5><div class="pie-chart" id="sizeDistro"></div></td></tr>
       </table>
@@ -123,7 +122,7 @@ elseif((page == "packets")) then
 	]]
 elseif(page == "ndpi") then
       print [[
-
+      <script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
       <table class="table table-bordered table-striped"> 
      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
@@ -135,9 +134,14 @@ elseif(page == "ndpi") then
 		}
 
 	    </script><p>
+	</table>
 	]]
 
-     print("<tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th colspan=2>Percentage</th></tr>\n")
+	print [[
+		 <table id="myTable" class="table table-bordered table-striped tablesorter"> 
+	   ]]
+
+     print("<thead><tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th>Percentage</th></tr></thead>\n")
 
       total = ifstats["stats_bytes"]
 
@@ -146,18 +150,18 @@ elseif(page == "ndpi") then
 	 vals[k] = k
       end
       table.sort(vals)
-
+      print ("<tbody>\n")
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
-	 print("<tr><th>"..k)
+	 print("<tr><th style=\"width: 33%;\">"..k)
 	 t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
-	 print("</th><td class=\"text-right\">" .. bytesToSize(t).. "</td>")
-         print("<td width=100>")
+	 print("</th><td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
+         print("<td ><span style=\"width: 60%; float: left;\">")
          percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], "") -- k
-         print("</td>\n")
-	 print("<td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
+--         print("</td>\n")
+	 print("</span><span style=\"width: 40%; margin-left: 15px;\" >" ..round((t * 100)/total, 2).. " %</span></td></tr>\n")
       end
-
+      print ("</tbody>")
       print("</table>\n")
 else
    drawRRD(interface_name, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
@@ -215,4 +219,13 @@ print [[";
 
 </script>
 
+]]
+print [[
+<script>
+$(document).ready(function() 
+    { 
+        $("#myTable").tablesorter(); 
+    } 
+); 
+</script>
 ]]
