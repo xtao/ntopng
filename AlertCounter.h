@@ -42,6 +42,8 @@ class AlertCounter {
   time_t last_trepassed_threshold; /**< Time of last event that trepassed the threshold. */
   u_int16_t num_trepassed_threshold; /**< Number of consecutives threshold trepassing. */
   u_int16_t num_hits_rcvd_last_second; /**< Number of hits reported in the last second. */ 
+  
+  void init();
 
  public:
   AlertCounter(u_int16_t _max_num_hits_sec,
