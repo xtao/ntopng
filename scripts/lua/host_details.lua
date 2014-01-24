@@ -135,6 +135,15 @@ else
    end
 end
 
+if(page == "dnsi") then
+  print("<li class=\"active\"><a href=\"#\">DNS</a></li>\n")
+else
+   if((host["dns"] ~= nil) 
+   and ((host["dns"]["sent_num_queries"]+host["dns"]["rcvd_num_queries"]) > 0)) then
+      print("<li><a href=\""..url.."&page=dns\">DNS</a></li>")
+   end
+end
+
 if(page == "flows") then
   print("<li class=\"active\"><a href=\"#\">Flows</a></li>\n")
 else
@@ -506,18 +515,25 @@ end
 	 print("<td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
-      if(host["dns"] ~= nil) then
-	 print("<tr><th colspan=5>&nbsp;</th></tr>\n")
-	 print("<tr><th>DNS Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Breakdown</th></tr>")
-	 print("<tr><th>Sent</th><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_queries"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_replies_ok"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_replies_error"]) .."</td><td colspan=2>")
-	 breakdownBar(host["dns"]["sent_num_queries"], "Query", (host["dns"]["sent_num_replies_ok"]+host["dns"]["sent_num_replies_error"]), "Reply")
-	 print("</td></tr>")
-	 print("<tr><th>Received</th><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_queries"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_replies_ok"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_replies_error"]) .."</td><td colspan=2>")
-	 breakdownBar(host["dns"]["rcvd_num_queries"], "Query", (host["dns"]["rcvd_num_replies_ok"]+host["dns"]["rcvd_num_replies_error"]), "Reply")
-	 print("</td></tr>")
-      end
       print("</table>\n")
    end
+
+   elseif(page == "dns") then
+      if(host["dns"] ~= nil) then
+	 print("<table class=\"table table-bordered table-striped\">\n")
+	 print("<tr><th>DNS Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
+	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=dns_sent_num_queries>".. formatValue(host["dns"]["sent_num_queries"]) .."</span></td>")
+	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_ok>".. formatValue(host["dns"]["sent_num_replies_ok"]) .."</span></td>")
+	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_error>".. formatValue(host["dns"]["sent_num_replies_error"]) .."</span<</td><td colspan=2>")
+	 breakdownBar(host["dns"]["sent_num_replies_ok"], "OK", host["dns"]["sent_num_replies_error"], "Error")
+	 print("</td></tr>")
+	 print("<tr><th>Rcvd</th><td class=\"text-right\"><span id=dns_rcvd_num_queries>".. formatValue(host["dns"]["rcvd_num_queries"]) .."</span></td>")
+	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_ok>".. formatValue(host["dns"]["rcvd_num_replies_ok"]) .."</span></td>")
+	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_error>".. formatValue(host["dns"]["rcvd_num_replies_error"]) .."</span<</td><td colspan=2>")
+	 breakdownBar(host["dns"]["rcvd_num_replies_ok"], "OK", host["dns"]["rcvd_num_replies_error"], "Error")
+	 print("</td></tr>")
+	 print("</table>\n")
+      end
 
    elseif(page == "flows") then
 print [[
@@ -889,6 +905,13 @@ setInterval(function() {
 
 			$('#flows_as_client').html(addCommas(host["flows.as_client"]));
 			$('#flows_as_server').html(addCommas(host["flows.as_server"]));
+
+			$('#dns_sent_num_queries').html(addCommas(host["dns"]["sent_num_queries"]));
+			$('#dns_sent_num_replies_ok').html(addCommas(host["dns"]["sent_num_replies_ok"]));
+			$('#dns_sent_num_replies_error').html(addCommas(host["dns"]["sent_num_replies_error"]));
+			$('#dns_rcvd_num_queries').html(addCommas(host["dns"]["rcvd_num_queries"]));
+			$('#dns_rcvd_num_replies_ok').html(addCommas(host["dns"]["rcvd_num_replies_ok"]));
+			$('#dns_rcvd_num_replies_error').html(addCommas(host["dns"]["rcvd_num_replies_error"]));
 
 			/* **************************************** */
 

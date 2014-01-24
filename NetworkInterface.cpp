@@ -437,7 +437,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
       if(payload) {
 	u_int16_t dns_flags = ntohs(*(u_int16_t*)&payload[2]);
-	u_int8_t is_query   = dns_flags & 0x8000;
+	bool is_query   = ((dns_flags & 0x8000) == 0x8000) ? false : true; 
 	
 	if(flow->get_cli_host() && flow->get_srv_host()) {
 	  Host *client = src2dst_direction ? flow->get_cli_host() : flow->get_srv_host();
