@@ -885,6 +885,15 @@ print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
 print("var last_flows_as_server = " .. host["flows.as_server"] .. ";\n")
 print("var last_flows_as_client = " .. host["flows.as_client"] .. ";\n")
 
+if(host["dns"] ~= nil) then
+   print("var last_dns_sent_num_queries = " .. host["dns"]["sent_num_queries"] .. ";\n")
+   print("var last_dns_sent_num_replies_ok = " .. host["dns"]["sent_num_replies_ok"] .. ";\n")
+   print("var last_dns_sent_num_replies_error = " .. host["dns"]["sent_num_replies_error"] .. ";\n")
+   print("var last_dns_rcvd_num_queries = " .. host["dns"]["rcvd_num_queries"] .. ";\n")
+   print("var last_dns_rcvd_num_replies_ok = " .. host["dns"]["rcvd_num_replies_ok"] .. ";\n")
+   print("var last_dns_rcvd_num_replies_error = " .. host["dns"]["rcvd_num_replies_error"] .. ";\n")
+end
+
 print [[
 setInterval(function() {
 	  $.ajax({
@@ -905,14 +914,20 @@ setInterval(function() {
 
 			$('#flows_as_client').html(addCommas(host["flows.as_client"]));
 			$('#flows_as_server').html(addCommas(host["flows.as_server"]));
+		  ]]
 
-			$('#dns_sent_num_queries').html(addCommas(host["dns"]["sent_num_queries"]));
-			$('#dns_sent_num_replies_ok').html(addCommas(host["dns"]["sent_num_replies_ok"]));
-			$('#dns_sent_num_replies_error').html(addCommas(host["dns"]["sent_num_replies_error"]));
-			$('#dns_rcvd_num_queries').html(addCommas(host["dns"]["rcvd_num_queries"]));
-			$('#dns_rcvd_num_replies_ok').html(addCommas(host["dns"]["rcvd_num_replies_ok"]));
-			$('#dns_rcvd_num_replies_error').html(addCommas(host["dns"]["rcvd_num_replies_error"]));
+if(host["dns"] ~= nil) then
+print [[
+			   $('#dns_sent_num_queries').html(addCommas(host["dns"]["sent_num_queries"]));
+			   $('#dns_sent_num_replies_ok').html(addCommas(host["dns"]["sent_num_replies_ok"]));
+			   $('#dns_sent_num_replies_error').html(addCommas(host["dns"]["sent_num_replies_error"]));
+			   $('#dns_rcvd_num_queries').html(addCommas(host["dns"]["rcvd_num_queries"]));
+			   $('#dns_rcvd_num_replies_ok').html(addCommas(host["dns"]["rcvd_num_replies_ok"]));
+			   $('#dns_rcvd_num_replies_error').html(addCommas(host["dns"]["rcvd_num_replies_error"]));
+		     ]]
+		  end
 
+print [[
 			/* **************************************** */
 
 			if(host["flows.as_client"] == last_flows_as_client) {
@@ -950,6 +965,20 @@ setInterval(function() {
 			last_pkts_rcvd = host["pkts.rcvd"];
 			last_flows_as_server = host["flows.as_server"];
 			last_flows_as_client = host["flows.as_client"];
+		  ]]
+
+if(host["dns"] ~= nil) then
+print [[
+			last_dns_sent_num_queries =  host["dns"]["sent_num_queries"];
+			last_dns_sent_num_replies_ok = host["dns"]["dns_sent_num_replies_ok"];
+			last_dns_sent_num_replies_error = host["dns"]["dns_sent_num_replies_error"];
+			last_dns_rcvd_num_queries =  host["dns"]["rcvd_num_queries"];
+			last_dns_rcvd_num_replies_ok = host["dns"]["dns_rcvd_num_replies_ok"];
+			last_dns_rcvd_num_replies_error = host["dns"]["dns_rcvd_num_replies_error"];
+		  ]]
+	       end
+
+print [[
 
 			/* **************************************** */
 
