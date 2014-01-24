@@ -101,6 +101,7 @@ extern "C" {
 #include "Utils.h"
 #include "ActivityStats.h"
 #include "NdpiStats.h"
+#include "DnsStats.h"
 #include "TrafficStats.h"
 #include "PacketStats.h"
 #include "ProtoStats.h"

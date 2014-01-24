@@ -40,6 +40,7 @@ class Host : public GenericHost {
   TrafficStats other_ip_sent, other_ip_rcvd;
   PacketStats sent_stats, recv_stats;
   u_int32_t num_flows_as_client, num_flows_as_server;
+  DnsStats *dns;
 
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
@@ -102,11 +103,10 @@ class Host : public GenericHost {
 
   inline void incNumFlows(bool as_client) { if(as_client) num_flows_as_client++; else num_flows_as_server++; };
 
-  /* TODO */
-  inline void incNumDNSQueriesSent() { ; };
-  inline void incNumDNSQueriesRcvd() { ; };
-  inline void incNumDNSResponsesSent(u_int8_t ret_code) { ; };
-  inline void incNumDNSResponsesRcvd(u_int8_t ret_code) { ; };
+  inline void incNumDNSQueriesSent() { if(dns) dns->incNumDNSQueriesSent(); };
+  inline void incNumDNSQueriesRcvd() { if(dns) dns->incNumDNSQueriesRcvd(); };
+  inline void incNumDNSResponsesSent(u_int8_t ret_code) { if(dns) dns->incNumDNSResponsesSent(ret_code); };
+  inline void incNumDNSResponsesRcvd(u_int8_t ret_code) { if(dns) dns->incNumDNSResponsesRcvd(ret_code); };
 };
 
 #endif /* _HOST_H_ */

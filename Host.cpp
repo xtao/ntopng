@@ -114,6 +114,7 @@ Host::~Host() {
     free(json);
   }
 
+  if(dns)            delete dns;
   if(symbolic_name)  free(symbolic_name);
   if(alternate_name) free(alternate_name);
   if(country)        free(country);
@@ -174,11 +175,13 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
+  dns = NULL;
 
   if(init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
+      dns = new DnsStats();
       updateLocal();
 
       if((localHost && ntop->getPrefs()->is_host_persistency_enabled())
@@ -349,6 +352,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
       sent_stats.lua(vm, "pktStats.sent");
       recv_stats.lua(vm, "pktStats.recv");
+
+      if(dns) dns->lua(vm);
     }
 
     if(!returnHost) {
@@ -586,6 +591,8 @@ char* Host::serialize() {
   json_object_object_add(my_object, "contacts", contacts->getJSONObject());
   json_object_object_add(my_object, "activityStats", activityStats.getJSONObject());
 
+  if(dns) json_object_object_add(my_object, "dns", dns->getJSONObject());
+
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
 
@@ -651,6 +658,11 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "num_alerts", &obj)) num_alerts_detected = json_object_get_int(obj);
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
+
+  if(json_object_object_get_ex(o, "dns", &obj))  {
+    if(dns == NULL) dns = new DnsStats();
+    if(dns) dns->deserialize(obj); 
+  }
 
   if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
   if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }

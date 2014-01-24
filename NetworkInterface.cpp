@@ -435,7 +435,6 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     case NDPI_PROTOCOL_DNS:
       struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
 
-
       if(payload) {
 	u_int16_t dns_flags = ntohs(*(u_int16_t*)&payload[2]);
 	u_int8_t is_query   = dns_flags & 0x8000;

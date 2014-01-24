@@ -425,6 +425,7 @@ end
 	    </script><p>
 	]]
 
+
      print("<tr><th>Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
 
 
@@ -445,6 +446,7 @@ end
 	 end
       end
       print("</table></tr>\n")
+
       print("</table>\n")
    end
 
@@ -504,6 +506,16 @@ end
 	 print("<td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
       end
 
+      if(host["dns"] ~= nil) then
+	 print("<tr><th colspan=5>&nbsp;</th></tr>\n")
+	 print("<tr><th>DNS Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Breakdown</th></tr>")
+	 print("<tr><th>Sent</th><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_queries"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_replies_ok"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["sent_num_replies_error"]) .."</td><td colspan=2>")
+	 breakdownBar(host["dns"]["sent_num_queries"], "Query", (host["dns"]["sent_num_replies_ok"]+host["dns"]["sent_num_replies_error"]), "Reply")
+	 print("</td></tr>")
+	 print("<tr><th>Received</th><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_queries"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_replies_ok"]) .."</td><td class=\"text-right\">".. formatValue(host["dns"]["rcvd_num_replies_error"]) .."</td><td colspan=2>")
+	 breakdownBar(host["dns"]["rcvd_num_queries"], "Query", (host["dns"]["rcvd_num_replies_ok"]+host["dns"]["rcvd_num_replies_error"]), "Reply")
+	 print("</td></tr>")
+      end
       print("</table>\n")
    end
 
