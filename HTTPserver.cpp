@@ -340,8 +340,9 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     _a = (char*)"ssl_certificate", _b = ssl_cert_path;
     ssl_enabled = true;
   } else {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Missing SSL certificate %s", ssl_cert_path);
-	ssl_enabled = false;
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS Disabled: missing SSL certificate %s", ssl_cert_path);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read README.SSL if you want to enable SSL");
+    ssl_enabled = false;
   }
 
   static char *http_options[] = { 

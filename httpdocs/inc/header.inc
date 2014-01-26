@@ -3,21 +3,21 @@
   <head>
     <title>Welcome to ntopng</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <script src="/js/jquery.js"></script>
+    <script src="/bootstrap/js/bootstrap.js"></script>
     <script src="/js/bootstrap-datatable.js"></script>
-    <script src="/js/d3.v2.min.js"></script>
-    <script src="/js/jquery.peity.min.js"></script>
-    <script src="/js/rickshaw.min.js"></script>
+    <script src="/js/d3.v2.js"></script>
+    <script src="/js/jquery.peity.js"></script>
+    <script src="/js/rickshaw.js"></script>
     <script src="/js/pie-chart.js"></script>
-    <script src="/js/gauge.min.js"></script>
+    <script src="/js/gauge.js"></script>
     <link href="/css/flags.css" rel="stylesheet">
     <link href="/css/pie-chart.css" rel="stylesheet">
-    <link href="/css/rickshaw.min.css" rel="stylesheet">
+    <link href="/css/rickshaw.css" rel="stylesheet">
     <!-- http://kamisama.github.io/cal-heatmap/v2/ -->
-    <script src="/js/cal-heatmap.min.js"></script>
+    <script src="/js/cal-heatmap.js"></script>
     <link href="/css/cal-heatmap.css" rel="stylesheet">
 
 

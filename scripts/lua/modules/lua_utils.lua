@@ -232,6 +232,8 @@ end
 
 function formatValue(amount)
    local formatted = amount
+
+   if(formatted == nil) then return(0) end
    while true do
       formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
       if (k==0) then
