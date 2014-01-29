@@ -61,13 +61,13 @@ print [[
 	  	print("<article class=\"gr\"></article>")
 		print [[
 		<aside style="margin-top: 90px; margin-left: 10px;>"
-			<p><h4>Sort: </h4><select id="order">
-				<option value="name">by Name</option>
-				<option value="count">by Frequency</option>
-				<option value="group">by Cluster</option>
-				<option value="flow_sent">by Flows Sent</option>
-				<option value="flow_rcvd">by Flows Rcvd</option>
-				<option value="flow_tot">by Flows Tot</option>
+			<p><h4>Sort by: </h4><select id="order">
+				<option value="name">Name</option>
+				<option value="count">Frequency</option>
+				<option value="group">Cluster</option>
+				<option value="flow_sent">Traffic Sent</option>
+				<option value="flow_rcvd">Traffic Rcvd</option>
+				<option value="flow_tot">Total Traffic</option>
 				</select>
 			</p>
 			<div id="legend" style="">

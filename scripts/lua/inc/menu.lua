@@ -70,6 +70,7 @@ end
 print [[
       <li class="divider"></li>
       <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
+      <li><a href="/lua/hosts_flows_matrix.lua">Top Hosts Traffic</a></li>
       <li><a href="/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
       <li><a href="/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
       <li><a href="/lua/hosts_matrix.lua"><i class="fa fa-th-large"></i> Local Matrix</a></li>

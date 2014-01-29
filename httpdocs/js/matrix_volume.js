@@ -95,6 +95,7 @@
         .on("mouseout", mouseout);
   }
 
+
   function mouseover(p) {
   	$("#tooltip table tbody").empty();
   	var flag = false;
@@ -102,9 +103,9 @@
     	if (i == p.y) { 
     		flag = true;
 	        $("#tooltip table tbody")
-	        	.append($("<tr>").append($("<td>").text(nodes[i].name))
-	        	.append($("<td>").text(nodes[i].sent))
-	        	.append($("<td>").text(nodes[i].sent)));
+	        .append($("<tr>").append($("<td>").text(nodes[i].name))
+	        	.append($("<td>").text(bytesToVolume(nodes[i].sent)))
+	        	.append($("<td>").text(bytesToVolume(nodes[i].sent))));
     	}
     	return i == p.y;
     	});
@@ -113,8 +114,8 @@
 	    	flag = true;
 	        $("#tooltip table tbody")
 	        	.append($("<tr>").append($("<td>").text(nodes[i].name))
-	        	.append($("<td>").text(nodes[i].sent))
-	        	.append($("<td>").text(nodes[i].sent)));
+	        		.append($("<td>").text(bytesToVolume(nodes[i].sent)))
+	        			.append($("<td>").text(bytesToVolume(nodes[i].sent))));
     	}
     	return i == p.x; 
     });
