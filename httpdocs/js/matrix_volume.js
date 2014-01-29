@@ -55,12 +55,13 @@
   row.append("line")
       .attr("x2", width);
 
+  // Y labels
   row.append("text")
       .attr("x", -6)
       .attr("y", h.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "end")
-    .text(function(d, i) { return nodes[i].name; })
+    .text(function(d, i) { return nodes[i].label; })
     .on("click", function(d) { location.href="/lua/host_details.lua?host="+this.textContent; });
 
   var column = svg.selectAll(".column")
@@ -73,12 +74,13 @@
   column.append("line")
       .attr("x1", -width);
 
+  // X labels
   column.append("text")
       .attr("x", 6)
       .attr("y", h.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "start")
-      .text(function(d, i) { return nodes[i].name; })
+      .text(function(d, i) { return nodes[i].label; })
       .on("click", function(d) { location.href="/lua/host_details.lua?host="+this.textContent; });
 
   function row(row) {
