@@ -45,7 +45,7 @@ class GenericHost : public GenericHashEntry {
   u_int64_t last_bytes;
   struct timeval last_update_time;
   time_t last_activity_update;
-  
+
   void dumpStats(bool forceDump);
   void readStats();
 
@@ -56,8 +56,10 @@ class GenericHost : public GenericHashEntry {
   ~GenericHost();
 
   void dumpHostContacts(u_int16_t family_id);
-  inline bool isLocalHost()          { return(localHost); };
-  inline NdpiStats* get_ndpi_stats() { return(ndpiStats); };
+  inline double pearsonCorrelation(GenericHost *h) { return(activityStats.pearsonCorrelation(h->getActivityStats())); };
+  inline bool isLocalHost()                { return(localHost); };
+  inline NdpiStats* get_ndpi_stats()       { return(ndpiStats); };
+  inline ActivityStats* getActivityStats() { return(&activityStats); };
   void incFlowCount(time_t when, Flow *f);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);

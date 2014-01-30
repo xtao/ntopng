@@ -68,6 +68,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <string.h>
+#include <math.h>
 #include <sys/stat.h>
 #include <zmq.h>
 

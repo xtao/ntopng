@@ -1420,3 +1420,41 @@ StringHost* NetworkInterface::findHostByString(char *keyname,
 
   return(ret);
 }
+
+/* **************************************************** */
+
+struct correlator_host_info {
+  lua_State* vm;
+  Host *h;
+};
+
+static bool correlator_walker(GenericHashEntry *node, void *user_data) {
+  Host *h = (Host*)node;  
+  struct correlator_host_info *info = (struct correlator_host_info*)user_data;
+
+  if(h && h->get_ip() && (h != info->h)) {
+    char buf[32], *name = h->get_ip()->print(buf, sizeof(buf));
+    double pearson = info->h->pearsonCorrelation(h);
+
+    /* ntop->getTrace()->traceEvent(TRACE_WARNING, "%s: %f", name, pearson); */
+    lua_push_float_table_entry(info->vm, name, pearson);
+  }
+
+  return(false); /* false = keep on walking */
+}
+
+bool NetworkInterface::correlateHostActivity(lua_State* vm,
+					     char *host_ip, u_int16_t vlan_id) {
+  Host *h = getHost(host_ip, vlan_id);
+
+  if(h) {
+    struct correlator_host_info info;
+
+    lua_newtable(vm);
+
+    info.vm = vm, info.h = h;
+    hosts_hash->walk(correlator_walker, &info);
+    return(true);
+  } else
+    return(false);
+}

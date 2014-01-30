@@ -68,24 +68,24 @@ void ActivityStats::set(time_t when) {
   if((last_set_requested != when) || (when < begin_time)) {
     Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
     u_int32_t w;
-   
+
     last_set_requested = when;
 
     if(when > wrap_time) {
       reset();
-      
+
       begin_time = wrap_time;
       wrap_time += CONST_MAX_ACTIVITY_DURATION;
-      
+
       ntop->getTrace()->traceEvent(TRACE_INFO,
 				   "Resetting stats [when: %u][begin_time: %u][wrap_time: %u]",
 				   when, begin_time, wrap_time);
     }
-    
+
     w = (when - begin_time) % CONST_MAX_ACTIVITY_DURATION;
-    
+
     if(w == last_set_time) return;
-    
+
     m.lock(__FILE__, __LINE__);
     bitset->set((size_t)w);
     m.unlock(__FILE__, __LINE__);
@@ -117,7 +117,7 @@ bool ActivityStats::writeDump(char* path) {
   std::string encoded = Utils::base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "===> %s(%s)(%s)(%d)", __FUNCTION__, path, encoded.c_str(), expire_time-now);
- 
+
   /* Save it both in redis and disk */
   ntop->getRedis()->set(path, (char*)encoded.c_str(), (u_int)(expire_time-now));
 
@@ -137,7 +137,7 @@ bool ActivityStats::writeDump(char* path) {
 bool ActivityStats::readDump(char* path) {
   Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   char rsp[4096];
-  
+
   if(ntop->getRedis()->get(path, rsp, sizeof(rsp)) == 0) {
     Uint32EWAHBoolArray tmp;
     std::string decoded = Utils::base64_decode(rsp);
@@ -245,4 +245,47 @@ void ActivityStats::deserialize(json_object *o) {
 
     json_object_iter_next(&it);
   }
+}
+
+/* *************************************** */
+
+void ActivityStats::extractPoints(u_int8_t *elems) {
+  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
+
+  m.lock(__FILE__, __LINE__);
+
+ for(Uint32EWAHBoolArray::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
+   elems[*i] = 1;
+ }
+
+ m.unlock(__FILE__, __LINE__);
+}
+
+/* *************************************** */
+
+/* http://codereview.stackexchange.com/questions/10122/c-correlation-leastsquarescoefs */
+
+double ActivityStats::pearsonCorrelation(ActivityStats *s) {
+  double ex, ey, sxx, syy, sxy, tiny_value = 1e-2;
+  u_int8_t x[CONST_MAX_ACTIVITY_DURATION] = { 0 };
+  u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
+
+  extractPoints(x);
+  s->extractPoints(y);
+
+  for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+    /* Find the means */
+    ex += x[i], ey += y[i];
+  }
+
+  ex /= CONST_MAX_ACTIVITY_DURATION, ey /= CONST_MAX_ACTIVITY_DURATION;
+
+  for (size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+    /* Compute the correlation coefficient */
+    double xt = x[i] - ex, yt = y[i] - ey;
+
+    sxx += xt * xt, syy += yt * yt, sxy += xt * yt;
+  }
+
+  return (sxy/(sqrt(sxx*syy)+tiny_value));
 }

@@ -33,7 +33,9 @@ class ActivityStats {
   time_t begin_time, wrap_time, last_set_time, last_set_requested;
   void *_bitset;
   Mutex m;
-  
+
+  void extractPoints(u_int8_t *elems);
+
  public:
   ActivityStats(time_t when=0);
   ~ActivityStats();
@@ -48,6 +50,8 @@ class ActivityStats {
   char* serialize();  
   void deserialize(json_object *o);
   inline time_t get_wrap_time() { return(wrap_time); };
+  /* Returns the Pearson correlation coefficient */
+  double pearsonCorrelation(ActivityStats *s);
 };
 
 #endif /* _ACTIVITY_STATS_H_ */

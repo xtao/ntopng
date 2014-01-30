@@ -174,13 +174,14 @@ class NetworkInterface {
   void runHousekeepingTasks();
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 		      bool createIfNotPresent);
-  Host* getHost(char *host_ip, u_int16_t vlan_id);
+  Host* getHost(char *host_ip, u_int16_t vlan_id);  
   StringHost* getAggregatedHost(char *host_name);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family, char *host);
   bool getAggregatedHostInfo(lua_State* vm, char *host_ip);
-  bool getAggregatedFamilies(lua_State* vm);
+  bool getAggregatedFamilies(lua_State* vm);  
   bool getAggregationsForHost(lua_State* vm, char *host_ip);
+  bool correlateHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   StringHost* findHostByString(char *keyname, u_int16_t family_id, 
 			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
