@@ -93,7 +93,7 @@ ifneq ($(HAS_ZEROMQ), 0)
 LIB_TARGETS += $(ZEROMQ_LIB)
 endif
 
-ifneq ($(HAS_RRDTOOL), 0)
+ifneq ($(HAS_LIBRRDTOOL), 0)
 LIB_TARGETS += $(LIBRRDTOOL_LIB)
 endif
 

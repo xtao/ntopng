@@ -2131,7 +2131,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
 	  equal[0] = '\0';
 	  if((decoded_buf = http_decode(&equal[1])) != NULL) {
-	    //ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	    ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
 	    lua_push_str_table_entry(L, tok, decoded_buf);
 	    free(decoded_buf);
 	  }
