@@ -266,7 +266,7 @@ void ActivityStats::extractPoints(u_int8_t *elems) {
 /* http://codereview.stackexchange.com/questions/10122/c-correlation-leastsquarescoefs */
 
 double ActivityStats::pearsonCorrelation(ActivityStats *s) {
-  double ex, ey, sxx, syy, sxy, tiny_value = 1e-2;
+  double ex = 0, ey = 0, sxx = 0, syy = 0, sxy = 0, tiny_value = 1e-2;
   u_int8_t x[CONST_MAX_ACTIVITY_DURATION] = { 0 };
   u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
 
