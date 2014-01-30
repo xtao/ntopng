@@ -75,9 +75,12 @@ RPM_PKG = $(TARGET)-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
 RPM_DATA_PKG = $(TARGET)-data-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
 ######
 
-
 ifeq ($(OS),Linux)
 LIBS += -lrt
+endif
+
+ifeq ($(OS),Darwin)
+LIBS += -lstdc++.6
 endif
 
 LIB_TARGETS =

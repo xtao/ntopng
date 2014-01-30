@@ -41,8 +41,6 @@ apps as follows: "script_name@endpoint" where the
 
 - collector
   ntopng -i tcp://127.0.0.1:5556
-  or
-  ntopng -i "nprobe-collector.lua@tcp://127.0.0.1:5556"
 
 - probe (nProbe)
 nprobe --zmq "tcp://*:5556" -i ~/pcap/http.pcap -n none -b 2
