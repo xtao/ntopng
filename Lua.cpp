@@ -2015,7 +2015,7 @@ static int post_iterator(void *cls,
   Run a Lua script from within ntopng (no HTTP GUI)
 */
 int Lua::run_script(char *script_path, char *ifname) {
-  int rc;
+  int rc = 0;
 
   try {
     luaL_openlibs(L); /* Load base libraries */
@@ -2031,9 +2031,11 @@ int Lua::run_script(char *script_path, char *ifname) {
       const char *err = lua_tostring(L, -1);
 
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
+      rc = -1;
     }
   } catch(...) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, ifname);
+    rc = -2;
   }
 
   return(rc);
