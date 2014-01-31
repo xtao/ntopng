@@ -170,7 +170,9 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
-  m = new Mutex();
+  if((m = new Mutex()) == NULL)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
+
   asn = 0, asname = NULL, country = NULL, city = NULL;
   longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
@@ -377,13 +379,13 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 void Host::setName(char *name, bool update_categorization) {
   bool to_categorize = false;
 
-  m->lock(__FILE__, __LINE__);
+  if(m) m->lock(__FILE__, __LINE__);
   if((symbolic_name == NULL) || (symbolic_name && strcmp(symbolic_name, name))) {
     if(symbolic_name) free(symbolic_name);
     symbolic_name = strdup(name);
     to_categorize = true;
   }
-  m->unlock(__FILE__, __LINE__);
+  if(m) m->unlock(__FILE__, __LINE__);
 
   if(to_categorize && ntop->get_categorization())
     ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category),
