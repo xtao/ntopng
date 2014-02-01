@@ -2106,7 +2106,7 @@ static char* http_decode(char *str) {
 
 int Lua::handle_script_request(struct mg_connection *conn,
 			       const struct mg_request_info *request_info, char *script_path) {
-  char buf[64], key[64], val[64];
+  char buf[64], key[64], val[64], *_cookies;
 
   luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
@@ -2133,7 +2133,19 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
 	  equal[0] = '\0';
 	  if((decoded_buf = http_decode(&equal[1])) != NULL) {
-	    ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	    int i;
+
+	    for(i=0; decoded_buf[i] != '\0'; i++) {
+	      switch(decoded_buf[i]) {
+	      case '<':
+	      case '>':
+		decoded_buf[i] = '_';
+		break;
+	      }
+	    }
+
+	    // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	    
 	    lua_push_str_table_entry(L, tok, decoded_buf);
 	    free(decoded_buf);
 	  }
@@ -2146,6 +2158,32 @@ int Lua::handle_script_request(struct mg_connection *conn,
     }
   }
   lua_setglobal(L, "_GET"); /* Like in php */
+
+  /* Cookies */
+  lua_newtable(L);
+  if((_cookies = (char*)mg_get_header(conn, "Cookie")) != NULL) {
+    char *cookies = strdup(_cookies);
+    char *tok, *val, *where;
+    
+    
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "=> '%s'", cookies);
+    tok = strtok_r(cookies, "=", &where);
+    while(tok != NULL) {
+      while(tok[0] == ' ') tok++;
+
+      if((val = strtok_r(NULL, ";", &where)) != NULL) {
+	lua_push_str_table_entry(L, tok, val);
+	// ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, val);
+      } else
+	break;
+
+      tok = strtok_r(NULL, "=", &where);
+    }
+
+    free(cookies);
+  }
+  lua_setglobal(L, "_COOKIE"); /* Like in php */
+
 
   /* Put the _SESSION params into the environment */
   lua_newtable(L);
