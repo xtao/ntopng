@@ -369,29 +369,55 @@ bool Utils::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
   return(do_dump);
 }
 
+/* *************************************** */
+
+double Utils::pearsonValueCorrelation(u_int8_t *x, u_int8_t *y) {
+  double ex = 0, ey = 0, sxx = 0, syy = 0, sxy = 0, tiny_value = 1e-2;
+
+  for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+    /* Find the means */
+    ex += x[i], ey += y[i];
+  }
+
+  ex /= CONST_MAX_ACTIVITY_DURATION, ey /= CONST_MAX_ACTIVITY_DURATION;
+
+  for (size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+    /* Compute the correlation coefficient */
+    double xt = x[i] - ex, yt = y[i] - ey;
+
+    sxx += xt * xt, syy += yt * yt, sxy += xt * yt;
+  }
+
+  return (sxy/(sqrt(sxx*syy)+tiny_value));
+}
+
+/* *************************************** */
+
 #ifdef WIN32
-const char *strcasestr(const char *haystack, const char *needle)
-{
-	int i=-1;
-	while (haystack[++i] != '\0') {
-		if (tolower(haystack[i]) == tolower(needle[0])) {
-			int j=i, k=0, match=0;
-			while (tolower(haystack[++j]) == tolower(needle[++k])) {
-				match=1;
-				// Catch case when they match at the end
-				//printf("j:%d, k:%d\n",j,k);
-				if (haystack[j] == '\0' && needle[k] == '\0') {
-					//printf("Mj:%d, k:%d\n",j,k);
-					return &haystack[i];
-				}
-			}
-			// Catch normal case
-			if (match && needle[k] == '\0'){
-				// printf("Norm j:%d, k:%d\n",j,k);
-				return &haystack[i];
-			}
-		}
+const char *strcasestr(const char *haystack, const char *needle) {
+  int i=-1;
+
+  while (haystack[++i] != '\0') {
+    if (tolower(haystack[i]) == tolower(needle[0])) {
+      int j=i, k=0, match=0;
+      while (tolower(haystack[++j]) == tolower(needle[++k])) {
+	match=1;
+	// Catch case when they match at the end
+	//printf("j:%d, k:%d\n",j,k);
+	if (haystack[j] == '\0' && needle[k] == '\0') {
+	  //printf("Mj:%d, k:%d\n",j,k);
+	  return &haystack[i];
 	}
-	return NULL;
+      }
+      // Catch normal case
+      if (match && needle[k] == '\0'){
+	// printf("Norm j:%d, k:%d\n",j,k);
+	return &haystack[i];
+      }
+    }
+  }
+
+  return NULL;
 }
 #endif
+

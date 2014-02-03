@@ -1426,6 +1426,7 @@ StringHost* NetworkInterface::findHostByString(char *keyname,
 struct correlator_host_info {
   lua_State* vm;
   Host *h;
+  u_int8_t x[CONST_MAX_ACTIVITY_DURATION];
 };
 
 static bool correlator_walker(GenericHashEntry *node, void *user_data) {
@@ -1434,7 +1435,11 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
 
   if(h && h->get_ip() && (h != info->h)) {
     char buf[32], *name = h->get_ip()->print(buf, sizeof(buf));
-    double pearson = info->h->pearsonCorrelation(h);
+    u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
+    double pearson;
+
+    h->getActivityStats()->extractPoints(y);
+    pearson = Utils::pearsonValueCorrelation(info->x, y);
 
     /* ntop->getTrace()->traceEvent(TRACE_WARNING, "%s: %f", name, pearson); */
     lua_push_float_table_entry(info->vm, name, pearson);
@@ -1443,6 +1448,8 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
   return(false); /* false = keep on walking */
 }
 
+/* **************************************************** */
+
 bool NetworkInterface::correlateHostActivity(lua_State* vm,
 					     char *host_ip, u_int16_t vlan_id) {
   Host *h = getHost(host_ip, vlan_id);
@@ -1450,9 +1457,11 @@ bool NetworkInterface::correlateHostActivity(lua_State* vm,
   if(h) {
     struct correlator_host_info info;
 
+    memset(&info, 0, sizeof(info));
     lua_newtable(vm);
 
     info.vm = vm, info.h = h;
+    h->getActivityStats()->extractPoints(info.x);
     hosts_hash->walk(correlator_walker, &info);
     return(true);
   } else

@@ -44,6 +44,7 @@ class Utils {
   static std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len);
   static std::string base64_decode(std::string const& encoded_string);
   static bool dumpHostToDB(IpAddress *host, LocationPolicy policy);
+  static double pearsonValueCorrelation(u_int8_t *x, u_int8_t *y);
 };
 
 

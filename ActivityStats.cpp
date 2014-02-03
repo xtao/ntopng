@@ -255,7 +255,9 @@ void ActivityStats::extractPoints(u_int8_t *elems) {
   m.lock(__FILE__, __LINE__);
 
  for(Uint32EWAHBoolArray::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
-   elems[*i] = 1;
+   u_int last_point = *i;
+
+   elems[last_point] = 1;
  }
 
  m.unlock(__FILE__, __LINE__);
@@ -266,26 +268,12 @@ void ActivityStats::extractPoints(u_int8_t *elems) {
 /* http://codereview.stackexchange.com/questions/10122/c-correlation-leastsquarescoefs */
 
 double ActivityStats::pearsonCorrelation(ActivityStats *s) {
-  double ex = 0, ey = 0, sxx = 0, syy = 0, sxy = 0, tiny_value = 1e-2;
   u_int8_t x[CONST_MAX_ACTIVITY_DURATION] = { 0 };
   u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
 
   extractPoints(x);
   s->extractPoints(y);
 
-  for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
-    /* Find the means */
-    ex += x[i], ey += y[i];
-  }
-
-  ex /= CONST_MAX_ACTIVITY_DURATION, ey /= CONST_MAX_ACTIVITY_DURATION;
-
-  for (size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
-    /* Compute the correlation coefficient */
-    double xt = x[i] - ex, yt = y[i] - ey;
-
-    sxx += xt * xt, syy += yt * yt, sxy += xt * yt;
-  }
-
-  return (sxy/(sqrt(sxx*syy)+tiny_value));
+  return(Utils::pearsonValueCorrelation(x, y));
 }
+

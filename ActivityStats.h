@@ -34,14 +34,13 @@ class ActivityStats {
   void *_bitset;
   Mutex m;
 
-  void extractPoints(u_int8_t *elems);
-
  public:
   ActivityStats(time_t when=0);
   ~ActivityStats();
 
   void reset();
   void set(time_t when);
+  void extractPoints(u_int8_t *elems);
   std::stringstream* getDump();
   void setDump(std::stringstream* dump);
   bool writeDump(char* path);
