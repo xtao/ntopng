@@ -12,6 +12,7 @@ page        = _GET["page"]
 host_ip     = _GET["host"]
 protocol_id = _GET["protocol"]
 
+
 active_page = "hosts"
 
 if(host_ip == nil) then
@@ -135,7 +136,7 @@ else
    end
 end
 
-if(page == "dnsi") then
+if(page == "dns") then
   print("<li class=\"active\"><a href=\"#\">DNS</a></li>\n")
 else
    if((host["dns"] ~= nil) 
@@ -165,6 +166,14 @@ if(page == "geomap") then
 else
    if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
       print("<li><a href=\""..url.."&page=geomap\">Geomap</a></li>")
+   end
+end
+
+if(page == "pearson") then
+  print("<li class=\"active\"><a href=\"#\">Correlation</a></li>\n")
+else
+   if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
+      print("<li><a href=\""..url.."&page=pearson\">Correlation</a></li>")
    end
 end
 
@@ -735,6 +744,56 @@ print [[
     <script type="text/javascript" src="/js/googleMapJson.js" ></script>
 ]]
 
+elseif(page == "pearson") then
+
+print [[
+<div id="prg" class="container">
+    <div class="progress progress-striped active">
+	 <div class="bar" style="width: 100%;"></div>
+    </div>
+</div>
+]]
+
+pearson = interface.correlateHostActivity(host_ip)
+
+print [[
+<script type="text/javascript">
+  var $bar = $('#prg');
+
+  $bar.hide();
+  $bar.remove();
+</script>
+]]
+
+vals = {}
+for k,v in pairs(pearson) do
+   vals[v] = k
+end
+
+max_hosts = 10
+
+n = 0
+
+print("<table class=\"table table-bordered\">\n")
+if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
+print("<tr><th>Hosts Similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
+for v,k in pairsByKeys(vals, rev) do
+   correlated_host = interface.getHostInfo(k)
+
+   if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
+   print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
+   n = n +1
+
+   if(n >= max_hosts) then
+      break
+   end
+end
+
+print [[
+      </table>
+
+<b>Note</b>: Two hosts are correlated when their network behaviour is close. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>correlation coefficient</A> is a number between +1 and -1, where +1 means that two hosts are correlated, 0 means that they have no particular correlation, and -1 that they behave in an opposite way.
+]]
 
 elseif(page == "contacts") then
 
