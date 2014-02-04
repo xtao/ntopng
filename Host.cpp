@@ -692,6 +692,8 @@ bool Host::deserialize(char *json_str) {
 void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
   if(syn_flood_alert->incHits(when)) {
     char ip_buf[48], flow_buf[256], msg[512], *h;
+
+    if(!triggerAlerts()) return;
     
     h = ip->print(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),

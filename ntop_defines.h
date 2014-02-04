@@ -156,6 +156,7 @@
 #define CONST_HOST_CONTACTS           "host_contacts"
 
 #define CONST_ALERT_MSG_QUEUE         "ntopng.alert_queue"
+#define CONST_ALERT_PREFS             "ntopng.prefs.alerts"
 #define CONST_MAX_ALERT_MSG_QUEUE_LEN 512
 #define CONST_MAX_NUM_READ_ALERTS     32
 #define CONST_MAX_THRESHOLD_CROSS_DURATION 3

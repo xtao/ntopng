@@ -81,6 +81,7 @@ class GenericHost : public GenericHashEntry {
   void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };
   inline char* getJsonActivityMap()   { return(activityStats.serialize()); };
+  bool triggerAlerts();
   virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL);   };
 };
 

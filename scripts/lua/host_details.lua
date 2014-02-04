@@ -252,18 +252,46 @@ if((page == "overview") or (page == nil)) then
       if(host["mac"] ~= "00:00:00:00:00:00") then
 	 print("<tr><th width=35%>(Router) MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
       end
-      print("<tr><th>IP Address</th><td colspan=2>" .. host["ip"])
+      print("<tr><th>IP Address</th><td colspan=1>" .. host["ip"])
    else
       if(host["mac"] ~= nil) then
-	 print("<tr><th>MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
+	 print("<tr><th>MAC Address</th><td colspan=1>" .. host["mac"].. "</td></tr>\n")
       end
    end
 
    if((host["city"] ~= "") or (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
+   
+trigger_alerts = _GET["trigger_alerts"]
 
-   print("</td></tr>\n")
+if(trigger_alerts ~= nil) then
+  
+   if(trigger_alerts == "true") then
+      ntop.delHashCache("ntopng.prefs.alerts", host_ip)
+   else
+      ntop.setHashCache("ntopng.prefs.alerts", host_ip, trigger_alerts)
+   end
+end
+
+suppressAlerts = ntop.getHashCache("ntopng.prefs.alerts", host_ip)
+if((suppressAlerts == "") or (suppressAlerts == nil) or (suppressAlerts == "true")) then
+   checked = 'checked="checked"'
+   value = "false" -- Opposite
+else
+   checked = ""
+   value = "true" -- Opposite
+end
+
+print [[
+</td>
+<td>
+<form id="alert_prefs" class="form-inline" style="margin-bottom: 0px;">
+	 <input type="hidden" name="host" value="]]
+
+      print(host_ip)
+      print('"><input type="hidden" name="trigger_alerts" value="'..value..'"><input type="checkbox" value="1" '..checked..' onclick="this.form.submit();"> Trigger Host Alerts</input>')
+      print('</form></td></tr>')
 
    if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td colspan=2>"..host["vlan"].."</td></tr>\n") end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
@@ -300,7 +328,7 @@ print [[">
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]] 
       if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
 print [["></input>
-  <button type="submit" class="btn">Save</button>
+  <button type="submit" class="btn">Save Name</button>
 </form>
 </td></tr>
    ]]
