@@ -160,6 +160,8 @@ void GenericHost::updateStats(struct timeval *tv) {
 bool GenericHost::triggerAlerts() {
   char *key, ip_buf[48], rsp[32];
 
+  if(ntop->getPrefs()->are_alerts_disabled()) return(false);
+
   key = get_string_key(ip_buf, sizeof(ip_buf));
   ntop->getRedis()->hashGet((char*)CONST_ALERT_PREFS, key, rsp, sizeof(rsp));
 

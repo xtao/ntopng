@@ -45,6 +45,7 @@ Prefs::Prefs(Ntop *_ntop) {
   redis_port = 6379;
   dns_mode = 0;
   logFd = NULL;
+  disable_alerts = false;
   pid_path = strdup(DEFAULT_PID_PATH);
   packet_filter = NULL;
   disable_host_persistency = false;
@@ -153,6 +154,7 @@ void usage() {
 	 "[--pid|-G] <path>                   | Pid file path\n"
 #endif
 
+	 "[--disable-alerts|-H]               | Disable alerts generation\n"
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
 	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:\n"
 	 "                                    | 0 - No aggregations (default)\n"
@@ -228,6 +230,7 @@ static const struct option long_options[] = {
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
+  { "disable-alerts",                    no_argument,       NULL, 'H' },
   { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
@@ -432,6 +435,10 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 #endif
 
+  case 'H':
+    disable_alerts = true;
+    break;
+
   case 'U':
     free(user);
     user = strdup(optarg);
@@ -489,7 +496,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:S:U:X:W:",
+  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HS:U:X:W:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

@@ -39,7 +39,8 @@ class Prefs {
   Ntop *ntop;
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, resolve_all_host_ip, change_user, daemonize,
-    dump_timeline, shorten_aggregation_names, enable_auto_logout;
+    dump_timeline, shorten_aggregation_names, enable_auto_logout,
+    disable_alerts;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
   u_int16_t host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
@@ -91,6 +92,7 @@ class Prefs {
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
   inline char* get_categorization_key()                 { return(categorization_key); };
+  inline bool  are_alerts_disabled()                    { return(disable_alerts);     };
   inline bool  is_host_persistency_enabled()            { return(disable_host_persistency ? false : true); };
   inline bool  use_short_aggregation_names()            { return(shorten_aggregation_names); };
   inline bool  do_auto_logout()                         { return(enable_auto_logout);        };
