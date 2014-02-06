@@ -146,57 +146,6 @@ void HostContacts::getContacts(lua_State* vm) {
 
 /* *************************************** */
 
-char* HostContacts::serialize() {
-  json_object *my_object;
-  json_object *inner;
-  char *rsp;
-
-  my_object = json_object_new_object();
-
-  /* *************************************** */
-
-  inner = json_object_new_object();
-
-  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
-    if(clientContacts[i].num_contacts > 0) {
-      char buf[64], buf2[32];
-
-      snprintf(buf2, sizeof(buf2), "%u", clientContacts[i].num_contacts);
-      json_object_object_add(inner, clientContacts[i].host.print(buf, sizeof(buf)), json_object_new_string(buf2));
-    }
-  }
-
-  json_object_object_add(my_object, "client", inner);
-
-  /* *************************************** */
-
-  inner = json_object_new_object();
-
-  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
-    if(serverContacts[i].num_contacts > 0) {
-      char buf[64], buf2[32];
-
-      snprintf(buf2, sizeof(buf2), "%u", serverContacts[i].num_contacts);
-      json_object_object_add(inner, serverContacts[i].host.print(buf, sizeof(buf)), json_object_new_string(buf2));
-    }
-  }
-
-  json_object_object_add(my_object, "server", inner);
-
-  /* *************************************** */
-
-  rsp = strdup(json_object_to_json_string(my_object));
-
-  // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", rsp);
-
-  /* Free memory */
-  json_object_put(my_object);
-
-  return(rsp);
-}
-
-/* *************************************** */
-
 void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_object *o) {
   json_object *obj;
   IpAddress ip;
@@ -244,12 +193,55 @@ void HostContacts::deserialize(NetworkInterface *iface, GenericHost *h, json_obj
 
 /* *************************************** */
 
-json_object* HostContacts::getJSONObject() {
-  char *s = serialize();
-  json_object *o = json_tokener_parse(s);
+char* HostContacts::serialize() {
+  json_object *o = getJSONObject();
+  char *rsp = strdup(json_object_to_json_string(o));
 
-  free(s);
-  return(o);
+  /* Free memory */
+  json_object_put(o);
+
+  return(rsp);
+}
+
+/* *************************************** */
+
+json_object* HostContacts::getJSONObject() {
+  json_object *my_object;
+  json_object *inner;
+
+  my_object = json_object_new_object();
+
+  /* *************************************** */
+
+  inner = json_object_new_object();
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(clientContacts[i].num_contacts > 0) {
+      char buf[64], buf2[32];
+
+      snprintf(buf2, sizeof(buf2), "%u", clientContacts[i].num_contacts);
+      json_object_object_add(inner, clientContacts[i].host.print(buf, sizeof(buf)), json_object_new_string(buf2));
+    }
+  }
+
+  json_object_object_add(my_object, "client", inner);
+
+  /* *************************************** */
+
+  inner = json_object_new_object();
+
+  for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
+    if(serverContacts[i].num_contacts > 0) {
+      char buf[64], buf2[32];
+
+      snprintf(buf2, sizeof(buf2), "%u", serverContacts[i].num_contacts);
+      json_object_object_add(inner, serverContacts[i].host.print(buf, sizeof(buf)), json_object_new_string(buf2));
+    }
+  }
+
+  json_object_object_add(my_object, "server", inner);
+
+  return(my_object);
 }
 
 /* *************************************** */
