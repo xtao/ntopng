@@ -1,0 +1,18 @@
+=== MACPORTS PACKAGE ===
+
+NB: Working in progress
+
+
+- INDEX PORTFILE
+sudo echo "file:///{path/to/your/svn/ntopng/directory}packages/macports/ports" >> /opt/local/etc/macports/sources.conf   
+cd {path/to/your/svn/ntopng/directory}packages/macports/ports"
+portindex
+
+
+- INSTALL PORTS
+#Stable version of ntopng
+sudo port info ntopng
+sudo port install ntopng
+#Svn version of ntopng
+sudo port info ntopng-devel
+sudo port install ntopng-devel

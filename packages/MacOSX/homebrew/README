@@ -1,0 +1,11 @@
+=== HOMEBREW PACKAGE ===
+
+NB: Working in progress
+
+- SUBMIT FORMULA   
+cp ntopng-devel.rb /usr/local/Library/Formula/
+
+- INSTALL FORMULA
+#check the formula
+brew audit ntopng-devel
+brew install -v ntopng-devel
