@@ -141,7 +141,7 @@ void GenericHash::walk(bool (*walker)(GenericHashEntry *h, void *user_data), voi
       while(head) {
 	GenericHashEntry *next = head->next();
 
-	if(walker(head, user_data)) {
+	if((!head->idle()) && walker(head, user_data)) {
 	  found = true;
 	  break;
 	}
@@ -166,7 +166,7 @@ u_int GenericHash::purgeIdle() {
 
   for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {
   
-    if (++last_purged_hash == num_hashes) last_purged_hash = 0;
+    if(++last_purged_hash == num_hashes) last_purged_hash = 0;
     i = last_purged_hash;
 
     if(table[i] != NULL) {

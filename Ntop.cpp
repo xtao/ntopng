@@ -160,7 +160,7 @@ void Ntop::start() {
   time_t when = time(NULL);
 
   getTrace()->traceEvent(TRACE_NORMAL,
-			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-13 ntop.org",
+			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-14 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
 
   redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
