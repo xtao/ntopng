@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
   char *ifName;
   int rc;
 
-  if((ntop = new Ntop(argv[0])) == NULL) exit(0);
-  if((prefs = new Prefs(ntop)) == NULL)  exit(0);
+  if((ntop = new(std::nothrow) Ntop(argv[0])) == NULL) exit(0);
+  if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)  exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
     rc = prefs->loadFromFile(argv[1]);

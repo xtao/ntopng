@@ -170,7 +170,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   category[0] = '\0', os[0] = '\0';
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
-  if((m = new Mutex()) == NULL)
+  if((m = new(std::nothrow) Mutex()) == NULL)
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
 
   asn = 0, asname = NULL, country = NULL, city = NULL;
