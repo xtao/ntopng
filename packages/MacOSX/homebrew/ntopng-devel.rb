@@ -8,15 +8,12 @@ class Ntopng-devel < Formula
   depends_on :automake
   depends_on :libtool
   depends_on 'sqlite'
-  depends_on 'pkg-config'
-  depends_on 'lzlib'
+  depends_on 'rrdtool'
   depends_on 'wget'
   depends_on 'libxml2'
   depends_on 'redis'
   depends_on 'glib'
   depends_on 'lbzip2'
-  depends_on 'rrdtool'
-  depends_on 'zeromq'
  
   def install
   
