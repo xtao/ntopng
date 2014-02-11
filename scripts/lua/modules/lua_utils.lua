@@ -140,15 +140,16 @@ alert_level_keys = {
 
 alert_type_keys = {
    { "<i class='fa fa-tint'></i> TCP SYN Flood", 0 },
-   { "<i class='fa fa-tint'></i> Flows Flood",   1 }
+   { "<i class='fa fa-tint'></i> Flows Flood",   1 },
+   { "<i class='fa fa-arrow-circle-up'></i> Threshold Cross",  2 }
 }
 
 function alertSeverityLabel(v)
-   return(_handleArray(alert_level_keys, v))
+   return(_handleArray(alert_level_keys, tonumber(v)))
 end
 
 function alertTypeLabel(v)
-   return(_handleArray(alert_type_keys, v))
+   return(_handleArray(alert_type_keys, tonumber(v)))
 end
 
 function firstToUpper(str)
@@ -245,6 +246,10 @@ end
 
 function formatPackets(amount)
    return formatValue(amount).." Pkts"
+end
+
+function capitalize(str)
+   return (str:gsub("^%l", string.upper))
 end
 
 function split(pString, pPattern)

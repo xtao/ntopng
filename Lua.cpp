@@ -1669,7 +1669,28 @@ static int ntop_flush_all_queued_alerts(lua_State* vm) {
   lua_pushnil(vm); /* Always return a value to Lua */
   return(CONST_LUA_OK);
 }
+
+/* ****************************************** */
+
+static int ntop_queue_alert(lua_State* vm) {
+  Redis *redis = ntop->getRedis();
+  AlertLevel alert_level;
+  AlertType alert_type;
+  char *alert_msg;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  alert_level = (AlertLevel)lua_tonumber(vm, 1);
   
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  alert_type = (AlertType)lua_tonumber(vm, 2);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  alert_msg = (char*)lua_tostring(vm, 3);
+
+  redis->queueAlert(alert_level, alert_type, alert_msg);
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_get_queued_alerts(lua_State* vm) {
@@ -1886,6 +1907,7 @@ static const luaL_Reg ntop_reg[] = {
   { "getQueuedAlerts",      ntop_get_queued_alerts },
   { "deleteQueuedAlert",    ntop_delete_queued_alert },
   { "flushAllQueuedAlerts", ntop_flush_all_queued_alerts },
+  { "queueAlert",           ntop_queue_alert },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

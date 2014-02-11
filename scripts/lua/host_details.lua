@@ -7,6 +7,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 require "graph_utils"
+require "alert_utils"
 
 page        = _GET["page"]
 host_ip     = _GET["host"]
@@ -88,7 +89,7 @@ else
    end
 
    if(_GET["custom_name"] ~=nil) then
-      ntop.setHashCache("ntop.alternate_names", host_ip, _GET["custom_name"])   
+      ntop.setHashCache("ntop.alternate_names", host_ip, _GET["custom_name"])
    end
 
    host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", host_ip)
@@ -139,7 +140,7 @@ end
 if(page == "dns") then
   print("<li class=\"active\"><a href=\"#\">DNS</a></li>\n")
 else
-   if((host["dns"] ~= nil) 
+   if((host["dns"] ~= nil)
    and ((host["dns"]["sent_num_queries"]+host["dns"]["rcvd_num_queries"]) > 0)) then
       print("<li><a href=\""..url.."&page=dns\">DNS</a></li>")
    end
@@ -193,9 +194,9 @@ num = cnum + snum
 
 if(num > 0) then
    if(page == "contacts") then
-      print("<li class=\"active\"><a href=\"#\">Current Contacts</a></li>\n")
+      print("\n<li class=\"active\"><a href=\"#\">Current Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=contacts\">Current Contacts</a></li>")
+      print("\n<li><a href=\""..url.."&page=contacts\">Current Contacts</a></li>")
    end
 end
 
@@ -213,26 +214,33 @@ end
 
 if(v1 ~= nil) then
    if(page == "todays_contacts") then
-      print("<li class=\"active\"><a href=\"#\">Today's Contacts</a></li>\n")
+      print("\n<li class=\"active\"><a href=\"#\">Today's Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=todays_contacts\">Today's Contacts</a></li>")
+      print("\n<li><a href=\""..url.."&page=todays_contacts\">Today's Contacts</a></li>")
    end
 end
 
 if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
    if(page == "aggregations") then
-      print("<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
+      print("\n<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
+      print("\n<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
    end
 end
 
+if((host["ip"] ~= nil) and (host["localhost"] == true)) then
+   if(page == "alerts") then
+      print("\n<li class=\"active\"><a href=\"#\"><i class=\"fa fa-warning fa-lg\"></i></a></li>\n")
+   else
+      print("\n<li><a href=\""..url.."&page=alerts\"><i class=\"fa fa-warning fa-lg\"></i></a></li>")
+   end
+end
 
 if(ntop.exists(rrdname)) then
 if(page == "historical") then
-  print("<li class=\"active\"><a href=\"#\">Historical</a></li>\n")
+  print("\n<li class=\"active\"><a href=\"#\">Historical</a></li>\n")
 else
-  print("<li><a href=\""..url.."&page=historical\">Historical</a></li>")
+  print("\n<li><a href=\""..url.."&page=historical\">Historical</a></li>")
 end
 end
 
@@ -262,11 +270,11 @@ if((page == "overview") or (page == nil)) then
    if((host["city"] ~= "") or (host["country"] ~= "")) then
       print(" [ " .. host["city"] .. " <img src=\"/img/blank.gif\" class=\"flag flag-".. string.lower(host["country"]) .."\"> ]")
    end
-   
+
 trigger_alerts = _GET["trigger_alerts"]
 
 if(trigger_alerts ~= nil) then
-  
+
    if(trigger_alerts == "true") then
       ntop.delHashCache("ntopng.prefs.alerts", host_ip)
    else
@@ -325,7 +333,7 @@ print [[
 	 <input type="hidden" name="host" value="]]
       print(host_ip)
 print [[">
-	 <input type="text" name="custom_name" placeholder="Custom Name" value="]] 
+	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
       if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
 print [["></input>
   <button type="submit" class="btn">Save Name</button>
@@ -655,7 +663,7 @@ print [[
    base_name = when.."|"..ifname.."|"..ntop.getHostId(host_ip)
    keyname = base_name.."|contacted_peers"
    --io.write(keyname.."\n")
-   -- print(keyname.."\n") 
+   -- print(keyname.."\n")
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
    v1 = ntop.getHashKeysCache(keyname)
@@ -667,7 +675,7 @@ print [[
 	    values = split(k, "@");
 	    protocol = tonumber(values[2])
 
-	    -- 254 is OperatingSystem	    
+	    -- 254 is OperatingSystem
 	    if((protocols[protocol] == nil) and (protocol ~= 254)) then
 	       protocols[protocol] = interface.getNdpiProtoName(protocol)
 	    end
@@ -734,7 +742,7 @@ print [[
 
    ]]
 
-print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&host=" .. host_ip.."'>Download "..host_ip.." contacts as JSON<A>\n") 
+print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&host=" .. host_ip.."'>Download "..host_ip.." contacts as JSON<A>\n")
 elseif(page == "talkers") then
 print("<center>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
@@ -845,7 +853,7 @@ if(num > 0) then
       -- Client
       sortTable = {}
       for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
-      
+
       num = 0
       max_num = 64 -- Do not create huge maps
       for _v,k in pairsByKeys(sortTable, rev) do
@@ -907,6 +915,99 @@ print("</table>\n")
 else
    print("No contacts for this host")
 end
+
+elseif(page == "alerts") then
+
+local pages = { "minute", "hour", "day" }
+local tab = _GET["tab"]
+
+if(tab == nil) then tab = pages[1] end
+
+print [[ <ul class="nav nav-tabs">
+]]
+
+for _,k in pairs(pages) do
+   if(k == tab) then print("\t<li class=active>") else print("\t<li>") end
+   print("<a href=\"/lua/host_details.lua?host="..host_ip.."&page=alerts&tab="..k.."\">"..capitalize(k).."</a> </li>\n")
+end
+
+-- Before doing anything we need to check if we need to save values
+
+
+vals = { }
+alerts = ""
+
+for k,_ in pairs(alert_functions_description) do
+   value    = _GET["value-"..k]
+   operator = _GET["operator-"..k]
+
+   if((value ~= nil) and (operator ~= nil)) then
+      value = tonumber(value)
+      if(value == nil) then value = 0 end
+      if(alerts ~= "") then alerts = alerts .. "," end
+      alerts = alerts .. k .. ";" .. operator .. ";" .. value
+   end
+end
+
+-- print(alerts)
+
+if(alerts ~= "") then
+   ntop.setHashCache("ntopng.prefs.alerts_"..tab, host["ip"], alerts)
+else
+   alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+end
+
+if(alerts ~= nil) then
+   tokens = string.split(alerts, ",")
+
+   if(tokens ~= nil) then
+      for _,s in pairs(tokens) do
+	 t = string.split(s, ";")
+	 --print("-"..t[1].."-")
+	 vals[t[1]] = { t[2], t[3] }
+      end
+   end
+end
+
+print [[
+ </ul>
+ <table id="user" class="table table-bordered table-striped" style="clear: both"> <tbody>
+ <tr><th width=20%>Alert Function</th><th>Threshold</th></tr>
+ <form>
+ <input type=hidden name=page value=alerts>
+]]
+
+print("<input type=hidden name=host value=\""..host_ip.."\">\n")
+print("<input type=hidden name=tab value="..tab..">\n")
+
+for k,v in pairs(alert_functions_description) do
+   print("<tr><th>"..k.."</th><td>\n")
+   print("<select name=operator-".. k ..">\n")
+   if((vals[k] ~= nil) and (vals[k][1] == "gt")) then print("<option selected=\"selected\"") else print("<option ") end
+   print("value=\"gt\">&gt;</option>\n")
+
+   if((vals[k] ~= nil) and (vals[k][1] == "eq")) then print("<option selected=\"selected\"") else print("<option ") end
+   print("value=\"eq\">=</option>\n")
+
+   if((vals[k] ~= nil) and (vals[k][1] == "lt")) then print("<option selected=\"selected\"") else print("<option ") end
+   print("value=\"lt\">&lt;</option>\n")
+   print("</select>\n")
+   print("<input type=text name=\"value-"..k.."\" value=\"")
+   if(vals[k] ~= nil) then print(vals[k][2]) end
+   print("\">\n\n")
+   print("<br><small>"..v.."</small>\n")
+   print("</td></tr>\n")
+end
+
+print [[
+<tr><th colspan=2 align=center><input type="submit" class="btn-primary" value="Save Configuration"></th></tr>
+</form>
+</tbody> </table>
+]]
+
+
+
+
 
 
 elseif(page == "historical") then
