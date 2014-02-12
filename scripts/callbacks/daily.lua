@@ -7,6 +7,10 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "alert_utils"
+
+-- Scan "day" alerts
+scanAlerts("day")
 
 local debug = false
 local delete_keys = true

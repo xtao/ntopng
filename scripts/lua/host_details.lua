@@ -228,7 +228,7 @@ if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
    end
 end
 
-if((host["ip"] ~= nil) and (host["localhost"] == true)) then
+if(host["ip"] ~= nil) then
    if(page == "alerts") then
       print("\n<li class=\"active\"><a href=\"#\"><i class=\"fa fa-warning fa-lg\"></i></a></li>\n")
    else
@@ -918,17 +918,19 @@ end
 
 elseif(page == "alerts") then
 
-local pages = { "minute", "hour", "day" }
 local tab = _GET["tab"]
 
-if(tab == nil) then tab = pages[1] end
+if(tab == nil) then tab = alerts_granularity[1][1] end
 
 print [[ <ul class="nav nav-tabs">
 ]]
 
-for _,k in pairs(pages) do
+for _,e in pairs(alerts_granularity) do
+   k = e[1]
+   l = e[2]
+
    if(k == tab) then print("\t<li class=active>") else print("\t<li>") end
-   print("<a href=\"/lua/host_details.lua?host="..host_ip.."&page=alerts&tab="..k.."\">"..capitalize(k).."</a> </li>\n")
+   print("<a href=\"/lua/host_details.lua?host="..host_ip.."&page=alerts&tab="..k.."\">"..l.."</a></li>\n")
 end
 
 -- Before doing anything we need to check if we need to save values
@@ -936,30 +938,36 @@ end
 
 vals = { }
 alerts = ""
+to_save = false
 
 for k,_ in pairs(alert_functions_description) do
    value    = _GET["value-"..k]
    operator = _GET["operator-"..k]
 
    if((value ~= nil) and (operator ~= nil)) then
+      to_save = true
       value = tonumber(value)
-      if(value == nil) then value = 0 end
-      if(alerts ~= "") then alerts = alerts .. "," end
-      alerts = alerts .. k .. ";" .. operator .. ";" .. value
+      if(value ~= nil) then 
+	 if(alerts ~= "") then alerts = alerts .. "," end
+	 alerts = alerts .. k .. ";" .. operator .. ";" .. value
+      end
    end
 end
 
--- print(alerts)
+--print(alerts)
 
-if(alerts ~= "") then
+if(to_save) then
    ntop.setHashCache("ntopng.prefs.alerts_"..tab, host["ip"], alerts)
 else
    alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
 end
 
 if(alerts ~= nil) then
-   tokens = string.split(alerts, ",")
+   --print(alerts)   
+   --tokens = string.split(alerts, ",")
+   tokens = split(alerts, ",")
 
+   --print(tokens)
    if(tokens ~= nil) then
       for _,s in pairs(tokens) do
 	 t = string.split(s, ";")
@@ -980,7 +988,7 @@ print [[
 print("<input type=hidden name=host value=\""..host_ip.."\">\n")
 print("<input type=hidden name=tab value="..tab..">\n")
 
-for k,v in pairs(alert_functions_description) do
+for k,v in pairsByKeys(alert_functions_description, asc) do
    print("<tr><th>"..k.."</th><td>\n")
    print("<select name=operator-".. k ..">\n")
    if((vals[k] ~= nil) and (vals[k][1] == "gt")) then print("<option selected=\"selected\"") else print("<option ") end

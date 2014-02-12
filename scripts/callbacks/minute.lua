@@ -8,10 +8,14 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 require "top_talkers"
+require "alert_utils"
 
 when = os.time()
 
 local verbose = ntop.verboseTrace()
+
+-- Scan "minute" alerts
+scanAlerts("min")
 
 ifnames = interface.getIfNames()
 num_ifaces = 0
@@ -43,6 +47,10 @@ for _,_ifname in pairs(ifnames) do
    -- io.write('Diff: '..diff..'\n')
    
    if(diff < 60) then      
+
+      -- Scan "5 minute" alerts
+      scanAlerts("5mins")
+
       interface.find(_ifname)
       hosts_stats = interface.getHostsInfo()
       for key, value in pairs(hosts_stats) do
