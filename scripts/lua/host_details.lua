@@ -274,7 +274,6 @@ if((page == "overview") or (page == nil)) then
 trigger_alerts = _GET["trigger_alerts"]
 
 if(trigger_alerts ~= nil) then
-
    if(trigger_alerts == "true") then
       ntop.delHashCache("ntopng.prefs.alerts", host_ip)
    else
@@ -291,6 +290,10 @@ else
    value = "true" -- Opposite
 end
 
+
+
+if(host["ip"] ~= nil) then
+
 print [[
 </td>
 <td>
@@ -300,6 +303,7 @@ print [[
       print(host_ip)
       print('"><input type="hidden" name="trigger_alerts" value="'..value..'"><input type="checkbox" value="1" '..checked..' onclick="this.form.submit();"> Trigger Host Alerts</input>')
       print('</form></td></tr>')
+   end
 
    if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td colspan=2>"..host["vlan"].."</td></tr>\n") end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
@@ -327,6 +331,7 @@ print [[
       print("</td>\n")
    end
 
+if(host["ip"] ~= nil) then
 print [[
 <td>
 <form class="form-inline" style="margin-bottom: 0px;">
@@ -340,6 +345,7 @@ print [["></input>
 </form>
 </td></tr>
    ]]
+end
 
 
 if(host["num_alerts"] > 0) then
@@ -935,31 +941,39 @@ end
 
 -- Before doing anything we need to check if we need to save values
 
-
 vals = { }
 alerts = ""
 to_save = false
 
-for k,_ in pairs(alert_functions_description) do
-   value    = _GET["value-"..k]
-   operator = _GET["operator-"..k]
+if((_GET["to_delete"] ~= nil) and (_GET["SaveAlerts"] == nil)) then
+   delete_host_alert_configuration(host_ip)
+   alerts = nil
+else
+   for k,_ in pairs(alert_functions_description) do
+      value    = _GET["value-"..k]
+      operator = _GET["operator-"..k]
 
-   if((value ~= nil) and (operator ~= nil)) then
-      to_save = true
-      value = tonumber(value)
-      if(value ~= nil) then 
-	 if(alerts ~= "") then alerts = alerts .. "," end
-	 alerts = alerts .. k .. ";" .. operator .. ";" .. value
+      if((value ~= nil) and (operator ~= nil)) then
+	 to_save = true
+	 value = tonumber(value)
+	 if(value ~= nil) then 
+	    if(alerts ~= "") then alerts = alerts .. "," end
+	    alerts = alerts .. k .. ";" .. operator .. ";" .. value
+	 end
       end
    end
-end
 
---print(alerts)
+   --print(alerts)
 
-if(to_save) then
-   ntop.setHashCache("ntopng.prefs.alerts_"..tab, host["ip"], alerts)
-else
-   alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+   if(to_save) then
+      if(alerts == "") then
+	 ntop.delHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+      else
+	 ntop.setHashCache("ntopng.prefs.alerts_"..tab, host["ip"], alerts)
+      end
+   else
+      alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+   end
 end
 
 if(alerts ~= nil) then
@@ -981,7 +995,9 @@ print [[
  </ul>
  <table id="user" class="table table-bordered table-striped" style="clear: both"> <tbody>
  <tr><th width=20%>Alert Function</th><th>Threshold</th></tr>
- <form>
+
+
+<form>
  <input type=hidden name=page value=alerts>
 ]]
 
@@ -1008,8 +1024,33 @@ for k,v in pairsByKeys(alert_functions_description, asc) do
 end
 
 print [[
-<tr><th colspan=2 align=center><input type="submit" class="btn-primary" value="Save Configuration"></th></tr>
+<tr><th colspan=2  style="text-align: center; white-space: nowrap;" >
+
+<input type="submit" class="btn-primary" name="SaveAlerts" value="Save Configuration">
+
+<a href="#myModal" role="button" class="btn" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Delete All Configured Alerts</button></a>
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <h3 id="myModalLabel">Confirm Action</h3>
+  </div>
+  <div class="modal-body">
+	 <p>Do you really want to delele all configured alerts for host ]] print(host_ip) print [[?</p>
+  </div>
+  <div class="modal-footer">
+    <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=to_delete value="__all__">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary" type="submit">Delete All</button>
+
+  </div>
 </form>
+
+
+</th> </tr>
+
+
+
 </tbody> </table>
 ]]
 

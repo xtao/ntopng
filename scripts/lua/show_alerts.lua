@@ -84,7 +84,7 @@ print [[
 if(ntop.getNumQueuedAlerts() > 0) then
    print [[
 
-<a href="#myModal" role="button" class="btn btn-mini" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alerts</button></a>
+<a href="#myModal" role="button" class="btn" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alerts</button></a>
  
 <!-- Modal -->
 <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

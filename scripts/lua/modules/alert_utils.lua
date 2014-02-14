@@ -9,20 +9,26 @@ local verbose = false
 
 j = require("dkjson")
 
-function ndpival_bytes(json, key) 
-   if((json["ndpiStats"] == nil) or (json["ndpiStats"][key] == nil)) then
+function ndpival_bytes(json, protoname) 
+   if((json["ndpiStats"] == nil) or (json["ndpiStats"][protoname] == nil)) then
+      if(verbose) then print("## ("..protoname..") Empty<br>\n") end
       return(0)
    else
-      return(json["ndpiStats"][key]["bytes"]["sent"]+json["ndpiStats"][key]["bytes"]["rcvd"])
+      local v = json["ndpiStats"][protoname]["bytes"]["sent"]+json["ndpiStats"][protoname]["bytes"]["rcvd"]
+      if(verbose) then print("##  ("..protoname..") "..v.."<br>\n") end
+      return(v)
    end
 end
 
-function proto_bytes(old, new, proto)   return(ndpival_bytes(new, proto)-ndpival_bytes(old, proto)) end
+function proto_bytes(old, new, protoname)   
+   return(ndpival_bytes(new, protoname)-ndpival_bytes(old, protoname)) 
+end
 -- =====================================================
 
 function bytes(old, new)   return((new["sent"]["bytes"]+new["rcvd"]["bytes"])-(old["sent"]["bytes"]+old["rcvd"]["bytes"]))         end
 function packets(old, new) return((new["sent"]["packets"]+new["rcvd"]["packets"])-(old["sent"]["packets"]+old["rcvd"]["packets"])) end
-function dns(old, new)   return(proto_bytes(new, "DNS")-proto_bytes(old, "DNS")) end
+function dns(old, new)   return(proto_bytes(old, new, "DNS")) end
+function p2p(old, new)   return(proto_bytes(old, new, "eDonkey")+proto_bytes(old, new, "BitTorrent")+proto_bytes(old, new, "Skype")) end
 
 
 alerts_granularity = { 
@@ -35,13 +41,31 @@ alerts_granularity = {
 alert_functions_description = {
    ["bytes"]   = "Bytes delta (sent + received)",
    ["packets"] = "Packets delta (sent + received)",
-   ["dns"]     = "DNS traffic delta bytes (sent + received)"
+   ["dns"]     = "DNS traffic delta bytes (sent + received)",
+   ["p2p"]     = "Peer-to-peer traffic delta bytes (sent + received)",
 }
 
 -- #################################################################
 
+function delete_host_alert_configuration(hostname)
+for k,v in pairs(alerts_granularity) do
+   key = "ntopng.prefs.alerts_"..v[1]
+   -- print(key.."<br>\n")
+   ntop.delHashCache(key, host_ip)
+end
+end
+
 function check_host_alert(ifname, hostname, mode, key, old_json, new_json)
-   if(verbose) then print("check_host_alert("..ifname..", "..hostname..", "..mode..", "..key..")<br>\n") end
+   if(verbose) then 
+      print("check_host_alert("..ifname..", "..hostname..", "..mode..", "..key..")<br>\n") 
+
+      print("<p>--------------------------------------------<p>\n")
+      print("NEW<br>"..new_json.."<br>\n")
+      print("<p>--------------------------------------------<p>\n")
+      print("OLD<br>"..old_json.."<br>\n")
+      print("<p>--------------------------------------------<p>\n")
+end
+
 
    old = j.decode(old_json, 1, nil)
    new = j.decode(new_json, 1, nil)
