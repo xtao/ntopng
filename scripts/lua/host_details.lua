@@ -1026,7 +1026,7 @@ end
 print [[
 <tr><th colspan=2  style="text-align: center; white-space: nowrap;" >
 
-<input type="submit" class="btn-primary" name="SaveAlerts" value="Save Configuration">
+<input type="submit" class="btn btn-primary" name="SaveAlerts" value="Save Configuration">
 
 <a href="#myModal" role="button" class="btn" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Delete All Configured Alerts</button></a>
 <!-- Modal -->
