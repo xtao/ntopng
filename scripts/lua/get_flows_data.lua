@@ -126,27 +126,35 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 if(num > 0) then
 	    print ",\n"
 	 end
+   srv_tooltip = ""
+   cli_tooltip = ""
 
 	 srv_name = value["srv.host"]
 	 if((srv_name == "") or (srv_name == nil)) then
 	    srv_name = value["srv.ip"]
 	 end
 	 srv_name = ntop.getResolvedAddress(srv_name)
+   if (srv_name ~= value["srv.ip"]) then
+     srv_tooltip = value["srv.ip"]
+   end
 
 	 cli_name = value["cli.host"]
 	 if((cli_name == "") or (cli_name == nil)) then
 	    cli_name = value["cli.ip"]
 	 end
 	 cli_name = ntop.getResolvedAddress(cli_name)
+   if (cli_name ~= value["cli.ip"]) then
+     cli_tooltip = value["cli.ip"]
+   end
 
-	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "'>".. abbreviateString(cli_name, 20) .."</A>"
+	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20) .."</A>"
 	 if(value["cli.port"] > 0) then
   	   src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
          else
 	   src_port=""
          end
 
-	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "'>".. abbreviateString(srv_name, 20) .."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20) .."</A>"
 	 if(value["srv.port"] > 0) then
   	   dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
          else
