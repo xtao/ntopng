@@ -786,7 +786,11 @@ function getApplicationLabel(name)
 end
 
 function mapOS2Icon(name)
-   return(getOSIcon(name) .. name)
+   if(name == nil) then
+      return("")
+   else
+      return(getOSIcon(name) .. name)
+   end
 end
 
 function getItemsNumber(n) 
