@@ -18,8 +18,6 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
-io.write(a.."\n")
-
 patterns = {
    ['_'] = "", 
    ['-_'] = "<i class=\"fa fa-exchange fa-lg\"></i>"
