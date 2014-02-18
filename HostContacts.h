@@ -38,13 +38,10 @@ class HostContacts {
 		      bool contacted_peer_as_client, IPContacts *contacts,
 		      u_int32_t value, u_int family_id, bool aggregated_host);
   void dbDumpHost(char *daybuf, NetworkInterface *iface, u_int32_t host_id,
-		  u_int32_t peer_id, u_int family_id,
+		  u_int32_t peer_id, bool client_mode, u_int family_id,
 		  u_int32_t num_contacts);
   u_int8_t get_queue_id(char *str);
-  char* get_cache_key(char *daybuf, char *ifname,
-		      u_int32_t host_id,
-		      bool client_mode,
-		      char *buf, u_int buf_len);
+
  public:
   HostContacts();
 

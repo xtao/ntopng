@@ -18,7 +18,12 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
-patterns = {["<"] = "", ["->"] = "<i class=\"fa fa-exchange fa-lg\"></i>" }
+io.write(a.."\n")
+
+patterns = {
+   ['_'] = "", 
+   ['-_'] = "<i class=\"fa fa-exchange fa-lg\"></i>"
+}
 for search,replace in pairs(patterns) do
    a = string.gsub(a, search, replace)
 end

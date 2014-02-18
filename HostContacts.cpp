@@ -71,12 +71,8 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
       peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, 
 						 contacts[least_idx].host.print(buf, sizeof(buf)), &new_key);
 
-      if(contacted_peer_as_client)
-	dbDumpHost(daybuf, iface, me_serial, peer_serial,
-		   family_id, contacts[least_idx].num_contacts);
-      else
-	dbDumpHost(daybuf, iface, peer_serial, me_serial, 
-		   family_id, contacts[least_idx].num_contacts);
+      dbDumpHost(daybuf, iface, me_serial, peer_serial, contacted_peer_as_client, family_id, contacts[least_idx].num_contacts);
+      dbDumpHost(daybuf, iface, peer_serial, me_serial, !contacted_peer_as_client, family_id, contacts[least_idx].num_contacts);
     } else {
       /* This is an aggregation */
 
@@ -84,8 +80,7 @@ void HostContacts::incrIPContacts(NetworkInterface *iface,
     }
   }
 
-  contacts[least_idx].host.set(peer),
-    contacts[least_idx].num_contacts = value;
+  contacts[least_idx].host.set(peer), contacts[least_idx].num_contacts = value;
 }
 
 /* *************************************** */
@@ -270,46 +265,19 @@ u_int8_t HostContacts::get_queue_id(char *str) {
 
 /* *************************************** */
 
-char* HostContacts::get_cache_key(char *daybuf, char *ifname, 
-				  u_int32_t host_id,
-				  bool client_mode,
-				  char *buf, u_int buf_len) {
-  /* <date>|<iface>|<host IP>|<CONST_CONTACTED_BY|CONST_CONTACTS> <peer IP> <value> */
-
-  snprintf(buf, buf_len, "%s|%s|%u|%s",
-	   daybuf, ifname, host_id,
-	   client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY);
-  return(buf);
-}
-
-/* *************************************** */
-
 void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface,
-			      u_int32_t host_id,
-			      u_int32_t peer_id, u_int family_id,
+			      u_int32_t host_id, u_int32_t peer_id, 
+			      bool client_mode, u_int family_id,
 			      u_int32_t num_contacts) {
-  char full_path[MAX_PATH];
-  char *ifname = iface->get_name();
-  char *k = get_cache_key(daybuf, ifname,
-			  host_id,
-			  true /* client */,
-			  full_path, sizeof(full_path));
+  char key[MAX_PATH];
 
-  ntop->getRedis()->incrHostContacts(k, family_id, peer_id, num_contacts);
+  snprintf(key, sizeof(key),
+	   "%s|%s|%u|%s",
+	   daybuf, iface->get_name(), host_id,
+	   client_mode ? CONST_CONTACTS : CONST_CONTACTED_BY);
+  
+  ntop->getRedis()->incrHostContacts(key, family_id, peer_id, num_contacts);
 }
-
-/* *************************************** */
-
-#if 0
-void HostContacts::dbDumpSingleHost(char *daybuf, 
-				    NetworkInterface *iface, 
-				    u_int32_t client_serial,
-				    u_int32_t server_serial,
-				    u_int16_t family_id,
-				    u_int32_t num_contacts) {
-
-}
-#endif
 
 /* *************************************** */
 
@@ -317,55 +285,37 @@ void HostContacts::dbDumpSingleHost(char *daybuf,
 
 void HostContacts::dbDumpAllHosts(char *daybuf, NetworkInterface *iface,
 				  u_int32_t host_id, u_int16_t family_id) {
-  char *ifname = iface->get_name();
-  char buf[64], cmd[MAX_PATH], *k;
+  char buf[64];
+  LocationPolicy policy;
+
+  if(family_id == HOST_FAMILY_ID)
+    policy = ntop->getPrefs()->get_dump_hosts_to_db_policy();
+  else
+    policy = ntop->getPrefs()->get_dump_aggregations_to_db();
 
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].num_contacts == 0)
       break;
 
     if(clientContacts[i].num_contacts > 0) {
-      if(Utils::dumpHostToDB(&clientContacts[i].host,
-			     (family_id == HOST_FAMILY_ID) ?
-			     ntop->getPrefs()->get_dump_hosts_to_db_policy() :
-			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
+      if(Utils::dumpHostToDB(&clientContacts[i].host, policy)) {
 	char *peer_ip = clientContacts[i].host.print(buf, sizeof(buf));
 	bool new_key;
 	u_int32_t peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, peer_ip, &new_key);
 
-	k = get_cache_key(daybuf, ifname,
-			  host_id,
-			  (family_id == HOST_FAMILY_ID) ? true : false,
-			  cmd, sizeof(cmd));
-	ntop->getRedis()->incrHostContacts(k, family_id, peer_serial, clientContacts[i].num_contacts);
-
-	if(family_id != HOST_FAMILY_ID) {
-	  k = get_cache_key(daybuf, ifname,
-			    peer_serial,
-			    true, cmd, sizeof(cmd));
-	  ntop->getRedis()->incrHostContacts(k, family_id, host_id, clientContacts[i].num_contacts);
-	}
+	dbDumpHost(daybuf, iface, host_id, peer_serial, true  /* client */, family_id, clientContacts[i].num_contacts);
+	dbDumpHost(daybuf, iface, peer_serial, host_id, false /* server */, family_id, clientContacts[i].num_contacts);
       }
     }
 
     if(serverContacts[i].num_contacts > 0) {
-      if(Utils::dumpHostToDB(&serverContacts[i].host,
-			     (family_id == HOST_FAMILY_ID) ?
-			     ntop->getPrefs()->get_dump_hosts_to_db_policy() :
-			     ntop->getPrefs()->get_dump_aggregations_to_db())) {
-	bool new_key;
+      if(Utils::dumpHostToDB(&serverContacts[i].host, policy)) {
 	char *peer_ip = serverContacts[i].host.print(buf, sizeof(buf));
+	bool new_key;
 	u_int32_t peer_serial = ntop->getRedis()->host_to_id(iface, daybuf, peer_ip, &new_key);
 
-	k = get_cache_key(daybuf, ifname,
-			  host_id, false, cmd, sizeof(cmd));
-	ntop->getRedis()->incrHostContacts(k, family_id, peer_serial, serverContacts[i].num_contacts);
-
-	if(family_id != HOST_FAMILY_ID) {
-	  k = get_cache_key(daybuf, ifname,
-			    peer_serial, true, cmd, sizeof(cmd));
-	  ntop->getRedis()->incrHostContacts(k, family_id, host_id, serverContacts[i].num_contacts);
-	}
+	dbDumpHost(daybuf, iface, host_id, peer_serial, true  /* client */, family_id, serverContacts[i].num_contacts);
+	dbDumpHost(daybuf, iface, peer_serial, host_id, false /* server */, family_id, serverContacts[i].num_contacts);
       } /* if */
     } /* if */
   }

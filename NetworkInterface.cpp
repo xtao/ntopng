@@ -1433,7 +1433,10 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
   Host *h = (Host*)node;  
   struct correlator_host_info *info = (struct correlator_host_info*)user_data;
 
-  if(h && h->get_ip() && (h != info->h)) {
+  if(h 
+     // && h->isLocalHost() /* Consider only local hosts */
+     && h->get_ip() 
+     && (h != info->h)) {
     char buf[32], *name = h->get_ip()->print(buf, sizeof(buf));
     u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
     double pearson;

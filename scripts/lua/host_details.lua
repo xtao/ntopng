@@ -816,25 +816,39 @@ max_hosts = 10
 
 n = 0
 
-print("<table class=\"table table-bordered\">\n")
 if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
-print("<tr><th>Hosts Similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
+
 for v,k in pairsByKeys(vals, rev) do
-   correlated_host = interface.getHostInfo(k)
+   if(v > 0) then
+      if(n == 0) then
+	 print("<table class=\"table table-bordered\">\n")
+	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
+      end
 
-   if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
-   print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
-   n = n +1
-
-   if(n >= max_hosts) then
-      break
+      correlated_host = interface.getHostInfo(k)
+      
+      if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
+      print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
+      n = n +1
+      
+      if(n >= max_hosts) then
+	 break
+      end
    end
 end
 
-print [[
-      </table>
+if(n > 0) then
+   print("</table>\n")
+else
+   print("There is no host correlated to ".. host["name"].."<p>\n")
+end
 
-<b>Note</b>: Two hosts are correlated when their network behaviour is close. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>correlation coefficient</A> is a number between +1 and -1, where +1 means that two hosts are correlated, 0 means that they have no particular correlation, and -1 that they behave in an opposite way.
+print [[
+<b>Note</b>:
+<ul>
+	 <li>Correleation considers only activity map as shown in the <A HREF=/lua/host_details.lua?host=]] print(host_ip) print [[>host overview</A>.
+<li>Two hosts are correlated when their network behaviour is close. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>correlation coefficient</A> is a number between +1 and -1, where +1 means that two hosts are correlated, 0 means that they have no particular correlation, and -1 that they behave in an opposite way.
+</ul>
 ]]
 
 elseif(page == "contacts") then
