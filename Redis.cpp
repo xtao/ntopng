@@ -807,9 +807,13 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
     if(reply && reply->str) {
       char *_key = (char*)reply->str, key[256];
-      char hash_key[512], buf[512];
+      char hash_key[512], buf[512], ifname[32];
       redisReply *r, *r1, *r2;
-      char *iface, *host, *token;
+      char *iface, *host, *token, *pipe;
+
+      snprintf(ifname, sizeof(ifname), "%s", _key);
+      pipe = strchr(ifname, '|');
+      if(pipe) pipe[0] = '\0';
 
       num_activities++;
 
@@ -875,6 +879,14 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	    }
 	  }
 
+	  /*
+	    As redis is a key-value DB, we must insert two records
+	    a -contacted- b
+	    and
+	    b -has been contacted by- a
+
+	    But on the DB we need just one of them and not both
+	   */
 	  for(u_int32_t loop=0; loop<2; loop++) {
 	    snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
 		     (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
@@ -895,10 +907,6 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		  l->unlock(__FILE__, __LINE__);
 
 		  if(r1 && r1->str) {
-		    // hash_key = 131205|aggregations|eth4|voltaire03.infogroup.it|contacted_by
-		    // r->element[j]->str = 77.73.57.30@5
-		    // r1->str = 2
-		    //fprintf(contacts_file, "%s,%s,%s\n", hash_key, r->element[j]->str, r1->str);
 		    char *contact_host, *contact_family, *subtoken;
 
 		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
@@ -918,9 +926,17 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 			  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
 			  sqlite3_free(zErrMsg);
 			}
+
+			/* Now in order to avoid duplicated records we delete the opposite */
+			snprintf(hash_key, sizeof(hash_key), "%s|%s|%s|%s", day, ifname,
+				 (loop == 1) ? server_idx : client_idx,
+				 (loop == 1) ? CONST_CONTACTED_BY : CONST_CONTACTS);
+			snprintf(buf, sizeof(buf), "%s@%s", 
+				 (loop == 1) ? server_idx : client_idx, contact_family);
+			hashDel(hash_key, buf);
 		      }
 		    }
-
+		    
 		    l->lock(__FILE__, __LINE__);
 		    r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
 		    if(r2 && (r2->type == REDIS_REPLY_ERROR))
