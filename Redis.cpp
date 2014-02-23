@@ -681,7 +681,7 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_int32_t id) { 
   char buf[32], keybuf[384], host_id[16], _daybuf[32], value[32];
-  redisReply *reply;
+  //redisReply *reply;
 
   if(daybuf == NULL) {
     time_t when = time(NULL);
@@ -698,6 +698,8 @@ void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_
   hashSet(buf, keybuf, host_id); /* Forth */
   hashSet(buf, host_id, keybuf); /* ...and back */
   snprintf(value, sizeof(value), "%s|%u", iface->get_name(), id);
+
+#if 0
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "SADD %s.keys %s", daybuf, value);
 
@@ -716,6 +718,7 @@ void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_
 
   if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
+#endif
 }
 
 /* *************************************** */
@@ -760,7 +763,6 @@ int Redis::id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len) {
 bool Redis::dumpDailyStatsKeys(char *day) {
   bool rc = false;
 #ifdef HAVE_SQLITE
-  redisReply *reply;
   sqlite3 *db;
   char buf[256];
   char *zErrMsg;
@@ -798,15 +800,15 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   /* *************************************** */
 
-  while(true) {
-    l->lock(__FILE__, __LINE__);
-    reply = (redisReply*)redisCommand(redis, "SPOP %s.keys", day);
-    if(reply && (reply->type == REDIS_REPLY_ERROR))
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-    l->unlock(__FILE__, __LINE__);
-
-    if(reply && reply->str) {
-      char *_key = (char*)reply->str, key[256];
+  l->lock(__FILE__, __LINE__);
+  redisReply *kreply = (redisReply*)redisCommand(redis, "KEYS %s|*", day);
+  if(kreply && (kreply->type == REDIS_REPLY_ERROR))
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", kreply->str ? kreply->str : "???");
+  l->unlock(__FILE__, __LINE__);
+  
+  if(kreply && (kreply->type == REDIS_REPLY_ARRAY)) {
+    for(int kid = 0; kid < kreply->elements; kid++) {
+      char *_key = (char*)kreply->element[kid]->str, key[256];
       char hash_key[512], buf[512], ifname[32];
       redisReply *r, *r1, *r2;
       char *iface, *host, *token, *pipe;
@@ -828,45 +830,30 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       snprintf(key, sizeof(key), "%s", _key);
 
       // key = ethX|mail.xxxxxx.com
-      if((iface = strtok_r(key, "|", &token)) != NULL) {
-	if((host = strtok_r(NULL, "|", &token)) != NULL) {
-	  u_int32_t host_index = atol(host);
-	  u_int32_t interface_idx = (u_int32_t)-1;
-	  char host_buf[256];
+      if(strtok_r(key, "|", &token) != NULL) {
+	if((iface = strtok_r(NULL, "|", &token)) != NULL) {
+	  if((host = strtok_r(NULL, "|", &token)) != NULL) {
+	    u_int32_t host_index = atol(host);
+	    u_int32_t interface_idx = (u_int32_t)-1;
+	    char host_buf[256];
 
-	  /* Compute interface id */
-	  for(u_int i=0; i<num_interfaces; i++) {
-	    if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
-	      interface_idx = i;
-	      break;
-	    }
-	  }
-
-	  if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
-	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
-	  } else {
-	    char *zErrMsg;
-	    char buf[256];
-
-	    snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
-		     host_index, interface_idx, host_buf);
-
-	    ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-
-	    if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-	      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-	      sqlite3_free(zErrMsg);
+	    /* Compute interface id */
+	    for(u_int i=0; i<num_interfaces; i++) {
+	      if(strcmp((const char*)ifnames[i], (const char*)iface) == 0) {
+		interface_idx = i;
+		break;
+	      }
 	    }
 
-	    num_hosts++;
-	  }
+	    if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
+	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
+	    } else {
+	      char *zErrMsg;
+	      char buf[256];
 
-	  if(interface_idx == (u_int32_t)-1) {
-	    if(num_interfaces < MAX_NUM_INTERFACES) {
-	      snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
+	      snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
+		       host_index, interface_idx, host_buf);
 
-	      snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');",
-		       num_interfaces, iface);
 	      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
 
 	      if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
@@ -874,99 +861,125 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		sqlite3_free(zErrMsg);
 	      }
 
-	      interface_idx = num_interfaces;
-	      num_interfaces++;
+	      num_hosts++;
 	    }
-	  }
 
-	  /*
-	    As redis is a key-value DB, we must insert two records
-	    a -contacted- b
-	    and
-	    b -has been contacted by- a
+	    if(interface_idx == (u_int32_t)-1) {
+	      if(num_interfaces < MAX_NUM_INTERFACES) {
+		snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
 
-	    But on the DB we need just one of them and not both
-	   */
-	  for(u_int32_t loop=0; loop<2; loop++) {
-	    snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
-		     (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
+		snprintf(buf, sizeof(buf), "INSERT INTO interfaces VALUES (%u,'%s');",
+			 num_interfaces, iface);
+		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
 
-	    l->lock(__FILE__, __LINE__);
-	    r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
-	    if(r && (r->type == REDIS_REPLY_ERROR))
-	      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
-	    l->unlock(__FILE__, __LINE__);
+		if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+		  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+		  sqlite3_free(zErrMsg);
+		}
 
-	    if(r) {
-	      if(r->type == REDIS_REPLY_ARRAY) {
-		for(u_int32_t j = 0; j < r->elements; j++) {
-		  l->lock(__FILE__, __LINE__);
-		  r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
-		  if(r1 && (r1->type == REDIS_REPLY_ERROR))
-		    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
-		  l->unlock(__FILE__, __LINE__);
+		interface_idx = num_interfaces;
+		num_interfaces++;
+	      }
+	    }
 
-		  if(r1 && r1->str) {
-		    char *contact_host, *contact_family, *subtoken;
+	    /*
+	      As redis is a key-value DB, we must insert two records
+	      a -contacted- b
+	      and
+	      b -has been contacted by- a
 
-		    if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
-		      if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-			char *client_idx, *server_idx;
+	      But on the DB we need just one of them and not both
+	    */
+	    for(u_int32_t loop=0; loop<2; loop++) {
+	      snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
+		       (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
 
-			if(loop == 0)
-			  client_idx = contact_host, server_idx = host; /* contacted_by */
-			else
-			  client_idx = host, server_idx = contact_host; /* contacted_peer */
+	      snprintf(hash_key, sizeof(hash_key), "%s|%s|%s|%s", day, iface, host,
+		       (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
 
-			snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%s,%s,%s,%s);",
-				 contact_idx++, client_idx, server_idx, contact_family, r1->str);
+	      l->lock(__FILE__, __LINE__);
+	      r = (redisReply*)redisCommand(redis, "HKEYS %s", hash_key);
+	      if(r && (r->type == REDIS_REPLY_ERROR))
+		ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	      l->unlock(__FILE__, __LINE__);
 
-			ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-			if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-			  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-			  sqlite3_free(zErrMsg);
-			}
-
-			/* Now in order to avoid duplicated records we delete the opposite */
-			snprintf(hash_key, sizeof(hash_key), "%s|%s|%s|%s", day, ifname,
-				 (loop == 1) ? server_idx : client_idx,
-				 (loop == 1) ? CONST_CONTACTED_BY : CONST_CONTACTS);
-			snprintf(buf, sizeof(buf), "%s@%s", 
-				 (loop == 1) ? server_idx : client_idx, contact_family);
-			hashDel(hash_key, buf);
-		      }
-		    }
-		    
+	      if(r) {
+		if(r->type == REDIS_REPLY_ARRAY) {
+		  for(u_int32_t j = 0; j < r->elements; j++) {
 		    l->lock(__FILE__, __LINE__);
-		    r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
-		    if(r2 && (r2->type == REDIS_REPLY_ERROR))
-		      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
+		    r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
+		    if(r1 && (r1->type == REDIS_REPLY_ERROR))
+		      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r1->str);
 		    l->unlock(__FILE__, __LINE__);
 
-		    if(r2) freeReplyObject(r2);
-		  }
+		    if(r1 && r1->str) {
+		      char *contact_host, *contact_family, *subtoken;
 
-		  if(r1) freeReplyObject(r1);
+		      if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
+			if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
+			  char *client_idx, *server_idx;
+
+			  if(loop == 0)
+			    client_idx = contact_host, server_idx = host; /* contacted_by */
+			  else
+			    client_idx = host, server_idx = contact_host; /* contacted_peer */
+
+			  snprintf(buf, sizeof(buf), "INSERT INTO contacts VALUES (%u,%s,%s,%s,%s);",
+				   contact_idx++, client_idx, server_idx, contact_family, r1->str);
+
+			  ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+			  if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
+			    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
+			    sqlite3_free(zErrMsg);
+			  }
+
+			  /* Now in order to avoid duplicated records we delete the opposite */
+			  snprintf(hash_key, sizeof(hash_key), "%s|%s|%s|%s", day, ifname,
+				   (loop == 1) ? server_idx : client_idx,
+				   (loop == 1) ? CONST_CONTACTED_BY : CONST_CONTACTS);
+			  snprintf(buf, sizeof(buf), "%s@%s", 
+				   (loop == 1) ? server_idx : client_idx, contact_family);
+			  hashDel(hash_key, buf);
+			}
+		      }
+		    
+		      l->lock(__FILE__, __LINE__);
+		      r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
+		      if(r2 && (r2->type == REDIS_REPLY_ERROR))
+			ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r2->str);
+		      l->unlock(__FILE__, __LINE__);
+
+		      if(r2) freeReplyObject(r2);
+		    }
+
+		    if(r1) freeReplyObject(r1);
+		  }
 		}
+
+		freeReplyObject(r);
 	      }
 
+	      l->lock(__FILE__, __LINE__);
+	      r = (redisReply*)redisCommand(redis, "DEL %s", hash_key);
+	      if(r && (r->type == REDIS_REPLY_ERROR))
+		ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	      l->unlock(__FILE__, __LINE__);
 	      freeReplyObject(r);
 	    }
-
-	    l->lock(__FILE__, __LINE__);
-	    r = (redisReply*)redisCommand(redis, "DEL %s", hash_key);
-	    if(r && (r->type == REDIS_REPLY_ERROR))
-	      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
-	    l->unlock(__FILE__, __LINE__);
-	    freeReplyObject(r);
 	  }
 	}
-      }
 
-      freeReplyObject(reply);
-    } else
-      break;
-  } /* while */
+	l->lock(__FILE__, __LINE__);
+	r = (redisReply*)redisCommand(redis, "DEL %s", _key);
+	if(r && (r->type == REDIS_REPLY_ERROR))
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
+	l->unlock(__FILE__, __LINE__);
+	freeReplyObject(r);
+      }
+    } /* for */
+  }
+
+  if(kreply) freeReplyObject(kreply);
 
   rc = true;
 

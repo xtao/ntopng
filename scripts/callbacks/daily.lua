@@ -33,7 +33,7 @@ for _,_ifname in pairs(ifnames) do
    interface.flushHostContacts()
 end
 
-os.execute("sleep 300")
+-- os.execute("sleep 300")
 ntop.dumpDailyStats(when)
 
 -- redis-cli KEYS "131129|*" | xargs redis-cli DEL
