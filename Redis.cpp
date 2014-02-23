@@ -807,7 +807,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   l->unlock(__FILE__, __LINE__);
   
   if(kreply && (kreply->type == REDIS_REPLY_ARRAY)) {
-    for(int kid = 0; kid < kreply->elements; kid++) {
+    for(u_int kid = 0; kid < kreply->elements; kid++) {
       char *_key = (char*)kreply->element[kid]->str, key[256];
       char hash_key[512], buf[512], ifname[32];
       redisReply *r, *r1, *r2;
@@ -845,25 +845,6 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      }
 	    }
 
-	    if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
-	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
-	    } else {
-	      char *zErrMsg;
-	      char buf[256];
-
-	      snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
-		       host_index, interface_idx, host_buf);
-
-	      ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-
-	      if(sqlite3_exec(db, buf, NULL, 0, &zErrMsg) != SQLITE_OK) {
-		ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s]", zErrMsg, buf);
-		sqlite3_free(zErrMsg);
-	      }
-
-	      num_hosts++;
-	    }
-
 	    if(interface_idx == (u_int32_t)-1) {
 	      if(num_interfaces < MAX_NUM_INTERFACES) {
 		snprintf((char*)ifnames[num_interfaces], MAX_INTERFACE_NAME_LEN, "%s", iface);
@@ -879,6 +860,30 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 		interface_idx = num_interfaces;
 		num_interfaces++;
+	      }
+	    }
+
+	    if(id_to_host(day, host, host_buf, sizeof(host_buf)) == -1) {
+	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
+	    } else {
+	      char *zErrMsg, *pipe = strchr(host_buf,'|');
+	      char buf[256];
+	      int rc;
+	      
+	      if(pipe) {
+		snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
+			 host_index, interface_idx, &pipe[1]);
+		
+		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
+		
+		if((rc = sqlite3_exec(db, buf, NULL, 0, &zErrMsg)) != SQLITE_OK) {
+		  if(rc != SQLITE_CONSTRAINT /* Key already existing */)
+		    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s][%d/%d]", zErrMsg, buf, rc, SQLITE_MISMATCH);
+
+		  sqlite3_free(zErrMsg);
+		}
+		
+		num_hosts++;
 	      }
 	    }
 

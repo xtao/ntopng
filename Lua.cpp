@@ -2215,19 +2215,21 @@ int Lua::handle_script_request(struct mg_connection *conn,
   mg_get_cookie(conn, "session", buf, sizeof(buf));
   lua_push_str_table_entry(L, "session", buf);
 
-  snprintf(key, sizeof(key), "sessions.%s.ifname", buf);
-  if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
-  set_default_if_name_in_session:
-    snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
-    lua_push_str_table_entry(L, "ifname", val);
-    ntop->getRedis()->set(key, val, 3600 /* 1h */);
-  } else {
-    if(ntop->getInterface(val) != NULL) {
-      /* The specified interface still exists */
+  if(buf[0] != '\0') {
+    snprintf(key, sizeof(key), "sessions.%s.ifname", buf);
+    if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
+    set_default_if_name_in_session:
+      snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
       lua_push_str_table_entry(L, "ifname", val);
-      ntop->getRedis()->expire(key, 3600); /* Extend session */
+      ntop->getRedis()->set(key, val, 3600 /* 1h */);
     } else {
-      goto set_default_if_name_in_session;
+      if(ntop->getInterface(val) != NULL) {
+	/* The specified interface still exists */
+	lua_push_str_table_entry(L, "ifname", val);
+	ntop->getRedis()->expire(key, 3600); /* Extend session */
+      } else {
+	goto set_default_if_name_in_session;
+      }
     }
   }
 
