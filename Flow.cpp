@@ -253,7 +253,9 @@ void Flow::processDetectedProtocol() {
     break;
   } /* switch */
 
-  if(protocol_processed)
+  if(protocol_processed
+     /* For DNS we delay the memory free so that we can let nDPI analyze all the packets of the flow */
+     && (ndpi_detected_protocol != NDPI_PROTOCOL_DNS))
     deleteFlowMemory();
 }
 
