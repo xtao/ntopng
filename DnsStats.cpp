@@ -149,6 +149,8 @@ json_object* DnsStats::getJSONObject() {
 
 void DnsStats::incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_type) {
   switch(query_type) {
+  case 0:
+    break;
   case 1:
     /* A */
     bd->num_a++;
@@ -186,6 +188,7 @@ void DnsStats::incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_t
     bd->num_any++;
     break;
   default:
+    
     bd->num_other++;
     break;
   }
