@@ -150,7 +150,7 @@ json_object* DnsStats::getJSONObject() {
 void DnsStats::incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_type) {
   switch(query_type) {
   case 0:
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "zero");
+    /* Zero means we have not been able to decode the DNS message */
     break;
   case 1:
     /* A */
