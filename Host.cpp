@@ -661,7 +661,7 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "sent", &obj))  sent.deserialize(obj);
   if(json_object_object_get_ex(o, "rcvd", &obj))  rcvd.deserialize(obj);
 
-  if(json_object_object_get_ex(o, "dns", &obj))  {
+  if(json_object_object_get_ex(o, "dns", &obj)) {
     if(dns == NULL) dns = new DnsStats();
     if(dns) dns->deserialize(obj); 
   }

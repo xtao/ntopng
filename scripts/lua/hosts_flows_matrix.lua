@@ -14,6 +14,7 @@ if(mode ~= "embed") then
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 end
 
+print("<h2>Top Hosts Traffic</H2>")
 print [[
 		<style>
 		@import url(/css/style_matrix.css);
@@ -117,7 +118,7 @@ print [[
 
 print [[
 var margin = {top: 140, right: 0, bottom: 10, left: 140},
-    width = 720, height = 600;
+    width = 620, height = 500;
 
 var h = d3.scale.ordinal().rangeBands([0, width]),
     z = d3.scale.linear().domain([0, 4]).clamp(true),

@@ -195,7 +195,7 @@ static bool node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   char buf[512];
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", flow->print(buf, sizeof(buf)));
- 
+
    return(false); /* false = keep on walking */
 }
 
@@ -405,7 +405,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 
   if(new_flow) {
     if(flow->get_cli_host()) {
-      flow->get_cli_host()->incFlowCount(when, flow);  
+      flow->get_cli_host()->incFlowCount(when, flow);
       flow->get_cli_host()->incNumFlows(true);
     }
 
@@ -434,49 +434,71 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     switch(flow->get_detected_protocol()) {
     case NDPI_PROTOCOL_DNS:
       struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
+      struct dns_packet_header {
+	u_int16_t transaction_id, flags, num_queries, answer_rrs, authority_rrs, additional_rrs;
+      } __attribute__((packed));
 
       if(payload) {
-	u_int16_t dns_flags = ntohs(*(u_int16_t*)&payload[2]);
-	bool is_query   = ((dns_flags & 0x8000) == 0x8000) ? false : true; 
-	
+	struct dns_packet_header *header = (struct dns_packet_header*)payload;
+	u_int16_t dns_flags = ntohs(header->flags);
+	bool is_query   = ((dns_flags & 0x8000) == 0x8000) ? false : true;
+
 	if(flow->get_cli_host() && flow->get_srv_host()) {
 	  Host *client = src2dst_direction ? flow->get_cli_host() : flow->get_srv_host();
 	  Host *server = src2dst_direction ? flow->get_srv_host() : flow->get_cli_host();
-	  
-	  if(is_query)
-	    client->incNumDNSQueriesSent(), server->incNumDNSQueriesRcvd();
-	  else {
+
+	  /*
+	    Inside the DNS packet it is possible to have multiple queries
+	    and mix query types. In general this is not a practice followed
+	    by applications.
+	   */
+
+	  if(is_query) {
+	    u_int16_t query_type = ndpi_flow ? ndpi_flow->protos.dns.query_type : 0;
+
+	    client->incNumDNSQueriesSent(query_type), server->incNumDNSQueriesRcvd(query_type);
+	  } else {
 	    u_int8_t ret_code = is_query ? 0 : (dns_flags & 0x0F);
 
-	    client->incNumDNSResponsesSent(ret_code), server->incNumDNSResponsesRcvd(ret_code);	      
+	    client->incNumDNSResponsesSent(ret_code), server->incNumDNSResponsesRcvd(ret_code);
 	  }
-	}      
+	}
       }
 
       if(ndpi_flow) {
 	struct ndpi_id_struct *cli = (struct ndpi_id_struct*)flow->get_cli_id();
 	struct ndpi_id_struct *srv = (struct ndpi_id_struct*)flow->get_srv_id();
-	
-	memset(&ndpi_flow->detected_protocol_stack, 
+
+	memset(&ndpi_flow->detected_protocol_stack,
 	       0, sizeof(ndpi_flow->detected_protocol_stack));
-	
+
 	ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 				      ip, ipsize, (u_int32_t)time,
 				      cli, srv);
 	if(ndpi_flow->protos.dns.ret_code != 0) {
-	  /* 
+	  /*
 	     This is a negative reply thus we notify the system that
 	     this aggregation must not be tracked
 	  */
 	  flow->aggregateInfo((char*)ndpi_flow->host_server_name, l4_proto,
 			      NDPI_PROTOCOL_DNS, false);
 	}
+
+	/* 
+	   We reset the nDPI flow so that it can decode new packets
+	   of the same flow (e.g. the DNS response) 
+	*/
+	ndpi_flow->detected_protocol_stack[0] = NDPI_PROTOCOL_UNKNOWN;    
       }
       break;
     }
 
     flow->processDetectedProtocol();
-    flow->deleteFlowMemory();
+
+    /* For DNS we delay the memory free so that we can let nDPI analyze all the packets of the flow */
+    if(flow->get_detected_protocol() != NDPI_PROTOCOL_DNS) 
+      flow->deleteFlowMemory();    
+
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else
@@ -838,7 +860,7 @@ static bool aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
 
   if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
     if((info->host == NULL) || host->hasHostContacts(info->host))
-      host->lua(info->vm, true);    
+      host->lua(info->vm, true);
   }
 
   return(false); /* false = keep on walking */
@@ -973,7 +995,7 @@ Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
   Host *h = NULL;
 
   /* Check if address is invalid */
-  if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0) 
+  if((inet_pton(AF_INET, (const char*)host_ip, &a4) == 0)
      && (inet_pton(AF_INET6, (const char*)host_ip, &a6) == 0)) {
     /* Looks like a symbolic name */
     struct host_find_info info;
@@ -1430,12 +1452,12 @@ struct correlator_host_info {
 };
 
 static bool correlator_walker(GenericHashEntry *node, void *user_data) {
-  Host *h = (Host*)node;  
+  Host *h = (Host*)node;
   struct correlator_host_info *info = (struct correlator_host_info*)user_data;
 
-  if(h 
+  if(h
      // && h->isLocalHost() /* Consider only local hosts */
-     && h->get_ip() 
+     && h->get_ip()
      && (h != info->h)) {
     char buf[32], *name = h->get_ip()->print(buf, sizeof(buf));
     u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };

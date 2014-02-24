@@ -24,19 +24,31 @@
 
 #include "ntop_includes.h"
 
+struct queries_breakdown {
+  u_int32_t num_a, num_ns, num_cname, num_soa,
+    num_ptr, num_mx, num_txt, num_aaaa,
+    num_any, num_other;
+};
+
 struct dns_stats {
-  u_int32_t num_queries, num_replies_ok, num_replies_error;    
+  u_int32_t num_queries, num_replies_ok, num_replies_error;
+  struct queries_breakdown breakdown;
 };
 
 class DnsStats {
  private:
   struct dns_stats sent, rcvd;
 
+  void incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_type);
+  void deserializeStats(json_object *o, struct dns_stats *stats);
+  json_object* getStatsJSONObject(struct dns_stats *stats);
+  void luaStats(lua_State *vm, struct dns_stats *stats, const char *label);
+
  public:
   DnsStats();
 
-  inline void incNumDNSQueriesSent() { sent.num_queries++; };
-  inline void incNumDNSQueriesRcvd() { rcvd.num_queries++; };
+  void incNumDNSQueriesSent(u_int16_t query_type);
+  void incNumDNSQueriesRcvd(u_int16_t query_type);
   inline void incNumDNSResponsesSent(u_int8_t ret_code) { if(ret_code == 0) sent.num_replies_ok++; else sent.num_replies_error++; };
   inline void incNumDNSResponsesRcvd(u_int8_t ret_code) { if(ret_code == 0) rcvd.num_replies_ok++; else rcvd.num_replies_error++; };
 

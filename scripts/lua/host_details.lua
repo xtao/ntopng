@@ -141,7 +141,7 @@ if(page == "dns") then
   print("<li class=\"active\"><a href=\"#\">DNS</a></li>\n")
 else
    if((host["dns"] ~= nil)
-   and ((host["dns"]["sent_num_queries"]+host["dns"]["rcvd_num_queries"]) > 0)) then
+   and ((host["dns"]["sent"]["num_queries"]+host["dns"]["rcvd"]["num_queries"]) > 0)) then
       print("<li><a href=\""..url.."&page=dns\">DNS</a></li>")
    end
 end
@@ -573,16 +573,47 @@ end
       if(host["dns"] ~= nil) then
 	 print("<table class=\"table table-bordered table-striped\">\n")
 	 print("<tr><th>DNS Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
-	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=dns_sent_num_queries>".. formatValue(host["dns"]["sent_num_queries"]) .."</span> <span id=trend_sent_num_queries></span></td>")
-	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_ok>".. formatValue(host["dns"]["sent_num_replies_ok"]) .."</span> <span id=trend_sent_num_replies_ok></span></td>")
-	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_error>".. formatValue(host["dns"]["sent_num_replies_error"]) .."</span> <span id=trend_sent_num_replies_error></span></td><td colspan=2>")
-	 breakdownBar(host["dns"]["sent_num_replies_ok"], "OK", host["dns"]["sent_num_replies_error"], "Error")
+	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=dns_sent_num_queries>".. formatValue(host["dns"]["sent"]["num_queries"]) .."</span> <span id=trend_sent_num_queries></span></td>")
+	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_ok>".. formatValue(host["dns"]["sent"]["num_replies_ok"]) .."</span> <span id=trend_sent_num_replies_ok></span></td>")
+	 print("<td class=\"text-right\"><span id=dns_sent_num_replies_error>".. formatValue(host["dns"]["sent"]["num_replies_error"]) .."</span> <span id=trend_sent_num_replies_error></span></td><td colspan=2>")
+	 breakdownBar(host["dns"]["sent"]["num_replies_ok"], "OK", host["dns"]["sent"]["num_replies_error"], "Error")
 	 print("</td></tr>")
-	 print("<tr><th>Rcvd</th><td class=\"text-right\"><span id=dns_rcvd_num_queries>".. formatValue(host["dns"]["rcvd_num_queries"]) .."</span> <span id=trend_rcvd_num_queries></span></td>")
-	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_ok>".. formatValue(host["dns"]["rcvd_num_replies_ok"]) .."</span> <span id=trend_rcvd_num_replies_ok></span></td>")
-	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_error>".. formatValue(host["dns"]["rcvd_num_replies_error"]) .."</span> <span id=trend_rcvd_num_replies_error></span></td><td colspan=2>")
-	 breakdownBar(host["dns"]["rcvd_num_replies_ok"], "OK", host["dns"]["rcvd_num_replies_error"], "Error")
+
+	 if(host["dns"]["sent"]["num_queries"] > 0) then
+	    print [[         
+		     <tr><th>DNS Query Sent Distribution</th><td colspan=5>
+		     <div class="pie-chart" id="dnsSent"></div>
+		     <script type='text/javascript'>
+		     window.onload=function() {
+					 var refresh = 3000 /* ms */;
+					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "sent" }, "", refresh);
+				      }
+				      </script>
+					 </td></tr>
+           ]]
+         end
+
+
+	 print("<tr><th>Rcvd</th><td class=\"text-right\"><span id=dns_rcvd_num_queries>".. formatValue(host["dns"]["rcvd"]["num_queries"]) .."</span> <span id=trend_rcvd_num_queries></span></td>")
+	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_ok>".. formatValue(host["dns"]["rcvd"]["num_replies_ok"]) .."</span> <span id=trend_rcvd_num_replies_ok></span></td>")
+	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_error>".. formatValue(host["dns"]["rcvd"]["num_replies_error"]) .."</span> <span id=trend_rcvd_num_replies_error></span></td><td colspan=2>")
+	 breakdownBar(host["dns"]["rcvd"]["num_replies_ok"], "OK", host["dns"]["rcvd"]["num_replies_error"], "Error")
 	 print("</td></tr>")
+
+	 if(host["dns"]["rcvd"]["num_queries"] > 0) then
+print [[         
+	 <tr><th>DNS Rcvd Breakdown</th><td colspan=5>
+         <div class="pie-chart" id="dnsRcvd"></div>
+         <script type='text/javascript'>
+         window.onload=function() {
+         var refresh = 3000 /* ms */;
+	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "rcvd" }, "", refresh);
+         }
+         </script>
+         </td></tr>
+]]
+end
+
 	 print("</table>\n")
       end
 
@@ -1137,12 +1168,12 @@ print("var last_flows_as_server = " .. host["flows.as_server"] .. ";\n")
 print("var last_flows_as_client = " .. host["flows.as_client"] .. ";\n")
 
 if(host["dns"] ~= nil) then
-   print("var last_dns_sent_num_queries = " .. host["dns"]["sent_num_queries"] .. ";\n")
-   print("var last_dns_sent_num_replies_ok = " .. host["dns"]["sent_num_replies_ok"] .. ";\n")
-   print("var last_dns_sent_num_replies_error = " .. host["dns"]["sent_num_replies_error"] .. ";\n")
-   print("var last_dns_rcvd_num_queries = " .. host["dns"]["rcvd_num_queries"] .. ";\n")
-   print("var last_dns_rcvd_num_replies_ok = " .. host["dns"]["rcvd_num_replies_ok"] .. ";\n")
-   print("var last_dns_rcvd_num_replies_error = " .. host["dns"]["rcvd_num_replies_error"] .. ";\n")
+   print("var last_dns_sent_num_queries = " .. host["dns"]["sent"]["num_queries"] .. ";\n")
+   print("var last_dns_sent_num_replies_ok = " .. host["dns"]["sent"]["num_replies_ok"] .. ";\n")
+   print("var last_dns_sent_num_replies_error = " .. host["dns"]["sent"]["num_replies_error"] .. ";\n")
+   print("var last_dns_rcvd_num_queries = " .. host["dns"]["rcvd"]["num_queries"] .. ";\n")
+   print("var last_dns_rcvd_num_replies_ok = " .. host["dns"]["rcvd"]["num_replies_ok"] .. ";\n")
+   print("var last_dns_rcvd_num_replies_error = " .. host["dns"]["rcvd"]["num_replies_error"] .. ";\n")
 end
 
 print [[
@@ -1169,52 +1200,52 @@ setInterval(function() {
 
 if(host["dns"] ~= nil) then
 print [[
-			   $('#dns_sent_num_queries').html(addCommas(host["dns"]["sent_num_queries"]));
-			   $('#dns_sent_num_replies_ok').html(addCommas(host["dns"]["sent_num_replies_ok"]));
-			   $('#dns_sent_num_replies_error').html(addCommas(host["dns"]["sent_num_replies_error"]));
-			   $('#dns_rcvd_num_queries').html(addCommas(host["dns"]["rcvd_num_queries"]));
-			   $('#dns_rcvd_num_replies_ok').html(addCommas(host["dns"]["rcvd_num_replies_ok"]));
-			   $('#dns_rcvd_num_replies_error').html(addCommas(host["dns"]["rcvd_num_replies_error"]));
+			   $('#dns_sent_num_queries').html(addCommas(host["dns"]["sent"]["num_queries"]));
+			   $('#dns_sent_num_replies_ok').html(addCommas(host["dns"]["sent"]["num_replies_ok"]));
+			   $('#dns_sent_num_replies_error').html(addCommas(host["dns"]["sent"]["num_replies_error"]));
+			   $('#dns_rcvd_num_queries').html(addCommas(host["dns"]["rcvd"]["num_queries"]));
+			   $('#dns_rcvd_num_replies_ok').html(addCommas(host["dns"]["rcvd"]["num_replies_ok"]));
+			   $('#dns_rcvd_num_replies_error').html(addCommas(host["dns"]["rcvd"]["num_replies_error"]));
 
-			   if(host["dns"]["sent_num_queries"] == last_dns_sent_num_queries) {
+			   if(host["dns"]["sent"]["num_queries"] == last_dns_sent_num_queries) {
 			      $('#trend_sent_num_queries').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_sent_num_queries = host["dns"]["sent_num_queries"];
+			      last_dns_sent_num_queries = host["dns"]["sent"]["num_queries"];
 			      $('#trend_sent_num_queries').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 
-			   if(host["dns"]["sent_num_replies_ok"] == last_dns_sent_num_replies_ok) {
+			   if(host["dns"]["sent"]["num_replies_ok"] == last_dns_sent_num_replies_ok) {
 			      $('#trend_sent_num_replies_ok').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_sent_num_replies_ok = host["dns"]["sent_num_replies_ok"];
+			      last_dns_sent_num_replies_ok = host["dns"]["sent"]["num_replies_ok"];
 			      $('#trend_sent_num_replies_ok').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 
-			   if(host["dns"]["sent_num_replies_error"] == last_dns_sent_num_replies_error) {
+			   if(host["dns"]["sent"]["num_replies_error"] == last_dns_sent_num_replies_error) {
 			      $('#trend_sent_num_replies_error').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_sent_num_replies_error = host["dns"]["sent_num_replies_error"];
+			      last_dns_sent_num_replies_error = host["dns"]["sent"]["num_replies_error"];
 			      $('#trend_sent_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 
-			   if(host["dns"]["rcvd_num_queries"] == last_dns_rcvd_num_queries) {
+			   if(host["dns"]["rcvd"]["num_queries"] == last_dns_rcvd_num_queries) {
 			      $('#trend_rcvd_num_queries').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_rcvd_num_queries = host["dns"]["rcvd_num_queries"];
+			      last_dns_rcvd_num_queries = host["dns"]["rcvd"]["num_queries"];
 			      $('#trend_rcvd_num_queries').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 
-			   if(host["dns"]["rcvd_num_replies_ok"] == last_dns_rcvd_num_replies_ok) {
+			   if(host["dns"]["rcvd"]["num_replies_ok"] == last_dns_rcvd_num_replies_ok) {
 			      $('#trend_rcvd_num_replies_ok').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_rcvd_num_replies_ok = host["dns"]["rcvd_num_replies_ok"];
+			      last_dns_rcvd_num_replies_ok = host["dns"]["rcvd"]["num_replies_ok"];
 			      $('#trend_rcvd_num_replies_ok').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 
-			   if(host["dns"]["rcvd_num_replies_error"] == last_dns_rcvd_num_replies_error) {
+			   if(host["dns"]["rcvd"]["num_replies_error"] == last_dns_rcvd_num_replies_error) {
 			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
-			      last_dns_rcvd_num_replies_error = host["dns"]["rcvd_num_replies_error"];
+			      last_dns_rcvd_num_replies_error = host["dns"]["rcvd"]["num_replies_error"];
 			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 		     ]]

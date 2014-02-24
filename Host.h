@@ -103,10 +103,10 @@ class Host : public GenericHost {
 
   inline void incNumFlows(bool as_client) { if(as_client) num_flows_as_client++; else num_flows_as_server++; };
 
-  inline void incNumDNSQueriesSent() { if(dns) dns->incNumDNSQueriesSent(); };
-  inline void incNumDNSQueriesRcvd() { if(dns) dns->incNumDNSQueriesRcvd(); };
-  inline void incNumDNSResponsesSent(u_int8_t ret_code) { if(dns) dns->incNumDNSResponsesSent(ret_code); };
-  inline void incNumDNSResponsesRcvd(u_int8_t ret_code) { if(dns) dns->incNumDNSResponsesRcvd(ret_code); };
+  inline void incNumDNSQueriesSent(u_int16_t query_type) { if(dns) dns->incNumDNSQueriesSent(query_type); };
+  inline void incNumDNSQueriesRcvd(u_int16_t query_type) { if(dns) dns->incNumDNSQueriesRcvd(query_type); };
+  inline void incNumDNSResponsesSent(u_int8_t ret_code)  { if(dns) dns->incNumDNSResponsesSent(ret_code); };
+  inline void incNumDNSResponsesRcvd(u_int8_t ret_code)  { if(dns) dns->incNumDNSResponsesRcvd(ret_code); };
 };
 
 #endif /* _HOST_H_ */

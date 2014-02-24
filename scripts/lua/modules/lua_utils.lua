@@ -707,6 +707,16 @@ function get_timezone()
 end
 
 
+function isLocal(host_ip)
+   host = interface.getHostInfo(host_ip)
+
+   if((host == nil) or (host['localhost'] ~= true)) then
+      return(false)
+   else
+      return(true)
+   end
+end
+   
 -- Return the first 'howmany' hosts
 function getTopInterfaceHosts(howmany, localHostsOnly)
    hosts_stats = interface.getHostsInfo()
@@ -714,7 +724,7 @@ function getTopInterfaceHosts(howmany, localHostsOnly)
    sortTable = {}
    n = 0
    for k,v in pairs(hosts_stats) do
-      if((not localHostsOnly) or ((v["localhost"] ~= nil) and (v["ip"] ~= nil))) then
+      if((not localHostsOnly) or ((v["localhost"] == true) and (v["ip"] ~= nil))) then
 	 sortTable[v["bytes.sent"]+v["bytes.rcvd"]+n] = k
 	 n = n +0.01
       end
