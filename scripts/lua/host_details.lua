@@ -584,10 +584,8 @@ end
 		     <tr><th>DNS Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
-		     window.onload=function() {
 					 var refresh = 3000 /* ms */;
 					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "sent" }, "", refresh);
-				      }
 				      </script>
 					 </td></tr>
            ]]
@@ -602,13 +600,11 @@ end
 
 	 if(host["dns"]["rcvd"]["num_queries"] > 0) then
 print [[         
-	 <tr><th>DNS Rcvd Breakdown</th><td colspan=5>
+	 <tr><th>DNS Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
-         window.onload=function() {
          var refresh = 3000 /* ms */;
 	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "rcvd" }, "", refresh);
-         }
          </script>
          </td></tr>
 ]]
