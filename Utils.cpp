@@ -392,6 +392,22 @@ double Utils::pearsonValueCorrelation(u_int8_t *x, u_int8_t *y) {
 }
 
 /* *************************************** */
+/* XXX: it assumes that the vectors are bitmaps */
+double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) {
+  double tiny_value = 1e-2;
+  size_t inter_card = 0, union_card = 0;
+
+  for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+    union_card += x[i] | y[i];
+    inter_card += x[i] & y[i];
+  }
+
+  if (union_card == 0)
+	return tiny_value;
+  return ((double)inter_card/union_card);
+}
+
+/* *************************************** */
 
 #ifdef WIN32
 const char *strcasestr(const char *haystack, const char *needle) {

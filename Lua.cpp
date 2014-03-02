@@ -787,6 +787,34 @@ static int ntop_correalate_host_activity(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_similar_host_activity(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *host_ip;
+  u_int16_t vlan_id;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  host_ip = (char*)lua_tostring(vm, 1);
+
+  /* Optional VLAN id */
+  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    handle_null_interface(vm);
+    return(CONST_LUA_ERROR);
+    ntop_interface = ntop->getInterfaceId(0);
+  }
+
+  if((!ntop_interface) || !ntop_interface->similarHostActivity(vm, host_ip, vlan_id))
+    return(CONST_LUA_ERROR);
+  else
+    return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+/* ****************************************** */
+
 static int ntop_get_interface_host_activitymap(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
@@ -1859,6 +1887,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getNumAggregatedHosts",  ntop_get_interface_num_aggregated_hosts },
   { "getHostInfo",            ntop_get_interface_host_info },
   { "correlateHostActivity",  ntop_correalate_host_activity },
+  { "similarHostActivity",    ntop_similar_host_activity },
   { "getHostActivityMap",     ntop_get_interface_host_activitymap },
   { "restoreHost",            ntop_restore_interface_host },
   { "getAggregatedHostInfo",  ntop_get_interface_aggregated_host_info },

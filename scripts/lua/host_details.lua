@@ -178,6 +178,15 @@ else
    end
 end
 
+if(page == "jaccard") then
+  print("<li class=\"active\"><a href=\"#\">Similarity</a></li>\n")
+else
+   if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
+      print("<li><a href=\""..url.."&page=jaccard\">Similarity</a></li>")
+   end
+end
+
+
 cnum = 0
 snum = 0
 if(host.contacts ~= nil) then
@@ -849,7 +858,72 @@ for v,k in pairsByKeys(vals, rev) do
    if(v > 0) then
       if(n == 0) then
 	 print("<table class=\"table table-bordered\">\n")
-	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
+	 print("<tr><th>Local Hosts similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
+      end
+
+      correlated_host = interface.getHostInfo(k)
+      
+      if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
+      print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..round(tofloat(v), 3).."</td></tr>\n")
+      n = n +1
+      
+      if(n >= max_hosts) then
+	 break
+      end
+   end
+end
+
+if(n > 0) then
+   print("</table>\n")
+else
+   print("There is no host correlated to ".. host["name"].."<p>\n")
+end
+
+print [[
+<b>Note</b>:
+<ul>
+	 <li>Correleation considers only activity map as shown in the <A HREF=/lua/host_details.lua?host=]] print(host_ip) print [[>host overview</A>.
+<li>Two hosts are correlated when their network behaviour is close. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>correlation coefficient</A> is a number between +1 and -1, where +1 means that two hosts are correlated, 0 means that they have no particular correlation, and -1 that they behave in an opposite way.
+</ul>
+]]
+
+elseif(page == "jaccard") then
+
+print [[
+<div id="prg" class="container">
+    <div class="progress progress-striped active">
+	 <div class="bar" style="width: 100%;"></div>
+    </div>
+</div>
+]]
+
+jaccard = interface.similarHostActivity(host_ip)
+
+print [[
+<script type="text/javascript">
+  var $bar = $('#prg');
+
+  $bar.hide();
+  $bar.remove();
+</script>
+]]
+
+vals = {}
+for k,v in pairs(jaccard) do
+   vals[v] = k
+end
+
+max_hosts = 10
+
+n = 0
+
+if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
+
+for v,k in pairsByKeys(vals, rev) do
+   if(v > 0) then
+      if(n == 0) then
+	 print("<table class=\"table table-bordered\">\n")
+	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Jaccard Coefficient</th></tr>\n")
       end
 
       correlated_host = interface.getHostInfo(k)
@@ -873,10 +947,11 @@ end
 print [[
 <b>Note</b>:
 <ul>
-	 <li>Correleation considers only activity map as shown in the <A HREF=/lua/host_details.lua?host=]] print(host_ip) print [[>host overview</A>.
-<li>Two hosts are correlated when their network behaviour is close. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>correlation coefficient</A> is a number between +1 and -1, where +1 means that two hosts are correlated, 0 means that they have no particular correlation, and -1 that they behave in an opposite way.
+	 <li>Jaccard Similarity considers only activity map as shown in the <A HREF=/lua/host_details.lua?host=]] print(host_ip) print [[>host overview</A>.
+<li>Two hosts are similar according to the Jaccard coefficient when their activity tends to overlap. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Jaccard_index>Jaccard similarity coefficient</A> is a number between +1 and 0.
 </ul>
 ]]
+
 
 elseif(page == "contacts") then
 

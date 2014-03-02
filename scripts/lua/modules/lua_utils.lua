@@ -183,8 +183,7 @@ end
 --end
 
 function round(num, idp)
-   local mult = 10^(idp or 0)
-   return math.floor(num * mult + 0.5) / mult
+   return tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
 
 -- Convert bytes to human readable format

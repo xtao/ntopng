@@ -63,7 +63,9 @@ print [[
 	 <li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>
    ]]
 
-if(interface.getNumAggregatedHosts() > 0) then
+agg = interface.getNumAggregatedHosts()
+
+if((agg ~= nil) and (agg > 0)) then
    print("<li><a href=\"/lua/aggregated_hosts_stats.lua\"><i class=\"fa fa-group\"></i> Aggregations</a></li>\n")
 end
 

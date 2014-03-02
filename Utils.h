@@ -45,6 +45,7 @@ class Utils {
   static std::string base64_decode(std::string const& encoded_string);
   static bool dumpHostToDB(IpAddress *host, LocationPolicy policy);
   static double pearsonValueCorrelation(u_int8_t *x, u_int8_t *y);
+  static double JaccardSimilarity(u_int8_t *x, u_int8_t *y);
 };
 
 

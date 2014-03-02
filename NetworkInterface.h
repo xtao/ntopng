@@ -182,6 +182,7 @@ class NetworkInterface {
   bool getAggregatedFamilies(lua_State* vm);  
   bool getAggregationsForHost(lua_State* vm, char *host_ip);
   bool correlateHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
+  bool similarHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   StringHost* findHostByString(char *keyname, u_int16_t family_id, 
 			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
