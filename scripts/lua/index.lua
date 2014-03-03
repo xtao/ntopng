@@ -22,7 +22,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 page = _GET["page"]
 if(page == nil) then page = "TopFlowTalkers" end
 
-if(ifstats.stats_packets > 0) then
+if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 -- Print tabbed header
 
    print('<div class="navbar">\n\t<div class="navbar-inner">\n\t<ul class="nav">\n')

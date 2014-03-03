@@ -265,6 +265,7 @@ static int handle_lua_request(struct mg_connection *conn) {
       ;
     else if(!is_authorized(conn, request_info)) {
       redirect_to_login(conn, request_info);
+      return(1);
     } else if(strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
       authorize(conn, request_info);
       return(1);
