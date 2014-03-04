@@ -54,7 +54,7 @@ int send_error(struct mg_connection *conn, int status, const char *reason, const
 		   "\r\n", status, reason);
 
   /* Errors 1xx, 204 and 304 MUST NOT send a body */
-  if (status > 199 && status != 204 && status != 304) {
+  if(status > 199 && status != 204 && status != 304) {
     conn->num_bytes_sent = 0;
     va_start(ap, fmt);
     len = mg_vsnprintf(conn, buf, sizeof(buf), fmt, ap);
@@ -73,7 +73,7 @@ static void redirect_to_ssl(struct mg_connection *conn,
   const char *p, *host = mg_get_header(conn, "Host");
   //  u_int16_t port = ntop->get_HTTPserver()->get_port();
 
-  if (host != NULL && (p = strchr(host, ':')) != NULL) {
+  if(host != NULL && (p = strchr(host, ':')) != NULL) {
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
               "Location: https://%.*s:%u/%s\r\n\r\n",
               (int) (p - host), host, ntop->getPrefs()->get_https_port(), request_info->uri);
@@ -100,16 +100,22 @@ static int is_authorized(const struct mg_connection *conn,
   char session_id[33], username[33];
 
   // Always authorize accesses to login page and to authorize URI
-  if (!strcmp(request_info->uri, LOGIN_URL) ||
+  if(!strcmp(request_info->uri, LOGIN_URL) ||
       !strcmp(request_info->uri, AUTHORIZE_URL)) {
     return 1;
   }
 
-  mg_get_cookie(conn, "session", session_id, sizeof(session_id));
-  if(session_id[0] == '\0') return(0);
-
   mg_get_cookie(conn, "user", username, sizeof(username));
-  
+  mg_get_cookie(conn, "session", session_id, sizeof(session_id));
+
+  if(session_id[0] == '\0') {
+    char password[32];
+    /* Last resort: see if we have a user and password matching */
+    mg_get_cookie(conn, "password", password, sizeof(password));
+
+    return(ntop->checkUserPassword(username, password));
+  }
+ 
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Received session %s/%s", session_id, username);
 
   if(ntop->getPrefs()->do_auto_logout()) {
@@ -175,7 +181,7 @@ static void authorize(struct mg_connection *conn,
     get_qsvar(request_info, "password", password, sizeof(password));
   }
 
-  if (ntop->checkUserPassword(user, password)) {
+  if(ntop->checkUserPassword(user, password)) {
     char key[256], session_id[64], random[64];
 
     // Authentication success:

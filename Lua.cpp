@@ -92,8 +92,10 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 
 /* ****************************************** */
 
-static void handle_null_interface(lua_State* vm) {
-  ntop->getTrace()->traceEvent(TRACE_ERROR, "Null interface: did you restart ntopng in the meantime?");
+static NetworkInterface* handle_null_interface(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Null interface: did you restart ntopng in the meantime?");
+
+  return(ntop->getInterfaceId(0));
 }
 
 /* ****************************************** */
@@ -198,8 +200,7 @@ static int ntop_flush_host_contacts(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) {
@@ -244,9 +245,7 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) {
@@ -275,8 +274,7 @@ static int ntop_get_ndpi_protocol_name(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
+    ntop_interface = handle_null_interface(vm);
   }
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   proto = (u_int32_t)lua_tonumber(vm, 1);
@@ -307,9 +305,7 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) ntop_interface->getActiveHostsList(vm, false);
@@ -332,8 +328,7 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
+    ntop_interface = handle_null_interface(vm);
   }
 
   /* Optional */
@@ -369,8 +364,7 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) ntop_interface->getActiveAggregatedHostsList(vm, family, host);
@@ -391,9 +385,7 @@ static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
@@ -633,9 +625,7 @@ static int ntop_zmq_receive(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   item.socket = subscriber;
@@ -716,9 +706,7 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) ntop_interface->getActiveFlowsList(vm);
@@ -748,9 +736,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || !ntop_interface->getHostInfo(vm, host_ip, vlan_id))
@@ -774,9 +760,7 @@ static int ntop_correalate_host_activity(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || !ntop_interface->correlateHostActivity(vm, host_ip, vlan_id))
@@ -800,9 +784,7 @@ static int ntop_similar_host_activity(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || !ntop_interface->similarHostActivity(vm, host_ip, vlan_id))
@@ -833,9 +815,7 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(!ntop_interface)  return(CONST_LUA_ERROR);
@@ -874,9 +854,7 @@ static int ntop_restore_interface_host(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || !ntop_interface->restoreHost(host_ip))
@@ -903,9 +881,7 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || (!ntop_interface->getAggregatedHostInfo(vm, host_name)))
@@ -921,9 +897,7 @@ static int ntop_get_interface_aggregation_families(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || (!ntop_interface->getAggregatedFamilies(vm)))
@@ -943,9 +917,7 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if((!ntop_interface) || (!ntop_interface->getAggregationsForHost(vm, host_name)))
@@ -967,9 +939,7 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) ntop_interface->getFlowPeersList(vm, host_name);
@@ -989,9 +959,7 @@ static int ntop_get_interface_find_flow_by_key(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(!ntop_interface) return(false);
@@ -1017,9 +985,7 @@ static int ntop_get_interface_find_host(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(!ntop_interface) return(false);
@@ -1036,9 +1002,7 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) {
@@ -1056,9 +1020,7 @@ static int ntop_interface_is_running(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(!ntop_interface) return(false);
@@ -1279,10 +1241,10 @@ static int ntop_increase_drops(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
-  } else
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(ntop_interface)
     ntop_interface->incrDrops(num);
 
   return(CONST_LUA_OK);
@@ -1404,9 +1366,7 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    //ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   if(ntop_interface) ntop_interface->lua(vm);
@@ -1643,9 +1603,7 @@ static int ntop_redis_get_host_id(lua_State* vm) {
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    handle_null_interface(vm);
-    return(CONST_LUA_ERROR);
-    // ntop_interface = ntop->getInterfaceId(0);
+    ntop_interface = handle_null_interface(vm);
   }
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
