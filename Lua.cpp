@@ -2218,6 +2218,8 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	goto set_default_if_name_in_session;
       }
     }
+  } else {
+    goto set_default_if_name_in_session;
   }
 
   lua_setglobal(L, "_SESSION"); /* Like in php */
