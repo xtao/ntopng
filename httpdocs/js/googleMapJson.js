@@ -7,7 +7,7 @@
  */
 /*Variabili globali*/
 
-var debug = true;
+var debug = false;
 var g_Map;
 var g_UrlJsonFile = '/lua/get_geo_hosts.lua';
 var g_InfoWindowMarker = new google.maps.InfoWindow();
@@ -359,6 +359,7 @@ function loadJSONData() {
          createPolyline(data);
          animateCircle();
       }
+
     });
 
 }
