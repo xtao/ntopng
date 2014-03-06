@@ -7,7 +7,7 @@
  */
 /*Variabili globali*/
 
-var debug = false;
+var debug = true;
 var g_Map;
 var g_UrlJsonFile = '/lua/get_geo_hosts.lua';
 var g_InfoWindowMarker = new google.maps.InfoWindow();
@@ -30,9 +30,9 @@ var g_aMarker = [];
 
 //enum contenente  per le sub polyline
 var g_WeightPL = [2, //Small
-		  3, //Medium
-		  5 //Big
-		  ];
+      3, //Medium
+      5 //Big
+      ];
 //enum identificativo per le main polyline
 var g_enumMainPL = {
   "Blue" : 0,
@@ -42,9 +42,9 @@ var g_enumMainPL = {
 };
 //enum contente le configurazioni di colore per le main polyline
 var g_ColorMainPL = ['#0000FF', //Blue
-		     '#64AA21', //Green
-		     '#FFA500' //Orange
-		     ];
+         '#64AA21', //Green
+         '#FFA500' //Orange
+         ];
 //enum identificativo per le sub polyline
 var g_enumSubPL = {
   "Cyan" : 0,
@@ -54,9 +54,9 @@ var g_enumSubPL = {
 };
 //enum contente le configurazioni di colore per le sub polyline
 var g_ColorSubPL = ['#00FFFF', //Cyan
-		    '#64FF21', //LigthGreen
-		    '#FF4500' //Red
-		    ];
+        '#64FF21', //LigthGreen
+        '#FF4500' //Red
+        ];
 
 var g_aStyleMainPL = [];
 //Array contente le configurazioni di stile per le main polyline
@@ -76,7 +76,7 @@ var default_latitude  = 41.9;
 var default_longitude = 12.4833333;
 var error_code        = "";
 var locating = 1;
-
+var mc;
 function createMap() {
   createGoogleMap();
   loadJSONData();
@@ -117,12 +117,12 @@ function initialize() {
   if (navigator.geolocation) {
     var timeoutVal = 10 * 1000 * 1000;
     navigator.geolocation.getCurrentPosition(
-					     displayPosition,
-					     displayError,
-					     { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
-					     );
+               displayPosition,
+               displayError,
+               { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
+               );
 
-//	  sleep(1000);
+//    sleep(1000);
 
       // 
   }
@@ -152,7 +152,8 @@ function createGoogleMap() {
   mapTypeId : google.maps.MapTypeId.ROADMAP
   }
   g_Map = new google.maps.Map(document.getElementById('map-canvas'), l_MapOptions);
-
+  var mcOptions = {maxZoom: 15,opt_nodraw: true};
+  mc = new MarkerClusterer(g_Map,[],mcOptions);
   ConsoleDebug("[createGoogleMap][End]");
 }
 
@@ -168,37 +169,39 @@ function createMarkers(p_data) {
   var l_hostPosition;
 
   $.each(p_data.objects, function(i, elem) {
+   
       $.each(elem.host, function(index, hostData) {
-	  if((hostData.lat == 0) && (hostData.lng == 0)) {
-	    hostData.lat = default_latitude;
-	    hostData.lng = default_longitude;
-	  }
+        
+    if((hostData.lat == 0) && (hostData.lng == 0)) {
+      hostData.lat = default_latitude;
+      hostData.lng = default_longitude;
+    }
+    
+    l_hostPosition = new google.maps.LatLng(hostData.lat, hostData.lng);
 
-	  l_hostPosition = new google.maps.LatLng(hostData.lat, hostData.lng);
+    if (find(l_hostPosition) == false) {
+      ConsoleDebug(l_hostPosition);
+      g_aMarker.push(new google.maps.Marker({
+    position : l_hostPosition,
+        // map : g_Map
+        }));
+      
+      var l_currMarker = g_aMarker[g_aMarker.length - 1];
 
-	  if (find(l_hostPosition) == false) {
+      var l_html = "<div class='infowin'><strong><A HREF=/lua/host_details.lua?interface=any&host=" + hostData.name + ">" + hostData.name + "</A></strong><hr>";
+      l_html = l_html + hostData.html;
+      google.maps.event.addListener(l_currMarker, 'mouseover', function() {
+    g_InfoWindowMarker.setContent(l_html);
+    g_InfoWindowMarker.open(g_Map, l_currMarker);
+        });
+      /*
+        google.maps.event.addListener(l_currMarker, 'mouseout', function() {
+        g_InfoWindowMarker.close();
+        });
+      */
+    }
 
-	    g_aMarker.push(new google.maps.Marker({
-		position : l_hostPosition,
-		    map : g_Map
-		    }));
-
-	    var l_currMarker = g_aMarker[g_aMarker.length - 1];
-
-	    var l_html = "<div class='infowin'><strong><A HREF=/lua/host_details.lua?interface=any&host=" + hostData.name + ">" + hostData.name + "</A></strong><hr>";
-	    l_html = l_html + hostData.html;
-	    google.maps.event.addListener(l_currMarker, 'mouseover', function() {
-		g_InfoWindowMarker.setContent(l_html);
-		g_InfoWindowMarker.open(g_Map, l_currMarker);
-	      });
-	    /*
-	      google.maps.event.addListener(l_currMarker, 'mouseout', function() {
-	      g_InfoWindowMarker.close();
-	      });
-	    */
-	  }
-
-	});
+  });
 
     });
   ConsoleDebug("[createMarkers][End]");
@@ -224,15 +227,15 @@ function createPolyline(p_data) {
       l_flusso = elem.flusso;
 
       if (l_flusso < 30)
-	l_iIndexEnum = 0;
+  l_iIndexEnum = 0;
       else if (l_flusso < 60)
-	l_iIndexEnum = 1;
+  l_iIndexEnum = 1;
       else
-	l_iIndexEnum = 2;
+  l_iIndexEnum = 2;
 
       $.each(elem.host, function(index, hostData) {
-	  l_polyCoordinates.push(new google.maps.LatLng(hostData.lat, hostData.lng));
-	});
+    l_polyCoordinates.push(new google.maps.LatLng(hostData.lat, hostData.lng));
+  });
 
       createMainPL(l_iIndexEnum, l_polyCoordinates, l_flusso, elem.html);
       createSubPL(l_iIndexEnum, l_polyCoordinates);
@@ -255,16 +258,16 @@ function createMainPL(p_iIndexEnum, p_polyCoordinates, p_flusso, p_html) {
 
   g_aMainPL.push(new google.maps.Polyline({
       map : g_Map,
-	  path : p_polyCoordinates,
-	  geodesic : true,
-	  strokeOpacity : 0,
-	  icons : [{
-	  icon : g_aStyleMainPL[p_iIndexEnum],
-	      offset : '0',
-	      repeat : '20px'
-	      }]
-	  }));
-
+    path : p_polyCoordinates,
+    geodesic : true,
+    strokeOpacity : 0,
+    icons : [{
+    icon : g_aStyleMainPL[p_iIndexEnum],
+        offset : '0',
+        repeat : '20px'
+        }]
+    }));
+    
   /*
     var polyTemp = g_aMainPL[g_aMainPL.length - 1];
 
@@ -304,14 +307,14 @@ function createSubPL(p_iIndexEnum, p_polyCoordinates) {
 
   g_aSubPL.push(new google.maps.Polyline({
       path : p_polyCoordinates,
-	  icons : [{
-	  icon : g_aStyleSubPL[p_iIndexEnum],
-	      offset : '100%'
-	      }],
-	  map : g_Map,
-	  strokeWeight : 0,
-	  geodesic : true
-	  }));
+    icons : [{
+    icon : g_aStyleSubPL[p_iIndexEnum],
+        offset : '100%'
+        }],
+    map : g_Map,
+    strokeWeight : 0,
+    geodesic : true
+    }));
   ConsoleDebug("[createSubPL][End]");
 
 }
@@ -328,9 +331,9 @@ function animateCircle() {
   offsetId = window.setInterval(function() {
       count = (count + 1) % 200;
       for ( i = 0; i < g_aMainPL.length; i++) {
-	var icons = g_aSubPL[i].get('icons');
-	icons[0].offset = (count / 2) + '%';
-	g_aSubPL[i].set('icons', icons);
+  var icons = g_aSubPL[i].get('icons');
+  icons[0].offset = (count / 2) + '%';
+  g_aSubPL[i].set('icons', icons);
       }
     }, 20);
   ConsoleDebug("[animateCircle][End]");
@@ -346,12 +349,16 @@ function loadJSONData() {
 
   $.getJSON(g_UrlJsonFile, function(data) {
       if (debug)
-	logJSONData(data);
+  logJSONData(data);
 
       ConsoleDebug("[loadJSONData]");
       createMarkers(data);
-      createPolyline(data);
-      animateCircle();
+      mc.addMarkers(g_aMarker);
+
+      if(!(zoomIP === undefined)) {
+         createPolyline(data);
+         animateCircle();
+      }
     });
 
 }
@@ -397,9 +404,9 @@ function logJSONData(data) {
   $.each(data.objects, function(i, elem) {
       ConsoleDebug("N: " + i);
       $.each(elem.host, function(i, elemH) {
-	  ConsoleDebug("Position: " + elemH.lat + "," + elemH.lng);
-	  ConsoleDebug("---- Info: " + elemH.name + "," + elemH.html);
-	});
+    ConsoleDebug("Position: " + elemH.lat + "," + elemH.lng);
+    ConsoleDebug("---- Info: " + elemH.name + "," + elemH.html);
+  });
 
       ConsoleDebug("flusso: " + elem.flusso);
       ConsoleDebug("Info Aggiuntive flusso: " + elem.html);
