@@ -16,6 +16,14 @@
 			        textAlign: 'center'
 			       }
 			     },
+			     {
+			     title: "Aggregation",
+				 field: "column_aggregation",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			       }
+			     },
 
 			     {
 			     title: "Seen Since",
@@ -35,7 +43,7 @@
 		   	     },
 			     {
 			     title: "Query Number",
-				 field: "column_traffic",
+				 field: "column_queries",
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'center'

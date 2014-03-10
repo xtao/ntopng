@@ -255,8 +255,44 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 
 /* **************************************************** */
 
-void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
-{
+/*
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [22]=[1394099305861]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [21]=[1394099306033]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [12]=[1.2.4.5]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57836]=[null]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [8]=[216.40.38.233]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57837]=[LOGIN]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57838]=[null]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57839]=[2200]
+  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57840]=[6005]
+*/
+
+void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
+  if(flow->get_cli_host()) {
+    flow->get_cli_host()->incNumEPPQueriesSent(zflow->epp_cmd);
+    flow->get_cli_host()->incNumEPPResponsesRcvd(zflow->epp_rsp_code);
+
+    if(strcmp(zflow->epp_registrar_name, "null"))
+      flow->get_cli_host()->set_alternate_name(zflow->epp_registrar_name);
+  }
+
+  if(flow->get_srv_host()) {
+    flow->get_srv_host()->incNumEPPQueriesRcvd(zflow->epp_cmd);
+    flow->get_srv_host()->incNumEPPResponsesSent(zflow->epp_rsp_code);
+  }
+
+  if(strcmp(zflow->epp_registrar_name, "null"))
+    flow->aggregateInfo(zflow->epp_registrar_name, NDPI_PROTOCOL_EPP,
+			aggregation_registrar_name, true);
+
+  if(zflow->epp_server_name != '\0')
+    flow->aggregateInfo(zflow->epp_server_name, NDPI_PROTOCOL_EPP,
+			aggregation_server_name, true);
+}
+
+/* **************************************************** */
+
+void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
   bool src2dst_direction, new_flow;
   Flow *flow;
 
@@ -264,7 +300,6 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
     last_pkt_rcvd = zflow->last_switched;
 
   /* Updating Flow */
-
   flow = getFlow(zflow->src_mac, zflow->dst_mac,
 		 zflow->vlan_id,
 		 &zflow->src_ip, &zflow->dst_ip,
@@ -275,6 +310,7 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 
   if(flow == NULL) return;
 
+  /* Check if this is am EPP flow" */
   if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(last_pkt_rcvd, zflow->tcp_flags);
   flow->addFlowStats(src2dst_direction,
 		     zflow->pkt_sampling_rate*zflow->in_pkts,
@@ -290,6 +326,9 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow)
 	   zflow->pkt_sampling_rate*(zflow->in_bytes + zflow->out_bytes),
 	   zflow->pkt_sampling_rate*(zflow->in_pkts + zflow->out_pkts),
 	   24 /* 8 Preamble + 4 CRC + 12 IFG */ + 14 /* Ethernet header */);
+
+  if(zflow->epp_cmd > 0)
+    process_epp_flow(zflow, flow);
 
   purgeIdle(zflow->last_switched);
 }
@@ -480,15 +519,16 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 	     This is a negative reply thus we notify the system that
 	     this aggregation must not be tracked
 	  */
-	  flow->aggregateInfo((char*)ndpi_flow->host_server_name, l4_proto,
-			      NDPI_PROTOCOL_DNS, false);
+	  flow->aggregateInfo((char*)ndpi_flow->host_server_name,
+			      NDPI_PROTOCOL_DNS, aggregation_domain_name,
+			      false);
 	}
 
-	/* 
+	/*
 	   We reset the nDPI flow so that it can decode new packets
-	   of the same flow (e.g. the DNS response) 
+	   of the same flow (e.g. the DNS response)
 	*/
-	ndpi_flow->detected_protocol_stack[0] = NDPI_PROTOCOL_UNKNOWN;    
+	ndpi_flow->detected_protocol_stack[0] = NDPI_PROTOCOL_UNKNOWN;
       }
       break;
     }
@@ -496,8 +536,8 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     flow->processDetectedProtocol();
 
     /* For DNS we delay the memory free so that we can let nDPI analyze all the packets of the flow */
-    if(flow->get_detected_protocol() != NDPI_PROTOCOL_DNS) 
-      flow->deleteFlowMemory();    
+    if(flow->get_detected_protocol() != NDPI_PROTOCOL_DNS)
+      flow->deleteFlowMemory();
 
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;

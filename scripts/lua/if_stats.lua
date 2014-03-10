@@ -141,7 +141,7 @@ elseif(page == "ndpi") then
 		 <table id="myTable" class="table table-bordered table-striped tablesorter"> 
 	   ]]
 
-     print("<thead><tr><th>Application Protocol</th><th>Total (since ntopng startup)</th><th>Percentage</th></tr></thead>\n")
+     print("<thead><tr><th>Application Protocol</th><th>Total (Since Startup)</th><th>Percentage</th></tr></thead>\n")
 
       total = ifstats["stats_bytes"]
 

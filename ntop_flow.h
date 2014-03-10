@@ -200,7 +200,16 @@
 #define SIP_RTP_L4_DST_PORT NTOP_BASE_ID+146
 #define SIP_FAILURE_CODE NTOP_BASE_ID+147
 #define SIP_REASON_CAUSE NTOP_BASE_ID+148
+#define SIP_C_IP NTOP_BASE_ID+362
+#define SIP_CALL_STATE NTOP_BASE_ID+363
 
+/* EPP - Identifiers reserved but not used by any plugin */
+#define EPP_REGISTRAR_NAME   NTOP_BASE_ID+364
+#define EPP_CMD              NTOP_BASE_ID+365
+#define EPP_CMD_ARGS         NTOP_BASE_ID+366
+#define EPP_RSP_CODE         NTOP_BASE_ID+367
+#define EPP_REASON_STR       NTOP_BASE_ID+368
+#define EPP_SERVER_NAME      NTOP_BASE_ID+369
 
 /* RTP */
 #define RTP_FIRST_SSRC NTOP_BASE_ID+150
@@ -216,7 +225,8 @@
 #define RTP_OUT_MAX_DELTA NTOP_BASE_ID+160
 #define RTP_IN_PAYLOAD_TYPE NTOP_BASE_ID+161
 #define RTP_SIP_CALL_ID NTOP_BASE_ID+348
-/* Process */
+
+/* Process (Win32) */
 #define PROC_ID NTOP_BASE_ID+168
 #define PROC_NAME NTOP_BASE_ID+169
 
@@ -229,6 +239,7 @@
 #define HTTP_MIME NTOP_BASE_ID+184
 #define HTTP_HOST NTOP_BASE_ID+187
 #define HTTP_FBOOK_CHAT NTOP_BASE_ID+188
+#define HTTP_SITE      NTOP_BASE_ID+361
 
 /* SMTP */
 #define SMTP_MAIL_FROM NTOP_BASE_ID+185
@@ -367,7 +378,6 @@
 #define FTP_COMMAND           NTOP_BASE_ID+358
 #define FTP_COMMAND_RET_CODE  NTOP_BASE_ID+359
 
-/* Last used identifier is NTOP_BASE_ID+360 (HTTP_METHOD) */
-
+/* Last used identifier is NTOP_BASE_ID+368 (EPP_REASON_STR) */
 
 #endif /* _NTOP_FLOW_H_ */

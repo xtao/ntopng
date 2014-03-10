@@ -7,82 +7,123 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-sendHTTPHeader('text/html')
+--sendHTTPHeader('text/html')
+sendHTTPHeader('application/json')
 
-interface.find(ifname)
-peers = interface.getFlowPeers(_GET["host"])
 
-print [[
-
-{"center":[0, 0],
-"objects":
-	[
-
-     ]]
-
-maxval = 0
-for key, values in pairs(peers) do
-   t = values["sent"]+values["rcvd"]
-
-   if(t > maxval) then maxval = t end
-end
-
-min_threshold = 0 --  0.5%
-max_num = 100
-num = 0
-for key, values in pairs(peers) do
-   t = values["sent"]+values["rcvd"]
-   pctg = (t*100)/maxval
-
-   if(not(values["client.private"])
-      and not(values["server.private"])
-      and not(isBroadMulticast(values["client"])) 
-      and not(isBroadMulticast(values["server"]))) then
-      if((pctg >= min_threshold) 
-         and (values["client.latitude"] ~= nil)
-         and (values["client.longitude"] ~= nil)) then 
-	 if(num > 0) then print(",") end
-	 print('{\n"host":\n[	\n{\n')
-	 print('"lat": '..values["client.latitude"]..',\n')
-	 print('"lng": '..values["client.longitude"]..',\n')
-
-	 print('"html": "')
-	 if((values["client.city"] ~= nil) and (values["client.city"] ~= "")) then
-	    print('City: '..values["client.city"])
-	 end
-
-	 if((values["client.country"] ~= nil) and (values["client.country"] ~= "")) then
-	    print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["client.country"]) .."'>")
-	 end
-	 print('",\n')
-
-	 print('"name": "'..values["client"]..'"\n')
-	 print('},\n{\n')
-	 print('"lat": '..values["server.latitude"]..',\n')
-	 print('"lng": '..values["server.longitude"]..',\n')
-	 
-	 print('"html": "')
-	 if((values["server.city"] ~= nil) and (values["server.city"] ~= "")) then
-	    print('City: '..values["server.city"])
-	 end
-	 if((values["server.country"] ~= nil) and (values["server.country"] ~= "")) then
-	    print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["server.country"]) .."'>")
-	 end
-	 print('",\n')
-
-	 print('"name": "'..values["server"]..'"\n')
-	 print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
-	 print('}\n')
-	 num = num + 1
-	 
-	 if(num > max_num) then break end
-      end
-   end
-end
+host = _GET["host"]
 
 
 print [[
-	]
-}
 
+      {"center":[0, 0],
+       "objects":
+       [
+
+    ]]
+
+
+    max_num = 100
+    num = 0
+
+    if(host == nil) then
+       hosts_stats = interface.getHostsInfo()
+
+       for key, value in pairs(hosts_stats) do
+	  if(value["ip"] ~= nil) then
+	     if(num > 0) then print(",") end
+	     print('{\n"host": [ { ')
+	     print('"lat": '..value["latitude"]..',\n')
+	     print('"lng": '..value["longitude"]..',\n')
+
+	     print('"html": "')
+	     if((value["city"] ~= nil) and (value["city"] ~= "")) then
+		print('City: '..value["city"])
+	     end
+
+	     if((value["country"] ~= nil) and (value["country"] ~= "")) then
+		print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
+	     end
+	     print('",\n')
+
+	     print('"name": "'..value["ip"]..'"\n')
+	     print('} ] }\n')
+	     num = num + 1
+	     
+	     if(num > max_num) then break end      
+	  end
+       end
+
+       print ("\n]\n}\n")
+       io.write("\n"..num.."\n")
+       return
+    end
+
+    -- Flows with trajectory
+
+    interface.find(ifname)
+    peers = interface.getFlowPeers(host)
+
+    maxval = 0
+    for key, values in pairs(peers) do
+       t = values["sent"]+values["rcvd"]
+
+       if(t > maxval) then maxval = t end
+    end
+
+    min_threshold = 0 --  0.5%
+    for key, values in pairs(peers) do
+       t = values["sent"]+values["rcvd"]
+       pctg = (t*100)/maxval
+
+       if(not(values["client.private"])
+       and not(values["server.private"])
+    and not(isBroadMulticast(values["client"])) 
+ and not(isBroadMulticast(values["server"]))) then
+	  if((pctg >= min_threshold)
+	  and (values["client.latitude"] ~= nil)
+       and (values["client.longitude"] ~= nil)) then 
+	     if(num > 0) then print(",") end
+	     print('\n{\n"host":\n[	\n{\n')
+	     print('"lat": '..values["client.latitude"]..',\n')
+	     print('"lng": '..values["client.longitude"]..',\n')
+
+	     print('"html": "')
+	     if((values["client.city"] ~= nil) and (values["client.city"] ~= "")) then
+		print('City: '..values["client.city"])
+	     end
+
+	     if((values["client.country"] ~= nil) and (values["client.country"] ~= "")) then
+		print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["client.country"]) .."'>")
+	     end
+	     print('",\n')
+
+	     print('"name": "'..values["client"]..'"\n')
+	     print('},\n{\n')
+	     print('"lat": '..values["server.latitude"]..',\n')
+	     print('"lng": '..values["server.longitude"]..',\n')
+	     
+	     print('"html": "')
+	     if((values["server.city"] ~= nil) and (values["server.city"] ~= "")) then
+		print('City: '..values["server.city"])
+	     end
+	     if((values["server.country"] ~= nil) and (values["server.country"] ~= "")) then
+		print(" <img src='/img/blank.gif' class='flag flag-".. string.lower(values["server.country"]) .."'>")
+	     end
+	     print('",\n')
+
+	     print('"name": "'..values["server"]..'"\n')
+	     print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
+	     print('}\n')
+	     num = num + 1
+	     
+	     if(num > max_num) then break end
+	  end
+       end
+    end
+
+
+    print [[
+       ]
+    }
 ]]

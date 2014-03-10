@@ -115,6 +115,8 @@ Host::~Host() {
   }
 
   if(dns)            delete dns;
+  if(epp)            delete epp;
+
   if(symbolic_name)  free(symbolic_name);
   if(alternate_name) free(alternate_name);
   if(country)        free(country);
@@ -177,13 +179,12 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
-  dns = NULL;
+  dns = NULL, epp = NULL;
 
   if(init_all) {
     if(ip) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
-      dns = new DnsStats();
       updateLocal();
 
       if((localHost && ntop->getPrefs()->is_host_persistency_enabled())
@@ -282,15 +283,15 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     else
       lua_push_nil_table_entry(vm, "ip");
 
-    if(verbose
-       && (ipaddr != NULL)
+    if((ipaddr != NULL)
        && ((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0))) {
       /* We resolve immediately the IP address by queueing on the top of address queue */
-
+      
       ntop->getRedis()->queueHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
       lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
-      lua_push_str_table_entry(vm, "alternate_name", alternate_name ? alternate_name : (char*)"");
     }
+    
+    lua_push_str_table_entry(vm, "alternate_name", alternate_name ? alternate_name : (char*)"");
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_bool_table_entry(vm, "localhost", localHost);
@@ -299,11 +300,9 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
     lua_push_str_table_entry(vm, "os", os);
 
-    if(verbose) {
-      lua_push_float_table_entry(vm, "latitude", latitude);
-      lua_push_float_table_entry(vm, "longitude", longitude);
-      lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
-    }
+    lua_push_float_table_entry(vm, "latitude", latitude);
+    lua_push_float_table_entry(vm, "longitude", longitude);
+    lua_push_str_table_entry(vm, "city", city ? city : (char*)"");
 
     lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
@@ -356,6 +355,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       recv_stats.lua(vm, "pktStats.recv");
 
       if(dns) dns->lua(vm);
+      if(epp) epp->lua(vm);
     }
 
     if(!returnHost) {
@@ -594,6 +594,7 @@ char* Host::serialize() {
   json_object_object_add(my_object, "activityStats", activityStats.getJSONObject());
 
   if(dns) json_object_object_add(my_object, "dns", dns->getJSONObject());
+  if(epp) json_object_object_add(my_object, "epp", epp->getJSONObject());
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
@@ -664,6 +665,11 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "dns", &obj)) {
     if(dns == NULL) dns = new DnsStats();
     if(dns) dns->deserialize(obj); 
+  }
+
+  if(json_object_object_get_ex(o, "epp", &obj)) {
+    if(epp == NULL) epp = new EppStats();
+    if(epp) epp->deserialize(obj); 
   }
 
   if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }

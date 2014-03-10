@@ -106,7 +106,8 @@ Flow::~Flow() {
 
 /* *************************************** */
 
-void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id,
+void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
+			 AggregationType mode,
 			 bool aggregation_to_track
 			 /*
 			    i.e. it is not here for an error (such as NXDOMAIN)
@@ -121,6 +122,7 @@ void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id
     char *name = _name;
 
     if(ntop->getPrefs()->use_short_aggregation_names() 
+       && (mode == aggregation_domain_name)
        && (strlen(name) > 3 /* .XX */)) {
       u_int num = 0, i;
 
@@ -142,6 +144,8 @@ void Flow::aggregateInfo(char *_name, u_int8_t l4_proto, u_int16_t ndpi_proto_id
     host = iface->findHostByString(name, ndpi_proto_id, true);
 
     if(host != NULL) {
+      host->set_aggregation_mode(mode);
+
       if(aggregationInfo.name && strcmp(aggregationInfo.name, name)) {
 	struct timeval tv;
 
@@ -199,7 +203,7 @@ void Flow::processDetectedProtocol() {
 	    }
 	  }
 
-	  aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, to_track);
+	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, to_track);
 	}
       }
     }
@@ -213,7 +217,7 @@ void Flow::processDetectedProtocol() {
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
       protocol_processed = true;
-      aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, true);
+      aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
     }
     break;
 
@@ -232,7 +236,7 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	svr->setName((char*)ndpi_flow->host_server_name, true);
-	aggregateInfo((char*)ndpi_flow->host_server_name, protocol, ndpi_detected_protocol, true);
+	aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
 
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
 					     buf, sizeof(buf), true) != NULL) {
@@ -243,7 +247,7 @@ void Flow::processDetectedProtocol() {
 					     (char*)ndpi_flow->host_server_name);
 
 	if(ndpi_flow->detected_os[0] != '\0') {
-	  aggregateInfo((char*)ndpi_flow->detected_os, protocol, NTOPNG_NDPI_OS_PROTO_ID, true);
+	  aggregateInfo((char*)ndpi_flow->detected_os, NTOPNG_NDPI_OS_PROTO_ID, aggregation_os_name, true);
 
 	  if(cli_host)
 	    cli_host->setOS((char*)ndpi_flow->detected_os);

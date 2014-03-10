@@ -171,6 +171,8 @@
 
 #define CONST_DB_DAY_FORMAT            "%y%m%d"
 
+#define CONST_EPP_MAX_CMD_NUM          34
+
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #else

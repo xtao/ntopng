@@ -767,6 +767,17 @@ function fixPath(path)
    return(path)
 end
 
+-- See datatype AggregationType in ntop_typedefs.h
+function aggregation2String(value) 
+   if(value == 0) then return("Client Name")
+   elseif (value == 1) then return("Server Name")
+   elseif (value == 2) then return("Domain Name")
+   elseif (value == 3) then return("Operating System")
+   elseif (value == 4) then return("Registrar Name")
+   else return(value)
+   end
+end
+
 function getOSIcon(name)
    icon = ""
 
@@ -781,6 +792,8 @@ end
 
 function getApplicationLabel(name)
    icon = ""
+
+   if(name == nil) then name = "" end
 
    if(findString(name, "Skype")) then icon = '<i class=\'fa fa-skype fa-lg\'></i>'
       elseif(findString(name, "Unknown")) then icon = '<i class=\'fa fa-question fa-lg\'></i>'

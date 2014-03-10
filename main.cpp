@@ -52,7 +52,7 @@ void sigproc(int sig) {
 #ifndef WIN32
   if(ntop->getPrefs()->get_pid_path() != NULL) {
     int rc = unlink(ntop->getPrefs()->get_pid_path());
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Deleted PID %s [rc: %d]", 
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Deleted PID %s [rc: %d]",
 				 ntop->getPrefs()->get_pid_path(), rc);
   }
 #endif
@@ -76,13 +76,14 @@ int main(int argc, char *argv[])
   char *ifName;
   int rc;
 
-  if((ntop = new(std::nothrow) Ntop(argv[0])) == NULL) exit(0);
-  if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)  exit(0);
+  if((ntop = new(std::nothrow)  Ntop(argv[0])) == NULL) exit(0);
+  if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)   exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
     rc = prefs->loadFromFile(argv[1]);
   else
     rc = prefs->loadFromCLI(argc, argv);
+
   if(rc < 0) return(-1);
 
   ntop->registerPrefs(prefs);
@@ -146,7 +147,7 @@ int main(int argc, char *argv[])
       fprintf(fd, "%u\n", getpid());
       fclose(fd);
       chmod(prefs->get_pid_path(), 0777);
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "PID stored in file %s", 
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "PID stored in file %s",
 				   prefs->get_pid_path());
     } else
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to store PID in file %s",

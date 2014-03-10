@@ -28,12 +28,6 @@ class Ntop;
 
 extern void usage();
 
-typedef enum {
-  aggregations_disabled,
-  aggregations_enabled_no_bitmap_dump,
-  aggregations_enabled_with_bitmap_dump
-} AggregationMode;
-
 class Prefs {
  private:
   Ntop *ntop;

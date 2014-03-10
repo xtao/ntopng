@@ -103,9 +103,8 @@ class Flow : public GenericHashEntry {
   inline char* get_json_info()			  { return(json_info);                       };
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
-  void aggregateInfo(char *name, u_int8_t l4_proto, 
-		     u_int16_t ndpi_proto_id,
-		     bool aggregation_to_track);
+  void aggregateInfo(char *name, u_int16_t ndpi_proto_id,
+		     AggregationType mode, bool aggregation_to_track);
   bool idle();
   int compare(Flow *fb);
   char* print(char *buf, u_int buf_len);

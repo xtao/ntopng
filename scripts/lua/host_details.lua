@@ -146,6 +146,15 @@ else
    end
 end
 
+if(page == "epp") then
+  print("<li class=\"active\"><a href=\"#\">EPP</a></li>\n")
+else
+   if((host["epp"] ~= nil)
+   and ((host["epp"]["sent"]["num_queries"]+host["epp"]["rcvd"]["num_queries"]) > 0)) then
+      print("<li><a href=\""..url.."&page=epp\">EPP</a></li>")
+   end
+end
+
 if(page == "flows") then
   print("<li class=\"active\"><a href=\"#\">Flows</a></li>\n")
 else
@@ -622,6 +631,54 @@ end
 	 print("</table>\n")
       end
 
+
+   elseif(page == "epp") then
+      if(host["epp"] ~= nil) then
+	 print("<table class=\"table table-bordered table-striped\">\n")
+	 print("<tr><th>EPP Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
+	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=epp_sent_num_queries>".. formatValue(host["epp"]["sent"]["num_queries"]) .."</span> <span id=trend_sent_num_queries></span></td>")
+	 print("<td class=\"text-right\"><span id=epp_sent_num_replies_ok>".. formatValue(host["epp"]["sent"]["num_replies_ok"]) .."</span> <span id=trend_sent_num_replies_ok></span></td>")
+	 print("<td class=\"text-right\"><span id=epp_sent_num_replies_error>".. formatValue(host["epp"]["sent"]["num_replies_error"]) .."</span> <span id=trend_sent_num_replies_error></span></td><td colspan=2>")
+	 breakdownBar(host["epp"]["sent"]["num_replies_ok"], "OK", host["epp"]["sent"]["num_replies_error"], "Error")
+	 print("</td></tr>")
+
+	 if(host["epp"]["sent"]["num_queries"] > 0) then
+	    print [[         
+		     <tr><th>EPP Query Sent Distribution</th><td colspan=5>
+		     <div class="pie-chart" id="eppSent"></div>
+		     <script type='text/javascript'>
+					 var refresh = 3000 /* ms */;
+					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "sent" }, "", refresh);
+				      </script>
+					 </td></tr>
+           ]]
+         end
+
+
+	 print("<tr><th>Rcvd</th><td class=\"text-right\"><span id=epp_rcvd_num_queries>".. formatValue(host["epp"]["rcvd"]["num_queries"]) .."</span> <span id=trend_rcvd_num_queries></span></td>")
+	 print("<td class=\"text-right\"><span id=epp_rcvd_num_replies_ok>".. formatValue(host["epp"]["rcvd"]["num_replies_ok"]) .."</span> <span id=trend_rcvd_num_replies_ok></span></td>")
+	 print("<td class=\"text-right\"><span id=epp_rcvd_num_replies_error>".. formatValue(host["epp"]["rcvd"]["num_replies_error"]) .."</span> <span id=trend_rcvd_num_replies_error></span></td><td colspan=2>")
+	 breakdownBar(host["epp"]["rcvd"]["num_replies_ok"], "OK", host["epp"]["rcvd"]["num_replies_error"], "Error")
+	 print("</td></tr>")
+
+	 if(host["epp"]["rcvd"]["num_queries"] > 0) then
+print [[         
+	 <tr><th>EPP Rcvd Query Distribution</th><td colspan=5>
+         <div class="pie-chart" id="eppRcvd"></div>
+         <script type='text/javascript'>
+         var refresh = 3000 /* ms */;
+	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { host: "]] print(host_ip) print [[", mode: "rcvd" }, "", refresh);
+         </script>
+         </td></tr>
+]]
+end
+
+	 print("</table>\n")
+      end
+
+
+
+
    elseif(page == "flows") then
 print [[
       <div id="table-hosts"></div>
@@ -856,7 +913,7 @@ n = 0
 if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
 
 for v,k in pairsByKeys(vals, rev) do
-   if(v > 0) then
+   if((v ~= nil) and (v > 0)) then
       if(n == 0) then
 	 print("<table class=\"table table-bordered\">\n")
 	 print("<tr><th>Local Hosts similar to ".. host["name"] .."</th><th>Correlation Coefficient</th></tr>\n")
@@ -865,7 +922,7 @@ for v,k in pairsByKeys(vals, rev) do
       correlated_host = interface.getHostInfo(k)
       
       if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
-      print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..round(tofloat(v), 3).."</td></tr>\n")
+      print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..round(v, 3).."</td></tr>\n")
       n = n +1
       
       if(n >= max_hosts) then
@@ -1248,6 +1305,15 @@ if(host["dns"] ~= nil) then
    print("var last_dns_rcvd_num_replies_error = " .. host["dns"]["rcvd"]["num_replies_error"] .. ";\n")
 end
 
+if(host["epp"] ~= nil) then
+   print("var last_epp_sent_num_queries = " .. host["epp"]["sent"]["num_queries"] .. ";\n")
+   print("var last_epp_sent_num_replies_ok = " .. host["epp"]["sent"]["num_replies_ok"] .. ";\n")
+   print("var last_epp_sent_num_replies_error = " .. host["epp"]["sent"]["num_replies_error"] .. ";\n")
+   print("var last_epp_rcvd_num_queries = " .. host["epp"]["rcvd"]["num_queries"] .. ";\n")
+   print("var last_epp_rcvd_num_replies_ok = " .. host["epp"]["rcvd"]["num_replies_ok"] .. ";\n")
+   print("var last_epp_rcvd_num_replies_error = " .. host["epp"]["rcvd"]["num_replies_error"] .. ";\n")
+end
+
 print [[
 setInterval(function() {
 	  $.ajax({
@@ -1318,6 +1384,59 @@ print [[
 			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-minus\"></i>");
 			   } else {
 			      last_dns_rcvd_num_replies_error = host["dns"]["rcvd"]["num_replies_error"];
+			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+		     ]]
+end
+
+if(host["epp"] ~= nil) then
+print [[
+			   $('#epp_sent_num_queries').html(addCommas(host["epp"]["sent"]["num_queries"]));
+			   $('#epp_sent_num_replies_ok').html(addCommas(host["epp"]["sent"]["num_replies_ok"]));
+			   $('#epp_sent_num_replies_error').html(addCommas(host["epp"]["sent"]["num_replies_error"]));
+			   $('#epp_rcvd_num_queries').html(addCommas(host["epp"]["rcvd"]["num_queries"]));
+			   $('#epp_rcvd_num_replies_ok').html(addCommas(host["epp"]["rcvd"]["num_replies_ok"]));
+			   $('#epp_rcvd_num_replies_error').html(addCommas(host["epp"]["rcvd"]["num_replies_error"]));
+
+			   if(host["epp"]["sent"]["num_queries"] == last_epp_sent_num_queries) {
+			      $('#trend_sent_num_queries').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_sent_num_queries = host["epp"]["sent"]["num_queries"];
+			      $('#trend_sent_num_queries').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+
+			   if(host["epp"]["sent"]["num_replies_ok"] == last_epp_sent_num_replies_ok) {
+			      $('#trend_sent_num_replies_ok').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_sent_num_replies_ok = host["epp"]["sent"]["num_replies_ok"];
+			      $('#trend_sent_num_replies_ok').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+
+			   if(host["epp"]["sent"]["num_replies_error"] == last_epp_sent_num_replies_error) {
+			      $('#trend_sent_num_replies_error').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_sent_num_replies_error = host["epp"]["sent"]["num_replies_error"];
+			      $('#trend_sent_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+
+			   if(host["epp"]["rcvd"]["num_queries"] == last_epp_rcvd_num_queries) {
+			      $('#trend_rcvd_num_queries').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_rcvd_num_queries = host["epp"]["rcvd"]["num_queries"];
+			      $('#trend_rcvd_num_queries').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+
+			   if(host["epp"]["rcvd"]["num_replies_ok"] == last_epp_rcvd_num_replies_ok) {
+			      $('#trend_rcvd_num_replies_ok').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_rcvd_num_replies_ok = host["epp"]["rcvd"]["num_replies_ok"];
+			      $('#trend_rcvd_num_replies_ok').html("<i class=\"fa fa-arrow-up\"></i>");
+			   }
+
+			   if(host["epp"]["rcvd"]["num_replies_error"] == last_epp_rcvd_num_replies_error) {
+			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-minus\"></i>");
+			   } else {
+			      last_epp_rcvd_num_replies_error = host["epp"]["rcvd"]["num_replies_error"];
 			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 		     ]]

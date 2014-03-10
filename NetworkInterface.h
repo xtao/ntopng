@@ -54,7 +54,13 @@ typedef struct zmq_flow {
   u_int32_t first_switched, last_switched;
   json_object *additional_fields;
   u_int8_t src_mac[6], dst_mac[6];
+
+  /* EPP Extensions */
+  char epp_server_name[48], epp_registrar_name[48], epp_cmd_args[64], epp_reason_str[16];
+  u_int8_t epp_cmd;
+  int epp_rsp_code;
 } ZMQ_Flow;
+
 /** @class NetworkInterface
  *  @brief Main class of network interface of ntopng.
  *  @details .......
@@ -94,6 +100,7 @@ class NetworkInterface {
 		bool *new_flow);
   bool isNumber(const char *str);
   bool validInterface(char *name);
+  void process_epp_flow(ZMQ_Flow *zflow, Flow *flow);
 
  public:
   /**

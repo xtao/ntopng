@@ -115,6 +115,8 @@ for key, value in pairs(hosts_stats) do
 	 vals[hosts_stats[key]["category"]..postfix] = key
 	 elseif(sortColumn == "column_asn") then
 	 vals[hosts_stats[key]["asn"]..postfix] = key
+	 elseif(sortColumn == "column_aggregation") then
+	 vals[hosts_stats[key]["aggregation"]..postfix] = key
 	 elseif(sortColumn == "column_vlan") then
 	 vals[hosts_stats[key]["vlan"]..postfix] = key
 	 elseif(sortColumn == "column_thpt") then
@@ -167,6 +169,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 	    print(shortHostName(value["name"]))
 
+	    if((value["alternate_name"] ~= nil) and (value["alternate_name"] ~= "")) then
+	       print (" ["..value["alternate_name"].."]") 
+	    end
+
 	    if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
 	       print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
 	    end
@@ -195,6 +201,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    if(aggregated ~= nil) then 
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
+	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
 	    end
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
@@ -206,7 +213,8 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    if(aggregated ~= nil) then
-	       print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
+	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
+	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 
 	       if(value["throughput_trend"] == 1) then
 		  print("<i class='fa fa-arrow-up fa-lg'></i>")

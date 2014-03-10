@@ -104,6 +104,7 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_push_int_table_entry(vm, "seen.last", last_seen);
   lua_push_int_table_entry(vm, "duration", get_duration());
   lua_push_int_table_entry(vm, "family", family_id);
+  lua_push_int_table_entry(vm, "aggregation", mode);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
   lua_push_int_table_entry(vm, "throughput_trend", getThptTrend());
 
