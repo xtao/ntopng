@@ -15,6 +15,7 @@ sortOrder   = _GET["sortOrder"]
 aggregated  = _GET["aggregated"]
 protocol    = _GET["protocol"]
 mode        = _GET["mode"]
+aggregation = _GET["aggregation"]
 
 -- Only for aggregations
 client      = _GET["client"]
@@ -34,6 +35,8 @@ if(perPage == nil) then
 else
    perPage = tonumber(perPage)
 end
+
+if(aggregation ~= nil) then aggregation = tonumber(aggregation) end 
 
 if((mode == nil) or (mode == "")) then mode = "all" end
 
@@ -59,12 +62,19 @@ num = 0
 for key, value in pairs(hosts_stats) do
    num = num + 1
    postfix = string.format("0.%04u", num)
+   ok = true
 
-   if((mode == "all")
-      or ((mode == "local") and (value["localhost"] == true))
-      or ((mode == "remote") and (value["localhost"] ~= true))) then
-      ok = true
-   else
+   if((aggregation ~= nil) and (hosts_stats[key]["aggregation"] ~= nil)) then
+      --io.write(hosts_stats[key]["aggregation"].." <> "..aggregation.."\n")
+      io.write("'"..hosts_stats[key]["aggregation"].."' <> '"..aggregation.."'\n")
+      if(tonumber(hosts_stats[key]["aggregation"]) ~= aggregation) then
+	 ok = false      
+      end
+   end
+
+   if(not((mode == "all")
+       or ((mode == "local") and (value["localhost"] == true))
+    or ((mode == "remote") and (value["localhost"] ~= true)))) then
       ok = false      
    end
 
@@ -163,7 +173,24 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print(mapOS2Icon(key))
 	    end
 
-	    print(" </A> ".. getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
+	    print(" </A> ")
+
+	    if(aggregated ~= nil) then
+	       --if(value["tracked"]) then
+
+	       -- EPP + domain + tracked
+	       if((value["aggregation"] == 2) and (value["family"] == 38)) then
+		  if(value["tracked"]) then
+		     print("<i class=\'fa fa-star fa-lg\'></i>")
+		  else
+		     print("<i class=\'fa fa-star-o fa-lg\'></i>")
+		  end
+	       end
+	    end
+
+
+	    print(getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
+
 	    if(aggregated == nil) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end

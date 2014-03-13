@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -23,6 +23,7 @@ print [[
 					url: "/lua/get_hosts_data.lua?aggregated=1]]
 					if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
 					if(_GET["client"]) then print("&client=".._GET["client"]) end
+					if(_GET["aggregation"] ~= nil) then print("&aggregation=".._GET["aggregation"]) end
 print [[",
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
@@ -30,8 +31,12 @@ print [[",
 print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
 
 families = interface.getAggregationFamilies()
-for key,v in pairs(families) do
-   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..'</a></li>')
+for key,v in pairs(families["families"]) do
+   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..' (All)</a></li>')
+
+   for key1,v1 in pairs(families["aggregations"]) do
+      print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
+   end
 end 
 
 print("</ul> </div>' ],\n")

@@ -503,9 +503,7 @@ end
 	    </script><p>
 	]]
 
-
      print("<tr><th>Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
-
 
      for id, _ in ipairs(l4_keys) do
 	label = l4_keys[id][1]
@@ -516,7 +514,11 @@ end
 	if((sent > 0) or (rcvd > 0)) then
 	   -- if(true) then
 	    print("<tr><th>")
-	    print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	    if(ntop.exists(ifname, host_ip, k)) then
+	       print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	    else
+	       print(label)
+	    end
 	    t = sent+rcvd
 	    print("</th><td class=\"text-right\">" .. bytesToSize(sent) .. "</td><td class=\"text-right\">" .. bytesToSize(rcvd) .. "</td><td>")
 	    breakdownBar(sent, "Sent", rcvd, "Rcvd")

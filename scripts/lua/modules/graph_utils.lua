@@ -24,10 +24,18 @@ function percentageBar(total, value, valueLabel)
    end
 end
 
+function getRRDName(ifname, host, rrdFile)
+   rrdname = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/")
+   if(host ~= nil) then
+     rrdname = rrdname .. host .. "/"
+   end
+
+   return(rrdname  .. rrdFile)
+end
 
 function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
    dirs = ntop.getDirs()
-   rrdname = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/")
+   rrdname = getRRDName(ifname, host, rrdFile)
    names =  {}
    series = {}
    vals = {
@@ -44,12 +52,6 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
       { "6m",  "now-6mon", 60*60*24*31*6 },
       { "1y",  "now-1y",   60*60*24*366 }
    }
-
-   if(host ~= nil) then
-     rrdname = rrdname .. host .. "/"
-   end
-
-   rrdname = rrdname  .. rrdFile
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -498,7 +500,7 @@ print[['+hover.selected_epoch;
 
 ]]
 else
-  print("<div class=\"alert alert-error\"><img src=/img/warning.png> This archive file cannot be found</div>")
+  print("<div class=\"alert alert-error\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
 
 end
 end

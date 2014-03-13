@@ -255,18 +255,6 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 
 /* **************************************************** */
 
-/*
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [22]=[1394099305861]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [21]=[1394099306033]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [12]=[1.2.4.5]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57836]=[null]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [8]=[216.40.38.233]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57837]=[LOGIN]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57838]=[null]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57839]=[2200]
-  06/Mar/2014 10:48:25 [CollectorInterface.cpp:145] [57840]=[6005]
-*/
-
 void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
   if(flow->get_cli_host()) {
     flow->get_cli_host()->incNumEPPQueriesSent(zflow->epp_cmd);
@@ -288,6 +276,21 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
   if(zflow->epp_server_name != '\0')
     flow->aggregateInfo(zflow->epp_server_name, NDPI_PROTOCOL_EPP,
 			aggregation_server_name, true);
+
+  if(zflow->epp_cmd_args[0] != '\0') {
+    char *domain, *status, *pos;
+
+    domain = strtok_r(zflow->epp_cmd_args, "=", &pos);
+    
+    while(domain != NULL) {
+      if((status = strtok_r(NULL, ",", &pos)) == NULL)
+	break;
+
+      flow->aggregateInfo(domain, NDPI_PROTOCOL_EPP, aggregation_domain_name,
+			  (strncasecmp(status, "true" /* true = AVAILABLE */, 4) == 0) ? false : true);
+      domain = strtok_r(NULL, "=", &pos);
+    }
+  }
 }
 
 /* **************************************************** */
@@ -1003,11 +1006,20 @@ static bool find_aggregations_for_host_by_name(GenericHashEntry *h, void *user_d
 
 /* **************************************************** */
 
+struct ndpi_protocols_aggregation {
+  NDPI_PROTOCOL_BITMASK families;
+  NDPI_PROTOCOL_BITMASK aggregations; /* Jeopardized */
+};
+
+/* **************************************************** */
+
 static bool find_aggregation_families(GenericHashEntry *h, void *user_data) {
-  NDPI_PROTOCOL_BITMASK *families = (NDPI_PROTOCOL_BITMASK*)user_data;
+  struct ndpi_protocols_aggregation *agg = (struct ndpi_protocols_aggregation*)user_data;
   StringHost *host                = (StringHost*)h;
 
-  NDPI_ADD_PROTOCOL_TO_BITMASK(*families, host->get_family_id());
+  NDPI_ADD_PROTOCOL_TO_BITMASK(agg->families, host->get_family_id());
+  NDPI_ADD_PROTOCOL_TO_BITMASK(agg->aggregations, host->get_aggregation_mode());
+
   return(false); /* false = keep on walking */
 }
 
@@ -1121,19 +1133,35 @@ bool NetworkInterface::getAggregationsForHost(lua_State* vm, char *host_ip) {
 /* **************************************************** */
 
 bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
-  NDPI_PROTOCOL_BITMASK families;
+  struct ndpi_protocols_aggregation agg;
 
-  NDPI_BITMASK_RESET(families);
-  strings_hash->walk(find_aggregation_families, (void*)&families);
+  NDPI_BITMASK_RESET(agg.families);
+  strings_hash->walk(find_aggregation_families, (void*)&agg);
 
   lua_newtable(vm);
 
+  lua_newtable(vm);
   for(int i=0; i<(NDPI_LAST_IMPLEMENTED_PROTOCOL+NDPI_MAX_NUM_CUSTOM_PROTOCOLS); i++)
-    if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(families, i)) {
+    if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.families, i)) {
       char *name = ndpi_get_proto_name(strings_hash->getInterface()->get_ndpi_struct(), i);
 
       lua_push_int_table_entry(vm, name, i);
     }
+
+  lua_pushstring(vm, "families");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
+  lua_newtable(vm);
+  if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.aggregations, aggregation_client_name))    lua_push_int_table_entry(vm, "client", aggregation_client_name);
+  if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.aggregations, aggregation_server_name))    lua_push_int_table_entry(vm, "server", aggregation_server_name);
+  if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.aggregations, aggregation_domain_name))    lua_push_int_table_entry(vm, "domain", aggregation_domain_name);
+  if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.aggregations, aggregation_os_name))        lua_push_int_table_entry(vm, "os", aggregation_os_name);
+  if(NDPI_COMPARE_PROTOCOL_TO_BITMASK(agg.aggregations, aggregation_registrar_name)) lua_push_int_table_entry(vm, "registrar", aggregation_registrar_name);
+
+  lua_pushstring(vm, "aggregations");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
 
   return(true);
 }
