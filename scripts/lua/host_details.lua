@@ -514,7 +514,8 @@ end
 	if((sent > 0) or (rcvd > 0)) then
 	   -- if(true) then
 	    print("<tr><th>")
-	    if(ntop.exists(ifname, host_ip, k)) then
+	    fname = getRRDName(ifname, host_ip, k)
+	    if(ntop.exists(fname)) then
 	       print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    else
 	       print(label)
@@ -571,7 +572,8 @@ end
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-	 if(host["localhost"] == true) then
+	 fname = getRRDName(ifname, host_ip, k..".rrd")
+	 if(ntop.exists(fname)) then
 	    print("<A HREF=\"/lua/host_details.lua?host=" .. host_ip .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 else
 	    print(k)

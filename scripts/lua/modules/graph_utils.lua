@@ -29,7 +29,7 @@ function getRRDName(ifname, host, rrdFile)
    if(host ~= nil) then
      rrdname = rrdname .. host .. "/"
    end
-
+   
    return(rrdname  .. rrdFile)
 end
 

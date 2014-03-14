@@ -29,6 +29,16 @@ if(ifname ~= nil) then
    end
 
    print("</b> is now active</div>")
+
+print [[
+
+
+<script>
+  window.setTimeout('window.location="/"; ', 3000);
+</script>
+]]
+
+
 else
   sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")

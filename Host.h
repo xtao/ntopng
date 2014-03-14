@@ -108,13 +108,13 @@ class Host : public GenericHost {
 
   inline void incNumDNSQueriesSent(u_int16_t query_type) { allocDNS(); if(dns) dns->incNumDNSQueriesSent(query_type); };
   inline void incNumDNSQueriesRcvd(u_int16_t query_type) { allocDNS(); if(dns) dns->incNumDNSQueriesRcvd(query_type); };
-  inline void incNumDNSResponsesSent(u_int8_t ret_code)  { allocDNS(); if(dns) dns->incNumDNSResponsesSent(ret_code); };
-  inline void incNumDNSResponsesRcvd(u_int8_t ret_code)  { allocDNS(); if(dns) dns->incNumDNSResponsesRcvd(ret_code); };
+  inline void incNumDNSResponsesSent(u_int32_t ret_code)  { allocDNS(); if(dns) dns->incNumDNSResponsesSent(ret_code); };
+  inline void incNumDNSResponsesRcvd(u_int32_t ret_code)  { allocDNS(); if(dns) dns->incNumDNSResponsesRcvd(ret_code); };
 
   inline void incNumEPPQueriesSent(u_int16_t query_type) { allocEPP(); if(epp) epp->incNumEPPQueriesSent(query_type); };
   inline void incNumEPPQueriesRcvd(u_int16_t query_type) { allocEPP(); if(epp) epp->incNumEPPQueriesRcvd(query_type); };
-  inline void incNumEPPResponsesSent(u_int8_t ret_code)  { allocEPP(); if(epp) epp->incNumEPPResponsesSent(ret_code); };
-  inline void incNumEPPResponsesRcvd(u_int8_t ret_code)  { allocEPP(); if(epp) epp->incNumEPPResponsesRcvd(ret_code); };
+  inline void incNumEPPResponsesSent(u_int32_t ret_code)  { allocEPP(); if(epp) epp->incNumEPPResponsesSent(ret_code); };
+  inline void incNumEPPResponsesRcvd(u_int32_t ret_code)  { allocEPP(); if(epp) epp->incNumEPPResponsesRcvd(ret_code); };
 };
 
 #endif /* _HOST_H_ */
