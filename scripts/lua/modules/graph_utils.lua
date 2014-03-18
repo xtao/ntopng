@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 
@@ -29,7 +29,7 @@ function getRRDName(ifname, host, rrdFile)
    if(host ~= nil) then
      rrdname = rrdname .. host .. "/"
    end
-   
+
    return(rrdname  .. rrdFile)
 end
 
@@ -66,7 +66,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
            nextZoomLevel = vals[k-1][1]
          end
          if (epoch) then
-           start_time = epoch - vals[k][3]/2 
+           start_time = epoch - vals[k][3]/2
            end_time = epoch + vals[k][3]/2
          else
 	   start_time = vals[k][2]
@@ -218,7 +218,7 @@ rrds = ntop.readdir(fixPath(dirs.workingdir .. "/" .. ifname .. "/rrd/" .. host)
 
 for k,v in pairsByKeys(rrds, asc) do
    proto = string.gsub(rrds[k], ".rrd", "")
-      
+
    if(proto ~= "bytes") then
       label = l4Label(proto)
       print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
@@ -363,7 +363,7 @@ function capitaliseFirstLetter(string)
 	 var megabyte = kilobyte * 1024;
 	 var gigabyte = megabyte * 1024;
 	 var terabyte = gigabyte * 1024;
-	 
+
 	 if ((bytes >= 0) && (bytes < kilobyte)) {
 	    return bytes + ' B';
 
@@ -397,14 +397,14 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 
 		var formattedXValue = fdate(point.value.x); // point.formattedXValue;
 		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
-		var infoHTML = ""; 
+		var infoHTML = "";
 ]]
 if (xInfoURL) then
   print [[
 		$.ajax({
 			type: 'GET',
-			url: ']] 
-  print(xInfoURL) 
+			url: ']]
+  print(xInfoURL)
   print [[',
 			data: { epoch: point.value.x },
 			async: false,
@@ -503,4 +503,76 @@ else
   print("<div class=\"alert alert-error\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
 
 end
+end
+
+function createRRDcounter(path, verbose)
+   if(not(ntop.exists(name))) then
+      if(verbose) then print('Creating RRD ', name, '\n') end
+      ntop.rrd_create(
+	 name,
+	 '--start', 'now',
+	 '--step', '300',
+	 'DS:sent:DERIVE:600:U:U',
+	 'DS:rcvd:DERIVE:600:U:U',
+	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
+	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
+	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
+   end
+end
+
+
+function createSingleRRDcounter(path, verbose)
+   if(not(ntop.exists(path))) then
+      if(verbose) then print('Creating RRD ', path, '\n') end
+      ntop.rrd_create(
+	 path,
+	 '--start', 'now',
+	 '--step', '300',
+	 'DS:num:DERIVE:600:U:U',
+	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
+	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
+	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
+   end
+end
+
+
+function dumpSingleTreeCounters(basedir, label, host, verbose)
+   what = host[label]
+
+   if(what ~= nil) then
+      for k,v in pairs(what) do
+	 for k1,v1 in pairs(v) do
+	    print("-->"..k1.."/".. type(v1).."<--\n")
+
+	    if(type(v1) == "table") then
+	       for k2,v2 in pairs(v1) do
+
+		  dname = fixPath(basedir.."/"..label.."/"..k.."/"..k1)
+
+		  if(not(ntop.exists(dname))) then
+		     ntop.mkdir(dname)
+		  end
+
+		  fname = dname..fixPath("/"..k2..".rrd")
+		  createSingleRRDcounter(fname, verbose)
+		  ntop.rrd_update(fname, "N:"..v2)
+		  if(verbose) then print("\t"..fname.."\n") end
+	       end
+	    else
+	       dname = fixPath(basedir.."/"..label.."/"..k)
+
+	       if(not(ntop.exists(dname))) then
+		  ntop.mkdir(dname)
+	       end
+
+	       fname = dname..fixPath("/"..k1..".rrd")
+	       createSingleRRDcounter(fname, verbose)
+	       ntop.rrd_update(fname, "N:"..v1)
+	       if(verbose) then print("\t"..fname.."\n") end
+	    end
+	 end
+      end
+   end
 end

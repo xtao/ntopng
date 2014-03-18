@@ -66,7 +66,7 @@ for key, value in pairs(hosts_stats) do
 
    if((aggregation ~= nil) and (hosts_stats[key]["aggregation"] ~= nil)) then
       --io.write(hosts_stats[key]["aggregation"].." <> "..aggregation.."\n")
-      io.write("'"..hosts_stats[key]["aggregation"].."' <> '"..aggregation.."'\n")
+      -- io.write("'"..hosts_stats[key]["aggregation"].."' <> '"..aggregation.."'\n")
       if(tonumber(hosts_stats[key]["aggregation"]) ~= aggregation) then
 	 ok = false      
       end

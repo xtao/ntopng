@@ -36,6 +36,8 @@ void DnsStats::luaStats(lua_State *vm, struct dns_stats *stats, const char *labe
   lua_push_int_table_entry(vm, "num_queries", stats->num_queries);
   lua_push_int_table_entry(vm, "num_replies_ok", stats->num_replies_ok);
   lua_push_int_table_entry(vm, "num_replies_error", stats->num_replies_error);
+
+  lua_newtable(vm);
   lua_push_int_table_entry(vm, "num_a", stats->breakdown.num_a);
   lua_push_int_table_entry(vm, "num_ns", stats->breakdown.num_ns);
   lua_push_int_table_entry(vm, "num_cname", stats->breakdown.num_cname);
@@ -46,6 +48,10 @@ void DnsStats::luaStats(lua_State *vm, struct dns_stats *stats, const char *labe
   lua_push_int_table_entry(vm, "num_aaaa", stats->breakdown.num_aaaa);
   lua_push_int_table_entry(vm, "num_any", stats->breakdown.num_any);
   lua_push_int_table_entry(vm, "num_other", stats->breakdown.num_other);
+  lua_pushstring(vm, "queries");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+
   lua_pushstring(vm, label);
   lua_insert(vm, -2);
   lua_settable(vm, -3);
@@ -80,21 +86,24 @@ char* DnsStats::serialize() {
 /* ******************************************* */
 
 void DnsStats::deserializeStats(json_object *o, struct dns_stats *stats) {
-  json_object *obj;
+  json_object *obj, *s;
 
   if(json_object_object_get_ex(o, "num_queries", &obj)) stats->num_queries = json_object_get_int64(obj); else stats->num_queries = 0;
   if(json_object_object_get_ex(o, "num_replies_ok", &obj)) stats->num_replies_ok = json_object_get_int64(obj); else stats->num_replies_ok = 0;
   if(json_object_object_get_ex(o, "num_replies_error", &obj)) stats->num_replies_error = json_object_get_int64(obj); else stats->num_replies_error = 0;    
-  if(json_object_object_get_ex(o, "num_a", &obj)) stats->breakdown.num_a = json_object_get_int64(obj); else stats->breakdown.num_a = 0;
-  if(json_object_object_get_ex(o, "num_ns", &obj)) stats->breakdown.num_ns = json_object_get_int64(obj); else stats->breakdown.num_ns = 0;
-  if(json_object_object_get_ex(o, "num_cname", &obj)) stats->breakdown.num_cname = json_object_get_int64(obj); else stats->breakdown.num_cname = 0;
-  if(json_object_object_get_ex(o, "num_soa", &obj)) stats->breakdown.num_soa = json_object_get_int64(obj); else stats->breakdown.num_soa = 0;
-  if(json_object_object_get_ex(o, "num_ptr", &obj)) stats->breakdown.num_ptr = json_object_get_int64(obj); else stats->breakdown.num_ptr = 0;
-  if(json_object_object_get_ex(o, "num_mx", &obj)) stats->breakdown.num_mx = json_object_get_int64(obj); else stats->breakdown.num_mx = 0;
-  if(json_object_object_get_ex(o, "num_txt", &obj)) stats->breakdown.num_txt = json_object_get_int64(obj); else stats->breakdown.num_txt = 0;
-  if(json_object_object_get_ex(o, "num_aaaa", &obj)) stats->breakdown.num_aaaa = json_object_get_int64(obj); else stats->breakdown.num_aaaa = 0;
-  if(json_object_object_get_ex(o, "num_any", &obj)) stats->breakdown.num_any = json_object_get_int64(obj); else stats->breakdown.num_any = 0;
-  if(json_object_object_get_ex(o, "num_other", &obj)) stats->breakdown.num_other = json_object_get_int64(obj); else stats->breakdown.num_other = 0;
+
+  if(json_object_object_get_ex(o, "stats", &s)) {
+    if(json_object_object_get_ex(s, "num_a", &obj)) stats->breakdown.num_a = json_object_get_int64(obj); else stats->breakdown.num_a = 0;
+    if(json_object_object_get_ex(s, "num_ns", &obj)) stats->breakdown.num_ns = json_object_get_int64(obj); else stats->breakdown.num_ns = 0;
+    if(json_object_object_get_ex(s, "num_cname", &obj)) stats->breakdown.num_cname = json_object_get_int64(obj); else stats->breakdown.num_cname = 0;
+    if(json_object_object_get_ex(s, "num_soa", &obj)) stats->breakdown.num_soa = json_object_get_int64(obj); else stats->breakdown.num_soa = 0;
+    if(json_object_object_get_ex(s, "num_ptr", &obj)) stats->breakdown.num_ptr = json_object_get_int64(obj); else stats->breakdown.num_ptr = 0;
+    if(json_object_object_get_ex(s, "num_mx", &obj)) stats->breakdown.num_mx = json_object_get_int64(obj); else stats->breakdown.num_mx = 0;
+    if(json_object_object_get_ex(s, "num_txt", &obj)) stats->breakdown.num_txt = json_object_get_int64(obj); else stats->breakdown.num_txt = 0;
+    if(json_object_object_get_ex(s, "num_aaaa", &obj)) stats->breakdown.num_aaaa = json_object_get_int64(obj); else stats->breakdown.num_aaaa = 0;
+    if(json_object_object_get_ex(s, "num_any", &obj)) stats->breakdown.num_any = json_object_get_int64(obj); else stats->breakdown.num_any = 0;
+    if(json_object_object_get_ex(s, "num_other", &obj)) stats->breakdown.num_other = json_object_get_int64(obj); else stats->breakdown.num_other = 0;
+  }
 }
 
 /* ******************************************* */
@@ -115,22 +124,24 @@ void DnsStats::deserialize(json_object *o) {
 
 json_object* DnsStats::getStatsJSONObject(struct dns_stats *stats) {
   json_object *my_object = json_object_new_object();
+  json_object *my_stats = json_object_new_object();
 
   if(stats->num_queries > 0) json_object_object_add(my_object, "num_queries", json_object_new_int64(stats->num_queries));
   if(stats->num_replies_ok > 0) json_object_object_add(my_object, "num_replies_ok", json_object_new_int64(stats->num_replies_ok));
   if(stats->num_replies_error > 0) json_object_object_add(my_object, "num_replies_error", json_object_new_int64(stats->num_replies_error));
+ 
+  if(stats->breakdown.num_a > 0) json_object_object_add(my_stats, "num_a", json_object_new_int64(stats->breakdown.num_a));
+  if(stats->breakdown.num_ns > 0) json_object_object_add(my_stats, "num_ns", json_object_new_int64(stats->breakdown.num_ns));
+  if(stats->breakdown.num_cname > 0) json_object_object_add(my_stats, "num_cname", json_object_new_int64(stats->breakdown.num_cname));
+  if(stats->breakdown.num_soa > 0) json_object_object_add(my_stats, "num_soa", json_object_new_int64(stats->breakdown.num_soa));
+  if(stats->breakdown.num_ptr > 0) json_object_object_add(my_stats, "num_ptr", json_object_new_int64(stats->breakdown.num_ptr));
+  if(stats->breakdown.num_mx > 0) json_object_object_add(my_stats, "num_mx", json_object_new_int64(stats->breakdown.num_mx));
+  if(stats->breakdown.num_txt > 0) json_object_object_add(my_stats, "num_txt", json_object_new_int64(stats->breakdown.num_txt));
+  if(stats->breakdown.num_aaaa > 0) json_object_object_add(my_stats, "num_aaaa", json_object_new_int64(stats->breakdown.num_aaaa));
+  if(stats->breakdown.num_any > 0) json_object_object_add(my_stats, "num_any", json_object_new_int64(stats->breakdown.num_any));
+  if(stats->breakdown.num_other > 0) json_object_object_add(my_stats, "num_other", json_object_new_int64(stats->breakdown.num_other));
+  json_object_object_add(my_object, "stats", my_stats);
 
-  if(stats->breakdown.num_a > 0) json_object_object_add(my_object, "num_a", json_object_new_int64(stats->breakdown.num_a));
-  if(stats->breakdown.num_ns > 0) json_object_object_add(my_object, "num_ns", json_object_new_int64(stats->breakdown.num_ns));
-  if(stats->breakdown.num_cname > 0) json_object_object_add(my_object, "num_cname", json_object_new_int64(stats->breakdown.num_cname));
-  if(stats->breakdown.num_soa > 0) json_object_object_add(my_object, "num_soa", json_object_new_int64(stats->breakdown.num_soa));
-  if(stats->breakdown.num_ptr > 0) json_object_object_add(my_object, "num_ptr", json_object_new_int64(stats->breakdown.num_ptr));
-  if(stats->breakdown.num_mx > 0) json_object_object_add(my_object, "num_mx", json_object_new_int64(stats->breakdown.num_mx));
-  if(stats->breakdown.num_txt > 0) json_object_object_add(my_object, "num_txt", json_object_new_int64(stats->breakdown.num_txt));
-  if(stats->breakdown.num_aaaa > 0) json_object_object_add(my_object, "num_aaaa", json_object_new_int64(stats->breakdown.num_aaaa));
-  if(stats->breakdown.num_any > 0) json_object_object_add(my_object, "num_any", json_object_new_int64(stats->breakdown.num_any));
-  if(stats->breakdown.num_other > 0) json_object_object_add(my_object, "num_other", json_object_new_int64(stats->breakdown.num_other));
-  
   return(my_object);
 }
 

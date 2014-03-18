@@ -31,76 +31,76 @@ print "[\n"
 --end
 
 if(host ~= nil) then
-   tot = host["dns"][what]["num_a"] + host["dns"][what]["num_ns"] + host["dns"][what]["num_cname"] + host["dns"][what]["num_soa"] + host["dns"][what]["num_ptr"] + host["dns"][what]["num_mx"]  + host["dns"][what]["num_txt"] + host["dns"][what]["num_aaaa"] + host["dns"][what]["num_any"]
+   tot = host["dns"][what]["queries"]["num_a"] + host["dns"][what]["queries"]["num_ns"] + host["dns"][what]["queries"]["num_cname"] + host["dns"][what]["queries"]["num_soa"] + host["dns"][what]["queries"]["num_ptr"] + host["dns"][what]["queries"]["num_mx"]  + host["dns"][what]["queries"]["num_txt"] + host["dns"][what]["queries"]["num_aaaa"] + host["dns"][what]["queries"]["num_any"]
    
    if(tot > 0) then
       min = (tot * 3)/100
       comma = ""
 
-      if(host["dns"][what]["num_a"] > min) then 
-	 print('\t { "label": "A", "value": '.. host["dns"][what]["num_a"] .. '}\n')
+      if(host["dns"][what]["queries"]["num_a"] > min) then 
+	 print('\t { "label": "A", "value": '.. host["dns"][what]["queries"]["num_a"] .. '}\n')
 	 comma = "," 
       else 
-	 left = left + host["dns"][what]["num_a"]
+	 left = left + host["dns"][what]["queries"]["num_a"]
       end
 
-      if(host["dns"][what]["num_ns"] > min) then
-	 print(comma..'\t { "label": "NS", "value": '.. host["dns"][what]["num_ns"] .. '}\n')
+      if(host["dns"][what]["queries"]["num_ns"] > min) then
+	 print(comma..'\t { "label": "NS", "value": '.. host["dns"][what]["queries"]["num_ns"] .. '}\n')
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_ns"]
+	 left = left + host["dns"][what]["queries"]["num_ns"]
       end
 
-      if(host["dns"][what]["num_cname"] > min) then
-	 print(comma..'\t { "label": "CNAME", "value": '.. host["dns"][what]["num_cname"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_cname"] > min) then
+	 print(comma..'\t { "label": "CNAME", "value": '.. host["dns"][what]["queries"]["num_cname"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_cname"] 
+	 left = left + host["dns"][what]["queries"]["num_cname"] 
       end
 
-      if(host["dns"][what]["num_soa"] > min) then
-	 print(comma..'\t { "label": "SOA", "value": '.. host["dns"][what]["num_soa"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_soa"] > min) then
+	 print(comma..'\t { "label": "SOA", "value": '.. host["dns"][what]["queries"]["num_soa"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_soa"] 
+	 left = left + host["dns"][what]["queries"]["num_soa"] 
       end
 
-      if(host["dns"][what]["num_ptr"] > min) then
-	 print(comma..'\t { "label": "PTR", "value": '.. host["dns"][what]["num_ptr"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_ptr"] > min) then
+	 print(comma..'\t { "label": "PTR", "value": '.. host["dns"][what]["queries"]["num_ptr"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_ptr"]
+	 left = left + host["dns"][what]["queries"]["num_ptr"]
       end
 
-      if(host["dns"][what]["num_mx"] > min) then
-	 print(comma..'\t { "label": "MX", "value": '.. host["dns"][what]["num_mx"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_mx"] > min) then
+	 print(comma..'\t { "label": "MX", "value": '.. host["dns"][what]["queries"]["num_mx"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_mx"] 
+	 left = left + host["dns"][what]["queries"]["num_mx"] 
       end
 
-      if(host["dns"][what]["num_txt"] > min) then
-	 print(comma..'\t { "label": "TXT", "value": '.. host["dns"][what]["num_txt"] .. '}\n')
+      if(host["dns"][what]["queries"]["num_txt"] > min) then
+	 print(comma..'\t { "label": "TXT", "value": '.. host["dns"][what]["queries"]["num_txt"] .. '}\n')
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_txt"]
+	 left = left + host["dns"][what]["queries"]["num_txt"]
       end
 
-      if(host["dns"][what]["num_aaaa"] > min) then
-	 print(comma..'\t { "label": "AAAA", "value": '.. host["dns"][what]["num_aaaa"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_aaaa"] > min) then
+	 print(comma..'\t { "label": "AAAA", "value": '.. host["dns"][what]["queries"]["num_aaaa"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_aaaa"]
+	 left = left + host["dns"][what]["queries"]["num_aaaa"]
       end
 
-      if(host["dns"][what]["num_any"] > min) then
-	 print(comma..'\t { "label": "ANY", "value": '.. host["dns"][what]["num_any"] .. '}\n') 
+      if(host["dns"][what]["queries"]["num_any"] > min) then
+	 print(comma..'\t { "label": "ANY", "value": '.. host["dns"][what]["queries"]["num_any"] .. '}\n') 
 	 comma = "," 
       else
-	 left = left + host["dns"][what]["num_any"] 
+	 left = left + host["dns"][what]["queries"]["num_any"] 
       end
       
-      other = host["dns"][what]["num_other"] + left
+      other = host["dns"][what]["queries"]["num_other"] + left
       if(other > 0) then print(comma..'\t { "label": "Other", "value": '.. other .. '}\n') 
       end
    end

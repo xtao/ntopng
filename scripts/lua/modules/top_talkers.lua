@@ -53,6 +53,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    interface.find(ifname)
    hosts_stats = interface.getFlowsInfo()
+   interfacename = purifyInterfaceName(ifname)
 
    sent = {}
    _sent = {}
@@ -100,7 +101,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    -- io.write("Hello\n")
    if((mode == nil) or (mode == "senders")) then
-      talkers_dir = fixPath(dirs.workingdir .. "/" .. ifname .. "/top_talkers")
+      talkers_dir = fixPath(dirs.workingdir .. "/" .. interfacename .. "/top_talkers")
       if(not(ntop.exists(talkers_dir))) then   
 	 ntop.mkdir(talkers_dir)
       end
@@ -164,7 +165,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    if((mode == nil) or (mode == "receivers")) then
       -- Read the lastdump
-      lastdump = fixPath(dirs.workingdir .. "/" .. ifname .. "/top_talkers/.rcvd_lastdump")
+      lastdump = fixPath(dirs.workingdir .. "/" .. interfacename .. "/top_talkers/.rcvd_lastdump")
       last = nil
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)
