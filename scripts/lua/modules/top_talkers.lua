@@ -27,6 +27,7 @@ function getHistoricalTopTalkers(ifname, mode, epoch)
    dirs = ntop.getDirs()
    filename = fixPath(dirs.workingdir .. "/".. purifyInterfaceName(ifname) .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
 
+   -- print(filename)
    if(ntop.exists(filename)) then
       f = io.open(filename, "r")
       if(f) then
@@ -144,7 +145,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 	 key   = sent[_key]
 	 value = _key
 
-	 if((value == 0) or ((value < threshold) and (num > 2))) then break end
+	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
 	 num = num + 1
@@ -204,7 +205,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 	 key   = rcvd[_key]
 	 value = _key
 
-	 if((value == 0) or ((value < threshold) and (num > 2))) then break end
+	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
 	 num = num + 1

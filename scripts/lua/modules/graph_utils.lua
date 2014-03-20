@@ -2,7 +2,20 @@
 -- (C) 2013-14 - ntop.org
 --
 
+function navigatedir(path, files)
+   rrds = ntop.readdir(path)
 
+   for k,v in pairsByKeys(rrds, asc) do
+      p = fixPath(path .. "/" .. rrds[k])
+
+      if(ntop.isdir(p)) then
+	 navigatedir(p, files)
+      else
+	 table.insert(files, p)
+      end
+   end
+
+end
 
 function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
    if((sent+rcvd) > 0) then
@@ -214,11 +227,26 @@ if(show_timeseries == 1) then
 print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
 print('<li class="divider"></li>\n')
 dirs = ntop.getDirs()
-rrds = ntop.readdir(fixPath(dirs.workingdir .. "/" .. ifname .. "/rrd/" .. host))
+d = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host)
+
+print("<li>  "..d.."  </li>\n")
+
+rrds = ntop.readdir(d)
+
+files = {}
+
+navigatedir(d, files)
+
+for k in pairs(files) do
+   print("<li>"..n.."</li>\n")
+
+end
 
 for k,v in pairsByKeys(rrds, asc) do
+   print("<li>"..rrds[k].."</li>\n")
    proto = string.gsub(rrds[k], ".rrd", "")
 
+   
    if(proto ~= "bytes") then
       label = l4Label(proto)
       print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
@@ -544,7 +572,7 @@ function dumpSingleTreeCounters(basedir, label, host, verbose)
    if(what ~= nil) then
       for k,v in pairs(what) do
 	 for k1,v1 in pairs(v) do
-	    print("-->"..k1.."/".. type(v1).."<--\n")
+	    -- print("-->"..k1.."/".. type(v1).."<--\n")
 
 	    if(type(v1) == "table") then
 	       for k2,v2 in pairs(v1) do
