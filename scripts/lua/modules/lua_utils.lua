@@ -54,6 +54,25 @@ function findString(str, tofind)
    return(rsp)
 end
 
+function findStringArray(str, tofind)
+   if(str == nil) then return(nil) end
+   if(tofind == nil) then return(nil) end
+   local rsp = nil
+   
+   num = 0
+   for k,v in pairs(tofind) do 
+     str1    = string.gsub(str, "-", "_")
+     tofind1 = string.gsub(v, "-", "_")
+     if(string.find(str1, tofind1, 1) == 1) then
+       rsp = num
+     end
+     num = num + 1
+   end
+
+   return(rsp)
+end
+
+
 function string.contains(String,Start)
    return(string.find(String,Start,1) ~= nil)
 end
@@ -827,6 +846,16 @@ function getItemsNumber(n)
    return(tot)
 end
 
+
+function getHostCommaSeparatedList(p_hosts)
+  hosts = {}
+  hosts_size = 0
+  for i,host in pairs(split(p_hosts, ",")) do
+    hosts[i] = host
+    hosts_size = hosts_size + 1
+  end
+  return hosts,hosts_size
+end
 -- version is major.minor.veryminor
 function version2int(v)
    e = string.split(v, "%.");

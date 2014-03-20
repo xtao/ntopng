@@ -14,19 +14,52 @@ active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 application = _GET["application"]
+hosts = _GET["hosts"]
+aggregation = _GET["aggregation"]
+key = _GET["key"]
 
 stats = interface.getNdpiStats()
-
+num_param = 0
 print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
 	 $("#table-hosts").datatable({
 			url: "/lua/get_flows_data.lua]] 
-
 if(application ~= nil) then
    print("?application="..application)
-      end
+   num_param = num_param + 1
+end
+
+if(hosts ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("hosts="..hosts)
+  num_param = num_param + 1
+end
+
+if(aggregation ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("aggregation="..aggregation)
+  num_param = num_param + 1
+end
+
+if(key ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("key="..key)
+  num_param = num_param + 1
+end
 
 print [[",
 	       showPagination: true,

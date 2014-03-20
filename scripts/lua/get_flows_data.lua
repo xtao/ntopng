@@ -17,6 +17,11 @@ host        = _GET["host"]
 port        = _GET["port"]
 application = _GET["application"]
 
+hosts = _GET["hosts"]
+aggregation = _GET["aggregation"]
+key = _GET["key"]
+
+
 if(currentPage == nil) then
    currentPage = 1
 else
@@ -39,20 +44,47 @@ total = 0
 to_skip = (currentPage-1) * perPage
 
 --host = "a"
+
+-- Prepare host
+host_list = {}
+num_host_list = 0
+
+if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
+if (host ~= nil) then
+  num_host_list = num_host_list + 1 
+  host_list[num_host_list] = host 
+end
+
+-- Prepare aggregation
+if ((aggregation ~= nil) and (key ~= nil)) then
+
+  if (aggregation == "ndpi") then application = key end
+  if (aggregation == "l4proto") then l4proto = key end
+  if (aggregation == "port") then port = tonumber(key) end
+
+end
+
 vals = {}
 num = 0
 for key, value in pairs(flows_stats) do
 --   print(key.."\n")
 
    process = 1
-   if(host ~= nil) then
-      if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
-	 process = 0
+
+  if ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) or
+          (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
+          process  = 0
+  end -- findStringArray
+   
+   if(l4proto ~= nil) then
+      if (flows_stats[key]["proto.l4"] ~= l4proto) then
+       process = 0
       end
-   end	
+   end
+   
    if(port ~= nil) then
       if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
-	 process = 0
+	     process = 0
       end
    end
 
