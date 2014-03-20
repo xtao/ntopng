@@ -18,7 +18,7 @@ if(page == nil) then
   page = "overview"
 end
 
-active_traffic = false
+active_traffic = true
 active_packets = false
 active_ndpi = false
 show_aggregation = true
@@ -132,6 +132,67 @@ print[[
   {
    // disabled graph interval
    clearInterval(sankey_interval);
+   //clearInterval(bubble_interval);
+  });  
+</script>
+
+]]
+end -- End if(show_aggregation)
+
+-- =========================== Aggregation Menu =================
+print("<center>")
+print("<div class=\"row-fluid\">")
+print("  <div>")
+dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
+print("  </div>")
+
+print("</div>")
+print("</center>")
+
+
+elseif(page == "traffic") then
+
+if(show_aggregation) then
+   print [[
+<div class="btn-group">
+  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+]]
+
+print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=ndpi">'.. "Application" ..'</a></li>\n')
+print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=l4proto">'.. "Proto L4" ..'</a></li>\n')
+print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=port">'.. "Port" ..'</a></li>\n')
+print [[
+  </ul>
+</div><!-- /btn-group -->
+
+
+]]
+
+
+
+print('&nbsp;Refresh:  <div class="btn-group">\n')
+ print[[
+ <button id="graph_refresh" class="btn btn-small">
+    <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="icon-refresh"></i></button>")
+]]
+print [[
+</div>
+</div>
+<br/>
+]]
+
+print[[
+<script>
+   $("#graph_refresh").click(function() {
+    sankey();
+    bubble();
+  });
+
+  $(window).load(function() 
+  {
+   // disabled graph interval
+   //clearInterval(sankey_interval);
    clearInterval(bubble_interval);
   });  
 </script>
@@ -142,24 +203,11 @@ end -- End if(show_aggregation)
 -- =========================== Aggregation Menu =================
 print("<center>")
 print("<div class=\"row-fluid\">")
-print("  <div class=\"span1\"></div>")
-print("  <div class=\"span4\">")
+print("  <div>")
 dofile(dirs.installdir .. "/scripts/lua/inc/bubblechart.lua")
 print("  </div>")
-print("  <div class=\"span6\">")
-dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
-print("  </div>")
-print("  <div class=\"span1\"></div>")
 print("</div>")
 print("</center>")
-
-
-elseif(page == "traffic") then
-
-print [[
-</div>
-<br/>
-]]
 
 
 

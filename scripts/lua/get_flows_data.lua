@@ -48,11 +48,11 @@ to_skip = (currentPage-1) * perPage
 -- Prepare host
 host_list = {}
 num_host_list = 0
+sigle_host = 0
 
 if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
 if (host ~= nil) then
-  num_host_list = num_host_list + 1 
-  host_list[num_host_list] = host 
+	sigle_host = 1
 end
 
 -- Prepare aggregation
@@ -70,12 +70,17 @@ for key, value in pairs(flows_stats) do
 --   print(key.."\n")
 
    process = 1
+  if(num_host_list > 0) then
+  	if(sigle_host == 1) then
+  		 if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
+				 process = 0
+			end
+	  elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
+	          (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
+	          process  = 0
+	  end 
+	 end
 
-  if ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) or
-          (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
-          process  = 0
-  end -- findStringArray
-   
    if(l4proto ~= nil) then
       if (flows_stats[key]["proto.l4"] ~= l4proto) then
        process = 0
