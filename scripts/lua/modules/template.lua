@@ -191,6 +191,9 @@ template = {
    -- Process
    ['PROC_ID'] = NTOP_BASE_ID+168,
    ['PROC_NAME'] = NTOP_BASE_ID+169,
+   ['PROC_FATHER_ID'] = NTOP_BASE_ID+372,
+   ['PROC_FATHER_NAME'] = NTOP_BASE_ID+373,
+   ['PROC_USER_NAME'] = NTOP_BASE_ID+374,
 
    -- HTTP
    ['HTTP_URL'] = NTOP_BASE_ID+180,

@@ -233,8 +233,14 @@ local flow_fields_description = {
     ["HTTP_UA"] = "HTTP User Agent", 
     ["HTTP_MIME"] = "HTTP Mime Type", 
     ["HTTP_HOST"] = "HTTP Host Name", 
-    ["HTTP_FBOOK_CHAT"] = "HTTP Facebook Chat"
-}
+    ["HTTP_FBOOK_CHAT"] = "HTTP Facebook Chat",
+    ['PROC_ID'] = "Process ID",
+    ['PROC_NAME'] = "Process Name",
+    ['PROC_FATHER_ID'] = "Father PID",
+    ['PROC_FATHER_NAME'] = "Father Name",
+    ['PROC_USER_NAME'] = "User Name",
+    
+ }
 
 -- #######################
 

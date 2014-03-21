@@ -396,6 +396,29 @@ static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
 /* ****************************************** */
 
 /**
+ * @brief Check if the specified path is a directory and it exists.
+ * @details True if if the specified path is a directory and it exists, false otherwise. 
+ * 
+ * @param vm The lua state.
+ * @return CONST_LUA_OK
+ */
+static int ntop_is_dir(lua_State* vm) {
+  char *path;
+  struct stat buf;
+  int rc;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  path = (char*)lua_tostring(vm, 1);
+
+  rc = ((stat(path, &buf) != 0) || (!S_ISDIR(buf.st_mode))) ? 0 : 1;
+  lua_pushboolean(vm, rc);
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+/**
  * @brief Check if the file or directory exists.
  * @details Get the path of file/direcrotry from to lua stack and push true into lua stack if it exists, false otherwise. 
  * 
@@ -1882,6 +1905,7 @@ static const luaL_Reg ntop_reg[] = {
   { "getHostId",      ntop_redis_get_host_id },
   { "getIdToHost",    ntop_redis_get_id_to_host },
 
+  { "isdir",          ntop_is_dir },
   { "mkdir",          ntop_mkdir_tree },
   { "exists",         ntop_get_file_dir_exists },
   { "readdir",        ntop_list_dir_files },
