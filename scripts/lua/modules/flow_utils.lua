@@ -239,6 +239,7 @@ local flow_fields_description = {
     ['PROC_FATHER_ID'] = "Father PID",
     ['PROC_FATHER_NAME'] = "Father Name",
     ['PROC_USER_NAME'] = "User Name",
+    ['PROC_CPU_ID'] = "Process CPU ID",
     
  }
 
