@@ -2992,15 +2992,26 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
-      LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a"
-      CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib -I${PF_RING_HOME}/userland/libpcap"
+  echo "${PF_RING_HOME}/userland/libpcap/libpcap.a"
+     if test -f "${PF_RING_HOME}/userland/libpcap/libpcap.a"; then
+       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a -L${PF_RING_HOME}/userland/libpcap/"
+       CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib -I${PF_RING_HOME}/userland/libpcap"
+       echo "Using PF_RING installed in ${PF_RING_HOME}"
+     else
+       echo "Found PF_RING but the userland libs have not been compiled"
+       exit
+     fi
   else
-      LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
-  fi
-  if test -f "/usr/local/lib/libpfring.a"; then
-    echo "Using PF_RING installed in /usr/local/lib"
-  else
-    echo "Using PF_RING installed in ${PF_RING_HOME}"
+    if test -f "/usr/local/lib/libpfring.a"; then
+        if test -f "/usr/local/lib/libpcap.a"; then
+    	  LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
+          echo "Using PF_RING installed in /usr/local/lib"
+	else
+	  echo "Found /usr/local/lib/libpfring.a  but missing libpcap.a in the same directory"
+	  echo "Please make sure you have installed your PF_RING libraries and try again"
+	  exit
+        fi
+    fi
   fi
 else
 
@@ -3788,6 +3799,9 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   SQLITE_LIB="-lsqlite3"
+else
+  echo "SQLite 3.x missing (libsqlite3-dev): please install it and try again"
+  exit
 fi
 
 

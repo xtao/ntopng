@@ -55,9 +55,7 @@ NetworkInterface::NetworkInterface() {
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true;
 
-#ifdef HAVE_SQLITE
   db = new DB(this);
-#endif
 }
 
 /* **************************************************** */
@@ -140,9 +138,7 @@ NetworkInterface::NetworkInterface(const char *name) {
   cpu_affinity = -1;
   running = false;
 
-#ifdef HAVE_SQLITE
   db = new DB(this);
-#endif
 }
 
 /* **************************************************** */
@@ -173,19 +169,13 @@ NetworkInterface::~NetworkInterface() {
   }
 
   deleteDataStructures();
-#ifdef HAVE_SQLITE
   delete db;
-#endif
 }
 
 /* **************************************************** */
 
 bool NetworkInterface::dumpFlow(time_t when, Flow *f) {
-#ifdef HAVE_SQLITE
   return(db->dumpFlow(when, f));
-#else
-  return(false);
-#endif
 }
 
 /* **************************************************** */

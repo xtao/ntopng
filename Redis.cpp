@@ -762,7 +762,6 @@ int Redis::id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len) {
 
 bool Redis::dumpDailyStatsKeys(char *day) {
   bool rc = false;
-#ifdef HAVE_SQLITE
   sqlite3 *db;
   char buf[256];
   char *zErrMsg;
@@ -1007,7 +1006,6 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   del(buf);
 
   sqlite3_close(db);
-#endif
 
   return(rc);
 }

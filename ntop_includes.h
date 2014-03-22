@@ -92,9 +92,7 @@ extern "C" {
 #include "pfring.h"
 #endif
 #include "json.h"
-#ifdef HAVE_SQLITE
 #include <sqlite3.h>
-#endif
 #include "hiredis.h"
 };
 
@@ -137,9 +135,7 @@ extern "C" {
 #include "GenericHost.h"
 #include "Host.h"
 #include "Flow.h"
-#ifdef HAVE_SQLITE
 #include "DB.h"
-#endif
 #include "FlowHash.h"
 #include "HostHash.h"
 #include "PeriodicActivities.h"

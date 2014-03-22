@@ -24,8 +24,6 @@
 
 #include "ntop_includes.h"
 
-#ifdef HAVE_SQLITE
-
 typedef struct {
   sqlite3 *db;
   u_int32_t num_contacts_db_insert;
@@ -61,7 +59,5 @@ class DB {
   void dumpContacts(HostContacts *c, char *path);
   bool execContactsSQLStatement(char* _sql);
 };
-
-#endif /* HAVE_SQLITE */
 
 #endif /* _DB_CLASS_H_ */

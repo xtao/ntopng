@@ -20,7 +20,6 @@
  */
 
 #include "ntop_includes.h"
-#ifdef HAVE_SQLITE
 
 /* ******************************************* */
 
@@ -305,5 +304,4 @@ bool DB::execContactsSQLStatement(char* _sql) {
   return(false);
 }
 
-#endif
 

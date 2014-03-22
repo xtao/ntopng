@@ -95,9 +95,7 @@ void usage() {
 	 "         [-w <http port>] [-W <https port>] [-p <protos>] [-P] [-d <path>]\n"
 	 "         [-c <categorization key>] [-r <redis>]\n"
 	 "         [-l] [-U <sys user>] [-s] [-v] [-C]\n"
-#ifdef HAVE_SQLITE
 	 "         [-F] [-D <mode>] [-E <mode>]\n"
-#endif
 	 "         [-B <filter>] [-A <mode>]\n"
 	 "\n"
 	 "Options:\n"
@@ -161,7 +159,6 @@ void usage() {
 	 "                                    | 1 - Enable aggregations, no timeline dump\n"
 	 "                                    | 2 - Enable aggregations, with timeline\n"
 	 "                                    |     dump (see -C)\n"
-#ifdef HAVE_SQLITE
 	 "[--dump-flows|-F]                   | Dump expired flows.\n"
 	 "[--dump-hosts|-D] <mode>            | Dump hosts policy (default: none).\n"
 	 "                                    | Values:\n"
@@ -173,7 +170,6 @@ void usage() {
 	 "                                    | all    - Dump all hosts\n"
 	 "                                    | local  - Dump only local hosts\n"
 	 "                                    | remote - Dump only remote hosts\n"
-#endif
 	 "[--sticky-hosts|-S] <mode>          | Dont flush hosts (default: none).\n"
 	 "                                    | Values:\n"
 	 "                                    | all    - Keep all hosts in memory\n"
@@ -222,11 +218,9 @@ static const struct option long_options[] = {
   { "enable-aggregations",               no_argument,       NULL, 'A' },
   { "packet-filter",                     required_argument, NULL, 'B' },
   { "dump-timeline",                     no_argument,       NULL, 'C' },
-#ifdef HAVE_SQLITE
   { "dump-hosts",                        required_argument, NULL, 'D' },
   { "dump-aggregations",                 required_argument, NULL, 'E' },
   { "dump-flows",                        no_argument,       NULL, 'F' },
-#endif
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
@@ -423,11 +417,9 @@ int Prefs::setOption(int optkey, char *optarg) {
     ntop->getTrace()->set_trace_level(MAX_TRACE_LEVEL);
     break;
 
-#ifdef HAVE_SQLITE
   case 'F':
     dump_flows_on_db = true;
     break;
-#endif
 
 #ifndef WIN32
   case 'G':
