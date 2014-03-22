@@ -221,6 +221,25 @@ void CollectorInterface::collect_flows() {
 	      break;
 	    case EPP_SERVER_NAME:
 	      snprintf(flow.epp_server_name, sizeof(flow.epp_server_name), "%s", value);
+	      break;	      
+	    case PROC_CPU_ID:
+	      flow.process.cpu_id = atoi(value);
+	      break;
+	    case PROC_ID:
+	      sprobe_interface = true; /* We're collecting system flows */
+	      flow.process.pid = atoi(value);
+	      break;
+	    case PROC_NAME:
+	      snprintf(flow.process.name, sizeof(flow.process.name), "%s", value);
+	      break;
+	    case PROC_FATHER_ID:
+	      flow.process.father_pid = atoi(value);
+	      break;
+	    case PROC_FATHER_NAME:
+	      snprintf(flow.process.father_name, sizeof(flow.process.father_name), "%s", value);
+	      break;
+	    case PROC_USER_NAME:
+	      snprintf(flow.process.user_name, sizeof(flow.process.user_name), "%s", value);
 	      break;
 	    default:
 	      ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);

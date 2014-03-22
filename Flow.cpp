@@ -33,7 +33,7 @@ Flow::Flow(NetworkInterface *_iface,
     cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
 
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
-  ndpi_flow = NULL, cli_id = srv_id = NULL;
+  ndpi_flow = NULL, cli_id = srv_id = NULL, proc = NULL;
   json_info = strdup("{}");
   tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
@@ -99,6 +99,7 @@ Flow::~Flow() {
   if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
   if(json_info) free(json_info);
+  if(proc) delete(proc);
 
   if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
@@ -121,7 +122,7 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
     StringHost *host;
     char *name = _name;
 
-    if(ntop->getPrefs()->use_short_aggregation_names() 
+    if(ntop->getPrefs()->use_short_aggregation_names()
        && (mode == aggregation_domain_name)
        && (strlen(name) > 3 /* .XX */)) {
       u_int num = 0, i;
@@ -137,7 +138,7 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
 	    name = &_name[i+1];
 	    break;
 	  }
-	}	
+	}
       }
     }
 
@@ -211,7 +212,7 @@ void Flow::processDetectedProtocol() {
 
   case NDPI_PROTOCOL_NETBIOS:
     if(ndpi_flow->host_server_name[0] != '\0')
-      get_cli_host()->set_alternate_name((char*)ndpi_flow->host_server_name);    
+      get_cli_host()->set_alternate_name((char*)ndpi_flow->host_server_name);
     break;
 
   case NDPI_PROTOCOL_WHOIS_DAS:
@@ -492,7 +493,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
 
   if(cli_host)
-    cli_host->incStats(protocol,  ndpi_detected_protocol, diff_sent_packets, diff_sent_bytes,
+    cli_host->incStats(protocol, ndpi_detected_protocol, diff_sent_packets, diff_sent_bytes,
 		       diff_rcvd_packets, diff_rcvd_bytes);
   if(srv_host)
     srv_host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
@@ -500,10 +501,10 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
   if(aggregationInfo.name) {
     StringHost *host = iface->findHostByString(aggregationInfo.name, ndpi_detected_protocol, true);
-    
+
     if(host)
       host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
-		     diff_sent_packets, diff_sent_bytes);    
+		     diff_sent_packets, diff_sent_bytes);
   }
 
   if(last_update_time.tv_sec > 0) {
@@ -595,6 +596,21 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
     lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
     lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
+  }
+
+  if(proc != NULL) {
+    lua_newtable(vm);
+
+    lua_push_int_table_entry(vm, "cpu_id", proc->cpu_id);
+    lua_push_int_table_entry(vm, "pid", proc->pid);
+    lua_push_int_table_entry(vm, "father_pid", proc->father_pid);
+    lua_push_str_table_entry(vm, "name", proc->name);
+    lua_push_str_table_entry(vm, "father_name", proc->father_name);
+    lua_push_str_table_entry(vm, "user_name", proc->user_name);
+
+    lua_pushstring(vm, "process");
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
   }
 
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
@@ -724,10 +740,17 @@ char* Flow::serialize() {
   json_object_object_add(inner, "bytes", json_object_new_int64(cli2srv_bytes));
   json_object_object_add(my_object, "cli2srv", inner);
 
-  inner = json_object_new_object();
-  json_object_object_add(inner, "packets", json_object_new_int64(srv2cli_packets));
-  json_object_object_add(inner, "bytes", json_object_new_int64(srv2cli_bytes));
-  json_object_object_add(my_object, "srv2cli", inner);
+  if(proc != NULL) {
+    inner = json_object_new_object();
+    json_object_object_add(inner, "cpu_id", json_object_new_int64(proc->cpu_id));
+    json_object_object_add(inner, "pid", json_object_new_int64(proc->pid));
+    json_object_object_add(inner, "father_pid", json_object_new_int64(proc->father_pid));
+    json_object_object_add(inner, "name", json_object_new_string(proc->name));
+    json_object_object_add(inner, "father_name", json_object_new_string(proc->father_name));
+    json_object_object_add(inner, "user_name", json_object_new_string(proc->user_name));
+
+    json_object_object_add(my_object, "process", inner);
+  }
 
   /* JSON string */
   rsp = strdup(json_object_to_json_string(my_object));
@@ -778,14 +801,24 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 
 /* *************************************** */
 
-void Flow::updateTcpFlags(time_t when, u_int8_t flags) { 
-  if((flags == TH_SYN) 
+void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
+  if((flags == TH_SYN)
 	  && (tcp_flags == TH_SYN) /* SYN was already received */
 	  && (cli2srv_packets > 2 /* We tolerate two SYN at the beginning of the connection */)
 	  && ((last_seen-first_seen) < 2 /* (sec) SYN flood must be quick */)
-	  && cli_host) 
+	  && cli_host)
     cli_host->updateSynFlags(when, flags, this);
 
   /* The update below must be after the above check */
-  tcp_flags |= flags; 
+  tcp_flags |= flags;
+}
+
+/* *************************************** */
+
+void Flow::handle_process(ZMQ_Flow *zflow) {
+  if(proc == NULL) proc = new ProcessInfo;
+
+  if(!proc) return; /* Out of memory */
+
+  memcpy(proc, &zflow->process, sizeof(ProcessInfo));
 }

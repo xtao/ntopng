@@ -1,0 +1,59 @@
+	       title: "Active Flows",
+	        columns: [
+			     {
+			     title: "Info",
+				 field: "column_key",
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Username",
+				 field: "column_user_name",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Process",
+				 field: "column_process",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Application",
+				 field: "column_ndpi",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "L4 Proto",
+				 field: "column_proto_l4",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Client",
+				 field: "column_client",
+				 sortable: true,
+				 },
+			     {
+			     title: "Server",
+				 field: "column_server",
+				 sortable: true,
+				 },
+			     {
+			     title: "Duration",
+				 field: "column_duration",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			       }
+			       },

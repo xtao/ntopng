@@ -40,6 +40,9 @@ class Flow : public GenericHashEntry {
     bool flow_categorized;
   } categorization;
 
+  /* Process Information */
+  ProcessInfo *proc;
+
   /* Stats */
   u_int32_t cli2srv_packets, srv2cli_packets;
   u_int64_t cli2srv_bytes, srv2cli_bytes;
@@ -74,7 +77,8 @@ class Flow : public GenericHashEntry {
   void allocFlowMemory();
   void deleteFlowMemory();
   char* serialize();
-  inline u_int8_t getTcpFlags()              { return(tcp_flags);  };
+  inline u_int8_t getTcpFlags() { return(tcp_flags);  };
+  inline char* get_username()   { return((proc == NULL) ? NULL : proc->user_name); };              
   void updateTcpFlags(time_t when, u_int8_t flags);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
@@ -105,6 +109,7 @@ class Flow : public GenericHashEntry {
   u_int64_t get_current_bytes_srv2cli();
   void aggregateInfo(char *name, u_int16_t ndpi_proto_id,
 		     AggregationType mode, bool aggregation_to_track);
+  void handle_process(ZMQ_Flow *zflow);
   bool idle();
   int compare(Flow *fb);
   char* print(char *buf, u_int buf_len);

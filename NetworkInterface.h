@@ -45,6 +45,12 @@ typedef struct ether80211q {
   u_int16_t protoType;
 } Ether80211q;
 
+typedef struct {
+  u_int8_t cpu_id;
+  u_int32_t pid, father_pid;
+  char name[48], father_name[48], user_name[48];
+} ProcessInfo;
+
 typedef struct zmq_flow {
   IpAddress src_ip, dst_ip;
   u_int16_t src_port, dst_port, l7_proto;
@@ -59,6 +65,9 @@ typedef struct zmq_flow {
   char epp_server_name[48], epp_registrar_name[48], epp_cmd_args[64], epp_reason_str[16];
   u_int8_t epp_cmd;
   int epp_rsp_code;
+
+  /* Process Extensions */
+  ProcessInfo process;
 } ZMQ_Flow;
 
 /** @class NetworkInterface
@@ -69,8 +78,7 @@ typedef struct zmq_flow {
  *
  */
 class NetworkInterface {
- protected:
-  
+ protected:  
   char *ifname; /**< Network interface name.*/
   EthStats ethStats; 
   int pcap_datalink_type; /**< Datalink type of pcap.*/
@@ -83,7 +91,7 @@ class NetworkInterface {
   HostHash *hosts_hash; /**< Hash used to memorize the hosts information.*/
   /* String hash (Aggregation) */
   StringHash *strings_hash; /**< Hash used to memorize the aggregation information.*/
-  bool purge_idle_flows_hosts;
+  bool purge_idle_flows_hosts, sprobe_interface;
   DB *db;
 
   struct ndpi_detection_module_struct *ndpi_struct;
@@ -131,7 +139,7 @@ class NetworkInterface {
   inline char* get_name()              { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
   void flushHostContacts();
-
+  inline bool is_sprobe_interface()    { return(sprobe_interface); };
   bool dumpFlow(time_t when, Flow *f);
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
     ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
@@ -193,6 +201,7 @@ class NetworkInterface {
   StringHost* findHostByString(char *keyname, u_int16_t family_id, 
 			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
+  void findUserFlows(lua_State *vm, char *username);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

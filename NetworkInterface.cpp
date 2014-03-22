@@ -136,7 +136,7 @@ NetworkInterface::NetworkInterface(const char *name) {
   last_pkt_rcvd = 0;
   next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
   cpu_affinity = -1;
-  running = false;
+  running = false, sprobe_interface = false;
 
   db = new DB(this);
 }
@@ -185,8 +185,8 @@ static bool node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   char buf[512];
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", flow->print(buf, sizeof(buf)));
-
-   return(false); /* false = keep on walking */
+  
+  return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
@@ -322,6 +322,9 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
 
   if(zflow->epp_cmd > 0)
     process_epp_flow(zflow, flow);
+
+  if(zflow->process.pid > 0)
+    flow->handle_process(zflow);
 
   purgeIdle(zflow->last_switched);
 }
@@ -1287,6 +1290,7 @@ void NetworkInterface::lua(lua_State *vm) {
 
   lua_push_str_table_entry(vm, "name", ifname);
   lua_push_str_table_entry(vm, "type", (char*)get_type());
+  lua_push_bool_table_entry(vm, "iface_sprobe", sprobe_interface);
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
@@ -1579,7 +1583,7 @@ bool NetworkInterface::correlateHostActivity(lua_State* vm,
 /* **************************************************** */
 
 bool NetworkInterface::similarHostActivity(lua_State* vm,
-					     char *host_ip, u_int16_t vlan_id) {
+					   char *host_ip, u_int16_t vlan_id) {
   Host *h = getHost(host_ip, vlan_id);
 
   if(h) {
@@ -1594,4 +1598,30 @@ bool NetworkInterface::similarHostActivity(lua_State* vm,
     return(true);
   } else
     return(false);
+}
+
+/* **************************************************** */
+
+struct user_flows {
+  lua_State* vm;
+  char *username;
+};
+
+static bool userfinder_walker(GenericHashEntry *node, void *user_data) {
+  Flow *f = (Flow*)node;
+  struct user_flows *info = (struct user_flows*)user_data;
+  char *user = f->get_username();
+
+  if(user && (strcmp(user, info->username) == 0))
+    f->lua(info->vm, false /* Minimum details */);
+
+  return(false); /* false = keep on walking */
+}
+
+void NetworkInterface::findUserFlows(lua_State *vm, char *username) {
+  struct user_flows u;
+
+  lua_newtable(vm);
+  u.vm = vm, u.username = username;
+  flows_hash->walk(userfinder_walker, &u);
 }

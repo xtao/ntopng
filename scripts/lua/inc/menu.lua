@@ -42,10 +42,18 @@ print [[
 
    ]]
 
-if active_page == "flows" then
-  print [[ <li class="active"><a href="/lua/flows_stats.lua">Flows</a></li> ]]
+ifstats = interface.getStats()
+
+if(ifstats.iface_sprobe) then
+   url = "/lua/sflows_stats.lua"
 else
-  print [[ <li><a href="/lua/flows_stats.lua">Flows</a></li> ]]
+   url = "/lua/flows_stats.lua"
+end
+
+if(active_page == "flows") then
+   print ('<li class="active"><a href="'..url..'">Flows</a></li>')
+else
+   print ('<li><a href="'..url..'">Flows</a></li>')
 end
 
 if active_page == "hosts" then

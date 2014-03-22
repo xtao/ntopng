@@ -119,6 +119,8 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["bytes.last"]+postfix
 	 elseif(sortColumn == "column_ndpi") then
 	 vkey = flows_stats[key]["proto.ndpi"]..postfix
+	 elseif(sortColumn == "column_process") then
+	 vkey = flows_stats[key]["process"]["name"]..postfix
 	 elseif(sortColumn == "column_category") then
 	 c = flows_stats[key]["category"]
 	 if(c == nil) then c = "" end
@@ -234,6 +236,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
+	 if(value["process"] ~= nil) then
+	    print ("\", \"column_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["process"]["pid"] ..">" .. value["process"]["name"].."</A>")
+	    print ("\", \"column_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["process"]["user_name"] ..">" .. value["process"]["user_name"].."</A>")
+	 end
+
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
