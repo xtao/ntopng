@@ -436,10 +436,11 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
     if(verbose) {
       if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
 	 || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN)
-	 || iface->is_ndpi_enabled())
+	 || iface->is_ndpi_enabled()
+	 || iface->is_sprobe_interface())
 	lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
       else
-	lua_push_str_table_entry(vm, "proto.ndpi", (char*)"(Too Early)");
+	lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
     }
   }
 
@@ -584,7 +585,8 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN)
-     || iface->is_ndpi_enabled()) {
+     || iface->is_ndpi_enabled()
+     || iface->is_sprobe_interface()) {
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   } else
     lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
@@ -613,6 +615,8 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_str_table_entry(vm, "name", proc->name);
     lua_push_str_table_entry(vm, "father_name", proc->father_name);
     lua_push_str_table_entry(vm, "user_name", proc->user_name);
+    lua_push_int_table_entry(vm, "actual_memory", proc->actual_memory);
+    lua_push_int_table_entry(vm, "peak_memory", proc->peak_memory);
 
     lua_pushstring(vm, "process");
     lua_insert(vm, -2);

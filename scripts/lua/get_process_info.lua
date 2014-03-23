@@ -43,7 +43,7 @@ print [[
 <script type='text/javascript'>
 window.onload=function() {
    var refresh = 3000 /* ms */;
-		    do_pie("#topApps", '/lua/pid_stats.lua', { user: "]] print(user_key) print [[", mode: "l7"  }, "", refresh);
+		    do_pie("#topApps", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l7"  }, "", refresh);
 }
 </script>
 ]]

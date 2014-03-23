@@ -10,8 +10,11 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 
 mode = _GET["mode"]
+pid = tonumber(_GET["pid"])
+
+
 interface.find(ifname)
-flows = interface.findPidFlows(_GET["pid"])
+flows = interface.findPidFlows(pid)
 
 if(flows == nil) then
    print('[ { "label": "Other", "value": 1 } ]') -- No flows found

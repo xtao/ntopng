@@ -330,7 +330,6 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
       flow->guessProtocol();
   }
 
-
   purgeIdle(zflow->last_switched);
 }
 

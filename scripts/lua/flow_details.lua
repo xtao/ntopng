@@ -99,11 +99,13 @@ else
       
       print("</td></tr>\n")
    else      
+      print("<tr><th colspan=3 bgcolor=lightgray>Process Information</th></tr>\n")
       proc = flow.process
       print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
       print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
       print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
-      print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")
+      print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
+      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")      
    end
 
    if(flow["tcp_flags"] > 0) then

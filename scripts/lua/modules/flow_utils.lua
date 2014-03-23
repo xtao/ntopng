@@ -240,7 +240,8 @@ local flow_fields_description = {
     ['PROC_FATHER_NAME'] = "Father Name",
     ['PROC_USER_NAME'] = "User Name",
     ['PROC_CPU_ID'] = "Process CPU ID",
-
+    ['PROC_ACTUAL_MEMORY'] = "Used Memory (KB)",
+    ['PROC_PEAK_MEMORY'] = "Peak Memory (KB)",
  }
 
 -- #######################
