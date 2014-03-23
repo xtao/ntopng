@@ -323,8 +323,13 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
   if(zflow->epp_cmd > 0)
     process_epp_flow(zflow, flow);
 
-  if(zflow->process.pid > 0)
+  if(zflow->process.pid > 0) {
     flow->handle_process(zflow);
+
+    if(zflow->l7_proto == NDPI_PROTOCOL_UNKNOWN)
+      flow->guessProtocol();
+  }
+
 
   purgeIdle(zflow->last_switched);
 }

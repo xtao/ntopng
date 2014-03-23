@@ -266,6 +266,17 @@ void Flow::processDetectedProtocol() {
 
 /* *************************************** */
 
+void Flow::guessProtocol() {
+  detection_completed = true; /* We give up */
+  
+  /* We can guess the protocol */
+  ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
+							  ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
+							  ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port)); 
+}
+
+/* *************************************** */
+
 void Flow::setDetectedProtocol(u_int16_t proto_id) {
   if((ndpi_flow != NULL) || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
@@ -276,12 +287,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
 	       && (cli_host != NULL)
 	       && (srv_host != NULL))
 	      || (!iface->is_ndpi_enabled())) {
-      detection_completed = true; /* We give up */
-
-      /* We can guess the protocol */
-      ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							      ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
-							      ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
+      guessProtocol();
     }
 
     //if(detection_completed) deleteFlowMemory();

@@ -123,6 +123,7 @@ class Flow : public GenericHashEntry {
 	     u_int16_t _vlanId, u_int8_t _protocol,
 	     bool *src2srv_direction);
   void sumStats(NdpiStats *stats);
+  void guessProtocol();
 };
 
 #endif /* _FLOW_H_ */
