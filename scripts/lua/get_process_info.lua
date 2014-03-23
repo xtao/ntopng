@@ -20,6 +20,11 @@ pid_key = _GET["pid"]
 if(pid_key == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Missing pid name</div>")
 else
+   flows = interface.findPidFlows(tonumber(pid_key))
+   
+   if(flows == nil) then
+      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Unknown PID "..pid_key..": no traffic detected for this process, or process terminated.</div>")
+      else
    print [[
 	    <div class="bs-docs-example">
             <div class="navbar">
@@ -27,7 +32,6 @@ else
 	    <ul class="nav">
 	    <li><a href="#">Pid: ]] print(pid_key) print [[ </a></li>
    ]]
-end
 
 if(page == "PidProtocols") then active=' class="active"' else active = "" end
 print('<li'..active..'><a href="?pid='.. pid_key ..'&page=PidProtocols">L7 Protocols</a></li>\n')
@@ -47,7 +51,8 @@ window.onload=function() {
 }
 </script>
 ]]
-
+end
+end
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
