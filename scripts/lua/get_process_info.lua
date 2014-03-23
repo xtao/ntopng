@@ -34,10 +34,20 @@ print('<li'..active..'><a href="?pid='.. pid_key ..'&page=PidProtocols">L7 Proto
 
 
 print('</ul>\n\t</div>\n\t</div>\n')
-interface.find(ifname)
 
+if(page == "PidProtocols") then
+print [[
+<h4>Application Protocols</h4>
+<div class="pie-chart" id="topApps"></div>
 
-print("TODO\n")
+<script type='text/javascript'>
+window.onload=function() {
+   var refresh = 3000 /* ms */;
+		    do_pie("#topApps", '/lua/pid_stats.lua', { user: "]] print(user_key) print [[", mode: "l7"  }, "", refresh);
+}
+</script>
+]]
 
+end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

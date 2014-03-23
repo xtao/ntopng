@@ -1017,6 +1017,26 @@ static int ntop_get_interface_find_user_flows(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_find_pid_flows(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  u_int32_t pid;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  pid = (u_int32_t)lua_tonumber(vm, 1);
+  
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(!ntop_interface) return(false);
+
+  ntop_interface->findPidFlows(vm, pid);
+  return(true);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_find_host(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *key;
@@ -1895,6 +1915,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getFlowPeers",           ntop_get_interface_flows_peers },
   { "findFlowByKey",          ntop_get_interface_find_flow_by_key },
   { "findUserFlows",          ntop_get_interface_find_user_flows },
+  { "findPidFlows",           ntop_get_interface_find_pid_flows },
   { "findHost",               ntop_get_interface_find_host },
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "incrDrops",              ntop_increase_drops },

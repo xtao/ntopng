@@ -37,20 +37,39 @@ print('<li'..active..'><a href="?user='.. user_key ..'&page=UserProtocols">L7 Pr
 
 
 print('</ul>\n\t</div>\n\t</div>\n')
-interface.find(ifname)
-flows = interface.findUserFlows(user_key)
 
-if(flows == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> No flow can be found for user " .. user_key .. ". (expired ?)</div>")
-else
-   print("<table class=\"table table-bordered\">\n")
-   num = 0
-   for k,v in pairs(flows) do num = num + 1 end
 
-   print("<tr><th width=30%>Flows Found</th><td colspan=2>" .. num.. "</td></tr>\n")
+if(page == "UserApps") then
+print [[
+<h4>Top Applications</h4>
+<div class="pie-chart" id="topApps"></div>
 
-   print("</table>\n")
+<script type='text/javascript'>
+window.onload=function() {
+   var refresh = 3000 /* ms */;
+		    do_pie("#topApps", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "apps"  }, "", refresh);
+}
+</script>
+]]
+
+elseif(page == "UserProtocols") then
+
+print [[
+<h4>Top Application Protocols</h4>
+<div class="pie-chart" id="topL7"></div>
+
+<script type='text/javascript'>
+window.onload=function() {
+   var refresh = 3000 /* ms */;
+		    do_pie("#topL7", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l7" }, "", refresh);
+}
+</script>
+]]
+
 end
+
+
+
 end
 
 

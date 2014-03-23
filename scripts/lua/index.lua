@@ -35,7 +35,6 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if((page == "TopHosts")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopHosts">Hosts</a></li>\n')
 
-
    if((page == "TopApplications")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopApplications">Applications</a></li>\n')
 
@@ -51,8 +50,8 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
       print('<div class="jumbotron">\n<h4>Top Flow Talkers</h4>\n')      
       dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
       print('\n</div>\n')
-      else 
-   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_" .. page .. ".inc")
+   else 
+      ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_" .. page .. ".inc")
    end
 
 

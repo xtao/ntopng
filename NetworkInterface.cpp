@@ -1625,3 +1625,28 @@ void NetworkInterface::findUserFlows(lua_State *vm, char *username) {
   u.vm = vm, u.username = username;
   flows_hash->walk(userfinder_walker, &u);
 }
+
+/* **************************************************** */
+
+struct pid_flows {
+  lua_State* vm;
+  u_int32_t pid;
+};
+
+static bool pidfinder_walker(GenericHashEntry *node, void *pid_data) {
+  Flow *f = (Flow*)node;
+  struct pid_flows *info = (struct pid_flows*)pid_data;
+
+  if(f->getPid() == info->pid)
+    f->lua(info->vm, false /* Minimum details */);
+
+  return(false); /* false = keep on walking */
+}
+
+void NetworkInterface::findPidFlows(lua_State *vm, u_int32_t pid) {
+  struct pid_flows u;
+
+  lua_newtable(vm);
+  u.vm = vm, u.pid = pid;
+  flows_hash->walk(pidfinder_walker, &u);
+}

@@ -202,6 +202,7 @@ class NetworkInterface {
 			       bool createIfNotPresent);  
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
   void findUserFlows(lua_State *vm, char *username);
+  void findPidFlows(lua_State *vm, u_int32_t pid);
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */
