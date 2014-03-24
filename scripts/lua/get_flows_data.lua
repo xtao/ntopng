@@ -53,6 +53,7 @@ sigle_host = 0
 if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
 if (host ~= nil) then
 	sigle_host = 1
+	num_host_list = 1
 end
 
 -- Prepare aggregation
