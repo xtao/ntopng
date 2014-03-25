@@ -48,9 +48,6 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* ZMQ is present */
-#undef HAVE_ZMQ
-
 /* Last SVN change */
 #undef NTOPNG_SVN_DATE
 

@@ -1632,6 +1632,32 @@ void NetworkInterface::findUserFlows(lua_State *vm, char *username) {
 
 /* **************************************************** */
 
+struct proc_name_flows {
+  lua_State* vm;
+  char *proc_name;
+};
+
+static bool proc_name_finder_walker(GenericHashEntry *node, void *user_data) {
+  Flow *f = (Flow*)node;
+  struct proc_name_flows *info = (struct proc_name_flows*)user_data;
+  char *name = f->get_proc_name();
+
+  if(name && (strcmp(name, info->proc_name) == 0))
+    f->lua(info->vm, false /* Minimum details */);
+
+  return(false); /* false = keep on walking */
+}
+
+void NetworkInterface::findProcNameFlows(lua_State *vm, char *proc_name) {
+  struct proc_name_flows u;
+
+  lua_newtable(vm);
+  u.vm = vm, u.proc_name = proc_name;
+  flows_hash->walk(proc_name_finder_walker, &u);
+}
+
+/* **************************************************** */
+
 struct pid_flows {
   lua_State* vm;
   u_int32_t pid;
@@ -1653,4 +1679,22 @@ void NetworkInterface::findPidFlows(lua_State *vm, u_int32_t pid) {
   lua_newtable(vm);
   u.vm = vm, u.pid = pid;
   flows_hash->walk(pidfinder_walker, &u);
+}
+
+static bool father_pidfinder_walker(GenericHashEntry *node, void *father_pid_data) {
+  Flow *f = (Flow*)node;
+  struct pid_flows *info = (struct pid_flows*)father_pid_data;
+
+  if(f->getFatherPid() == info->pid)
+    f->lua(info->vm, false /* Minimum details */);
+
+  return(false); /* false = keep on walking */
+}
+
+void NetworkInterface::findFatherPidFlows(lua_State *vm, u_int32_t father_pid) {
+  struct pid_flows u;
+
+  lua_newtable(vm);
+  u.vm = vm, u.pid = father_pid;
+  flows_hash->walk(father_pidfinder_walker, &u);
 }

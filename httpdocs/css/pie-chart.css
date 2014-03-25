@@ -17,6 +17,9 @@
   height: 325px; /*280px;*/
   text-shadow: none;
   width: 600px; /*380px;*/
+  -webkit-box-sizing: border-box;
+   -moz-box-sizing: border-box;
+   box-sizing: border-box;
 }
 .pie-chart .total{
   font-size: 18px;

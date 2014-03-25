@@ -23,6 +23,8 @@ else
 	 key = f.process.name
 	 elseif(mode == "l7") then
 	 key = f["proto.ndpi"]
+    elseif(mode == "l4") then
+    key = f["proto.l4"]
       end
 
       if(apps[key] == nil) then apps[key] = 0 end

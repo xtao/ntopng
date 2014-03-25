@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2014 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -23,18 +23,17 @@ active_packets = false
 active_ndpi = false
 show_aggregation = true
 
-if(hosts_ip == nil) then
-   sendHTTPHeader('text/html')
-   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-   dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
-   return
-end
-
 active_page = "hosts"
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
+
+if(hosts_ip == nil) then
+   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Hosts parameter is missing (internal error ?)</div>")
+   return
+end
+
 
 print [[
 <div class="bs-docs-example">
@@ -125,14 +124,12 @@ print[[
 <script>
    $("#graph_refresh").click(function() {
     sankey();
-    bubble();
   });
 
   $(window).load(function() 
   {
    // disabled graph interval
    clearInterval(sankey_interval);
-   //clearInterval(bubble_interval);
   });  
 </script>
 
@@ -147,7 +144,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
 print("  </div>")
 
 print("</div>")
-print("</center>")
+print("</center><br/>")
 
 
 elseif(page == "traffic") then
@@ -185,14 +182,12 @@ print [[
 print[[
 <script>
    $("#graph_refresh").click(function() {
-    sankey();
     bubble();
   });
 
   $(window).load(function() 
   {
    // disabled graph interval
-   //clearInterval(sankey_interval);
    clearInterval(bubble_interval);
   });  
 </script>

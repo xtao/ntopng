@@ -8,15 +8,15 @@ function printTable(table,key)
   if (key ~= nil) then print(""..key..":<ul>") end
   for k, v in pairs(table) do
     if (type(v) == "table") then
-       printTable(table[k],k)
-    else
-      if (type(v) == "boolean") then 
-        if (v) then v = "true" else v = "false" end
-      end
-      print("<li>"..k .." = "..v.."<br>")
+     printTable(table[k],k)
+   else
+    if (type(v) == "boolean") then 
+      if (v) then v = "true" else v = "false" end
     end
+    print("<li>"..k .." = "..v.."<br>")
   end
-  print("</ul>")
+end
+print("</ul>")
 end
 
 -- Set package.path information to be able to require lua module
@@ -58,39 +58,43 @@ print('</ul>')
 print('<br><h4>Switch network interface</h4>')
 print('<p>In order to switch the network interface where ntopng is running, you need to use the method <b>setActiveInterfaceId(id)</b>, for more information please read the documentation and if you are looking for a complete and correctly example how to switch interface and active a new session, please read the source code of the <b>set_active_interface.lua</b> script.</p>')
 
-print('<br><h2>Interface information</h2>')
+print('<br><h2 id="interface_information">Interface information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the active network interface.</p>')
 
 print('<h4>Get interface statistics information</h4>')
 print('<p>Available examples:<ul>')
-print('<li><a href="?interfacetype=show">Show statistics information</a>')
+print('<li><a href="?interfacetype=show#interface_information">Show statistics information</a>')
 print('</ul></p>')
 print('<p><b>Output:</b><p>')
 print('<ul>')
 if (interfacetype == "show") then
-print('<pre><code>ifstats = interface.getStats()</code></pre>')
+  print('<pre><code>ifstats = interface.getStats()</code></pre>')
   ifstats = interface.getStats()
   for key, value in pairs(ifstats) do
    if (type(ifstats[key]) == "table") then
-      printTable(ifstats[key],key)
-   else
+    printTable(ifstats[key],key)
+    elseif (type(ifstats[key]) == "boolean") then 
+      if (value) then value = "true" else value = "false" end
+      print("<li>".. key.." = " ..value.."<br>")
+    else
      print("<li>".. key.." = " ..value.."<br>")
+
    end
-  end
+ end
 end --if
 print('</ul>')
 
-print('<br><h2>Host information</h2>')
+print('<br><h2 id="host_information">Host information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the hosts.</p>')
 
 print('<h4>Get hosts information</h4>')
 print('<p>This is an example how to use the interface methods to get storage information. In order to extract all information about an host you can use the method "interface.getHostInfo(host_ip,vlan_id)". Please read the doxygen documentation for more information.</p>')
 
 print('<p>Available examples:<ul>')
-print('<li><a href="?hostinfotype=minimal_one_host">Minimal information of one host.</a>')
-print('<li><a href="?hostinfotype=minimal_all_host">Minimal information of all host.</a>')
-print('<li><a href="?hostinfotype=more_one_host">More information of one host.</a>')
-print('<li><a href="?hostinfotype=more_all_host">More information of all host.</a>')
+print('<li><a href="?hostinfotype=minimal_one_host#host_information">Minimal information of one host.</a>')
+print('<li><a href="?hostinfotype=minimal_all_host#host_information">Minimal information of all host.</a>')
+print('<li><a href="?hostinfotype=more_one_host#host_information">More information of one host.</a>')
+print('<li><a href="?hostinfotype=more_all_host#host_information">More information of all host.</a>')
 print('</ul></p>')
 
 print('<p><b>Output:</b><p>')
@@ -107,13 +111,13 @@ end
 
 if (hostinfotype == "more_one_host" ) or (hostinfotype == "more_all_host") then
   print('<pre><code>hosts = interface.getHostsInfo()</code></pre>')
-    hosts = interface.getHostsInfo()
+  hosts = interface.getHostsInfo()
 
-    for key, value in pairs(hosts) do
-          print("<li> HostName: ".. key.."<br>")
-          printTable(hosts[key],key)
-          if (hostinfotype == "more_one_host") then break end
-    end
+  for key, value in pairs(hosts) do
+    print("<li> HostName: ".. key.."<br>")
+    printTable(hosts[key],key)
+    if (hostinfotype == "more_one_host") then break end
+  end
 end
 print('</ul>')
 
@@ -125,26 +129,26 @@ print('<pre><code>hosts_json = interface.getHosts()</code></pre>')
 print('<li><a href="/lua/do_export_data.lua" target="_blank"> All hosts</a>')
 
 hosts_json = interface.getHosts()
-  for key, value in pairs(hosts_json) do
-    random_host = key
-    print('<li>'..key)
-    print('<ul>')
-    print('<li><a href="/lua/host_get_json.lua?host=' .. key..'" target="_blank"> All information</a>')
-    print('<li><a href="/lua/get_host_activitymap.lua?host=' .. key..'" target="_blank"> Only Activity Map </a>')
-    print('</ul>')
-  end
+for key, value in pairs(hosts_json) do
+  random_host = key
+  print('<li>'..key)
+  print('<ul>')
+  print('<li><a href="/lua/host_get_json.lua?host=' .. key..'" target="_blank"> All information</a>')
+  print('<li><a href="/lua/get_host_activitymap.lua?host=' .. key..'" target="_blank"> Only Activity Map </a>')
+  print('</ul>')
+end
 print('</ul></p>')
 
 
-print('<br><h2>Flow information</h2>')
+print('<br><h2 id="flow_information">Flow information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the flows.</p>')
 
 print('<h4>Get flows information</h4>')
 print('<p>This is an example how to use the interface methods to get flows information.</p>')
 
 print('<p>Available examples:<ul>')
-print('<li><a href="?flowtype=description">Flows description.</a>')
-print('<li><a href="?flowtype=peers">Flow peers</a>')
+print('<li><a href="?flowtype=description#flow_information">Flows description.</a>')
+print('<li><a href="?flowtype=peers#flow_information">Flow peers</a>')
 -- print('<li><a href="?flowtype=more_one_host">More information of one host.</a>')
 -- print('<li><a href="?flowtype=more_all_host">More information of all host.</a>')
 print('</ul></p>')
@@ -154,14 +158,14 @@ print('<p><b>Output:</b><p>')
 if (flowtype == "description" ) then
   print('<pre><code>flows_stats = interface.getFlowsInfo()\nprintTable(flows_stats)</code></pre>')
   flows_stats = interface.getFlowsInfo()
-   printTable(flows_stats)
+  printTable(flows_stats)
 end
 
 if (flowtype == "peers" ) then
   print('<pre><code>flows_stats = interface.getFlowPeers(random_host)\nprint(\'Host: \'..random_host..)\nprintTable(flows_peers,"Peers")</code></pre>')
-  flows_peers = interface.getFlowPeers(random_host)
-   print('Host: '..random_host.."<br>")
-   printTable(flows_peers,"Peers")
+  flows_peers = interface.getFlowPeers("192.168.1.134")
+  print('Host: '..random_host.."<br>")
+  printTable(flows_peers,"Peers")
 end
 
 

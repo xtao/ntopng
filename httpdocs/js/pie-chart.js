@@ -26,7 +26,7 @@ function do_pie(name, update_url, url_params, units, refresh) {
     update();
 
     var updateInterval = window.setInterval(update, refresh);
-
+   
     // to run each time data is generated
 
     function update() {
@@ -289,8 +289,10 @@ function create_pie_chart(name, units) {
     ///////////////////////////////////////////////////////////
 
     var vis = d3.select(name).append("svg:svg")
-	.attr("width", w)
-	.attr("height", h);
+	// .attr("width", w)
+	// .attr("height", h)
+	.attr("viewBox","0 0 600 325") 
+	.attr("preserveAspectRatio","xMidYMid");
 
     //GROUP FOR ARCS/PATHS
     var arc_group = vis.append("svg:g")

@@ -204,6 +204,9 @@ class NetworkInterface {
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
   void findUserFlows(lua_State *vm, char *username);
   void findPidFlows(lua_State *vm, u_int32_t pid);
+  void findFatherPidFlows(lua_State *vm, u_int32_t pid);
+  void findProcNameFlows(lua_State *vm, char *proc_name);
+
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

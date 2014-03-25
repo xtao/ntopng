@@ -187,7 +187,6 @@ else
    end
 end
 
-
 cnum = 0
 snum = 0
 if(host.contacts ~= nil) then
@@ -235,6 +234,15 @@ if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
       print("\n<li class=\"active\"><a href=\"#\">Aggregations</a></li>\n")
    else
       print("\n<li><a href=\""..url.."&page=aggregations\">Aggregations</a></li>")
+   end
+end
+
+if(page == "sprobe") then
+  print("<li class=\"active\"><a href=\"#\">sProbe</a></li>\n")
+else
+   ifstats = interface.getStats()
+   if(ifstats.iface_sprobe) then
+      print("<li><a href=\""..url.."&page=sprobe\">sProbe</a></li>")
    end
 end
 
@@ -1201,6 +1209,56 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
 prefs = ntop.getPrefs()
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.inc")
+
+
+
+elseif(page == "sprobe") then
+
+print [[
+    <table class="table table-bordered table-striped">
+      <tr>
+        <th class="text-center"><h4>Top Users</h4></th>
+        <td><div class="pie-chart" id="topUsers"></div></td>
+      </tr>
+      <tr>
+        <th class="text-center"><h4>Top Process</h4></th>
+        <td><div class="pie-chart" id="topProcess"></div></td>
+      </th>
+      </tr>
+      <tr> 
+        <th class="text-center"><h4>Process tree</h4></th>
+        <td>
+          <div id="sequence_sunburst" >
+          <div id="sequence_processTree" class="sequence"></div>
+          <div id="chart_processTree" class="chart"></div>
+          <div align="center" class="info"> of Bytes</div>
+      </div>
+        </td>
+      </tr>
+
+    ]]
+
+ print [[
+      </table>
+        <link href="/css/sequence_sunburst.css" rel="stylesheet">
+        <script src="/js/sankey.js"></script>
+        <script src="/js/sequence_sunburst.js"></script>
+  
+        <script type='text/javascript'>
+         window.onload=function() {
+       var refresh = 3000 /* ms */;
+    do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "user", ifname: "]] print(_ifname) print ('", host: ')
+  print("\""..host_ip.."\" }, \"\", refresh); \n")
+print [[
+ do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "process", ifname: "]] print(_ifname) print ('", host: ')
+  print("\""..host_ip.."\" }, \"\", refresh); \n")
+print [[ 
+  do_sequence_sunburst_main("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" ]] print (', host: ')
+  print("\""..host_ip.."\"") print [[ },"TOTAL","Bytes"); ]]
+
+print [[
+}
+  </script>]]
 
 
 

@@ -79,7 +79,9 @@ class Flow : public GenericHashEntry {
   char* serialize();
   inline u_int8_t getTcpFlags() { return(tcp_flags);  };
   inline u_int32_t getPid()     { return((proc == NULL) ? 0 : proc->pid); };
-  inline char* get_username()   { return((proc == NULL) ? NULL : proc->user_name); };              
+  inline u_int32_t getFatherPid()     { return((proc == NULL) ? 0 : proc->father_pid); };
+  inline char* get_username()   { return((proc == NULL) ? NULL : proc->user_name); };  
+  inline char* get_proc_name()   { return((proc == NULL) ? NULL : proc->name); };               
   void updateTcpFlags(time_t when, u_int8_t flags);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);

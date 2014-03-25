@@ -11,10 +11,16 @@ sendHTTPHeader('text/html')
 
 mode = _GET["mode"]
 pid = tonumber(_GET["pid"])
+name = _GET["name"]
 
 
 interface.find(ifname)
-flows = interface.findPidFlows(pid)
+
+if (pid ~= nil) then
+   flows = interface.findPidFlows(pid)
+elseif (name ~= nil) then
+   flows = interface.findNameFlows(name)
+end
 
 if(flows == nil) then
    print('[ { "label": "Other", "value": 1 } ]') -- No flows found
@@ -23,9 +29,12 @@ else
    tot = 0
    for k,f in pairs(flows) do       
       if(mode == "l7") then
-	 key = f["proto.ndpi"]
+	     key = f["proto.ndpi"]
       end
-
+      if(mode == "l4") then
+         key = f["proto.l4"]
+      end
+      
       if(apps[key] == nil) then apps[key] = 0 end
       v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
       apps[key] = apps[key] + v

@@ -1037,6 +1037,46 @@ static int ntop_get_interface_find_pid_flows(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_get_interface_find_father_pid_flows(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  u_int32_t father_pid;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  father_pid = (u_int32_t)lua_tonumber(vm, 1);
+  
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(!ntop_interface) return(false);
+
+  ntop_interface->findFatherPidFlows(vm, father_pid);
+  return(true);
+}
+
+/* ****************************************** */
+
+static int ntop_get_interface_find_proc_name_flows(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *proc_name;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  proc_name = (char*)lua_tostring(vm, 1);
+  
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(!ntop_interface) return(false);
+
+  ntop_interface->findProcNameFlows(vm, proc_name);
+  return(true);
+}
+
+/* ****************************************** */
+
 static int ntop_get_interface_find_host(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *key;
@@ -1916,6 +1956,8 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "findFlowByKey",          ntop_get_interface_find_flow_by_key },
   { "findUserFlows",          ntop_get_interface_find_user_flows },
   { "findPidFlows",           ntop_get_interface_find_pid_flows },
+  { "findFatherPidFlows",     ntop_get_interface_find_father_pid_flows },
+  { "findNameFlows",          ntop_get_interface_find_proc_name_flows },
   { "findHost",               ntop_get_interface_find_host },
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "incrDrops",              ntop_increase_drops },
