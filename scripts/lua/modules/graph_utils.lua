@@ -229,7 +229,7 @@ print('<li class="divider"></li>\n')
 dirs = ntop.getDirs()
 d = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host)
 
-print("<li>  "..d.."  </li>\n")
+-- print("<li>  "..d.."  </li>\n")
 
 rrds = ntop.readdir(d)
 
@@ -237,13 +237,12 @@ files = {}
 
 navigatedir(d, files)
 
-for k in pairs(files) do
-   print("<li>"..n.."</li>\n")
-
-end
+-- for k in pairs(files) do
+--   print("<li>"..n.."</li>\n")
+-- end
 
 for k,v in pairsByKeys(rrds, asc) do
-   print("<li>"..rrds[k].."</li>\n")
+--   print("<li>"..rrds[k].."</li>\n")
    proto = string.gsub(rrds[k], ".rrd", "")
 
    
