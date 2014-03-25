@@ -235,7 +235,7 @@ rrds = ntop.readdir(d)
 
 files = {}
 
-navigatedir(d, files)
+-- navigatedir(d, files)
 
 -- for k in pairs(files) do
 --   print("<li>"..n.."</li>\n")
