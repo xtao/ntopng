@@ -916,13 +916,14 @@ for v,k in pairsByKeys(vals, rev) do
       end
 
       correlated_host = interface.getHostInfo(k)
-      
-      if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
-      print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
-      n = n +1
-      
-      if(n >= max_hosts) then
-	 break
+      if(correlated_host ~= nil) then 
+	 if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
+	 print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
+	 n = n +1
+	 
+	 if(n >= max_hosts) then
+	    break
+	 end
       end
    end
 end

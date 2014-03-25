@@ -273,10 +273,11 @@ void CollectorInterface::collect_flows() {
 	/* Dispose memory */
 	json_object_put(o);
 	json_object_put(flow.additional_fields);
-      } else
+      } else {
 	ntop->getTrace()->traceEvent(TRACE_WARNING,
 				     "Invalid message received: your nProbe sender is outdated?");
-
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "[%u] %s", h.size, payload);
+      }
 
       ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
     }
