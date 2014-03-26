@@ -9,36 +9,27 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-
+interface.find(ifname)
 
 mode = _GET["mode"]
 type = _GET["type"]
-host = _GET["host"]
-
-interface.find(ifname)
-
+host = interface.getHostInfo(_GET["host"])
 
 if(host == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
 
-flows_stats = interface.getFlowsInfo()
-
-if((type == nil) or (type == "memory")) then
-   how = "process.actual_memory"
-elseif (type == "bytes") then
-   how = "bytes"
-end
-
-if((mode == nil) or (mode == "user")) then
-   what = "process.user_name"
-else
-   what = "process.name"
+if((type == nil) or (type == "size")) then
+   if((mode == nil) or (mode == "sent")) then
+      what = host["pktStats.sent"]
+   else
+      what = host["pktStats.recv"]
+   end
 end
 
 tot = 0
-for key, value in pairs(flows_stats) do
-   tot = tot + flows_stats[key][how]
+for key, value in pairs(what) do
+   tot = tot + value
 end
 
 threshold = (5 * tot) / 100
@@ -46,15 +37,15 @@ threshold = (5 * tot) / 100
 print "[\n"
 num = 0
 s = 0
-for key, value in pairs(flows_stats) do
-   if(flows_stats[key][how] > threshold) then
+for key, value in pairs(what) do
+   if(value > threshold) then
       if(num > 0) then
 	 print ",\n"
       end
    
-      print("\t { \"label\": \"" .. flows_stats[key][what] .."\", \"value\": ".. flows_stats[key][how] .." }") 
+      print("\t { \"label\": \"" .. key .."\", \"value\": ".. value .." }") 
       num = num + 1
-      s = s + flows_stats[key][how]
+      s = s + value
    end
 end
 
