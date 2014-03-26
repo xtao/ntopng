@@ -238,11 +238,11 @@ if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
 end
 
 if(page == "sprobe") then
-  print("<li class=\"active\"><a href=\"#\">sProbe</a></li>\n")
+  print("<li class=\"active\"><a href=\"#\"><i class=\"fa fa-cogs fa-lg\"></i></a></li>\n")
 else
    ifstats = interface.getStats()
    if(ifstats.iface_sprobe) then
-      print("<li><a href=\""..url.."&page=sprobe\">sProbe</a></li>")
+      print("<li><a href=\""..url.."&page=sprobe\"><i class=\"fa fa-cogs fa-lg\"></i></a></li>")
    end
 end
 
@@ -1217,16 +1217,16 @@ elseif(page == "sprobe") then
 print [[
     <table class="table table-bordered table-striped">
       <tr>
-        <th class="text-center"><h4>Top Users</h4></th>
+        <th class="text-center">Top Users Traffic</th>
         <td><div class="pie-chart" id="topUsers"></div></td>
       </tr>
       <tr>
-        <th class="text-center"><h4>Top Process</h4></th>
+        <th class="text-center">Top Process Traffic</th>
         <td><div class="pie-chart" id="topProcess"></div></td>
       </th>
       </tr>
       <tr> 
-        <th class="text-center"><h4>Process tree</h4></th>
+        <th class="text-center">Process Traffic Tree</th>
         <td>
           <div id="sequence_sunburst" >
           <div id="sequence_processTree" class="sequence"></div>
