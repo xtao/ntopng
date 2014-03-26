@@ -60,7 +60,7 @@ typedef struct zmq_flow {
   u_int32_t in_pkts, in_bytes, out_pkts, out_bytes;
   u_int32_t first_switched, last_switched;
   json_object *additional_fields;
-  u_int8_t src_mac[6], dst_mac[6];
+  u_int8_t src_mac[6], dst_mac[6], direction;
 
   /* EPP Extensions */
   char epp_server_name[48], epp_registrar_name[48], epp_cmd_args[64], epp_reason_str[16];

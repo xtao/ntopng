@@ -831,4 +831,9 @@ void Flow::handle_process(ZMQ_Flow *zflow) {
   if(!proc) return; /* Out of memory */
 
   memcpy(proc, &zflow->process, sizeof(ProcessInfo));
+
+  if(zflow->direction == 1)
+    cli_host->setSystemHost(); /* Outgoing */
+  else
+    srv_host->setSystemHost();  /* Incoming */
 }

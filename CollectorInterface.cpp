@@ -204,6 +204,9 @@ void CollectorInterface::collect_flows() {
 	    case SAMPLING_INTERVAL:
 	      flow.pkt_sampling_rate = atoi(value);
 	      break;
+	    case DIRECTION:
+	      flow.direction = atoi(value);
+	      break;
 	    case EPP_REGISTRAR_NAME:
 	      snprintf(flow.epp_registrar_name, sizeof(flow.epp_registrar_name), "%s", value);
 	      break;

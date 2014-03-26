@@ -28,7 +28,7 @@ class Flow;
 
 class GenericHost : public GenericHashEntry {
  protected:
-  bool localHost;
+  bool localHost, systemHost;
   u_int32_t host_serial;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
@@ -58,6 +58,8 @@ class GenericHost : public GenericHashEntry {
   void dumpHostContacts(u_int16_t family_id);
   inline double pearsonCorrelation(GenericHost *h) { return(activityStats.pearsonCorrelation(h->getActivityStats())); };
   inline bool isLocalHost()                { return(localHost); };
+  inline bool isSystemHost()               { return(systemHost); };
+  inline void setSystemHost()              { systemHost = true;  };
   inline NdpiStats* get_ndpi_stats()       { return(ndpiStats); };
   inline ActivityStats* getActivityStats() { return(&activityStats); };
   void incFlowCount(time_t when, Flow *f);

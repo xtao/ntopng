@@ -237,13 +237,15 @@ if(getItemsNumber(interface.getAggregatedHostsInfo(0, host_ip)) > 0) then
    end
 end
 
+if(host.systemhost) then
 if(page == "sprobe") then
-  print("<li class=\"active\"><a href=\"#\"><i class=\"fa fa-cogs fa-lg\"></i></a></li>\n")
+  print("<li class=\"active\"><a href=\"#\"><i class=\"fa fa-flag fa-lg\"></i></a></li>\n")
 else
    ifstats = interface.getStats()
    if(ifstats.iface_sprobe) then
-      print("<li><a href=\""..url.."&page=sprobe\"><i class=\"fa fa-cogs fa-lg\"></i></a></li>")
+      print("<li><a href=\""..url.."&page=sprobe\"><i class=\"fa fa-flag fa-lg\"></i></a></li>")
    end
+end
 end
 
 if(host["ip"] ~= nil) then
@@ -346,6 +348,7 @@ print [[
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
+      if(host["systemhost"] == true) then print(' <span class="label label-info">System <i class=\"fa fa-flag\"></i></span>') end
       print("</td>\n")
    end
 

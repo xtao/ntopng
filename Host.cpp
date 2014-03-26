@@ -295,6 +295,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_bool_table_entry(vm, "localhost", localHost);
+    lua_push_bool_table_entry(vm, "systemhost", systemHost);
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
 
     lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
