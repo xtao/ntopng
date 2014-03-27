@@ -76,7 +76,7 @@ else
    end
 
    print("<tr><th width=30%>Application Protocol</th><td colspan=2><A HREF=\"/lua/")
-   if(flow.process ~= nil) then	print("s") end
+   if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
    print("<tr><th width=30%>First Seen</th><td colspan=2><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td></tr>\n")
    print("<tr><th width=30%>Last Seen</th><td colspan=2><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
@@ -93,21 +93,32 @@ else
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
 
-   if(flow.process == nil) then	   
+   if((flow.client_process == nil) and (flow.server_process == nil)) then	   
       print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
       
       print("<span id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</span> <span id=throughput_trend></span>")
       print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
       
       print("</td></tr>\n")
-   else      
-      print("<tr><th colspan=3 bgcolor=lightgray>Process Information</th></tr>\n")
-      proc = flow.process
-      print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
-      print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
-      print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
-      print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
-      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")      
+   else
+      if(flow.client_process ~= nil) then
+         print("<tr><th colspan=3 bgcolor=lightgray>Client Process Information</th></tr>\n")
+         proc = flow.client_process
+         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
+         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+         print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
+         print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
+         print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    
+      end
+      if(flow.server_process ~= nil) then
+         print("<tr><th colspan=3 bgcolor=lightgray>Server Process Information</th></tr>\n")
+         proc = flow.server_process
+         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
+         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+         print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
+         print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
+         print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    
+      end
    end
 
    if(flow["tcp_flags"] > 0) then

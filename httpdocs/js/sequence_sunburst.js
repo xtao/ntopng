@@ -1,4 +1,4 @@
-function do_sequence_sunburst_main(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
+function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
 
   var oldPieData = [];
   var filteredPieData = [];

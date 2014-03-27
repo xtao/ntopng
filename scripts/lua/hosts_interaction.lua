@@ -239,7 +239,7 @@ px;
 	     });  	  
 	 }
 
-         circle.on("click", function(d) { if(d.link.length > 0) { window.location.href = d.link; } } );
+         circle.on("dblclick", function(d) { if(d.link.length > 0) { window.location.href = d.link; } } );
     
 	 if (options.linkName) {
 	   path.append("title").text(function(d) {

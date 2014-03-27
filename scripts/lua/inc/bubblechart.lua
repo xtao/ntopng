@@ -6,6 +6,18 @@ print [[
 
 <style>
 
+#bubble_chart {
+  background-color: #ffffff;
+  border: 3px dotted #dddddd;
+  font: 10px sans-serif;
+  height: 400px;
+  text-shadow: none;
+  width: 600px;
+}
+
+.bubble {
+  position: relative;
+}
 
 </style>
 <div id="bubble_chart"></div>
@@ -16,7 +28,7 @@ var margin = {top: 1, right: 1, bottom: 6, left: 1},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
-var diameter = 240,
+var diameter = 320,
     format = d3.format(",d"),
     color = d3.scale.category20c();
 
@@ -52,7 +64,7 @@ print [[
       .filter(function(d) { return !d.children; }))
       .enter().append("g")
       .attr("class", "node")
-      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+      .attr("transform", function(d) { return "translate(" + ((height/2) + d.x - 70) + "," + ((width/2)- d.y + 50) + ")"; });
 
 
   node.append("title")

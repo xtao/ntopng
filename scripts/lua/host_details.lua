@@ -1256,7 +1256,7 @@ print [[
  do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "process", ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }, \"\", refresh); \n")
 print [[ 
-  do_sequence_sunburst_main("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" ]] print (', host: ')
+  do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" ]] print (', host: ')
   print("\""..host_ip.."\"") print [[ },"TOTAL","Bytes"); ]]
 
 print [[
