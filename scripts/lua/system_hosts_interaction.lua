@@ -112,15 +112,17 @@ var svg = d3.select("#chart").append("svg")
     .attr("width", width)
     .attr("height", height);
 
+var explode_process = '';
 
+function refreshGraph() {
 d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var nodes = {};
   var max_node_bytes = 0;
   var max_link_bytes = 0;
 
   links.forEach(function(link) {
-    link.source = link.client_name;
-    link.target = link.server_name;
+    link.source = (explode_process == link.client_name ? link.client : link.client_name);
+    link.target = (explode_process == link.server_name ? link.server : link.server_name);
     if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, /* id: link.client_name, */ bytes: 0};
     if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, /* id: link.server_name, */ bytes: 0};
     nodes[link.source]['bytes'] += link.bytes;
@@ -188,9 +190,21 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .attr("r", function(d) { return getRadius(d.bytes); })
     .style("fill", function(d) { return color(d.name); })
     .call(force.drag)
-    .on("mouseover", function(d){ /* tooltip.text(d.id); */ return tooltip.style("visibility", "visible"); })
+    .on("dblclick", function(d) { 
+      svg.selectAll("circle").remove(); 
+      svg.selectAll("path").remove(); 
+      svg.selectAll("text").remove(); 
+      if (explode_process == d.name) 
+        explode_process = '';
+      else
+        explode_process = d.name;
+      refreshGraph();
+    } )
+    /*
+    .on("mouseover", function(d){ tooltip.text(d.id); return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
-    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");});
+    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
+    */
   ;
 
   //node.append("title")
@@ -234,7 +248,9 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   }
 
 });
+}
 
+refreshGraph();
 
 </script>
 
