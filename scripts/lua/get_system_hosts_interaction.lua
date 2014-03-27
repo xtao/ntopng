@@ -93,7 +93,7 @@ for key, value in pairs(nodes) do
   if(process == 1) then
     if (num > 0) then print(',\n') end
 
-    print('{\"source\":\"'..nodes[key]["client_id"]..'\",\"source_name\":\"'..nodes[key]["client_name"]..'\",\"target\":\"'..nodes[key]["server_id"]..'\",\"taget_name\":\"'..nodes[key]["server_name"]..'\", \"bytes\":'..nodes[key]["bytes"]..', \"cli2srv_bytes\":'..nodes[key]["cli2srv.bytes"]..', \"srv2cli_bytes\":'..nodes[key]["srv2cli.bytes"]..'}')
+    print('{\"client\":\"'..nodes[key]["client_id"]..'\",\"client_name\":\"'..nodes[key]["client_name"]..'\",\"server\":\"'..nodes[key]["server_id"]..'\",\"server_name\":\"'..nodes[key]["server_name"]..'\", \"bytes\":'..nodes[key]["bytes"]..', \"cli2srv_bytes\":'..nodes[key]["cli2srv.bytes"]..', \"srv2cli_bytes\":'..nodes[key]["srv2cli.bytes"]..'}')
     num = num + 1
   end
 
