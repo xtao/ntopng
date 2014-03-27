@@ -16,21 +16,23 @@ flows = interface.findUserFlows(_GET["user"])
 if(flows == nil) then
    print('[ { "label": "Other", "value": 1 } ]') -- No flows found
 else   
-   apps = { }
+   apps = {}
    tot = 0
    for k,f in pairs(flows) do       
-      if(mode == "apps") then
-	 key = f.process.name
-	 elseif(mode == "l7") then
-	 key = f["proto.ndpi"]
+    if(mode == "apps") then
+      key = f.client_process.name
+    elseif(mode == "l7") then
+      key = f["proto.ndpi"]
     elseif(mode == "l4") then
-    key = f["proto.l4"]
-      end
+      key = f["proto.l4"]
+    end
 
+      if(key ~= nil) then
       if(apps[key] == nil) then apps[key] = 0 end
       v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
       apps[key] = apps[key] + v
       tot = tot + v
+    end
    end
 
 -- Print up to this number of entries
