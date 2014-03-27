@@ -9,8 +9,6 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-
-
 mode = _GET["mode"]
 type = _GET["type"]
 host = _GET["host"]
@@ -45,34 +43,57 @@ else
   what_array = {}
   num = 0
   for key, value in pairs(flows_stats) do
-
+    client_process = 0
+    server_process = 0
     flow = flows_stats[key]
-    if(flow.client_process ~= nil) then
-      current_what = flows_stats[key]["client_process"][what]
+    if (debug) then io.write("Client:"..flow["cli.ip"]..",Server:"..flow["srv.ip"].."\n"); end
+    if((flow["cli.ip"] == host) and (flow.client_process ~= nil))then
+      client_process = 1
+    end
+
+    if((flow["srv.ip"] == host) and (flow.server_process ~= nil))then
+      server_process = 1
+    end
+
+    
+    if(client_process == 1) then
+      current_what = flow["client_process"][what].." (client processes)"
       if (how_is_process == 1) then
-        value = flows_stats[key]["client_process"][how] 
+        value = flow["client_process"][how] 
       else
-        value = flows_stats[key][how]
+        value = flow["cli2srv.bytes"]
       end
       
-      if (what_array[current_what] == nil) then what_array[current_what]  = 0 end
-      
-      what_array[current_what] =  what_array[current_what] + value
-      tot = tot + value
+      if (what_array[current_what] == nil) then 
+        what_array[current_what]  = {}
+        what_array[current_what]["value"]  = 0
+        what_array[current_what]["url"]  = url..flow["client_process"][what].."&host="..flow["cli.ip"]
+      end
+      what_array[current_what]["value"] = what_array[current_what]["value"] + value
+
+      if (debug) then io.write("Find client_process:"..current_what..", Value:"..value..", Process:"..flow["client_process"]["name"].."\n"); end
 
     end
-    -- if(flow.server_process ~= nil) then
-    --    current_what = flows_stats[key]["server_process"][what]
-    --  if (how_is_process == 1) then
-    --    value = flows_stats[key]["server_process"][how] 
-    --   else
-    --      value = flows_stats[key][how]
-    --   end
-    --   if (what_array[current_what] == nil) then what_array[current_what]  = 0 end
-    --   what_array[current_what] =  what_array[current_what] + value
-    --   tot = tot + value
-    -- end
+    
+    if(server_process == 1) then
+      current_what = flow["server_process"][what].." (server processes)"
+      if (how_is_process == 1) then
+       value = flow["server_process"][how] 
+      else
+         value = flow["srv2cli.bytes"]
+      end
+      
+      if (what_array[current_what] == nil) then 
+        what_array[current_what]  = {}
+        what_array[current_what]["value"]  = 0
+        what_array[current_what]["url"]  = url..flow["server_process"][what].."&host="..flow["srv.ip"]
+      end
+      what_array[current_what]["value"] = what_array[current_what]["value"] + value
+      tot = tot + value
+      if (debug) then io.write("Find server_process:"..current_what..", Value:"..value..", Process:"..flow["server_process"]["name"].."\n"); end
 
+    end
+    
   end
 
   print "[\n"
@@ -83,8 +104,10 @@ else
     if(num > 0) then
       print ",\n"
     end
-
-    print("\t { \"label\": \"" .. key .."\", \"value\": ".. value ..", \"url\": \"" .. url..key.."\" }") 
+    value = what_array[key]["value"]
+    label = key
+    url = what_array[current_what]["url"]
+    print("\t { \"label\": \"" .. label .."\", \"value\": ".. value ..", \"url\": \"" .. url.."\" }") 
     num = num + 1
     s = s + value
 

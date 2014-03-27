@@ -1224,12 +1224,12 @@ print [[
         <td><div class="pie-chart" id="topUsers"></div></td>
       </tr>
       <tr>
-        <th class="text-center">Top Process Traffic</th>
+        <th class="text-center">Top Processes Traffic</th>
         <td><div class="pie-chart" id="topProcess"></div></td>
       </th>
       </tr>
       <tr> 
-        <th class="text-center">Process Traffic Tree</th>
+        <th class="text-center">Processes Traffic Tree</th>
         <td>
           <div id="sequence_sunburst" >
           <div id="sequence_processTree" class="sequence"></div>
@@ -1250,7 +1250,7 @@ print [[
         <script type='text/javascript'>
          window.onload=function() {
        var refresh = 3000 /* ms */;
-    do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "user", ifname: "]] print(_ifname) print ('", host: ')
+       do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "user", ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }, \"\", refresh); \n")
 print [[
  do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: "bytes", mode: "process", ifname: "]] print(_ifname) print ('", host: ')

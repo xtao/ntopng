@@ -12,6 +12,7 @@ sendHTTPHeader('text/html')
 mode = _GET["mode"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
+host = _GET["host"]
 
 
 interface.find(ifname)
@@ -27,7 +28,14 @@ if(flows == nil) then
 else   
    apps = { }
    tot = 0
-   for k,f in pairs(flows) do       
+   for k,f in pairs(flows) do 
+
+      process = 1
+
+      if((host ~= nil) and ((f["cli.ip"] ~= host) and (f["srv.ip"] ~= host))) then
+         process = 0
+      end
+
       if(mode == "l7") then
 	     key = f["proto.ndpi"]
       end
@@ -35,10 +43,12 @@ else
          key = f["proto.l4"]
       end
       
-      if(apps[key] == nil) then apps[key] = 0 end
-      v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
-      apps[key] = apps[key] + v
-      tot = tot + v
+      if((key ~= nil) and (process == 1))then
+         if(apps[key] == nil) then apps[key] = 0 end
+         v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
+         apps[key] = apps[key] + v
+         tot = tot + v
+      end
    end
 
 -- Print up to this number of entries

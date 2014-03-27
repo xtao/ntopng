@@ -18,10 +18,15 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 pid_key = _GET["pid"]
 name_key = _GET["name"]
+host_key = _GET["host"]
+
+
+
 if((pid_key == nil) and (name_key == nil))then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Missing pid name</div>")
 else
 
+  -- Prepare displayed value
   if (pid_key ~= nil) then
    flows = interface.findPidFlows(tonumber(pid_key))
    err_label = "PID"
@@ -34,24 +39,25 @@ else
    
    if(flows == nil) then
       print("<div class=\"alert alert-error\"><img src=/img/warning.png> Unknown "..err.." "..err_val..": no traffic detected for this process, or process terminated.</div>")
-      else
+  else
    print [[
 	    <div class="bs-docs-example">
             <div class="navbar">
 	    <div class="navbar-inner">
 	    <ul class="nav"> ]]
+
 if(pid_key ~= nil)then
-   print [[ <li><a href="#">Pid: ]] print(pid_key) print [[ </a></li>]]
+   print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - "..host_key) end print [[ </a></li>]]
 elseif (name_key ~= nil)then
-    print [[ <li><a href="#">Name: ]] print(name_key) print [[ </a></li>]]
+    print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - "..host_key) end print [[ </a></li>]]
 end
 
 if(page == "Protocols") then active=' class="active"' else active = "" end
 
 if (pid_key ~= nil) then
-  print('<li'..active..'><a href="?pid='.. pid_key ..'&page=Protocols">Protocols</a></li>\n')
+  print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
   elseif (name_key ~= nil) then
-   print('<li'..active..'><a href="?name='.. name_key ..'&page=Protocols">Protocols</a></li>\n')
+   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
   end
 
 -- End Tab Menu
@@ -83,13 +89,25 @@ window.onload=function() {
 ]]
 if(pid_key ~= nil)then
    print [[ 
-  do_pie("#topApps", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l7"  }, "", refresh);
- do_pie("#topL4", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l4"  }, "", refresh); 
+  do_pie("#topApps", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l7" ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
+ do_pie("#topL4", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l4"  ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
   ]]
 elseif (name_key ~= nil)then
     print [[ 
-    do_pie("#topApps", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l7"  }, "", refresh);
-    do_pie("#topL4", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l4"  }, "", refresh); ]]
+    do_pie("#topApps", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l7" ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
+    do_pie("#topL4", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l4"  ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh); ]]
 end
 print [[	    
 }

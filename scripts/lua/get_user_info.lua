@@ -17,6 +17,8 @@ if(page == nil) then page = "UserApps" end
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 user_key = _GET["user"]
+host_key = _GET["host"]
+
 if(user_key == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> Missing user name</div>")
 else
@@ -54,7 +56,10 @@ print [[
 <script type='text/javascript'>
 window.onload=function() {
    var refresh = 3000 /* ms */;
-		    do_pie("#topApps", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "apps"  }, "", refresh);
+		    do_pie("#topApps", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "apps" ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
 }
 </script>
 ]]
@@ -81,8 +86,14 @@ print [[
 <script type='text/javascript'>
 window.onload=function() {
    var refresh = 3000 /* ms */;
-		    do_pie("#topL7", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l7" }, "", refresh);
-		    do_pie("#topL4", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l4" }, "", refresh);
+		    do_pie("#topL7", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l7" ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
+		    do_pie("#topL4", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l4" ]] 
+if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
+print [[
+ }, "", refresh);
 }
 </script>
 ]]

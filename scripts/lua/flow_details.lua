@@ -104,8 +104,8 @@ else
       if(flow.client_process ~= nil) then
          print("<tr><th colspan=3 bgcolor=lightgray>Client Process Information</th></tr>\n")
          proc = flow.client_process
-         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
-         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&host="..flow["cli.ip"]..">".. proc.user_name .."</A></td></tr>\n")
+         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&host="..flow["cli.ip"].. ">".. proc.pid .. "/" .. proc.name .. "</A>")
          print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
          print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
          print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    
@@ -113,8 +113,8 @@ else
       if(flow.server_process ~= nil) then
          print("<tr><th colspan=3 bgcolor=lightgray>Server Process Information</th></tr>\n")
          proc = flow.server_process
-         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .. ">".. proc.user_name .."</A></td></tr>\n")
-         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&host="..flow["srv.ip"]..">".. proc.user_name .."</A></td></tr>\n")
+         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&host="..flow["srv.ip"].. ">".. proc.pid .. "/" .. proc.name .. "</A>")
          print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
          print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
          print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    

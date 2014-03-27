@@ -10,24 +10,52 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 
 mode = _GET["mode"]
-interface.find(ifname)
-flows = interface.findUserFlows(_GET["user"])
+host = _GET["host"]
+user = _GET["user"]
 
+
+interface.find(ifname)
+flows = interface.getFlowsInfo()
+-- flows = interface.findUserFlows(user)
+
+local debug = false
+
+
+if (debug) then io.write("Host:"..host.."\n") end
 if(flows == nil) then
    print('[ { "label": "Other", "value": 1 } ]') -- No flows found
 else   
+  
+  if(mode == nil) then mode = "apps" end  
+
    apps = {}
    tot = 0
-   for k,f in pairs(flows) do       
+
+
+   for k,f in pairs(flows) do
+    process = 1
+    -- Filer users
+    if (debug) then io.write("Client:"..f["cli.ip"]..", Server:"..f["srv.ip"].."\n") end
+    if((host ~= nil) and ((f["cli.ip"] ~= host) and (f["srv.ip"] ~= host))) then
+      process = 0
+    end
+    -- Prepare aggregation parameter
     if(mode == "apps") then
-      key = f.client_process.name
+      if ((f["cli.ip"] == host) and (f["client_process"] ~= nil) and (f["client_process"]["user_name"] == user)) then
+        key = f["client_process"]["name"]
+        if (debug) then io.write("User:"..f["client_process"]["user_name"]..", Process:"..f["client_process"]["name"].."\n") end
+      elseif ((f["srv.ip"] == host) and (f["server_process"] ~= nil) and (f["server_process"]["user_name"] == user)) then
+        key = f["server_process"]["name"]
+        if (debug) then io.write("User:"..f["server_process"]["user_name"]..", Process:"..f["server_process"]["name"].."\n") end
+      end
     elseif(mode == "l7") then
       key = f["proto.ndpi"]
     elseif(mode == "l4") then
       key = f["proto.l4"]
     end
 
-      if(key ~= nil) then
+    -- Do aggregation 
+    if((key ~= nil) and (process == 1))then
       if(apps[key] == nil) then apps[key] = 0 end
       v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
       apps[key] = apps[key] + v
