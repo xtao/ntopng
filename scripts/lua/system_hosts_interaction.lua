@@ -135,25 +135,22 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   });
 
   force
-      .nodes(d3.values(nodes))
-      .links(links)
-      .on("tick", tick)
-      .start();
+    .nodes(d3.values(nodes))
+    .links(links)
+    .on("tick", tick)
+    .start();
 
-/*
-  svg.append("defs").selectAll("marker")
-    .data(force.links())
-    .enter().append("marker")
-    .attr("id", function(d) { return d.type; })
+  svg.append("svg:defs").selectAll("marker")
+    .data(["end"]).enter()
+    .append("svg:marker")
+    .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("refX", 15).attr("refY", -1.5)
+    .attr("markerWidth", 10)
+    .attr("markerHeight", 10)
     .attr("orient", "auto")
-    .append("path")
+    .append("svg:path")
     .attr("d", "M0,-5L10,0L0,5");
-*/
 
   var path = svg.selectAll("path")
     .data(force.links())
@@ -162,10 +159,9 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .append("path")
       .attr("class", function(d) { return "link"; })
       .style("stroke-width", function(d) { return getWeight(d.bytes); })
-      /*.attr("marker-end", function(d) { return "url(#" + d.type + ")"; }*/
       .attr("marker-end", "url(#end)")
       .attr("id", function(d, i) { return "link" + i; });
-  
+
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
@@ -185,7 +181,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .data(force.nodes())
     .enter().append("circle")
     .attr("class", "circle")
-    .attr("r", function(d) { return getRadius(d.bytes); })
+    .attr("r", function(d) { nodes[d.name].radius = getRadius(d.bytes); return nodes[d.name].radius; })
     .style("fill", function(d) { return color(d.name); })
     .call(force.drag)
     .on("dblclick", function(d) { 
@@ -221,6 +217,17 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
         dr = Math.sqrt(dx * dx + dy * dy);
     
     return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+  }
+
+  function linkArc2(d) {
+    var dx = d.target.x - d.source.x,
+        dy = d.target.y - d.source.y,
+        dr = Math.sqrt(dx * dx + dy * dy);
+
+    var offx = (dx * nodes[d.target.name].radius) / dr,
+        offy = (dy * nodes[d.target.name].radius) / dr;
+
+    return "M" + d.source.x + "," + d.source.y + "L" + (d.target.x - offx) + "," + (d.target.y - offy);
   }
 
   function transform(d) {
