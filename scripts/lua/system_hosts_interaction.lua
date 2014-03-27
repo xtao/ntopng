@@ -123,8 +123,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   links.forEach(function(link) {
     link.source = (explode_process == link.client_name ? link.client : link.client_name);
     link.target = (explode_process == link.server_name ? link.server : link.server_name);
-    if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, /* id: link.client_name, */ bytes: 0};
-    if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, /* id: link.server_name, */ bytes: 0};
+    if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, id: link.source, bytes: 0};
+    if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, id: link.target, bytes: 0};
     nodes[link.source]['bytes'] += link.bytes;
     nodes[link.target]['bytes'] += link.bytes;
     if (nodes[link.source]['bytes'] > max_node_bytes) max_node_bytes = nodes[link.source]['bytes'];
@@ -165,7 +165,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
       /*.attr("marker-end", function(d) { return "url(#" + d.type + ")"; }*/
       .attr("marker-end", "url(#end)")
       .attr("id", function(d, i) { return "link" + i; });
-
+  
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
@@ -173,7 +173,6 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .attr("xlink:href", function(d,i) { return "#link" + i; })
     .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); });
 
-  /*
   var tooltip = d3.select("#chart")
     .append("div")
     .attr("class", "node-tooltip")
@@ -181,7 +180,6 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .style("z-index", "10")
     .style("visibility", "hidden")
     .text("");
-  */
 
   var node = svg.selectAll(".node")
     .data(force.nodes())
@@ -200,15 +198,9 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
         explode_process = d.name;
       refreshGraph();
     } )
-    /*
     .on("mouseover", function(d){ tooltip.text(d.id); return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
-    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
-    */
-  ;
-
-  //node.append("title")
-  //    .text(function(d) { return d.name; });
+    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");});
 
   var text = svg.append("g").selectAll("text")
     .data(force.nodes())
