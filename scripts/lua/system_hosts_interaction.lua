@@ -145,7 +145,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .append("svg:marker")
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15).attr("refY", -1.5)
+    .attr("refX", 15)
+    .attr("refY", -1.5)
     .attr("markerWidth", 10)
     .attr("markerHeight", 10)
     .attr("orient", "auto")
@@ -181,7 +182,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .data(force.nodes())
     .enter().append("circle")
     .attr("class", "circle")
-    .attr("r", function(d) { nodes[d.name].radius = getRadius(d.bytes); return nodes[d.name].radius; })
+    .attr("r", function(d) { return getRadius(d.bytes); /* nodes[d.name].radius = getRadius(d.bytes); return nodes[d.name].radius; */ })
     .style("fill", function(d) { return color(d.name); })
     .call(force.drag)
     .on("dblclick", function(d) { 
@@ -219,6 +220,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
   }
 
+  /*
   function linkArc2(d) {
     var dx = d.target.x - d.source.x,
         dy = d.target.y - d.source.y,
@@ -229,6 +231,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
 
     return "M" + d.source.x + "," + d.source.y + "L" + (d.target.x - offx) + "," + (d.target.y - offy);
   }
+  */
 
   function transform(d) {
     return "translate(" + d.x + "," + d.y + ")";
