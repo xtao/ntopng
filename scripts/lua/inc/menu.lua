@@ -80,6 +80,15 @@ end
 print [[
       <li class="divider"></li>
       <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
+]]
+
+ifstats = interface.getStats()
+if(ifstats.iface_sprobe) then
+   print('<li><a href="/lua/system_hosts_interaction.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
+end
+
+
+print [[
       <li><a href="/lua/hosts_flows_matrix.lua">Top Hosts Traffic</a></li>
       <li><a href="/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
       <li><a href="/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
