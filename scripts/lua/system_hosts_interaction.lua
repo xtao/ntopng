@@ -119,10 +119,10 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var max_link_bytes = 0;
 
   links.forEach(function(link) {
-    link.source = link.client;
-    link.target = link.server;
-    if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, id: link.client, bytes: 0};
-    if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, id: link.server, bytes: 0};
+    link.source = link.client_name;
+    link.target = link.server_name;
+    if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, /* id: link.client_name, */ bytes: 0};
+    if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, /* id: link.server_name, */ bytes: 0};
     nodes[link.source]['bytes'] += link.bytes;
     nodes[link.target]['bytes'] += link.bytes;
     if (nodes[link.source]['bytes'] > max_node_bytes) max_node_bytes = nodes[link.source]['bytes'];
@@ -167,10 +167,11 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
-    .attr("startOffset",function(d,i) { return "20%"; /* 8/20 */ })
-    .attr("xlink:href",function(d,i){ return "#link" + i; })
+    .attr("startOffset",function(d,i) { return "20%"; })
+    .attr("xlink:href", function(d,i) { return "#link" + i; })
     .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); });
 
+  /*
   var tooltip = d3.select("#chart")
     .append("div")
     .attr("class", "node-tooltip")
@@ -178,6 +179,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .style("z-index", "10")
     .style("visibility", "hidden")
     .text("");
+  */
 
   var node = svg.selectAll(".node")
     .data(force.nodes())
@@ -186,7 +188,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .attr("r", function(d) { return getRadius(d.bytes); })
     .style("fill", function(d) { return color(d.name); })
     .call(force.drag)
-    .on("mouseover", function(d){ tooltip.text(d.id); return tooltip.style("visibility", "visible"); })
+    .on("mouseover", function(d){ /* tooltip.text(d.id); */ return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
     .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");});
   ;
