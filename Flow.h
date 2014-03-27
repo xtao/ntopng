@@ -41,7 +41,7 @@ class Flow : public GenericHashEntry {
   } categorization;
 
   /* Process Information */
-  ProcessInfo *proc;
+  ProcessInfo *client_proc, *server_proc;
 
   /* Stats */
   u_int32_t cli2srv_packets, srv2cli_packets;
@@ -60,7 +60,9 @@ class Flow : public GenericHashEntry {
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  
 
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
-
+  void processLua(lua_State* vm, ProcessInfo *proc, bool client);
+  json_object* processJson(ProcessInfo *proc);
+  
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol,
@@ -78,10 +80,10 @@ class Flow : public GenericHashEntry {
   void deleteFlowMemory();
   char* serialize();
   inline u_int8_t getTcpFlags() { return(tcp_flags);  };
-  inline u_int32_t getPid()     { return((proc == NULL) ? 0 : proc->pid); };
-  inline u_int32_t getFatherPid()     { return((proc == NULL) ? 0 : proc->father_pid); };
-  inline char* get_username()   { return((proc == NULL) ? NULL : proc->user_name); };  
-  inline char* get_proc_name()   { return((proc == NULL) ? NULL : proc->name); };               
+  u_int32_t getPid(bool client);
+  u_int32_t getFatherPid(bool client);
+  char* get_username(bool client);
+  char* get_proc_name(bool client);
   void updateTcpFlags(time_t when, u_int8_t flags);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);

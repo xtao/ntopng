@@ -7,17 +7,17 @@
 			        textAlign: 'center'
 			     }
 				 },
-			     {
-			     title: "Username",
-				 field: "column_user_name",
+  			     {
+			     title: "Client Process",
+				 field: "column_client_process",
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'center'
 			     }
 				 },
 			     {
-			     title: "Process",
-				 field: "column_process",
+			     title: "Server Process",
+				 field: "column_server_process",
 				 sortable: true,
 	 	             css: { 
 			        textAlign: 'center'

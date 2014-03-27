@@ -1614,7 +1614,10 @@ struct user_flows {
 static bool userfinder_walker(GenericHashEntry *node, void *user_data) {
   Flow *f = (Flow*)node;
   struct user_flows *info = (struct user_flows*)user_data;
-  char *user = f->get_username();
+  char *user = f->get_username(true);
+
+  if(user == NULL)
+    user = f->get_username(false);
 
   if(user && (strcmp(user, info->username) == 0))
     f->lua(info->vm, false /* Minimum details */);
@@ -1640,7 +1643,10 @@ struct proc_name_flows {
 static bool proc_name_finder_walker(GenericHashEntry *node, void *user_data) {
   Flow *f = (Flow*)node;
   struct proc_name_flows *info = (struct proc_name_flows*)user_data;
-  char *name = f->get_proc_name();
+  char *name = f->get_proc_name(true);
+
+  if(name == NULL)
+    name = f->get_proc_name(false);
 
   if(name && (strcmp(name, info->proc_name) == 0))
     f->lua(info->vm, false /* Minimum details */);
@@ -1667,7 +1673,7 @@ static bool pidfinder_walker(GenericHashEntry *node, void *pid_data) {
   Flow *f = (Flow*)node;
   struct pid_flows *info = (struct pid_flows*)pid_data;
 
-  if(f->getPid() == info->pid)
+  if((f->getPid(true) == info->pid) || (f->getPid(false) == info->pid))
     f->lua(info->vm, false /* Minimum details */);
 
   return(false); /* false = keep on walking */
@@ -1685,7 +1691,7 @@ static bool father_pidfinder_walker(GenericHashEntry *node, void *father_pid_dat
   Flow *f = (Flow*)node;
   struct pid_flows *info = (struct pid_flows*)father_pid_data;
 
-  if(f->getFatherPid() == info->pid)
+  if((f->getFatherPid(true) == info->pid) || (f->getFatherPid(false) == info->pid))
     f->lua(info->vm, false /* Minimum details */);
 
   return(false); /* false = keep on walking */

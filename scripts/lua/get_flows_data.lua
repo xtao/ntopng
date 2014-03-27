@@ -120,8 +120,18 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["bytes.last"]+postfix
 	 elseif(sortColumn == "column_ndpi") then
 	 vkey = flows_stats[key]["proto.ndpi"]..postfix
-	 elseif(sortColumn == "column_process") then
-	 vkey = flows_stats[key]["process"]["name"]..postfix
+	 elseif(sortColumn == "column_server_process") then
+	 if(flows_stats[key]["server_process"] ~= nil) then
+	    vkey = flows_stats[key]["server_process"]["name"]..postfix
+	 else
+	    vkey = postfix
+	 end
+	 elseif(sortColumn == "column_client_process") then
+	 if(flows_stats[key]["client_process"] ~= nil) then
+	    vkey = flows_stats[key]["client_process"]["name"]..postfix
+	 else
+	    vkey = postfix
+	 end
 	 elseif(sortColumn == "column_category") then
 	 c = flows_stats[key]["category"]
 	 if(c == nil) then c = "" end
@@ -243,9 +253,13 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 -- io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")	 
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
-	 if(value["process"] ~= nil) then
-	    print ("\", \"column_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["process"]["pid"] ..">" .. value["process"]["name"].."</A>")
-	    print ("\", \"column_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["process"]["user_name"] ..">" .. value["process"]["user_name"].."</A>")
+	 if(value["client_process"] ~= nil) then
+	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] ..">" .. value["client_process"]["name"].."</A>")
+	    print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] ..">" .. value["client_process"]["user_name"].."</A>")
+	 end
+	 if(value["server_process"] ~= nil) then
+	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] ..">" .. value["server_process"]["name"].."</A>")
+	    print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] ..">" .. value["server_process"]["user_name"].."</A>")
 	 end
 
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))

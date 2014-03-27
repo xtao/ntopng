@@ -64,13 +64,13 @@ if(page == "Protocols") then
 print [[
     <table class="table table-bordered table-striped">
       <tr><th class="text-center">
-      <h4>L7 Protocols</h4></th>
+      L7 Protocols</th>
         <td><div class="pie-chart" id="topApps"></div></td>
       </th>
     </tr>
     <tr> 
       <th class="text-center">
-        <h4>L4 Protocols</h4>
+        L4 Protocols
       </th>
       <td><div class="pie-chart" id="topL4"></div></td>
     </tr>]]

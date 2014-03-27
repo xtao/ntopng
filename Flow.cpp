@@ -33,7 +33,7 @@ Flow::Flow(NetworkInterface *_iface,
     cli2srv_last_bytes = 0, srv2cli_last_packets = 0, srv2cli_last_bytes = 0;
 
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
-  ndpi_flow = NULL, cli_id = srv_id = NULL, proc = NULL;
+  ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
   json_info = strdup("{}");
   tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
@@ -99,7 +99,8 @@ Flow::~Flow() {
   if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
   if(json_info) free(json_info);
-  if(proc) delete(proc);
+  if(client_proc) delete(client_proc);
+  if(server_proc) delete(server_proc);
 
   if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
@@ -268,11 +269,11 @@ void Flow::processDetectedProtocol() {
 
 void Flow::guessProtocol() {
   detection_completed = true; /* We give up */
-  
+
   /* We can guess the protocol */
   ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
 							  ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
-							  ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port)); 
+							  ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
 }
 
 /* *************************************** */
@@ -556,6 +557,41 @@ bool Flow::equal(IpAddress *_cli_ip, IpAddress *_srv_ip, u_int16_t _cli_port,
 
 /* *************************************** */
 
+json_object* Flow::processJson(ProcessInfo *proc) {
+  json_object *inner;
+  
+  inner = json_object_new_object();
+  json_object_object_add(inner, "cpu_id", json_object_new_int64(proc->cpu_id));
+  json_object_object_add(inner, "pid", json_object_new_int64(proc->pid));
+  json_object_object_add(inner, "father_pid", json_object_new_int64(proc->father_pid));
+  json_object_object_add(inner, "name", json_object_new_string(proc->name));
+  json_object_object_add(inner, "father_name", json_object_new_string(proc->father_name));
+  json_object_object_add(inner, "user_name", json_object_new_string(proc->user_name));
+  
+  return(inner);
+}
+
+/* *************************************** */
+
+void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
+  lua_newtable(vm);
+
+  lua_push_int_table_entry(vm, "cpu_id", proc->cpu_id);
+  lua_push_int_table_entry(vm, "pid", proc->pid);
+  lua_push_int_table_entry(vm, "father_pid", proc->father_pid);
+  lua_push_str_table_entry(vm, "name", proc->name);
+  lua_push_str_table_entry(vm, "father_name", proc->father_name);
+  lua_push_str_table_entry(vm, "user_name", proc->user_name);
+  lua_push_int_table_entry(vm, "actual_memory", proc->actual_memory);
+  lua_push_int_table_entry(vm, "peak_memory", proc->peak_memory);
+
+  lua_pushstring(vm, client ? "client_process" : "server_process");
+  lua_insert(vm, -2);
+  lua_settable(vm, -3);
+}
+
+/* *************************************** */
+
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
@@ -608,22 +644,8 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
   }
 
-  if(proc != NULL) {
-    lua_newtable(vm);
-
-    lua_push_int_table_entry(vm, "cpu_id", proc->cpu_id);
-    lua_push_int_table_entry(vm, "pid", proc->pid);
-    lua_push_int_table_entry(vm, "father_pid", proc->father_pid);
-    lua_push_str_table_entry(vm, "name", proc->name);
-    lua_push_str_table_entry(vm, "father_name", proc->father_name);
-    lua_push_str_table_entry(vm, "user_name", proc->user_name);
-    lua_push_int_table_entry(vm, "actual_memory", proc->actual_memory);
-    lua_push_int_table_entry(vm, "peak_memory", proc->peak_memory);
-
-    lua_pushstring(vm, "process");
-    lua_insert(vm, -2);
-    lua_settable(vm, -3);
-  }
+  if(client_proc) processLua(vm, client_proc, true);
+  if(server_proc) processLua(vm, server_proc, false);
 
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
@@ -752,17 +774,11 @@ char* Flow::serialize() {
   json_object_object_add(inner, "bytes", json_object_new_int64(cli2srv_bytes));
   json_object_object_add(my_object, "cli2srv", inner);
 
-  if(proc != NULL) {
-    inner = json_object_new_object();
-    json_object_object_add(inner, "cpu_id", json_object_new_int64(proc->cpu_id));
-    json_object_object_add(inner, "pid", json_object_new_int64(proc->pid));
-    json_object_object_add(inner, "father_pid", json_object_new_int64(proc->father_pid));
-    json_object_object_add(inner, "name", json_object_new_string(proc->name));
-    json_object_object_add(inner, "father_name", json_object_new_string(proc->father_name));
-    json_object_object_add(inner, "user_name", json_object_new_string(proc->user_name));
+  if(client_proc != NULL)    
+    json_object_object_add(my_object, "process_client", processJson(client_proc));
 
-    json_object_object_add(my_object, "process", inner);
-  }
+  if(server_proc != NULL)    
+    json_object_object_add(my_object, "process_server", processJson(server_proc));
 
   /* JSON string */
   rsp = strdup(json_object_to_json_string(my_object));
@@ -828,14 +844,46 @@ void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
 /* *************************************** */
 
 void Flow::handle_process(ZMQ_Flow *zflow) {
-  if(proc == NULL) proc = new ProcessInfo;
+  ProcessInfo *proc = new ProcessInfo;
 
   if(!proc) return; /* Out of memory */
 
   memcpy(proc, &zflow->process, sizeof(ProcessInfo));
 
   if(zflow->direction == 1)
-    cli_host->setSystemHost(); /* Outgoing */
+    client_proc = proc, cli_host->setSystemHost(); /* Outgoing */
   else
-    srv_host->setSystemHost();  /* Incoming */
+    server_proc = proc, srv_host->setSystemHost();  /* Incoming */
 }
+
+/* *************************************** */
+
+u_int32_t Flow::getPid(bool client) {
+  ProcessInfo *proc = client ? client_proc : server_proc;
+
+  return((proc == NULL) ? 0 : proc->pid); 
+};
+
+/* *************************************** */
+
+u_int32_t Flow::getFatherPid(bool client) {
+  ProcessInfo *proc = client ? client_proc : server_proc;
+
+  return((proc == NULL) ? 0 : proc->father_pid); 
+};
+
+/* *************************************** */
+
+char* Flow::get_username(bool client) {
+  ProcessInfo *proc = client ? client_proc : server_proc;
+
+  return((proc == NULL) ? NULL : proc->user_name); 
+};
+
+/* *************************************** */
+
+char* Flow::get_proc_name(bool client) {
+  ProcessInfo *proc = client ? client_proc : server_proc;
+
+  return((proc == NULL) ? NULL : proc->name); 
+};
