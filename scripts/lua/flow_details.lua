@@ -57,6 +57,7 @@ else
    end
    print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["cli.ip"] .. "\">")
    if(flow["cli.host"] ~= "") then print(flow["cli.host"]) else print(flow["cli.ip"]) end
+   if(flow["cli.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["cli.port"] > 0) then
       print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"])
@@ -64,6 +65,7 @@ else
    print("</A></td></tr>\n")
    print("<tr><th width=30%>Server</th><td colspan=2><A HREF=\"/lua/host_details.lua?host=" .. flow["srv.ip"] .. "\">")
    if(flow["srv.host"] ~= "") then print(flow["srv.host"]) else print(flow["srv.ip"]) end
+   if(flow["srv.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["srv.port"] > 0) then
       print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A>")

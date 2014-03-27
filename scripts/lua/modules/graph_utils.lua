@@ -2,19 +2,32 @@
 -- (C) 2013-14 - ntop.org
 --
 
-function navigatedir(path, files)
-   rrds = ntop.readdir(path)
+function navigatedir(url, label, base, path, files)
+   local shown = false
+   --print("<li> <b>(d)</b> "..path.."  </li>\n")
 
-   for k,v in pairsByKeys(rrds, asc) do
-      p = fixPath(path .. "/" .. rrds[k])
-
-      if(ntop.isdir(p)) then
-	 navigatedir(p, files)
-      else
-	 table.insert(files, p)
+   rrds = ntop.readdir(path)   
+   for k,v in pairs(rrds) do
+      if(v ~= nil) then
+	 p = fixPath(path .. "/" .. v)
+	 
+	 if(ntop.isdir(p)) then
+	    navigatedir(url, label.."/"..v, base, p, files)
+	 else
+	    if(not(shown)) then
+	       print('<li class="dropdown-submenu"><a tabindex="-1" href="#">'..label..'</a>\n<ul class="dropdown-menu">\n')
+	       shown = true
+	    end
+	    what = string.sub(path.."/"..v, string.len(base)+2)
+	    print("<li> <A HREF="..p..">"..url..what.."</A>  </li>\n")
+	    table.insert(files, p)
+	 end
       end
    end
 
+   if(shown) then
+      print('</ul></li>\n')
+   end
 end
 
 function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
@@ -229,18 +242,17 @@ print('<li class="divider"></li>\n')
 dirs = ntop.getDirs()
 d = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host)
 
--- print("<li>  "..d.."  </li>\n")
+if(true) then
+   files = {}
+   
+   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, files)
+   
+   for _,k in pairs(files) do
+      --print("<li>(f) "..k.."</li>\n")
+   end
+end
 
 rrds = ntop.readdir(d)
-
-files = {}
-
--- navigatedir(d, files)
-
--- for k in pairs(files) do
---   print("<li>"..n.."</li>\n")
--- end
-
 for k,v in pairsByKeys(rrds, asc) do
 --   print("<li>"..rrds[k].."</li>\n")
    proto = string.gsub(rrds[k], ".rrd", "")

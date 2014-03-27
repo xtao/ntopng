@@ -52,55 +52,55 @@ sigle_host = 0
 
 if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
 if (host ~= nil) then
-	sigle_host = 1
-	num_host_list = 1
+   sigle_host = 1
+   num_host_list = 1
 end
 
 -- Prepare aggregation
 if ((aggregation ~= nil) and (key ~= nil)) then
 
-  if (aggregation == "ndpi") then application = key end
-  if (aggregation == "l4proto") then l4proto = key end
-  if (aggregation == "port") then port = tonumber(key) end
+   if (aggregation == "ndpi") then application = key end
+   if (aggregation == "l4proto") then l4proto = key end
+   if (aggregation == "port") then port = tonumber(key) end
 
 end
 
 vals = {}
 num = 0
 for key, value in pairs(flows_stats) do
---   print(key.."\n")
+   --   print(key.."\n")
 
    process = 1
-  if(num_host_list > 0) then
-  	if(sigle_host == 1) then
-  		 if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
-				 process = 0
-			end
-	  elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
-	          (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
-	          process  = 0
-	  end 
+   if(num_host_list > 0) then
+      if(sigle_host == 1) then
+	 if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
+	    process = 0
 	 end
+      elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
+	   (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
+	 process  = 0
+      end 
+   end
 
    if(l4proto ~= nil) then
       if (flows_stats[key]["proto.l4"] ~= l4proto) then
-       process = 0
+	 process = 0
       end
    end
    
    if(port ~= nil) then
       if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
-	     process = 0
+	 process = 0
       end
    end
 
    if(application ~= nil) then
-    if(flows_stats[key]["proto.ndpi"] == "(Too Early)") then
+      if(flows_stats[key]["proto.ndpi"] == "(Too Early)") then
          if(application ~= "Unknown") then process = 0 end
       else
-        if(flows_stats[key]["proto.ndpi"] ~= application) then
-  	   process = 0
-        end
+	 if(flows_stats[key]["proto.ndpi"] ~= application) then
+	    process = 0
+	 end
       end
    end
 
@@ -139,7 +139,7 @@ for key, value in pairs(flows_stats) do
       
       --      print("-->"..num.."="..vkey.."\n")
       vals[vkey] = key
-      end
+   end
 end
 
 num = 0
@@ -156,9 +156,9 @@ for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
    value = flows_stats[key]
 
---   print(key.."="..flows_stats[key]["duration"].."\n");
---   print(key.."=".."\n");
-    -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
+   --   print(key.."="..flows_stats[key]["duration"].."\n");
+   --   print(key.."=".."\n");
+   -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
    if(to_skip > 0) then
       to_skip = to_skip-1
    else
@@ -166,39 +166,45 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 if(num > 0) then
 	    print ",\n"
 	 end
-   srv_tooltip = ""
-   cli_tooltip = ""
+	 srv_tooltip = ""
+	 cli_tooltip = ""
 
 	 srv_name = value["srv.host"]
 	 if((srv_name == "") or (srv_name == nil)) then
 	    srv_name = value["srv.ip"]
 	 end
 	 srv_name = ntop.getResolvedAddress(srv_name)
-   if (srv_name ~= value["srv.ip"]) then
-     srv_tooltip = value["srv.ip"]
-   end
+	 if (srv_name ~= value["srv.ip"]) then
+	    srv_tooltip = value["srv.ip"]
+	 end
 
 	 cli_name = value["cli.host"]
 	 if((cli_name == "") or (cli_name == nil)) then
 	    cli_name = value["cli.ip"]
 	 end
 	 cli_name = ntop.getResolvedAddress(cli_name)
-   if (cli_name ~= value["cli.ip"]) then
-     cli_tooltip = value["cli.ip"]
-   end
+	 if (cli_name ~= value["cli.ip"]) then
+	    cli_tooltip = value["cli.ip"]
+	 end
 
-	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20) .."</A>"
+	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
+	 if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
+	 src_key = src_key .. "</A>"
+
 	 if(value["cli.port"] > 0) then
-  	   src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
+	    src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
          else
-	   src_port=""
+	    src_port=""
          end
 
-	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20) .."</A>"
+	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
+	 if(value["srv.systemhost"] == true) then dst_key = dst_key .. "&nbsp;<i class='fa fa-flag'></i>" end
+	 dst_key = dst_key .. "</A>"
+
 	 if(value["srv.port"] > 0) then
-  	   dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
+	    dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
          else
-	   dst_port=""
+	    dst_port=""
          end
 
 	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]

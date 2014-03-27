@@ -564,6 +564,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   if(get_cli_host()) {
     if(detailed_dump) lua_push_str_table_entry(vm, "cli.host", get_cli_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "cli.ip", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
+    lua_push_bool_table_entry(vm, "cli.systemhost", get_cli_host()->isSystemHost());
   } else {
     lua_push_nil_table_entry(vm, "cli.host");
     lua_push_nil_table_entry(vm, "cli.ip");
@@ -574,6 +575,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   if(get_srv_host()) {
     if(detailed_dump) lua_push_str_table_entry(vm, "srv.host", get_srv_host()->get_name(buf, sizeof(buf), false));
     lua_push_str_table_entry(vm, "srv.ip", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
+    lua_push_bool_table_entry(vm, "srv.systemhost", get_srv_host()->isSystemHost());
   } else {
     lua_push_nil_table_entry(vm, "srv.host");
     lua_push_nil_table_entry(vm, "srv.ip");

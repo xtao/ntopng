@@ -846,7 +846,6 @@ function getItemsNumber(n)
    return(tot)
 end
 
-
 function getHostCommaSeparatedList(p_hosts)
   hosts = {}
   hosts_size = 0
@@ -856,6 +855,7 @@ function getHostCommaSeparatedList(p_hosts)
   end
   return hosts,hosts_size
 end
+
 -- version is major.minor.veryminor
 function version2int(v)
    e = string.split(v, "%.");
