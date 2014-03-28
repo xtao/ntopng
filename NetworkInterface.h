@@ -124,23 +124,23 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
-  virtual u_int getNumDroppedPackets()         { return 0; };
+  virtual u_int getNumDroppedPackets()         { return 0;      };
   virtual char *getScriptName()                { return NULL;   }
-  virtual char *getEndpoint()                  { return NULL;   };
+  virtual char *getEndpoint(u_int8_t id)       { return NULL;   };
   virtual bool set_packet_filter(char *filter) { return(false); };
   virtual void incrDrops(u_int32_t num)        { ; }
-  inline virtual const char* get_type()      { return("unknown"); }
-  inline virtual bool is_ndpi_enabled()      { return(true); }
-  inline u_int  getNumnDPIProtocols()        { return(ndpi_get_num_supported_protocols(ndpi_struct)); };
-  inline time_t getTimeLastPktRcvd()         { return(last_pkt_rcvd); };
-  inline void  setTimeLastPktRcvd(time_t t)  { last_pkt_rcvd = t; };
-  inline char* get_ndpi_proto_name(u_int id) { return(ndpi_get_proto_name(ndpi_struct, id));   };
-  inline u_int get_flow_size()         { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
-  inline u_int get_size_id()           { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
-  inline char* get_name()              { return(ifname);                                       };
+  inline virtual const char* get_type()        { return("unknown"); }
+  inline virtual bool is_ndpi_enabled()        { return(true); }
+  inline u_int  getNumnDPIProtocols()          { return(ndpi_get_num_supported_protocols(ndpi_struct)); };
+  inline time_t getTimeLastPktRcvd()           { return(last_pkt_rcvd); };
+  inline void  setTimeLastPktRcvd(time_t t)    { last_pkt_rcvd = t; };
+  inline char* get_ndpi_proto_name(u_int id)   { return(ndpi_get_proto_name(ndpi_struct, id));   };
+  inline u_int get_flow_size()                 { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
+  inline u_int get_size_id()                   { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
+  inline char* get_name()                      { return(ifname);                                       };
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
   void flushHostContacts();
-  inline bool is_sprobe_interface()    { return(sprobe_interface); };
+  inline bool is_sprobe_interface()            { return(sprobe_interface); };
   bool dumpFlow(time_t when, Flow *f);
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
     ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
@@ -149,7 +149,7 @@ class NetworkInterface {
   };
   inline EthStats* getStats()      { return(&ethStats);          };
   inline int get_datalink()        { return(pcap_datalink_type); };
-  inline int isRunning()	   { return running; };
+  inline int isRunning()	   { return running;             };
   inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
   bool restoreHost(char *host_ip);
   void printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);

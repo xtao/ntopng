@@ -1100,14 +1100,20 @@ static int ntop_get_interface_find_host(lua_State* vm) {
 static int ntop_get_interface_endpoint(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *endpoint;
+  u_int8_t id;
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop_interface = handle_null_interface(vm);
   }
 
+  if(lua_type(vm, 1) != LUA_TNUMBER) /* Optional */
+    id = 0;
+  else
+    id = (u_int8_t)lua_tonumber(vm, 1);
+
   if(ntop_interface) {
-    endpoint = ntop_interface->getEndpoint();
+    endpoint = ntop_interface->getEndpoint(id);
     lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
   }
 

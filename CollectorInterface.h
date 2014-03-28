@@ -26,19 +26,27 @@
 
 class Lua;
 
+typedef struct {
+  char *endpoint;
+  void *socket;
+} zmq_subscriber;
+
 class CollectorInterface : public NetworkInterface {
  private:
-  char *endpoint, *topic;
-  void *context, *subscriber;
+  char *topic;
+  void *context;
   u_int32_t num_drops;
-  
+  u_int8_t num_subscribers;
+  zmq_subscriber subscriber[CONST_MAX_NUM_ZMQ_SUBSCRIBERS];
+
  public:
   CollectorInterface(const char *_endpoint, const char *_script_name);
   ~CollectorInterface();
 
   inline const char* get_type()         { return("zmq");      };
   inline bool is_ndpi_enabled()         { return(false);      };
-  char *getEndpoint()                   { return endpoint;    };
+  char* getEndpoint(u_int8_t id)        { return((id < num_subscribers) ? 
+						 subscriber[id].endpoint : (char*)""); };
   inline void incrDrops(u_int32_t num)  { num_drops += num;   };
   u_int getNumDroppedPackets()          { return(num_drops);  };
   void collect_flows();

@@ -119,10 +119,10 @@
 #define MAX_NUM_HOST_CONTACTS     16
 #define CONST_DEFAULT_NTOP_PORT   3000
 
-#define CONST_NUM_OPEN_DB_CACHE   8
-#define CONST_NUM_CONTACT_DBS     8
-
-#define CONST_MAX_NUM_FIND_HITS   10
+#define CONST_NUM_OPEN_DB_CACHE        8
+#define CONST_NUM_CONTACT_DBS          8
+#define CONST_MAX_NUM_ZMQ_SUBSCRIBERS 32
+#define CONST_MAX_NUM_FIND_HITS       10
 #ifdef WIN32
 #define ntop_mkdir(a, b) _mkdir(a)
 #define CONST_PATH_SEP                    '\\'
