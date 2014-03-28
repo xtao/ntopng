@@ -8,7 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
-local debug = true
+local debug = false
 
 -- Table parameters
 currentPage = _GET["currentPage"]
@@ -78,6 +78,8 @@ for key, value in pairs(flows_stats) do
    --   print(key.."\n")
 
    process = 1
+
+   ---------------- HOST ----------------
    if(num_host_list > 0) then
       if(sigle_host == 1) then
         if (debug) then io.write("Host:"..host.."\n")end
@@ -94,6 +96,7 @@ for key, value in pairs(flows_stats) do
    if (debug) then io.write("Host -\t"..process.."\n")end
    
 
+   ---------------- L4 PROTO ----------------
    if(l4proto ~= nil) then
       if (flows_stats[key]["proto.l4"] ~= l4proto) then
 	 process = 0
@@ -102,6 +105,8 @@ for key, value in pairs(flows_stats) do
    if (debug) then io.write("L4 -\t"..process.."\n")end
    
 
+
+   ---------------- PORT ----------------
    if(port ~= nil) then
       if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
 	 process = 0
@@ -116,7 +121,7 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["client_process"]["user_name"] ~= user)) then 
         process = 0
       else 
-        process = 1
+        if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
       end
     end
       if (flows_stats[key]["server_process"] ~= nil) then 
@@ -124,12 +129,15 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["server_process"]["user_name"] ~= user)) then 
         process = 0
       else 
-        process = 1
+        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
       end
     end
    end
    if (debug) then io.write("user -\t"..process.."\n")end
 
+
+
+   ---------------- PID ----------------
    if(pid ~= nil) then
     if (debug) then io.write("Pid:"..pid.."\n")end
     if (flows_stats[key]["client_process"] ~= nil) then 
@@ -137,7 +145,7 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["client_process"]["pid"] ~= pid)) then 
         process = 0
       else 
-        process = 1
+        if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
       end
     end
     if (flows_stats[key]["server_process"] ~= nil) then 
@@ -145,12 +153,14 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["server_process"]["pid"] ~= pid)) then 
         process = 0
       else 
-        process = 1
+        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
       end
     end
    end
    if (debug) then io.write("pid -\t"..process.."\n")end
    
+
+  ---------------- NAME ----------------
    if(name ~= nil) then
     if (debug) then io.write("Name:"..name.."\n")end
     if (flows_stats[key]["client_process"] ~= nil) then 
@@ -158,7 +168,7 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["client_process"]["name"] ~= name)) then 
         process = 0
       else 
-        process = 1
+       if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
       end
     end
     if (flows_stats[key]["server_process"] ~= nil) then 
@@ -166,13 +176,14 @@ for key, value in pairs(flows_stats) do
       if ((flows_stats[key]["server_process"]["name"] ~= name)) then 
         process = 0
       else 
-        process = 1
+        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
       end
     end
    end
    if (debug) then io.write("name -\t"..process.."\n")end
    
 
+   ---------------- APP ----------------
    if(application ~= nil) then
       if(flows_stats[key]["proto.ndpi"] == "(Too Early)") then
          if(application ~= "Unknown") then process = 0 end

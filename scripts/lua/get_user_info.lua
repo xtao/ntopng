@@ -28,7 +28,7 @@ else
             <div class="navbar">
 	    <div class="navbar-inner">
 	    <ul class="nav">
-	    <li><a href="#">User: ]] print(user_key) if(host_key ~= nill) then print(" - "..host_key) end print [[  </a></li>
+	    <li><a href="#">User: ]] print(user_key) if(host_key ~= nill) then print(" - Ip Address:"..host_key) end print [[  </a></li>
    ]]
 
 

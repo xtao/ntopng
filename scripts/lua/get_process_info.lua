@@ -48,9 +48,9 @@ else
 	    <ul class="nav"> ]]
 
 if(pid_key ~= nil)then
-   print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - "..host_key) end print [[ </a></li>]]
+   print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - Ip Address:"..host_key) end print [[ </a></li>]]
 elseif (name_key ~= nil)then
-    print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - "..host_key) end print [[ </a></li>]]
+    print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - Ip Address:"..host_key) end print [[ </a></li>]]
 end
 
 if(page == "Protocols") then active=' class="active"' else active = "" end
@@ -172,12 +172,12 @@ print [[",
          showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
-if (pid_key ~= nil) then
-print('<li><a href="/lua/get_process_info?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
-end
-if (name_key ~= nil) then
-print('<li><a href="/lua/get_process_info?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
-end
+-- if (pid_key ~= nil) then
+-- print('<li><a href="/lua/get_process_info?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
+-- end
+-- if (name_key ~= nil) then
+-- print('<li><a href="/lua/get_process_info?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
+-- end
 
 
 
