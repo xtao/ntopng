@@ -296,6 +296,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_bool_table_entry(vm, "localhost", localHost);
     lua_push_bool_table_entry(vm, "systemhost", systemHost);
+    lua_push_int_table_entry(vm, "source_id", source_id);
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);
 
     lua_push_str_table_entry(vm, "asname", ip ? asname : (char*)"");
@@ -637,6 +638,7 @@ bool Host::deserialize(char *json_str) {
 
   if(json_object_object_get_ex(o, "mac_address", &obj)) set_mac((char*)json_object_get_string(obj));
   if(json_object_object_get_ex(o, "asn", &obj)) asn = json_object_get_int(obj);
+  if(json_object_object_get_ex(o, "source_id", &obj)) source_id = json_object_get_int(obj);
 
   if(json_object_object_get_ex(o, "symbolic_name", &obj))  { if(symbolic_name) free(symbolic_name); symbolic_name = strdup(json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "country", &obj))        { if(country) free(country); country = strdup(json_object_get_string(obj)); }
@@ -648,6 +650,7 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "longitude", &obj)) longitude = (float)json_object_get_double(obj);
   if(json_object_object_get_ex(o, "ip", &obj))  { if(ip == NULL) ip = new IpAddress(); if(ip) ip->deserialize(obj); }
   if(json_object_object_get_ex(o, "localHost", &obj)) localHost = (json_object_get_boolean(obj) ? true : false);
+  if(json_object_object_get_ex(o, "systemHost", &obj)) systemHost = (json_object_get_boolean(obj) ? true : false);
   if(json_object_object_get_ex(o, "tcp_sent", &obj))  tcp_sent.deserialize(obj);
   if(json_object_object_get_ex(o, "tcp_rcvd", &obj))  tcp_rcvd.deserialize(obj);
   if(json_object_object_get_ex(o, "udp_sent", &obj))  udp_sent.deserialize(obj);

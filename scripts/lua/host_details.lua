@@ -483,7 +483,8 @@ end
      total = 0
      for id, _ in ipairs(l4_keys) do
 	k = l4_keys[id][2]
-	total = total + host[k..".bytes.sent"] + host[k..".bytes.rcvd"]
+	if(host[k..".bytes.sent"] ~= nil) then total = total + host[k..".bytes.sent"] end
+	if(host[k..".bytes.recv"] ~= nil) then total = total + host[k..".bytes.recv"] end
      end
 
      if(total == 0) then
@@ -512,7 +513,9 @@ end
 	label = l4_keys[id][1]
 	k = l4_keys[id][2]
 	sent = host[k..".bytes.sent"]
+	if(sent == nil) then sent = 0 end
 	rcvd = host[k..".bytes.rcvd"]
+	if(rcvd == nil) then rcvd = 0 end
 
 	if((sent > 0) or (rcvd > 0)) then
 	   -- if(true) then

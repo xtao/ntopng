@@ -35,6 +35,7 @@ class GenericHost : public GenericHashEntry {
   ActivityStats activityStats;
   HostContacts *contacts;
   u_int32_t num_alerts_detected;
+  u_int8_t source_id;
 
   /* Alerts */
   AlertCounter *flow_count_alert;
@@ -83,6 +84,7 @@ class GenericHost : public GenericHashEntry {
   void updateActivities();
   inline ValueTrend getThptTrend()    { return(bytes_thpt_trend);          };
   inline char* getJsonActivityMap()   { return(activityStats.serialize()); };
+  inline u_int8_t getSourceId()       { return(source_id);                 };
   bool triggerAlerts();
   virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL);   };
 };
