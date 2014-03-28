@@ -141,18 +141,20 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     if (link.server_type == "host") link.server_name = "Remote Hosts";
 
     var source = link.client_name,
-        target = link.server_name;
+        target = link.server_name,
+        client_description = '',
+        server_description = '';
 
     if (explode_process != '') {
       //filtering exploded process
       if (explode_process != source && explode_process != target) return; /* skip this link */
 
-      if (explode_process == source) source = link.client;
-      if (explode_process == target) target = link.server;
+      if (explode_process == source) { source = link.client; client_description = process_instance_to_string(link.client); }
+      if (explode_process == target) { target = link.server; server_description = process_instance_to_string(link.server); }
     }
 
-    addNode(source, link.client, link.client_name, link.bytes, link.client_type, source);
-    addNode(target, link.server, link.server_name, link.bytes, link.server_type, target);
+    addNode(source, link.client, link.client_name, link.bytes, link.client_type, client_description);
+    addNode(target, link.server, link.server_name, link.bytes, link.server_type, server_description);
 
     if (explode_process != link.client_name) 
       nodes[source].description = "Double-Click to expand (" +  Object.keys(instances[source]).length + ")";
@@ -280,6 +282,11 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     var radius = 10 * (size ? Math.sqrt((size / max_node_bytes) * 100) / Math.PI : 1);
     if (radius < 5) radius = 5;
     return radius;
+  }
+
+  function process_instance_to_string(id) {
+    var info = id.split("-");
+    return "System: " + info[0] + " IP: " + info[1] + " PID: " + info[2];
   }
 
 });

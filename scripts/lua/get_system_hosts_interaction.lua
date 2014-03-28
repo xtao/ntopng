@@ -35,21 +35,21 @@ for key, value in pairs(flows_stats) do
   cli_name = ntop.getResolvedAddress(cli_name)
 
   if (flows_stats[key]["client_process"] ~= nil) then 
-    client_id = flows_stats[key]["client_process"]["pid"]..'-'..flows_stats[key]["cli.ip"]
+    client_id = flows_stats[key]["cli.source_id"]..'-'..flows_stats[key]["cli.ip"]..'-'..flows_stats[key]["client_process"]["pid"]
     client_name = flows_stats[key]["client_process"]["name"]
     client_type = "syshost"
   else
-    client_id = flows_stats[key]["cli.ip"]
+    client_id = flows_stats[key]["cli.source_id"]..'-'..flows_stats[key]["cli.ip"]
     client_name = abbreviateString(cli_name, 20)
     client_type = "host"
   end
     
   if (flows_stats[key]["server_process"] ~= nil) then 
-    server_id = flows_stats[key]["server_process"]["pid"]..'-'..flows_stats[key]["cli.ip"]
+    server_id = flows_stats[key]["srv.source_id"]..'-'..flows_stats[key]["srv.ip"]..'-'..flows_stats[key]["server_process"]["pid"]
     server_name = flows_stats[key]["server_process"]["name"]
     server_type = "syshost"
   else
-    server_id = flows_stats[key]["srv.ip"]
+    server_id = flows_stats[key]["srv.source_id"]..'-'..flows_stats[key]["srv.ip"]
     server_name = abbreviateString(srv_name, 20)
     server_type = "host"
   end
