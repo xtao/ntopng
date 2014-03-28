@@ -105,7 +105,7 @@ var color = d3.scale.category20();
 
 var force = d3.layout.force()
     .charge(-300)
-    .linkDistance(150)
+    .linkDistance(200)
     .size([width, height]);
 
 var svg = d3.select("#chart").append("svg")
@@ -117,13 +117,20 @@ var explode_process = '';
 function refreshGraph() {
 d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var nodes = {};
+  var instances = {};
   var max_node_bytes = 0;
   var max_link_bytes = 0;
+  var filtered_links = [];
 
-  function addNode(id, name, bytes, type, description) {
-    if (!nodes[id]) nodes[id] = { name: name, id: id, bytes: 0, type: type, description: description }; 
-    nodes[id]['bytes'] += bytes;
-    if (nodes[id]['bytes'] > max_node_bytes) max_node_bytes = nodes[id]['bytes'];
+  function addNode(node_id, id, name, bytes, type, description) {
+    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description };
+
+    if (!instances[name]) instances[name] = {}; /* init node instances hash */
+    if (!instances[name][id]) instances[name][id] = 0; /* create instance */
+    instances[name][id] += 1; /* count links to the instance */
+
+    nodes[node_id]['bytes'] += bytes;
+    if (nodes[node_id]['bytes'] > max_node_bytes) max_node_bytes = nodes[node_id]['bytes'];
   }
 
   links.forEach(function(link) {
@@ -131,20 +138,37 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     if (link.client_type == "host") link.client_name = "Remote Hosts";
     if (link.server_type == "host") link.server_name = "Remote Hosts";
 
-    link.source = (explode_process == link.client_name ? link.client : link.client_name);
-    link.target = (explode_process == link.server_name ? link.server : link.server_name);
-    addNode(link.source, link.client_name, link.bytes, link.client_type, explode_process == link.client_name ? link.source : "Double-Click to expand");
-    addNode(link.target, link.server_name, link.bytes, link.server_type, explode_process == link.server_name ? link.target : "Double-Click to expand");
+    var source = link.client_name,
+        target = link.server_name;
+
+    if (explode_process != '') {
+      if (explode_process == link.client_name) source = link.client;
+      if (explode_process == link.server_name) target = link.server;
+      if (explode_process != link.client_name && explode_process != link.server_name) return; /* skip this link */
+    }
+
+    addNode(source, link.client, link.client_name, link.bytes, link.client_type, source);
+    addNode(target, link.server, link.server_name, link.bytes, link.server_type, target);
+
+    if (explode_process != link.client_name) 
+      nodes[source].description = "Double-Click to expand (" +  Object.keys(instances[source]).length + ")";
+    if (explode_process != link.server_name) 
+      nodes[target].description = "Double-Click to expand (" +  Object.keys(instances[target]).length + ")";
+
     if (link.bytes > max_link_bytes) max_link_bytes = link.bytes;
-    link.source = nodes[link.source];
-    link.target = nodes[link.target];
+
+    link.source = nodes[source];
+    link.target = nodes[target];
+
+    filtered_links.push(link);
   });
 
   force
     .nodes(d3.values(nodes))
-    .links(links)
+    .links(filtered_links)
     .on("tick", tick)
-    .start();
+    .start()
+  ;
 
   svg.append("svg:defs").selectAll("marker")
     .data(["end"]).enter()
@@ -157,7 +181,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .attr("markerHeight", 10)
     .attr("orient", "auto")
     .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
+    .attr("d", "M0,-5L10,0L0,5")
+  ;
 
   var path = svg.selectAll("path")
     .data(force.links())
@@ -167,14 +192,17 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
       .attr("class", function(d) { return "link"; })
       .style("stroke-width", function(d) { return getWeight(d.bytes); })
       .attr("marker-end", "url(#end)")
-      .attr("id", function(d, i) { return "link" + i; });
+      .attr("id", function(d, i) { return "link" + i; })
+  ;
+
 /*
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
     .attr("startOffset",function(d,i) { return "20%"; })
     .attr("xlink:href", function(d,i) { return "#link" + i; })
-    .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); });
+    .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); })
+  ;
 */
 
   var tooltip = d3.select("#chart")
@@ -183,7 +211,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .style("position", "absolute")
     .style("z-index", "10")
     .style("visibility", "hidden")
-    .text("");
+    .text("")
+  ;
 
   var node = svg.selectAll(".node")
     .data(force.nodes())
@@ -197,22 +226,22 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
       svg.selectAll("path").remove(); 
       svg.selectAll("text").remove(); 
       tooltip.style("visibility", "hidden");
-      if (explode_process == d.name) 
-        explode_process = '';
-      else
-        explode_process = d.name;
+      if (explode_process == d.name) explode_process = '';
+      else                           explode_process = d.name;
       refreshGraph();
     } )
     .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
-    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");});
+    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
+  ;
 
   var text = svg.append("g").selectAll("text")
     .data(force.nodes())
     .enter().append("text")
     .attr("x", 8)
     .attr("y", ".31em")
-    .text(function(d) { return d.name; });
+    .text(function(d) { return d.name; })
+  ;
 
   function tick() {
     path.attr("d", linkArc);
