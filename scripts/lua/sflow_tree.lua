@@ -51,7 +51,7 @@ num = 0
 
   if((mode == nil) or (mode == "process")) then
     what = "name"
-    url = "/lua/get_process_info.lua?pid="
+    url = "/lua/get_process_info.lua?host="..host.."&pid="
   end
 
 

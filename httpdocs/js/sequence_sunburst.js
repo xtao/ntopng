@@ -19,6 +19,9 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
   var height = rsp[12];
   var b = rsp[13];
 
+  var last_process = "";
+  var last_byte = 0;
+
   ///////////////////////////////////////////////////////////
   // STREAKER CONNECTION ////////////////////////////////////
   ///////////////////////////////////////////////////////////
@@ -80,6 +83,25 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
 
     // Get total size of the tree = value of root node from partition.
     totalSize = paths.node().__data__.value;
+
+   filteredPieData.forEach(function(d) {
+    if (last_process == d.name) {
+      var data = bytesToVolumeAndLabel(d.value);
+      var value = data[0]
+      if (last_byte < d.value) {
+        value = data[0]+ ' \uf062';
+      }else {
+        value = data[0]+ ' \uf068';
+      }
+      
+      totalValue.text(value);
+      totalLabel.text(d.name);
+      totalUnits.text(data[1]);
+    };
+
+
+   });
+
   }
 
 ///////////////////////////////////////////////////////////
@@ -93,9 +115,14 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     if (percentage < 0.1) {
       percentageString = "< 0.1%";
     }
+    var data = bytesToVolumeAndLabel(d.value);
 
-    totalValue.text(percentageString);
-
+    totalValue.text(data[0]);
+    totalLabel.text(d.name);
+    totalUnits.text(data[1]);
+    last_process = d.name;
+    last_byte = d.value;
+    
     var sequenceArray = getAncestors(d);
     updateBreadcrumbs(sequenceArray, percentageString);
 
@@ -130,10 +157,10 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       d3.select(this).on("mouseover", mouseover);
     });
 
-    totalValue
-    .text("Waiting...")
-    .transition()
-    .duration(500);
+    // totalLabel.text("");
+    // totalValue.text("");
+    // totalUnits.text("");
+    
   };
 
   // Given a node in a partition layout, return an array of all of its ancestor
@@ -199,7 +226,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       .text(function(d) 
         { 
           var name = d.name;
-          return (name.substring(0,6)); });
+          return (name.substring(0,8)); });
 
     // Set position for entering and updating nodes.
     g.attr("transform", function(d, i) {
@@ -230,7 +257,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     // Dimensions of sunburst.
     var width = 600;
     var height = 280;
-    var radius = Math.min(width, height) / 2;
+    var radius = 120;
     // Total size of all segments; we set this later, after loading the data.
     var totalSize = 0; 
 
@@ -276,21 +303,23 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       .attr("class", "label")
       .attr("dy", -25)
       .attr("text-anchor", "middle")
-      .text(title);
+      .attr('font-family', 'FontAwesome')
+      .text("");
 
     //PERCENT
     totalValue = arc_group.append("svg:text")
       .attr("class", "total")
       .attr("dy", 7)
       .attr("text-anchor", "middle")
-      .text("Waiting...");
+      .attr('font-family', 'FontAwesome')
+      .text("");
 
     //UNITS LABEL
     totalUnits = arc_group.append("svg:text")
       .attr("class", "units")
       .attr("dy",30)
       .attr("text-anchor", "middle")
-      .text(units);
+      .text("");
 
     return([color, partition, totalSize, arc, arc_group, trail, whiteCircle, totalLabel, totalValue, totalUnits, radius,width,height,b]);
 

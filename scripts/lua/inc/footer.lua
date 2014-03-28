@@ -85,6 +85,12 @@ function bytesToVolume(bytes) {
   return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
 };
 
+function bytesToVolumeAndLabel(bytes) {
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes == 0) return '0 Bytes';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return [ (bytes / Math.pow(1024, i)).toFixed(2), sizes[i] ];
+};
 
 function bitsToSize(bits, factor) {
   var sizes = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];

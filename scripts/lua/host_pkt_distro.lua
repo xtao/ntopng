@@ -15,14 +15,19 @@ mode = _GET["mode"]
 type = _GET["type"]
 host = interface.getHostInfo(_GET["host"])
 
+
 if(host == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
 
 if((type == nil) or (type == "size")) then
+  
    if((mode == nil) or (mode == "sent")) then
+     
       what = host["pktStats.sent"]
+      
    else
+     
       what = host["pktStats.recv"]
    end
 end

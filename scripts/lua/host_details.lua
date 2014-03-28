@@ -1237,7 +1237,7 @@ print [[
           <div id="sequence_sunburst" >
           <div id="sequence_processTree" class="sequence"></div>
           <div id="chart_processTree" class="chart"></div>
-          <div align="center" class="info"> of Bytes</div>
+          <div align="center" class="info">Mouse over to show the process information</div>
       </div>
         </td>
       </tr>
@@ -1260,7 +1260,7 @@ print [[
   print("\""..host_ip.."\" }, \"\", refresh); \n")
 print [[ 
   do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" ]] print (', host: ')
-  print("\""..host_ip.."\"") print [[ },"TOTAL","Bytes"); ]]
+  print("\""..host_ip.."\"") print [[ },"","Bytes"); ]]
 
 print [[
 }
