@@ -120,8 +120,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var max_node_bytes = 0;
   var max_link_bytes = 0;
 
-  function addNode(id, name, bytes, type) {
-    if (!nodes[id]) nodes[id] = { name: name, id: id, bytes: 0, type: type }; 
+  function addNode(id, name, bytes, type, description) {
+    if (!nodes[id]) nodes[id] = { name: name, id: id, bytes: 0, type: type, description: description }; 
     nodes[id]['bytes'] += bytes;
     if (nodes[id]['bytes'] > max_node_bytes) max_node_bytes = nodes[id]['bytes'];
   }
@@ -133,8 +133,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
 
     link.source = (explode_process == link.client_name ? link.client : link.client_name);
     link.target = (explode_process == link.server_name ? link.server : link.server_name);
-    addNode(link.source, link.client_name, link.bytes, link.client_type);
-    addNode(link.target, link.server_name, link.bytes, link.server_type);
+    addNode(link.source, link.client_name, link.bytes, link.client_type, explode_process == link.client_name ? link.source : "Double-Click to expand");
+    addNode(link.target, link.server_name, link.bytes, link.server_type, explode_process == link.server_name ? link.target : "Double-Click to expand");
     if (link.bytes > max_link_bytes) max_link_bytes = link.bytes;
     link.source = nodes[link.source];
     link.target = nodes[link.target];
@@ -196,13 +196,14 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
       svg.selectAll("circle").remove(); 
       svg.selectAll("path").remove(); 
       svg.selectAll("text").remove(); 
+      tooltip.style("visibility", "hidden");
       if (explode_process == d.name) 
         explode_process = '';
       else
         explode_process = d.name;
       refreshGraph();
     } )
-    .on("mouseover", function(d){ tooltip.text(d.id); return tooltip.style("visibility", "visible"); })
+    .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
     .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");});
 
