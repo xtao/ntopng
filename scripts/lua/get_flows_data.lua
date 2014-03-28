@@ -113,7 +113,7 @@ for key, value in pairs(flows_stats) do
    if(pid ~= nil) then
     if (
       ((flows_stats[key]["client_process"] ~= nil) and (flows_stats[key]["client_process"]["pid"] ~= pid)) 
-      and ((flows_stats[key]["server_process"] ~= nil) and (flows_stats[key]["server_process"]["pid"] ~= pid))
+      or ((flows_stats[key]["server_process"] ~= nil) and (flows_stats[key]["server_process"]["pid"] ~= pid))
       ) then
       process = 0
     end
