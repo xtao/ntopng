@@ -9,6 +9,7 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
+-- Table parameters
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
@@ -17,10 +18,15 @@ host        = _GET["host"]
 port        = _GET["port"]
 application = _GET["application"]
 
-hosts = _GET["hosts"]
+-- Host comparison parameters
 aggregation = _GET["aggregation"]
 key = _GET["key"]
 
+-- System host parameters
+hosts = _GET["hosts"]
+user = _GET["user"]
+pid = tonumber(_GET["pid"])
+name = _GET["name"]
 
 if(currentPage == nil) then
    currentPage = 1
@@ -92,6 +98,34 @@ for key, value in pairs(flows_stats) do
       if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
 	 process = 0
       end
+   end
+
+   if(user ~= nil) then
+    if (
+      ((flows_stats[key]["client_process"] ~= nil) and (flows_stats[key]["client_process"]["user_name"] ~= user)) and
+      ((flows_stats[key]["server_process"] ~= nil) and (flows_stats[key]["server_process"]["user_name"] ~= user))
+      ) then
+      process = 0
+    end
+   end
+
+
+   if(pid ~= nil) then
+    if (
+      ((flows_stats[key]["client_process"] ~= nil) and (flows_stats[key]["client_process"]["pid"] ~= pid)) 
+      and ((flows_stats[key]["server_process"] ~= nil) and (flows_stats[key]["server_process"]["pid"] ~= pid))
+      ) then
+      process = 0
+    end
+   end
+
+   if(name ~= nil) then
+    if (
+      ((flows_stats[key]["client_process"] ~= nil) and (flows_stats[key]["client_process"]["name"] ~= name)) 
+      or ((flows_stats[key]["server_process"] ~= nil) and (flows_stats[key]["server_process"]["name"] ~= name))
+      ) then
+      process = 0
+    end
    end
 
    if(application ~= nil) then
@@ -254,12 +288,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
 	 if(value["client_process"] ~= nil) then
-	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] ..">" .. value["client_process"]["name"].."</A>")
-	    print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] ..">" .. value["client_process"]["user_name"].."</A>")
+	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["name"].."</A>")
+	    print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["user_name"].."</A>")
 	 end
 	 if(value["server_process"] ~= nil) then
-	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] ..">" .. value["server_process"]["name"].."</A>")
-	    print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] ..">" .. value["server_process"]["user_name"].."</A>")
+	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["name"].."</A>")
+	    print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["user_name"].."</A>")
 	 end
 
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))

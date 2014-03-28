@@ -19,6 +19,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 pid_key = _GET["pid"]
 name_key = _GET["name"]
 host_key = _GET["host"]
+application = _GET["application"]
 
 
 
@@ -60,6 +61,12 @@ if (pid_key ~= nil) then
    print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
   end
 
+if(page == "Flows") then active=' class="active"' else active = "" end
+if (pid_key ~= nil) then
+ print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
+  elseif (name_key ~= nil) then
+   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
+  end
 -- End Tab Menu
 
 print('</ul>\n\t</div>\n\t</div>\n')
@@ -113,8 +120,101 @@ print [[
 }
 </script>
 ]]
+
+
+elseif(page == "Flows") then
+
+stats = interface.getNdpiStats()
+num_param = 0
+
+print [[
+      <hr>
+      <div id="table-hosts"></div>
+   <script>
+   $("#table-hosts").datatable({
+      url: "/lua/get_flows_data.lua]] 
+if(application ~= nil) then
+   print("?application="..application)
+   num_param = num_param + 1
 end
+
+if(pid_key ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+   print("pid="..pid_key)
+   num_param = num_param + 1
 end
+
+if(name_key ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("name="..name_key)
+  num_param = num_param + 1
 end
+
+if(host_key ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("host="..host_key)
+  num_param = num_param + 1
+end
+
+print [[",
+         showPagination: true,
+         buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
+
+if (pid_key ~= nil) then
+print('<li><a href="/lua/get_process_info?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
+end
+if (name_key ~= nil) then
+print('<li><a href="/lua/get_process_info?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
+end
+
+
+
+for key, value in pairsByKeys(stats["ndpi"], asc) do
+   class_active = ''
+   if(key == application) then
+      class_active = ' class="active"'
+   end
+
+
+   if (pid_key ~= nil) then
+    print('<li '..class_active..'><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    end
+
+    if (name_key ~= nil) then
+    print('<li '..class_active..'><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    end
+
+
+end
+
+
+print("</ul> </div>' ],\n")
+
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_top.inc")
+
+prefs = ntop.getPrefs()
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_bottom.inc")
+
+
+
+
+end -- If page
+
+end -- Error one
+end -- Error two
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
