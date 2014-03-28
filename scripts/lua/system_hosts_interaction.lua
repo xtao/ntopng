@@ -120,15 +120,21 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var max_node_bytes = 0;
   var max_link_bytes = 0;
 
+  function addNode(id, name, bytes, type) {
+    if (!nodes[id]) nodes[id] = { name: name, id: id, bytes: 0, type: type }; 
+    nodes[id]['bytes'] += bytes;
+    if (nodes[id]['bytes'] > max_node_bytes) max_node_bytes = nodes[id]['bytes'];
+  }
+
   links.forEach(function(link) {
+    //trick to group remote hosts
+    if (link.client_type == "host") link.client_name = "Remote Hosts";
+    if (link.server_type == "host") link.server_name = "Remote Hosts";
+
     link.source = (explode_process == link.client_name ? link.client : link.client_name);
     link.target = (explode_process == link.server_name ? link.server : link.server_name);
-    if (!nodes[link.source]) nodes[link.source] = {name: link.client_name, id: link.source, bytes: 0};
-    if (!nodes[link.target]) nodes[link.target] = {name: link.server_name, id: link.target, bytes: 0};
-    nodes[link.source]['bytes'] += link.bytes;
-    nodes[link.target]['bytes'] += link.bytes;
-    if (nodes[link.source]['bytes'] > max_node_bytes) max_node_bytes = nodes[link.source]['bytes'];
-    if (nodes[link.target]['bytes'] > max_node_bytes) max_node_bytes = nodes[link.target]['bytes'];
+    addNode(link.source, link.client_name, link.bytes, link.client_type);
+    addNode(link.target, link.server_name, link.bytes, link.server_type);
     if (link.bytes > max_link_bytes) max_link_bytes = link.bytes;
     link.source = nodes[link.source];
     link.target = nodes[link.target];
@@ -156,19 +162,20 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var path = svg.selectAll("path")
     .data(force.links())
     .enter().append("g")
-    .attr("class", "link-group")
+//    .attr("class", "link-group")
     .append("path")
       .attr("class", function(d) { return "link"; })
       .style("stroke-width", function(d) { return getWeight(d.bytes); })
       .attr("marker-end", "url(#end)")
       .attr("id", function(d, i) { return "link" + i; });
-
+/*
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
     .attr("startOffset",function(d,i) { return "20%"; })
     .attr("xlink:href", function(d,i) { return "#link" + i; })
     .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); });
+*/
 
   var tooltip = d3.select("#chart")
     .append("div")
@@ -183,7 +190,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .enter().append("circle")
     .attr("class", "circle")
     .attr("r", function(d) { return getRadius(d.bytes); /* nodes[d.name].radius = getRadius(d.bytes); return nodes[d.name].radius; */ })
-    .style("fill", function(d) { return color(d.name); })
+    .style("fill", function(d) { return (d.type == "syshost" ? color(d.name) : "#666"); })
     .call(force.drag)
     .on("dblclick", function(d) { 
       svg.selectAll("circle").remove(); 
