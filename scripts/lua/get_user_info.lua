@@ -142,7 +142,7 @@ print [[",
          showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
-print('<li><a href="/lua/get_user_info?user='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
+-- print('<li><a href="/lua/get_user_info?user='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print(">All Proto</a></li>")
 for key, value in pairsByKeys(stats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
