@@ -20,10 +20,13 @@ else
    _ifstats = {}
 
    tot = 0
+   traffic = 0
    for id, _ in ipairs(l4_keys) do
       label = l4_keys[id][1]
       key = l4_keys[id][2]
-      traffic = host[key..".bytes.sent"] + host[key..".bytes.rcvd"]
+      if(host[key..".bytes.sent"] ~= nil) then traffic = traffic + host[key..".bytes.sent"] end
+      if(host[key..".bytes.recv"] ~= nil) then traffic = traffic + host[key..".bytes.recv"] end
+
       _ifstats[traffic] = label
       tot = tot + traffic
    end
