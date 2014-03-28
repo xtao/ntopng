@@ -34,21 +34,24 @@ for key, value in pairs(flows_stats) do
   end
   cli_name = ntop.getResolvedAddress(cli_name)
 
-
   if (flows_stats[key]["client_process"] ~= nil) then 
     client_id = flows_stats[key]["client_process"]["pid"]..'-'..flows_stats[key]["cli.ip"]
     client_name = flows_stats[key]["client_process"]["name"]
+    client_type = "syshost"
   else
     client_id = flows_stats[key]["cli.ip"]
     client_name = abbreviateString(cli_name, 20)
+    client_type = "host"
   end
     
   if (flows_stats[key]["server_process"] ~= nil) then 
     server_id = flows_stats[key]["server_process"]["pid"]..'-'..flows_stats[key]["cli.ip"]
     server_name = flows_stats[key]["server_process"]["name"]
+    server_type = "syshost"
   else
     server_id = flows_stats[key]["srv.ip"]
     server_name = abbreviateString(srv_name, 20)
+    server_type = "host"
   end
 
   key_link = client_id.."-"..client_name..":"..server_id.."-"..server_name
@@ -57,8 +60,10 @@ for key, value in pairs(flows_stats) do
     nodes[key_link] = {};
     nodes[key_link]["client_id"] = client_id
     nodes[key_link]["client_name"] = client_name
+    nodes[key_link]["client_type"] = client_type
     nodes[key_link]["server_id"] = server_id
     nodes[key_link]["server_name"] = server_name
+    nodes[key_link]["server_type"] = server_type
     nodes[key_link]["bytes"] = flows_stats[key]["bytes"]
     nodes[key_link]["srv2cli.bytes"] = flows_stats[key]["srv2cli.bytes"]
     nodes[key_link]["cli2srv.bytes"] = flows_stats[key]["cli2srv.bytes"]
@@ -93,7 +98,7 @@ for key, value in pairs(nodes) do
   if(process == 1) then
     if (num > 0) then print(',\n') end
 
-    print('{\"client\":\"'..nodes[key]["client_id"]..'\",\"client_name\":\"'..nodes[key]["client_name"]..'\",\"server\":\"'..nodes[key]["server_id"]..'\",\"server_name\":\"'..nodes[key]["server_name"]..'\", \"bytes\":'..nodes[key]["bytes"]..', \"cli2srv_bytes\":'..nodes[key]["cli2srv.bytes"]..', \"srv2cli_bytes\":'..nodes[key]["srv2cli.bytes"]..'}')
+    print('{\"client\":\"'..nodes[key]["client_id"]..'\",\"client_name\":\"'..nodes[key]["client_name"]..'\",\"client_type\":\"'..nodes[key]["client_type"]..'\",\"server\":\"'..nodes[key]["server_id"]..'\",\"server_name\":\"'..nodes[key]["server_name"]..'\",\"server_type\":\"'..nodes[key]["server_type"]..'\",\"bytes\":'..nodes[key]["bytes"]..', \"cli2srv_bytes\":'..nodes[key]["cli2srv.bytes"]..', \"srv2cli_bytes\":'..nodes[key]["srv2cli.bytes"]..'}')
     num = num + 1
   end
 
