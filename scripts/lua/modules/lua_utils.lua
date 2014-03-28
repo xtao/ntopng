@@ -14,7 +14,7 @@ l4_keys = {
    { "TCP", "tcp" },
    { "UDP", "udp" },
    { "ICMP", "icmp" },
-   { "Other IP", "other_ip" }
+   { "Other IP", "other ip" }
 }
 
 
@@ -42,7 +42,7 @@ end
 
 function findString(str, tofind)
    if(str == nil) then return(nil) end
-
+   
    str1    = string.gsub(str, "-", "_")
    tofind1 = string.gsub(tofind, "-", "_")
    rsp = string.find(str1, tofind1, 1)
@@ -136,7 +136,7 @@ function _handleArray(name, sev)
       local l = name[id][1]
       local key = name[id][2]
 
-      if(key == sev) then
+      if(string.upper(key) == string.upper(sev)) then
 	 return(l)
       end
    end

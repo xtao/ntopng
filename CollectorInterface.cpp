@@ -48,12 +48,15 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic
   */
   if((slash = strchr(ifname, '/')) != NULL) {
     char buf[64];
-    int i = 1;
+    int i = 1, len;
 
     while(slash[i] == '/') i++;
 
-    snprintf(buf, sizeof(buf), "collector@%s", &slash[i]);
+    snprintf(buf, sizeof(buf), "zmq@%s", &slash[i]);
     free(ifname);
+
+    len = strlen(buf);
+    if(len > 16) buf[16] = '.', buf[17] = '.', buf[18] = '.', buf[19] = '\0';
 
     ifname = strdup(buf);
   }

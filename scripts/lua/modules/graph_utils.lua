@@ -2,8 +2,9 @@
 -- (C) 2013-14 - ntop.org
 --
 
-function navigatedir(url, label, base, path, files)
+function navigatedir(url, label, base, path)
    local shown = false
+   local to_skip = false
    --print("<li> <b>(d)</b> "..path.."  </li>\n")
 
    rrds = ntop.readdir(path)   
@@ -12,15 +13,23 @@ function navigatedir(url, label, base, path, files)
 	 p = fixPath(path .. "/" .. v)
 	 
 	 if(ntop.isdir(p)) then
-	    navigatedir(url, label.."/"..v, base, p, files)
+	    navigatedir(url, label.."/"..v, base, p)
 	 else
-	    if(not(shown)) then
-	       print('<li class="dropdown-submenu"><a tabindex="-1" href="#">'..label..'</a>\n<ul class="dropdown-menu">\n')
-	       shown = true
+	    if(label == "*") then
+	       to_skip = true
+	    else
+	       if(not(shown) and not(to_skip)) then
+		  print('<li class="dropdown-submenu"><a tabindex="-1" href="#">'..label..'</a>\n<ul class="dropdown-menu">\n')
+		  shown = true
+	       end
 	    end
+	    
 	    what = string.sub(path.."/"..v, string.len(base)+2)
-	    print("<li> <A HREF="..p..">"..url..what.."</A>  </li>\n")
-	    table.insert(files, p)
+	    
+	    label = string.sub(v,  1, string.len(v)-4)
+	    label = l4Label(string.gsub(label, "_", " "))
+
+	    print("<li> <A HREF="..url..what..">"..label.."</A>  </li>\n")
 	 end
       end
    end
@@ -243,24 +252,19 @@ dirs = ntop.getDirs()
 d = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host)
 
 if(true) then
-   files = {}
-   
-   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, files)
-   
-   for _,k in pairs(files) do
-      --print("<li>(f) "..k.."</li>\n")
-   end
+   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d)
 end
 
-rrds = ntop.readdir(d)
-for k,v in pairsByKeys(rrds, asc) do
---   print("<li>"..rrds[k].."</li>\n")
-   proto = string.gsub(rrds[k], ".rrd", "")
-
-   
-   if(proto ~= "bytes") then
-      label = l4Label(proto)
-      print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
+if(false) then
+   rrds = ntop.re5Aaddir(d)
+   for k,v in pairsByKeys(rrds, asc) do
+      --   print("<li>"..rrds[k].."</li>\n")
+      proto = string.gsub(rrds[k], ".rrd", "")
+            
+      if(proto ~= "bytes") then
+	 label = l4Label(proto)
+	 print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
+      end
    end
 end
 
