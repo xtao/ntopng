@@ -27,15 +27,15 @@ else
             <div class="navbar">
 	    <div class="navbar-inner">
 	    <ul class="nav">
-	    <li><a href="#">User: ]] print(user_key) print [[ </a></li>
+	    <li><a href="#">User: ]] print(user_key) if(host_key ~= nill) then print(" - "..host_key) end print [[  </a></li>
    ]]
 
 
 if(page == "UserApps") then active=' class="active"' else active = "" end
-print('<li'..active..'><a href="?user='.. user_key ..'&page=UserApps">Applications</a></li>\n')
+print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=UserApps">Applications</a></li>\n')
 
 if(page == "UserProtocols") then active=' class="active"' else active = "" end
-print('<li'..active..'><a href="?user='.. user_key ..'&page=UserProtocols">Protocols</a></li>\n')
+print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=UserProtocols">Protocols</a></li>\n')
 
 
 print('</ul>\n\t</div>\n\t</div>\n')
