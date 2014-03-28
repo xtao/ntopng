@@ -57,7 +57,7 @@ else
 
     
     if(client_process == 1) then
-      current_what = flow["client_process"][what].." (client processes)"
+      current_what = flow["client_process"][what].." (client)"
       if (how_is_process == 1) then
         value = flow["client_process"][how] 
       else
@@ -76,7 +76,7 @@ else
     end
     
     if(server_process == 1) then
-      current_what = flow["server_process"][what].." (server processes)"
+      current_what = flow["server_process"][what].." (server)"
       if (how_is_process == 1) then
        value = flow["server_process"][how] 
       else
@@ -99,18 +99,29 @@ else
   print "[\n"
   num = 0
   s = 0
+
+  tot = 0
   for key, value in pairs(what_array) do
+     value = what_array[key]["value"]
+     tot = tot + value
+  end
 
-    if(num > 0) then
-      print ",\n"
-    end
-    value = what_array[key]["value"]
-    label = key
-    url = what_array[current_what]["url"]
-    print("\t { \"label\": \"" .. label .."\", \"value\": ".. value ..", \"url\": \"" .. url.."\" }") 
-    num = num + 1
-    s = s + value
+  other = 0;
+  thr = (tot * 5) / 100
 
+  for key, value in pairs(what_array) do
+     value = what_array[key]["value"]
+
+     if(value > thr) then
+	if(num > 0) then
+	   print ",\n"
+	end
+	label = key
+	url = what_array[current_what]["url"]
+	print("\t { \"label\": \"" .. label .."\", \"value\": ".. value ..", \"url\": \"" .. url.."\" }") 
+	num = num + 1
+	s = s + value
+     end
   end
 
   if(tot > s) then
