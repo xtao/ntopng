@@ -56,48 +56,47 @@ print [[
 
 
 <script>
-  // Updating charts.
+// Updating charts.
 var updatingChart = $(".network-load-chart").peity("line", { width: 64 });
 var prev_bytes   = 0;
 var prev_packets = 0;
 var prev_epoch   = 0;
 
-function addCommas(nStr)
-{
-   nStr += '';
-   x = nStr.split('.');
-   x1 = x[0];
-   x2 = x.length > 1 ? '.' + x[1] : '';
-   var rgx = /(\d+)(\d{3})/;
-   while (rgx.test(x1)) {
-      x1 = x1.replace(rgx, '$1' + ',' + '$2');
-   }
-   return x1 + x2;
+function addCommas(nStr) {
+  nStr += '';
+  x = nStr.split('.');
+  x1 = x[0];
+  x2 = x.length > 1 ? '.' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+  return x1 + x2;
 }
 
 function formatPackets(n) {
-      return(addCommas(n)+" Pkts");
+  return(addCommas(n)+" Pkts");
 }
 
 function bytesToVolume(bytes) {
-      var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-      if (bytes == 0) return '0 Bytes';
-      var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-      return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
-   };
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes == 0) return '0 Bytes';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+};
 
 
 function bitsToSize(bits, factor) {
-      var sizes = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];
-      if (bits == 0) return '0 bps';
-      var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
-      if (i == 0) return bits + ' ' + sizes[i];
-      return (bits / Math.pow(factor, i)).toFixed(2) + ' ' + sizes[i];
-   };
+  var sizes = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];
+  if (bits == 0) return '0 bps';
+  var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
+  if (i == 0) return bits + ' ' + sizes[i];
+  return (bits / Math.pow(factor, i)).toFixed(2) + ' ' + sizes[i];
+};
 
 function bytesToSize(bytes) {
-      return(bytesToSize(bytes*8));
-   }
+  return(bytesToSize(bytes*8));
+}
 
 function secondsToTime(seconds) {
    if(seconds < 1) {
@@ -151,8 +150,7 @@ function secondsToTime(seconds) {
    return msg
 }
 
-   Date.prototype.format = function(format) //author: meizz
-{
+Date.prototype.format = function(format) { //author: meizz
   var o = {
      "M+" : this.getMonth()+1, //month
      "d+" : this.getDate(),    //day
@@ -170,16 +168,16 @@ function secondsToTime(seconds) {
 			    RegExp.$1.length==1 ? o[k] :
 			    ("00"+ o[k]).substr((""+ o[k]).length));
   return format;
- }
+}
 
 
 function epoch2Seen(epoch) {
-      /* 08/01/13 15:12:37 [18 min, 13 sec ago] */
-      var d = new Date(epoch*1000);
-      var tdiff = Math.floor(((new Date()).getTime()/1000)-epoch);
+  /* 08/01/13 15:12:37 [18 min, 13 sec ago] */
+  var d = new Date(epoch*1000);
+  var tdiff = Math.floor(((new Date()).getTime()/1000)-epoch);
 
-      return(d.format("dd/MM/yyyy hh:mm:ss")+" ["+secondsToTime(tdiff)+" ago]");
-   }
+  return(d.format("dd/MM/yyyy hh:mm:ss")+" ["+secondsToTime(tdiff)+" ago]");
+}
 
 setInterval(function() {
     $.ajax({

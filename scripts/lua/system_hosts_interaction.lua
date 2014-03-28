@@ -104,11 +104,12 @@ var width = 960,
 var color = d3.scale.category20();
 
 var force = d3.layout.force()
-    .charge(-300)
-    .linkDistance(200)
-    .size([width, height]);
+  .charge(-300)
+  .linkDistance(200)
+  .size([width, height]);
 
-var svg = d3.select("#chart").append("svg")
+var svg = d3.select("#chart")
+  .append("svg")
     .attr("width", width)
     .attr("height", height);
 
@@ -130,6 +131,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     instances[name][id] += 1; /* count links to the instance */
 
     nodes[node_id]['bytes'] += bytes;
+
     if (nodes[node_id]['bytes'] > max_node_bytes) max_node_bytes = nodes[node_id]['bytes'];
   }
 
@@ -142,9 +144,11 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
         target = link.server_name;
 
     if (explode_process != '') {
-      if (explode_process == link.client_name) source = link.client;
-      if (explode_process == link.server_name) target = link.server;
-      if (explode_process != link.client_name && explode_process != link.server_name) return; /* skip this link */
+      //filtering exploded process
+      if (explode_process != source && explode_process != target) return; /* skip this link */
+
+      if (explode_process == source) source = link.client;
+      if (explode_process == target) target = link.server;
     }
 
     addNode(source, link.client, link.client_name, link.bytes, link.client_type, source);
@@ -159,6 +163,8 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
 
     link.source = nodes[source];
     link.target = nodes[target];
+
+    link.description = "Up: " + bytesToVolume(link.cli2srv_bytes) + " | Down: " + bytesToVolume(link.srv2cli_bytes);
 
     filtered_links.push(link);
   });
@@ -184,26 +190,29 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .attr("d", "M0,-5L10,0L0,5")
   ;
 
-  var path = svg.selectAll("path")
+  var path = svg.append("g").selectAll("path")
     .data(force.links())
     .enter().append("g")
-//    .attr("class", "link-group")
+    //.attr("class", "link-group")
+    .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
+    .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
+    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
     .append("path")
-      .attr("class", function(d) { return "link"; })
+      .attr("class", "link")
+      .attr("id", function(d, i) { return "link" + i; })
       .style("stroke-width", function(d) { return getWeight(d.bytes); })
       .attr("marker-end", "url(#end)")
-      .attr("id", function(d, i) { return "link" + i; })
   ;
 
-/*
+  /* arc labels: this slows down the graph, don't know why..
   svg.selectAll(".link-group").append("text")
     .attr("dy", "-0.5em")
     .append("textPath")
-    .attr("startOffset",function(d,i) { return "20%"; })
+    .attr("startOffset",function(d,i) { return 20/100; })
     .attr("xlink:href", function(d,i) { return "#link" + i; })
-    .text(function(d) { return bytesToVolume(d.cli2srv_bytes) + " | " + bytesToVolume(d.srv2cli_bytes); })
+    .text(function(d) { return d.description; })
   ;
-*/
+  */
 
   var tooltip = d3.select("#chart")
     .append("div")
@@ -218,7 +227,7 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .data(force.nodes())
     .enter().append("circle")
     .attr("class", "circle")
-    .attr("r", function(d) { return getRadius(d.bytes); /* nodes[d.name].radius = getRadius(d.bytes); return nodes[d.name].radius; */ })
+    .attr("r", function(d) { return getRadius(d.bytes); })
     .style("fill", function(d) { return (d.type == "syshost" ? color(d.name) : "#666"); })
     .call(force.drag)
     .on("dblclick", function(d) { 
@@ -257,19 +266,6 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
   }
 
-  /*
-  function linkArc2(d) {
-    var dx = d.target.x - d.source.x,
-        dy = d.target.y - d.source.y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-
-    var offx = (dx * nodes[d.target.name].radius) / dr,
-        offy = (dy * nodes[d.target.name].radius) / dr;
-
-    return "M" + d.source.x + "," + d.source.y + "L" + (d.target.x - offx) + "," + (d.target.y - offy);
-  }
-  */
-
   function transform(d) {
     return "translate(" + d.x + "," + d.y + ")";
   }
@@ -292,24 +288,6 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
 refreshGraph();
 
 </script>
-
-<p>&nbsp;<p><small><b>NOTE</b></small>
-<ol>
-]]
-
--- if(host_ip ~= nil) then
-   -- print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_ip)
-   -- if(host_name ~= nil) then print('('.. host_name .. ')') end
-   -- print('</font>. Clicking on this host you will visualize its details.</small></li>\n')
--- else
-   print('<li><small>This map depicts the interactions of the top  '.. num_top_hosts .. ' hosts.</small></li>\n')
---end
-   print('<li><small>Color node: <font color=#aec7e8><b>System Host</b></font>, <font color=#bcbd22><b>Host</b></font>.</small></li>\n')
-   print('<li><small>Color link: <font color=orange><b>Incoming</b></font>, <font color=green><b>Outgoing</b></font>,<font color=gray><b>Loopback</b></font>.</small></li>\n')
-print [[
-<!-- <li> <small>Click is enabled only for hosts that have not been purged from memory.</small></li> -->
-</ol>
-
 
 ]]
 else
