@@ -13,7 +13,6 @@ interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
 
 
-nodes = {}
 links = {}
 num = 0
 
@@ -43,7 +42,7 @@ for key, value in pairs(flows_stats) do
     client_name = abbreviateString(cli_name, 20)
     client_type = "host"
   end
-    
+
   if (flows_stats[key]["server_process"] ~= nil) then 
     server_id = flows_stats[key]["srv.source_id"]..'-'..flows_stats[key]["srv.ip"]..'-'..flows_stats[key]["server_process"]["pid"]
     server_name = flows_stats[key]["server_process"]["name"]
@@ -56,22 +55,24 @@ for key, value in pairs(flows_stats) do
 
   key_link = client_id.."-"..client_name..":"..server_id.."-"..server_name
   -- print("Key:"..key)
-  if (nodes[key_link] == nil) then
-    nodes[key_link] = {};
-    nodes[key_link]["client_id"] = client_id
-    nodes[key_link]["client_name"] = client_name
-    nodes[key_link]["client_type"] = client_type
-    nodes[key_link]["server_id"] = server_id
-    nodes[key_link]["server_name"] = server_name
-    nodes[key_link]["server_type"] = server_type
-    nodes[key_link]["bytes"] = flows_stats[key]["bytes"]
-    nodes[key_link]["srv2cli.bytes"] = flows_stats[key]["srv2cli.bytes"]
-    nodes[key_link]["cli2srv.bytes"] = flows_stats[key]["cli2srv.bytes"]
+  if (links[key_link] == nil) then
+    links[key_link] = {};
+    links[key_link]["client_id"] = client_id
+    links[key_link]["client_system_id"] = flows_stats[key]["cli.source_id"];
+    links[key_link]["client_name"] = client_name
+    links[key_link]["client_type"] = client_type
+    links[key_link]["server_id"] = server_id
+    links[key_link]["server_system_id"] = flows_stats[key]["srv.source_id"];
+    links[key_link]["server_name"] = server_name
+    links[key_link]["server_type"] = server_type
+    links[key_link]["bytes"] = flows_stats[key]["bytes"]
+    links[key_link]["srv2cli.bytes"] = flows_stats[key]["srv2cli.bytes"]
+    links[key_link]["cli2srv.bytes"] = flows_stats[key]["cli2srv.bytes"]
   else
     -- Aggregate values
-    nodes[key_link]["bytes"] = nodes[key_link]["bytes"] + flows_stats[key]["bytes"]
-    nodes[key_link]["cli2srv.bytes"] = nodes[key_link]["cli2srv.bytes"] + flows_stats[key]["cli2srv.bytes"]
-    nodes[key_link]["srv2cli.bytes"] = nodes[key_link]["srv2cli.bytes"] + flows_stats[key]["srv2cli.bytes"]
+    links[key_link]["bytes"] = links[key_link]["bytes"] + flows_stats[key]["bytes"]
+    links[key_link]["cli2srv.bytes"] = links[key_link]["cli2srv.bytes"] + flows_stats[key]["cli2srv.bytes"]
+    links[key_link]["srv2cli.bytes"] = links[key_link]["srv2cli.bytes"] + flows_stats[key]["srv2cli.bytes"]
   end
     
 end 
@@ -82,7 +83,7 @@ print('[\n')
 -- Create link (flows)
 
 num = 0
-for key, value in pairs(nodes) do
+for key, value in pairs(links) do
 
   process = 1
 
@@ -98,7 +99,19 @@ for key, value in pairs(nodes) do
   if(process == 1) then
     if (num > 0) then print(',\n') end
 
-    print('{\"client\":\"'..nodes[key]["client_id"]..'\",\"client_name\":\"'..nodes[key]["client_name"]..'\",\"client_type\":\"'..nodes[key]["client_type"]..'\",\"server\":\"'..nodes[key]["server_id"]..'\",\"server_name\":\"'..nodes[key]["server_name"]..'\",\"server_type\":\"'..nodes[key]["server_type"]..'\",\"bytes\":'..nodes[key]["bytes"]..', \"cli2srv_bytes\":'..nodes[key]["cli2srv.bytes"]..', \"srv2cli_bytes\":'..nodes[key]["srv2cli.bytes"]..'}')
+    print('{'..
+      '\"client\":\"'           .. links[key]["client_id"]        .. '\",' ..
+      '\"client_system_id\":\"' .. links[key]["client_system_id"] .. '\",' ..
+      '\"client_name\":\"'      .. links[key]["client_name"]      .. '\",' ..
+      '\"client_type\":\"'      .. links[key]["client_type"]      .. '\",' ..
+      '\"server\":\"'           .. links[key]["server_id"]        .. '\",' ..
+      '\"server_system_id\":\"' .. links[key]["server_system_id"] .. '\",' ..
+      '\"server_name\":\"'      .. links[key]["server_name"]      .. '\",' ..
+      '\"server_type\":\"'      .. links[key]["server_type"]      .. '\",' ..
+      '\"bytes\":'              .. links[key]["bytes"]            .. ','   ..
+      '\"cli2srv_bytes\":'      .. links[key]["cli2srv.bytes"]    .. ','   ..
+      '\"srv2cli_bytes\":'      .. links[key]["srv2cli.bytes"]    ..
+    '}')
     num = num + 1
   end
 

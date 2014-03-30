@@ -118,17 +118,13 @@ var explode_process = '';
 function refreshGraph() {
 d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var nodes = {};
-  var instances = {};
   var max_node_bytes = 0;
   var max_link_bytes = 0;
   var filtered_links = [];
+  var systems = {};
 
-  function addNode(node_id, id, name, bytes, type, description) {
-    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description };
-
-    if (!instances[name]) instances[name] = {}; /* init node instances hash */
-    if (!instances[name][id]) instances[name][id] = 0; /* create instance */
-    instances[name][id] += 1; /* count links to the instance */
+  function addNode(node_id, id, name, bytes, type, description, process_name) {
+    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description, process_name: process_name };
 
     nodes[node_id]['bytes'] += bytes;
 
@@ -136,30 +132,57 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   }
 
   links.forEach(function(link) {
+    if (!systems[link.client_system_id]) systems[link.client_system_id] = 0;
+    if (!systems[link.server_system_id]) systems[link.server_system_id] = 0;
+    systems[link.client_system_id]++;
+    systems[link.server_system_id]++;
+  });
+
+  links.forEach(function(link) {
+
+    // adding system id prefix in case of multiple systems
+    if (Object.keys(systems).length > 1) {
+      link.client_name = link.client_system_id + ":" + link.client_name; 
+      link.server_name = link.server_system_id + ":" + link.server_name;
+    }
+
     //trick to group remote hosts
     if (link.client_type == "host") link.client_name = "Remote Hosts";
     if (link.server_type == "host") link.server_name = "Remote Hosts";
 
     var source = link.client_name,
-        target = link.server_name,
-        client_description = '',
-        server_description = '';
+        target = link.server_name;
+
+    var source_exploded = 0,
+        target_exploded = 0;
+
+    var client_process_name = link.client_name,
+        server_process_name = link.server_name;
+
+    var client_description = 'Double-Click to expand',
+        server_description = 'Double-Click to expand';
 
     if (explode_process != '') {
       //filtering exploded process
       if (explode_process != source && explode_process != target) return; /* skip this link */
 
-      if (explode_process == source) { source = link.client; client_description = process_instance_to_string(link.client); }
-      if (explode_process == target) { target = link.server; server_description = process_instance_to_string(link.server); }
+      if (explode_process == source) {
+        source_exploded = 1;
+        source = link.client; 
+        link.client_name = link.client_name + process_instance_suffix(link.client); 
+        client_description = process_instance_to_string(link.client); 
+      }
+
+      if (explode_process == target) { 
+        target_exploded = 1;
+        target = link.server; 
+        link.server_name = link.server_name + process_instance_suffix(link.server); 
+        server_description = process_instance_to_string(link.server); 
+      }
     }
 
-    addNode(source, link.client, link.client_name, link.bytes, link.client_type, client_description);
-    addNode(target, link.server, link.server_name, link.bytes, link.server_type, server_description);
-
-    if (explode_process != link.client_name) 
-      nodes[source].description = "Double-Click to expand (" +  Object.keys(instances[source]).length + ")";
-    if (explode_process != link.server_name) 
-      nodes[target].description = "Double-Click to expand (" +  Object.keys(instances[target]).length + ")";
+    addNode(source, link.client, link.client_name, link.bytes, link.client_type, client_description, client_process_name);
+    addNode(target, link.server, link.server_name, link.bytes, link.server_type, server_description, server_process_name);
 
     if (link.bytes > max_link_bytes) max_link_bytes = link.bytes;
 
@@ -230,15 +253,15 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .enter().append("circle")
     .attr("class", "circle")
     .attr("r", function(d) { return getRadius(d.bytes); })
-    .style("fill", function(d) { return (d.type == "syshost" ? color(d.name) : "#666"); })
+    .style("fill", function(d) { return (d.type == "syshost" ? color(d.process_name) : "#666"); })
     .call(force.drag)
     .on("dblclick", function(d) { 
       svg.selectAll("circle").remove(); 
       svg.selectAll("path").remove(); 
       svg.selectAll("text").remove(); 
       tooltip.style("visibility", "hidden");
-      if (explode_process == d.name) explode_process = '';
-      else                           explode_process = d.name;
+      if (explode_process == d.process_name) explode_process = '';
+      else                           explode_process = d.process_name;
       refreshGraph();
     } )
     .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
@@ -284,9 +307,18 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     return radius;
   }
 
+  function process_instance_suffix(id) {
+    var info = id.split("-");
+    var string = ":" + info[1];
+    if (info[2]) string += ":" + info[2];
+    return string;
+  }
+
   function process_instance_to_string(id) {
     var info = id.split("-");
-    return "System: " + info[0] + " IP: " + info[1] + " PID: " + info[2];
+    var string = "System: " + info[0] + " IP: " + info[1];
+    if (info[2]) string += " PID: " + info[2];
+    return string;
   }
 
 });
