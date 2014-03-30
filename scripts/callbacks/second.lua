@@ -6,24 +6,10 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "graph_utils"
 
 -- Toggle debug
 local enable_second_debug = 0
-
-function create_rrd(name, ds)
-   if(not(ntop.exists(name))) then
-      if(enable_second_debug == 1) then io.write('Creating RRD ', name, '\n') end
-      ntop.rrd_create(
-	 name,
-	 '--start', 'now',
-	 '--step', '1',
-	 'DS:' .. ds .. ':DERIVE:5:U:U',
-	 'RRA:AVERAGE:0.5:1:86400',    -- raw: 1 day = 86400
-	 'RRA:AVERAGE:0.5:3600:2400',  -- 1h resolution (3600 points)   2400 hours = 100 days
-	 'RRA:AVERAGE:0.5:86400:365',    -- 1d resolution (86400 points)  365 days
-	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
-   end
-end
 
 ifnames = interface.getIfNames()
 for _,ifname in pairs(ifnames) do

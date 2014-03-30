@@ -63,6 +63,21 @@ for _,_ifname in pairs(ifnames) do
       scanAlerts("5mins")
 
       interface.find(_ifname)
+
+      -- Save interaface stats. The second.lua file creates bytes.rrd/packets.rrd
+      ifstats = interface.getStats()
+
+      basedir = fixPath(dirs.workingdir .. "/" .. interfacename .. "/rrd")	
+      for k in pairs(ifstats["ndpi"]) do
+	 v = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
+	 if(verbose) then print("[minute.lua] ".._ifname..": "..k.."="..v.."\n") end
+
+         name = fixPath(basedir .. "/"..k..".rrd")
+         create_rrd(name, k)
+         ntop.rrd_update(name, "N:".. v)
+      end
+
+      -- Save hosts stats
       hosts_stats = interface.getHostsInfo()
       for key, value in pairs(hosts_stats) do
 	 host = interface.getHostInfo(key)
@@ -121,8 +136,6 @@ for _,_ifname in pairs(ifnames) do
 	       if(verbose) then print("Skipping non local host "..key.."\n") end
 	    end
 	 end -- if
-
       end -- for
    end -- if(diff
-
 end -- for ifname,_ in pairs(ifnames) do

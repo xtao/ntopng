@@ -153,7 +153,16 @@ elseif(page == "ndpi") then
       print ("<tbody>\n")
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
-	 print("<tr><th style=\"width: 33%;\">"..k)
+	 print("<tr><th style=\"width: 33%;\">")
+
+	 fname = getRRDName(ifstats.name, nil, k..".rrd")
+
+	 if(ntop.exists(fname)) then
+	    print("<A HREF=\"/lua/if_stats.lua?ifname=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
+	 else
+	    print(k)
+	 end
+
 	 t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
 	 print("</th><td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
          print("<td ><span style=\"width: 60%; float: left;\">")
@@ -164,7 +173,9 @@ elseif(page == "ndpi") then
       print ("</tbody>")
       print("</table>\n")
 else
-   drawRRD(interface_name, nil, "bytes.rrd", _GET["graph_zoom"], url.."&page=historical", 0, _GET["epoch"], "/lua/top_talkers.lua")
+   rrd_file = _GET["rrd_file"]
+   if(rrd_file == nil) then rrd_file = "bytes.rrd" end
+   drawRRD(interface_name, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

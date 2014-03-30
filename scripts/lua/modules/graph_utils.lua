@@ -2,7 +2,7 @@
 -- (C) 2013-14 - ntop.org
 --
 
-function navigatedir(url, label, base, path)
+function navigatedir(url, label, base, path, go_deep)
    local shown = false
    local to_skip = false
    --print("<li> <b>(d)</b> "..path.."  </li>\n")
@@ -13,7 +13,7 @@ function navigatedir(url, label, base, path)
 	 p = fixPath(path .. "/" .. v)
 	 
 	 if(ntop.isdir(p)) then
-	    navigatedir(url, label.."/"..v, base, p)
+	    if(go_deep) then navigatedir(url, label.."/"..v, base, p) end
 	 else
 	    if(label == "*") then
 	       to_skip = true
@@ -249,24 +249,16 @@ if(show_timeseries == 1) then
 print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
 print('<li class="divider"></li>\n')
 dirs = ntop.getDirs()
-d = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host)
-
-if(true) then
-   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d)
+p = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"
+if(host ~= nil) then 
+	p = p .. host 
+	go_deep = true
+else
+	go_deep = false
 end
+d = fixPath(p)
 
-if(false) then
-   rrds = ntop.re5Aaddir(d)
-   for k,v in pairsByKeys(rrds, asc) do
-      --   print("<li>"..rrds[k].."</li>\n")
-      proto = string.gsub(rrds[k], ".rrd", "")
-            
-      if(proto ~= "bytes") then
-	 label = l4Label(proto)
-	 print('<li><a href="'..baseurl .. '&rrd_file=' .. rrds[k] .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. label ..'</a></li>\n')
-      end
-   end
-end
+navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, go_deep)
 
 print [[
   </ul>
@@ -546,6 +538,21 @@ else
   print("<div class=\"alert alert-error\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
 
 end
+end
+
+function create_rrd(name, ds)
+   if(not(ntop.exists(name))) then
+      if(enable_second_debug == 1) then io.write('Creating RRD ', name, '\n') end
+      ntop.rrd_create(
+	 name,
+	 '--start', 'now',
+	 '--step', '1',
+	 'DS:' .. ds .. ':DERIVE:5:U:U',
+	 'RRA:AVERAGE:0.5:1:86400',    -- raw: 1 day = 86400
+	 'RRA:AVERAGE:0.5:3600:2400',  -- 1h resolution (3600 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:86400:365',    -- 1d resolution (86400 points)  365 days
+	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
+   end
 end
 
 function createRRDcounter(path, verbose)
