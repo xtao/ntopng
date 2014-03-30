@@ -21,6 +21,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
 
   var last_process = "";
   var last_byte = 0;
+  var substring_limit = 8;
 
   ///////////////////////////////////////////////////////////
   // STREAKER CONNECTION ////////////////////////////////////
@@ -95,7 +96,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       }
       
       totalValue.text(value);
-      totalLabel.text(d.name);
+      totalLabel.text(d.name.substring(0,substring_limit));
       totalUnits.text(data[1]);
     };
 
@@ -156,10 +157,6 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     .each("end", function() {
       d3.select(this).on("mouseover", mouseover);
     });
-
-    // totalLabel.text("");
-    // totalValue.text("");
-    // totalUnits.text("");
     
   };
 
@@ -226,7 +223,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       .text(function(d) 
         { 
           var name = d.name;
-          return (name.substring(0,8)); });
+          return (name.substring(0,substring_limit)); });
 
     // Set position for entering and updating nodes.
     g.attr("transform", function(d, i) {
