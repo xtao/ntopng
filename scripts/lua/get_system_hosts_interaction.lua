@@ -12,7 +12,7 @@ sendHTTPHeader('text/json')
 interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
 
-local debug = fasle
+local debug = false
 links = {}
 num = 0
 
