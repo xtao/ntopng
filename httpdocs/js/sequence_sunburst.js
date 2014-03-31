@@ -95,8 +95,11 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
         value = data[0]+ ' \uf068';
       }
       
+      var name = d.name.substring(0,substring_limit);
+      if (d.name.length > substring_limit) {name = name + "..";}
+
       totalValue.text(value);
-      totalLabel.text(d.name.substring(0,substring_limit));
+      totalLabel.text(name);
       totalUnits.text(data[1]);
     };
 
@@ -222,8 +225,10 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       .attr("text-anchor", "middle")
       .text(function(d) 
         { 
-          var name = d.name;
-          return (name.substring(0,substring_limit)); });
+          var name = d.name.substring(0,substring_limit);
+          if (d.name.length > substring_limit) {name = name + "..";}
+          return (name); 
+        });
 
     // Set position for entering and updating nodes.
     g.attr("transform", function(d, i) {
