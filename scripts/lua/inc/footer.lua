@@ -64,9 +64,9 @@ var prev_epoch   = 0;
 
 function addCommas(nStr) {
   nStr += '';
-  x = nStr.split('.');
-  x1 = x[0];
-  x2 = x.length > 1 ? '.' + x[1] : '';
+  var x = nStr.split('.');
+  var x1 = x[0];
+  var x2 = x.length > 1 ? '.' + x[1] : '';
   var rgx = /(\d+)(\d{3})/;
   while (rgx.test(x1)) {
     x1 = x1.replace(rgx, '$1' + ',' + '$2');
@@ -109,11 +109,11 @@ function secondsToTime(seconds) {
       return("< 1 sec")
    }
 
-   days = Math.floor(seconds / 86400)
-   hours =  Math.floor((seconds / 3600) - (days * 24))
-   minutes = Math.floor((seconds / 60) - (days * 1440) - (hours * 60))
-   sec = seconds % 60
-   msg = ""
+   var days = Math.floor(seconds / 86400)
+   var hours =  Math.floor((seconds / 3600) - (days * 24))
+   var minutes = Math.floor((seconds / 60) - (days * 1440) - (hours * 60))
+   var sec = seconds % 60
+   var msg = ""
 
    if(days > 0) {
       years = Math.floor(days/365)
@@ -216,9 +216,9 @@ setInterval(function() {
 		  updatingChart.text(values.join(",")).change();
 		}
 
-		pps = Math.floor(packets_diff / epoch_diff);
-		bps = Math.round((bytes_diff*8) / epoch_diff);
-		msg = ""+bitsToSize(bps, 1000)+" [" + addCommas(pps) + " pps]<br>";
+		var pps = Math.floor(packets_diff / epoch_diff);
+		var bps = Math.round((bytes_diff*8) / epoch_diff);
+		var msg = ""+bitsToSize(bps, 1000)+" [" + addCommas(pps) + " pps]<br>";
 		msg += "<i class=\"fa fa-time fa-lg\"></i>Uptime: "+rsp.uptime+"<br>";
 
 		if(rsp.alerts > 0) {
