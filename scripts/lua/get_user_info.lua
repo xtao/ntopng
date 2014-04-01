@@ -47,7 +47,7 @@ print('</ul>\n\t</div>\n\t</div>\n')
 
 if(page == "UserApps") then
 print [[
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered">
       <tr><th class="text-center">
       <h4>Top Applications</h4>
         <td><div class="pie-chart" id="topApps"></div></td>
@@ -71,19 +71,41 @@ print [[
 elseif(page == "UserProtocols") then
 
 print [[
-    <table class="table table-bordered table-striped">
-      <tr><th class="text-center">
-      <h4>Top L7 Protocols</h4>
-        <td><div class="pie-chart" id="topL7"></div></td>
-      </th>
-    </tr>
-    <tr><th class="text-center">
-      <h4>Top L4 Protocols</h4>
-        <td><div class="pie-chart" id="topL4"></div></td>
-      
-      </th>
-    </tr>
-    ]]
+  <br>
+  <!-- Left Tab -->
+  <div class="tabbable tabs-left">
+    
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#l7" data-toggle="tab">L7 Protocols</a></li>
+      <li><a href="#l4" data-toggle="tab">L4 Protocols</a></li>
+    </ul>
+    
+      <!-- Tab content-->
+      <div class="tab-content">
+
+        <div class="tab-pane active" id="l7">
+          <table class="table table-bordered">
+            <tr>
+              <th class="text-center">Top L7 Protocols</th>
+              <td><div class="pie-chart" id="topL7"></div></td>
+          </tr>
+          </table>
+        </div> <!-- Tab l7-->
+
+
+        <div class="tab-pane" id="l4">
+          <table class="table table-bordered">
+            <tr>
+              <th class="text-center">Top L4 Protocols</th>
+              <td><div class="pie-chart" id="topL4"></div></td>
+          </tr>
+          </table>
+        </div> <!-- Tab l4-->
+
+      </div> <!-- End Tab content-->
+    </div> <!-- End Left Tab -->
+
+]]
 
  print [[
       </table>

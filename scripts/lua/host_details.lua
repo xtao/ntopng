@@ -1253,7 +1253,7 @@ print [[
           </div><!-- /btn-group -->
          <br/>
          <br/>
-        <table class="table table-bordered" id="user_table">
+        <table class="table table-bordered">
           <tr>
             <th class="text-center span3">Top Users</th>
             <td class="span3"><div class="pie-chart" id="topUsers"></div></td>
