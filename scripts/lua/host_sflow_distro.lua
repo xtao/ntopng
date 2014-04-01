@@ -12,6 +12,7 @@ sendHTTPHeader('text/html')
 mode = _GET["mode"]
 type = _GET["type"]
 host = _GET["host"]
+filter = _GET["filter"] -- all,client,server
 
 interface.find(ifname)
 local debug = false
@@ -21,7 +22,9 @@ if(host == nil) then
 else
 
   flows_stats = interface.getFlowsInfo()
-
+  
+  filter_client = 0
+  filter_server = 0
   how_is_process = 0
 
   if((type == nil) or (type == "memory")) then
@@ -39,6 +42,15 @@ else
     url = "/lua/get_process_info.lua?name="
   end
 
+  if((filter == nil) or (filter == "All")) then
+    filter_client = 1
+    filter_server = 1
+  elseif (filter == "Client") then
+    filter_client = 1
+  elseif (filter == "Server") then
+    filter_server = 1
+  end
+
   tot = 0
   what_array = {}
   num = 0
@@ -47,11 +59,12 @@ else
     server_process = 0
     flow = flows_stats[key]
     if (debug) then io.write("Client:"..flow["cli.ip"]..",Server:"..flow["srv.ip"].."\n"); end
-    if((flow["cli.ip"] == host) and (flow.client_process ~= nil))then
+    
+    if((filter_client == 1) and (flow["cli.ip"] == host) and (flow.client_process ~= nil))then
       client_process = 1
     end
 
-    if((flow["srv.ip"] == host) and (flow.server_process ~= nil))then
+    if((filter_server == 1) and (flow["srv.ip"] == host) and (flow.server_process ~= nil))then
       server_process = 1
     end
 

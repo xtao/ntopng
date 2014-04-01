@@ -3,7 +3,7 @@
   border: 3px dotted #dddddd;
   font: 10px sans-serif;
   text-shadow: none;
-  width: 600px; /*380px;*/
+  width: 594px; /*380px;*/
 
 }
 
@@ -16,7 +16,7 @@
 }
 
 .sequence {
-  width: 600px;
+  width: 594px;
   height: 40px;
 }
 
@@ -29,6 +29,7 @@
 .info {
   font-size: 12px;
   font-weight: bold;
+  width: 594px;
 }
 .label{
   font-size: 16px;

@@ -1,6 +1,27 @@
 // http://jsfiddle.net/stephenboak/hYuPb/
 
+// Wrapper function
 function do_pie(name, update_url, url_params, units, refresh) {
+  var pie = new PieChart(name, update_url, url_params, units, refresh);
+  pieInterval = setInterval(function(){pie.update();}, refresh);
+
+  // Return new class instance, with
+  return pie;
+}
+
+
+
+
+function PieChart(name, update_url, url_params, units, refresh) {
+
+  // Add object properties like this
+  this.name = name;
+  this.update_url = update_url;
+  this.url_params = url_params;
+  this.units = units;
+  this.refresh = refresh;
+
+
     var pieData = [];    
     var oldPieData = [];
     var filteredPieData = [];
@@ -17,28 +38,32 @@ function do_pie(name, update_url, url_params, units, refresh) {
     var r = rsp[9];
     var textOffset = rsp[10];
 
-    ///////////////////////////////////////////////////////////
-    // STREAKER CONNECTION ////////////////////////////////////
-    ///////////////////////////////////////////////////////////
-
-    // Needed to draw the pie immediately
-    update();
-    update();
-
-    var updateInterval = window.setInterval(update, refresh);
-   
+    
     // to run each time data is generated
 
-    function update() {
+    this.update = function() {
+      // console.log(this.name);
+      // console.log(this.url_params);
 	$.ajax({
 		type: 'GET',
-		    url: update_url,
-		    data: url_params,
+		    url: this.update_url,
+		    data: this.url_params,
 		    success: function(content) {
  		      update_pie_chart(jQuery.parseJSON(content));
 		}
 	    });
     }
+
+    ///////////////////////////////////////////////////////////
+    // STREAKER CONNECTION ////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+
+    // Needed to draw the pie immediately
+    this.update();
+    this.update();
+
+    // var updateInterval = window.setInterval(update, refresh);
+   
 
     function update_pie_chart(data) {
 	streakerDataAdded = data;
@@ -259,6 +284,13 @@ function do_pie(name, update_url, url_params, units, refresh) {
 	};
     }
 }
+
+PieChart.prototype.setUrlParams = function(url_params) {
+  
+  this.url_params = url_params;
+}
+
+
 
 function create_pie_chart(name, units) {
     var w = 600; //380 - Please keep in sync with pie-chart.css

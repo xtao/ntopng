@@ -28,6 +28,7 @@ end
 mode = _GET["mode"] -- memory(actual-memory),bytes
 type = _GET["type"] -- user,process(proc_name)
 host = _GET["host"]
+filter = _GET["filter"] -- all,client,server
 
 interface.find(ifname)
 local debug = false
@@ -39,7 +40,8 @@ aggregated_flows = {}
 father_process = {}
 cildren_proess = {}
 num = 0
-
+process_client = 0
+process_server = 0
 
 -- Process parameter
   if((type == nil) or (type == "memory")) then
@@ -48,12 +50,20 @@ num = 0
   elseif (type == "bytes") then
     how = "bytes"
   end
-
+  
   if((mode == nil) or (mode == "process")) then
     what = "name"
     url = "/lua/get_process_info.lua?host="..host.."&pid="
   end
 
+  if((filter == nil) or (filter == "All")) then
+    process_client = 1
+    process_server = 1
+  elseif (filter == "Client") then
+    process_client = 1
+  elseif (filter == "Server") then
+    process_server = 1
+  end
 
 for key, value in pairs(flows_stats) do
   flow = flows_stats[key]
@@ -64,10 +74,9 @@ for key, value in pairs(flows_stats) do
     process = 0
   end
 
-
   if (process == 1) then
 
-    if (flow["cli.ip"] == host) and (flow["client_process"] ~= nil) then 
+    if (process_client == 1) and (flow["cli.ip"] == host) and (flow["client_process"] ~= nil) then 
       client_id = flow["client_process"]["pid"]
       if (how_is_process == 1) then
         client_how = flow["client_process"][how]
@@ -77,7 +86,7 @@ for key, value in pairs(flows_stats) do
       setAggregatedFlow(client_id,flow["client_process"]["father_pid"],flow["client_process"]["father_name"],flow["client_process"][what],client_how,"client")
     end
       
-    if (flow["srv.ip"] == host) and (flow["server_process"] ~= nil) then 
+    if (process_server == 1) and (flow["srv.ip"] == host) and (flow["server_process"] ~= nil) then 
       server_id = flow["server_process"]["pid"]
       if (how_is_process == 1) then
         server_how = flow["server_process"][how]
@@ -90,7 +99,6 @@ for key, value in pairs(flows_stats) do
   end
 end 
 
-
 father_process = {}
 cildren_proess = {}
 num = 0
@@ -100,10 +108,15 @@ for key, value in pairs(aggregated_flows) do
   -- print("Pid:"..flow["pid"]..", Father Pid:"..flow["father_pid"]..", Father Name:"..flow["father_name"]..", Type:"..flow["type"]..", What:"..flow[what]..", How:"..flow[how].."\n")
 
   if(flow["pid"] == flow["father_pid"]) then
-    father_process[flow["pid"]] = {}
-    father_process[flow["pid"]]["name"] = flow[what]
-    father_process[flow["pid"]]["size"] = flow[how]
-     tot = tot + father_process[flow["pid"]]["size"]
+    if(father_process[flow["father_pid"]] == nil) then
+      father_process[flow["father_pid"]] = {}
+      father_process[flow["father_pid"]]["name"] = flow[what]
+      father_process[flow["father_pid"]]["size"] = flow[how]
+      father_process[flow["father_pid"]]["pid"] = flow["pid"]      
+    else
+      father_process[flow["father_pid"]]["size"] = father_process[flow["father_pid"]]["size"] + flow[how]
+    end
+    tot = tot + father_process[flow["father_pid"]]["size"]
   else
     if(father_process[flow["father_pid"]] == nil) then
       father_process[flow["father_pid"]] = {}
@@ -111,6 +124,7 @@ for key, value in pairs(aggregated_flows) do
       father_process[flow["father_pid"]]["children"][flow["pid"]] = {}
       father_process[flow["father_pid"]]["children"][flow["pid"]]["name"] = flow[what]
       father_process[flow["father_pid"]]["children"][flow["pid"]]["size"] = flow[how]
+      father_process[flow["father_pid"]]["pid"] = flow["pid"]
       father_process[flow["father_pid"]]["size"] = flow[how]
       father_process[flow["father_pid"]]["name"] = flow["father_name"]
     else
@@ -125,17 +139,18 @@ end
 
 end
 
--- for key, size in pairs(father_process) do
---   flow = father_process[key]
---   print("Father => Name:"..flow["name"]..", size:"..flow["size"].."\n")
---   if (flow["children"] ~= nil) then
---     for key, size in pairs(flow["children"]) do
---       children = flow["children"][key]
---       print("Children => Name:"..children["name"]..", size:"..children["size"].."\n")
---     end
---   end
--- end
-
+if (debug) then 
+  for key, size in pairs(father_process) do
+    flow = father_process[key]
+    io.write("Father => Name:"..flow["name"]..", size:"..flow["size"]..", pid:"..flow["pid"].."\n")
+    if (flow["children"] ~= nil) then
+      for key, size in pairs(flow["children"]) do
+        children = flow["children"][key]
+        io.write("Children => Name:"..children["name"]..", size:"..children["size"]..", pid:"..flow["pid"].."\n")
+      end
+    end
+  end
+end
 
 
 print "{\n"
@@ -148,9 +163,11 @@ for key, value in pairs(father_process) do
   if(num > 0) then
    print ",\n"
   end
-
+  if (flow["name"] == "") then
+    if(debug) then io.write("Empty name\n") end
+    flow["name"] = "Empty name"
+  end
   print("\t { \"name\": \"" .. flow["name"] .."\", \"id\": " .. key ..", \"size\": ".. flow["size"]..",\"url\": \"" .. url..key.."\"") 
-  
   
   children_num = 0
   if (flow["children"] ~= nil) then
@@ -160,7 +177,10 @@ for key, value in pairs(father_process) do
       if(children_num > 0) then
         print ",\n"
       end
-    
+      if (children["name"] == "") then
+        if(debug) then io.write("Empty name children\n") end
+        children["name"] = "Empty name"
+      end
       print("\t\t { \"name\": \"" .. children["name"] .."\", \"id\": ".. k ..", \"size\": ".. children["size"] ..",\"url\": \"" .. url..k.."\" }") 
     
       children_num = children_num + 1

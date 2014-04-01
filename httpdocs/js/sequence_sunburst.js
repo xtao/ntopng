@@ -1,4 +1,22 @@
+// Wrapper function
 function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
+  var graph = new SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units);
+  graphInterval = setInterval(function(){graph.update();}, refresh);
+
+  // Return new class instance, with
+  return graph;
+}
+
+
+function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
+
+  // Add object properties like this
+  this.circle_name = circle_name;
+  this.sequence_name = sequence_name;
+  this.update_url = update_url;
+  this.url_params = url_params;
+  this.units = units;
+  this.refresh = refresh;
 
   var oldPieData = [];
   var filteredPieData = [];
@@ -23,25 +41,13 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
   var last_byte = 0;
   var substring_limit = 8;
 
-  ///////////////////////////////////////////////////////////
-  // STREAKER CONNECTION ////////////////////////////////////
-  ///////////////////////////////////////////////////////////
-
-  // Needed to draw the pie immediately
-  update();
-
-  var updateInterval = window.setInterval(update, refresh);
-
-///////////////////////////////////////////////////////////
-// UPDATE FUNCIONTS ////////////////////////////////////
-///////////////////////////////////////////////////////////
 
   // to run each time data is generated
-  function update() {
+  this.update = function () {
     $.ajax({
       type: 'GET',
-      url: update_url,
-      data: url_params,
+      url: this.update_url,
+      data: this.url_params,
       success: function(content) {
         update_sequence_sunburst(jQuery.parseJSON(content));
       },
@@ -50,6 +56,19 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       }
     });
   }
+
+  ///////////////////////////////////////////////////////////
+  // STREAKER CONNECTION ////////////////////////////////////
+  ///////////////////////////////////////////////////////////
+
+  // Needed to draw the pie immediately
+  this.update();
+
+  // var updateInterval = window.setInterval(update, refresh);
+
+///////////////////////////////////////////////////////////
+// UPDATE FUNCIONTS ////////////////////////////////////
+///////////////////////////////////////////////////////////
 
 
   function update_sequence_sunburst(data) {
@@ -65,6 +84,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     if((filteredPieData.length > 0) && (oldPieData.length > 0)) {
       //REMOVE PLACEHOLDER CIRCLE
       arc_group.selectAll("circle").remove();
+      arc_group.selectAll("path").remove();
       // alert("Update");
     }
 
@@ -77,7 +97,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     .style("fill", function(d) { return color(d.name+d.id); })
     .style("opacity", 1)
     .on("mouseover", mouseover)
-    .on("click",function(d) {if(d.url) window.location.href = d.url; });
+    .on("dblclick",function(d) {if(d.url) window.location.href = d.url; });
 
     // Add the mouseleave handler to the bounding circle.
     d3.select("#container"+circle_name).on("mouseleave", mouseleave);
@@ -86,7 +106,9 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     totalSize = paths.node().__data__.value;
 
    filteredPieData.forEach(function(d) {
-    if (last_process == d.name) {
+    
+    if ((last_process.localeCompare(d.name) == 0) && (d.name != "")){
+      // alert(d.name);
       var data = bytesToVolumeAndLabel(d.value);
       var value = data[0]
       if (last_byte < d.value) {
@@ -113,7 +135,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
 ///////////////////////////////////////////////////////////
 
   function mouseover(d) {
-
+    
     var percentage = (100 * d.value / totalSize).toPrecision(3);
     var percentageString = percentage + "%";
     if (percentage < 0.1) {
@@ -161,6 +183,8 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
       d3.select(this).on("mouseover", mouseover);
     });
     
+   
+
   };
 
   // Given a node in a partition layout, return an array of all of its ancestor
@@ -326,5 +350,9 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
     return([color, partition, totalSize, arc, arc_group, trail, whiteCircle, totalLabel, totalValue, totalUnits, radius,width,height,b]);
 
   } //End function create_sequence_sunburst
-  return updateInterval;
+  
+}
+
+SequenceSunburst.prototype.setUrlParams = function(url_params) {  
+  this.url_params = url_params;
 }
