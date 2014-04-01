@@ -4,7 +4,7 @@ function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_p
   graphInterval = setInterval(function(){graph.update();}, refresh);
 
   // Return new class instance, with
-  return graph;
+  return [graph,graphInterval];
 }
 
 
@@ -135,7 +135,7 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 ///////////////////////////////////////////////////////////
 
   function mouseover(d) {
-    
+
     var percentage = (100 * d.value / totalSize).toPrecision(3);
     var percentageString = percentage + "%";
     if (percentage < 0.1) {

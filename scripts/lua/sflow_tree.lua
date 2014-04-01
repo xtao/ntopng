@@ -7,6 +7,8 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "flow_utils"
+local json = require ("dkjson")
 
 sendHTTPHeader('text/html')
 
@@ -25,7 +27,7 @@ function setAggregatedFlow(pid,father_pid,father_name,p_what,p_how,type)
   end
 end
 
-mode = _GET["mode"] -- memory(actual-memory),bytes
+mode = _GET["mode"] -- memory(actual-memory),bytes,latency
 type = _GET["type"] -- user,process(proc_name)
 host = _GET["host"]
 filter = _GET["filter"] -- all,client,server
@@ -42,6 +44,8 @@ cildren_proess = {}
 num = 0
 process_client = 0
 process_server = 0
+how_is_process = 0
+how_is_latency = 0
 
 -- Process parameter
   if((type == nil) or (type == "memory")) then
@@ -49,6 +53,9 @@ process_server = 0
     how_is_process = 1
   elseif (type == "bytes") then
     how = "bytes"
+  elseif (type == "latency") then
+    how_is_latency = 1
+    how = "Application latency (residual usec)"
   end
   
   if((mode == nil) or (mode == "process")) then
@@ -80,6 +87,14 @@ for key, value in pairs(flows_stats) do
       client_id = flow["client_process"]["pid"]
       if (how_is_process == 1) then
         client_how = flow["client_process"][how]
+      elseif (how_is_latency == 1) then
+        flow_more_info = interface.findFlowByKey(key)
+        local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
+        for k,v in pairs(info) do
+          if("Application latency (residual usec)" == getFlowKey(k)) then
+            client_how = handleCustomFlowField(k, v)
+          end
+        end
       else
         client_how = flow["cli2srv.bytes"]
       end
@@ -90,6 +105,14 @@ for key, value in pairs(flows_stats) do
       server_id = flow["server_process"]["pid"]
       if (how_is_process == 1) then
         server_how = flow["server_process"][how]
+      elseif (how_is_latency == 1) then
+        flow_more_info = interface.findFlowByKey(key)
+        local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
+        for k,v in pairs(info) do
+          if("Application latency (residual usec)" == getFlowKey(k)) then
+            server_how = handleCustomFlowField(k, v)
+          end
+        end
       else
         server_how = flow["srv2cli.bytes"]
       end

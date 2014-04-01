@@ -1248,7 +1248,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_users">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <!-- <li><a>Process latency</a></li> -->
+            <li><a>Latency</a></li>
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1275,7 +1275,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_processes">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <!-- <li><a>Process latency</a></li> -->
+            <li><a>Latency</a></li>
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1303,7 +1303,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_tree">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <!-- <li><a>Process latency</a></li> -->
+            <!-- <li><a>Latency</a></li> -->
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1362,7 +1362,9 @@ print [[
 
     if (this.innerHTML == "Active memory") {
       users_type= "memory"
-    } else {
+    } else if (this.innerHTML == "Latency") {
+      users_type = "latency";
+    } else  {
       users_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
@@ -1395,7 +1397,9 @@ print [[
 
     if (this.innerHTML == "Active memory") {
       processes_type= "memory"
-    } else {
+    } else if (this.innerHTML == "Latency") {
+      processes_type = "latency";
+    } else  {
       processes_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
@@ -1428,12 +1432,14 @@ print [[
 
     if (this.innerHTML == "Active memory") {
       tree_type= "memory"
-    } else {
+    } else if (this.innerHTML == "Latency") {
+      tree_type = "latency";
+    } else  {
       tree_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+tree_type); }
-    tree.setUrlParams({type: tree_type , filter: tree_filter ]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
-    tree.update();
+    tree[0].setUrlParams({type: tree_type , filter: tree_filter ]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
+    tree[0].update();
     }); ]]
 
 print [[
@@ -1441,8 +1447,8 @@ print [[
     tree_filter = this.innerHTML;
     // Default
     if (sprobe_debug) { alert(this.innerHTML+"-"+tree_type+"-"+tree_filter); }
-    tree.setUrlParams({type: tree_type , filter: tree_filter]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
-    tree.update();
+    tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
+    tree[0].update();
 });]]
 
 print [[ </script>]]
