@@ -1413,7 +1413,7 @@ print [[
     processes_filter = this.innerHTML;
     // Default
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type+"-"+processes_filter); }
-    processes.setUrlParams({ type: processes_type, mode: "user", filter: processes_filter, ifname: "]] print(_ifname) print ('", host: ')
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
     processes.update();
 });]]
