@@ -3,7 +3,7 @@
 // Wrapper function
 function do_pie(name, update_url, url_params, units, refresh) {
   var pie = new PieChart(name, update_url, url_params, units, refresh);
-  pieInterval = setInterval(function(){pie.update();}, refresh);
+  var pieInterval = setInterval(function(){pie.update();}, refresh);
 
   // Return new class instance, with
   return pie;
@@ -80,7 +80,7 @@ function PieChart(name, update_url, url_params, units, refresh) {
 	    totalOctets += element.value;
 	    return (element.value > 0);
 	}
-
+  
 	if((filteredPieData.length > 0) && (oldPieData.length > 0)) {
 	    //REMOVE PLACEHOLDER CIRCLE
 	    arc_group.selectAll("circle").remove();
@@ -303,6 +303,7 @@ function create_pie_chart(name, units) {
 
     //D3 helper function to populate pie slice parameters from array data
     var donut = d3.layout.pie().value(function(d){
+      if (d.value == 0) {d.value = 1;} // Force to 1, in order to update the graph
 	    return d.value;
 	});
 

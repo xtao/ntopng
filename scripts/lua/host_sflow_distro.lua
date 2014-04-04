@@ -11,8 +11,8 @@ local json = require ("dkjson")
 
 sendHTTPHeader('text/html')
 
-mode = _GET["mode"] -- memory(actual-memory),bytes,latency
-type = _GET["type"] -- user,process(proc_name)
+mode = _GET["mode"] -- user,process(proc_name) 
+type = _GET["type"] -- memory(actual-memory),bytes,latency
 host = _GET["host"]
 filter = _GET["filter"] -- all,client,server
 
@@ -41,7 +41,7 @@ else
     how_is_latency = 1
     how = "Application latency (residual usec)"
   end
-
+  if (debug) then io.write("How:"..how.."\n"); end
   if((mode == nil) or (mode == "user")) then
     what = "user_name"
     url = "/lua/get_user_info.lua?user="
@@ -78,7 +78,7 @@ else
     end
 
     
-    if(client_process == 1) then
+    if ((client_process == 1))then
       current_what = flow["client_process"][what].." (client)"
       if (how_is_process == 1) then
         value = flow["client_process"][how] 
@@ -87,7 +87,8 @@ else
         local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
         for k,v in pairs(info) do
           if("Application latency (residual usec)" == getFlowKey(k)) then
-            value = handleCustomFlowField(k, v)
+            value = tonumber(handleCustomFlowField(k, v))
+            io.write("Client val:"..value.."-"..flow["client_process"][what]..'\n')
           end
         end
       else
@@ -99,7 +100,14 @@ else
         what_array[current_what]["value"]  = 0
         what_array[current_what]["url"]  = url..flow["client_process"][what].."&host="..flow["cli.ip"]
       end
-      what_array[current_what]["value"] = what_array[current_what]["value"] + value
+      
+       if ((how_is_process == 1) or (how_is_latency == 1))then
+        if ( what_array[current_what]["value"]  == 0) then
+          what_array[current_what]["value"] = value
+        end
+      else
+        what_array[current_what]["value"] = what_array[current_what]["value"] + value
+      end
 
       if (debug) then io.write("Find client_process:"..current_what..", Value:"..value..", Process:"..flow["client_process"]["name"]..",Pid:"..flow["client_process"]["pid"]..",Url:"..what_array[current_what]["url"].."\n"); end
 
@@ -107,27 +115,47 @@ else
     
     if(server_process == 1) then
       current_what = flow["server_process"][what].." (server)"
+      
       if (how_is_process == 1) then
+       
        value = flow["server_process"][how] 
+      
       elseif (how_is_latency == 1) then
+      
         flow_more_info = interface.findFlowByKey(key)
+      
         local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
         for k,v in pairs(info) do
           if("Application latency (residual usec)" == getFlowKey(k)) then
-            value = handleCustomFlowField(k, v)
+            value = tonumber(handleCustomFlowField(k, v))
+            io.write("Server val:"..value.."-"..flow["server_process"][what]..'\n')
           end
         end
+      
       else
+      
         value = flow["srv2cli.bytes"]
+      
       end
       
       if (what_array[current_what] == nil) then 
+      
         what_array[current_what]  = {}
         what_array[current_what]["value"]  = 0
         what_array[current_what]["url"]  = url..flow["server_process"][what].."&host="..flow["srv.ip"]
+      
       end
-      what_array[current_what]["value"] = what_array[current_what]["value"] + value
+      
+      if ((how_is_process == 1) or (how_is_latency == 1))then
+        if ( what_array[current_what]["value"]  == 0) then
+          what_array[current_what]["value"] = value
+        end
+      else
+        what_array[current_what]["value"] = what_array[current_what]["value"] + value
+      end
+      
       tot = tot + value
+      
       if (debug) then io.write("Find server_process:"..current_what..", Value:"..value..", Process:"..flow["server_process"]["name"]..",Pid:"..flow["server_process"]["pid"]..",Url:"..what_array[current_what]["url"].."\n"); end
 
     end
@@ -146,11 +174,11 @@ else
 
   other = 0;
   thr = (tot * 5) / 100
-
+  
   for key, value in pairs(what_array) do
      value = what_array[key]["value"]
-
-     if(value > thr) then
+     -- io.write("Val: "..value.."\n")
+     if(value >= thr) then
 	if(num > 0) then
 	   print ",\n"
 	end

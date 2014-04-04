@@ -1303,7 +1303,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_tree">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <!-- <li><a>Latency</a></li> -->
+            <li><a>Latency</a></li>
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1367,7 +1367,7 @@ print [[
     } else  {
       users_type = "bytes";
     }
-    if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
+    if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
     users.update();
@@ -1377,7 +1377,7 @@ print [[
   $('#show_users button').click(function() {
     users_filter = this.innerHTML;
     // Default
-    if (sprobe_debug) { alert(this.innerHTML+"-"+users_type+"-"+users_filter); }
+     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
     users.update();
@@ -1446,7 +1446,7 @@ print [[
   $('#show_tree button').click(function() {
     tree_filter = this.innerHTML;
     // Default
-    if (sprobe_debug) { alert(this.innerHTML+"-"+tree_type+"-"+tree_filter); }
+    if (sprobe_debug) { alert(this.innerHTML+"=>"+tree_type+"-"+tree_filter); }
     tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
     tree[0].update();
 });]]

@@ -1,8 +1,9 @@
 // Wrapper function
 function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
   var graph = new SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units);
-  graphInterval = setInterval(function(){graph.update();}, refresh);
-
+  // var graphInterval = setInterval(function(){graph.update();}, refresh);
+  var graphInterval = "";
+  
   // Return new class instance, with
   return [graph,graphInterval];
 }
@@ -73,10 +74,10 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 
   function update_sequence_sunburst(data) {
     streakerDataAdded = data;
-
+    // console.log(data);
     oldPieData = filteredPieData;
     pieData = partition.nodes(streakerDataAdded);
-
+    
     filteredPieData = pieData.filter(function(d) {
       return (d.dx > 0.005); // 0.005 radians = 0.29 degrees
     });
@@ -106,9 +107,9 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
     totalSize = paths.node().__data__.value;
 
    filteredPieData.forEach(function(d) {
-    
+     
     if ((last_process.localeCompare(d.name) == 0) && (d.name != "")){
-      // alert(d.name);
+      
       var data = bytesToVolumeAndLabel(d.value);
       var value = data[0]
       if (last_byte < d.value) {
@@ -351,8 +352,17 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 
   } //End function create_sequence_sunburst
   
+  this.resetCentralCirleText = function (){
+    totalValue.text(" ");
+    totalLabel.text(" ");
+    totalUnits.text("");
+    // last_process = "";
+    // last_byte = 0;
+  }
+
 }
 
 SequenceSunburst.prototype.setUrlParams = function(url_params) {  
   this.url_params = url_params;
+  this.resetCentralCirleText();
 }

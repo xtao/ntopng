@@ -23,7 +23,9 @@ function setAggregatedFlow(pid,father_pid,father_name,p_what,p_how,type)
     aggregated_flows[pid][how] = p_how 
   else
     -- Aggregate values
-    aggregated_flows[pid][how] = aggregated_flows[pid][how] + p_how 
+    if ((how_is_process ~= 1) and (how_is_latency ~= 1))then
+      aggregated_flows[pid][how] = aggregated_flows[pid][how] + p_how
+    end 
   end
 end
 
@@ -92,7 +94,7 @@ for key, value in pairs(flows_stats) do
         local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
         for k,v in pairs(info) do
           if("Application latency (residual usec)" == getFlowKey(k)) then
-            client_how = handleCustomFlowField(k, v)
+            client_how = tonumber(handleCustomFlowField(k, v))
           end
         end
       else
@@ -110,7 +112,7 @@ for key, value in pairs(flows_stats) do
         local info, pos, err = json.decode(flow_more_info["moreinfo.json"], 1, nil)
         for k,v in pairs(info) do
           if("Application latency (residual usec)" == getFlowKey(k)) then
-            server_how = handleCustomFlowField(k, v)
+            server_how = tonumber(handleCustomFlowField(k, v))
           end
         end
       else
