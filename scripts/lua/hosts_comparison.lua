@@ -152,21 +152,16 @@ elseif(page == "traffic") then
 if(show_aggregation) then
    print [[
 <div class="btn-group">
-  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
-  <ul class="dropdown-menu">
-]]
-
-print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=ndpi">'.. "Application" ..'</a></li>\n')
-print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=l4proto">'.. "Proto L4" ..'</a></li>\n')
-print('<li><a  href="'..url .. '&page=traffic'..'&aggregation=port">'.. "Port" ..'</a></li>\n')
-print [[
+  <button id="aggregation_bubble_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
+  <ul class="dropdown-menu" id="aggregation_bubble">
+    <li><a>Application</a></li>
+    <li><a>L4 Protocol</a></li>
+    <li><a>Port</a></li>
   </ul>
 </div><!-- /btn-group -->
 
 
 ]]
-
-
 
 print('&nbsp;Refresh:  <div class="btn-group">\n')
  print[[
@@ -179,30 +174,59 @@ print [[
 <br/>
 ]]
 
-print[[
-<script>
-   $("#graph_refresh").click(function() {
-    bubble();
-  });
-
-  $(window).load(function() 
-  {
-   // disabled graph interval
-   clearInterval(bubble_interval);
-  });  
-</script>
-
-]]
 end -- End if(show_aggregation)
 
 -- =========================== Aggregation Menu =================
+
 print("<center>")
 print("<div class=\"row-fluid\">")
-print("  <div>")
-dofile(dirs.installdir .. "/scripts/lua/inc/bubblechart.lua")
-print("  </div>")
+print('<div id="bubble_chart"></div>')
 print("</div>")
 print("</center>")
+print [[
+  <link href="/css/bubble-chart.css" rel="stylesheet">
+  <script src="/js/bubble-chart.js"></script>
+
+<script>
+  var bubble = do_bubble_chart("bubble_chart", '/lua/hosts_comparison_bubble.lua', { hosts:]]
+  print("\""..hosts_ip.."\" }, 10); \n")
+
+print [[
+  
+  $(window).load(function() 
+  {
+    //disabled graph interval
+    clearInterval(bubble[1]);
+  });  
+
+  </script>
+]]
+
+
+print [[
+  <script>
+   $("#graph_refresh").click(function() {
+    bubble[0].forceUpdate();
+  });
+
+  $('#aggregation_bubble li > a').click(function(e){
+    $('#aggregation_bubble_displayed').html(this.innerHTML+' <span class="caret"></span>');
+
+    if (this.innerHTML == "Application") {
+      bubble_aggregation= "ndpi"
+    } else if (this.innerHTML == "L4 Protocol") {
+      bubble_aggregation = "l4proto";
+    } else  {
+      bubble_aggregation = "port";
+    }
+    //alert(this.innerHTML + "-" + bubble_aggregation);
+    bubble[0].setUrlParams({ aggregation: bubble_aggregation, hosts:]]
+    print("\""..hosts_ip.."\" }") print [[ );
+    bubble[0].forceUpdate();
+    }); 
+</script>
+
+]]
 
 
 
@@ -213,5 +237,5 @@ elseif(page == "ndpi") then
 
 
 end -- End if page == ...
-
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
+

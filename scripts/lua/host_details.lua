@@ -1175,10 +1175,6 @@ print [[
 ]]
 
 
-
-
-
-
 elseif(page == "historical") then
 if(_GET["rrd_file"] == nil) then
    rrdfile = "bytes.rrd"
@@ -1370,7 +1366,6 @@ print [[
     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
-    users.update();
     }); ]]
 
 print [[
@@ -1380,7 +1375,6 @@ print [[
      if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
-    users.update();
 });]]
 
 
@@ -1405,7 +1399,6 @@ print [[
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
     processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }") print [[ );
-    processes.update();
     }); ]]
   
 print [[
@@ -1415,7 +1408,6 @@ print [[
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type+"-"+processes_filter); }
     processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('", host: ')
     print("\""..host_ip.."\" }") print [[ );
-    processes.update();
 });]]
 
 
@@ -1439,7 +1431,6 @@ print [[
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+tree_type); }
     tree[0].setUrlParams({type: tree_type , filter: tree_filter ]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
-    tree[0].update();
     }); ]]
 
 print [[
@@ -1448,7 +1439,6 @@ print [[
     // Default
     if (sprobe_debug) { alert(this.innerHTML+"=>"+tree_type+"-"+tree_filter); }
     tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (', host: ') print("\""..host_ip.."\" }") print [[ );
-    tree[0].update();
 });]]
 
 print [[ </script>]]

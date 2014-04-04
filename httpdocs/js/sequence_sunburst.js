@@ -1,8 +1,7 @@
 // Wrapper function
 function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
   var graph = new SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units);
-  // var graphInterval = setInterval(function(){graph.update();}, refresh);
-  var graphInterval = "";
+  var graphInterval = setInterval(function(){graph.update();}, refresh);
   
   // Return new class instance, with
   return [graph,graphInterval];
@@ -67,9 +66,13 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 
   // var updateInterval = window.setInterval(update, refresh);
 
-///////////////////////////////////////////////////////////
-// UPDATE FUNCIONTS ////////////////////////////////////
-///////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////
+  // UPDATE FUNCIONTS ////////////////////////////////////
+  ///////////////////////////////////////////////////////////
+  this.falshUpdate = function (start,end) {
+    arc_group.selectAll("path").style("opacity", start)
+    .transition().duration(200).style("opacity", end);
+  }
 
 
   function update_sequence_sunburst(data) {
@@ -128,7 +131,7 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 
 
    });
-
+   
   }
 
 ///////////////////////////////////////////////////////////
@@ -356,13 +359,22 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
     totalValue.text(" ");
     totalLabel.text(" ");
     totalUnits.text("");
-    // last_process = "";
-    // last_byte = 0;
   }
+
 
 }
 
-SequenceSunburst.prototype.setUrlParams = function(url_params) {  
+///////////////////////////////////////////////////////////
+// PUBLIC FUNCIONTS ////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+SequenceSunburst.prototype.setUrlParams = function(url_params) {
   this.url_params = url_params;
   this.resetCentralCirleText();
+  this.forceUpdate();
+}
+
+SequenceSunburst.prototype.forceUpdate = function(url_params) {  
+  this.falshUpdate(0,1);
+  this.update();
 }

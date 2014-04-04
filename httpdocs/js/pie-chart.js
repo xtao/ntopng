@@ -283,14 +283,26 @@ function PieChart(name, update_url, url_params, units, refresh) {
 	    return "translate(" + Math.cos(val) * (r+textOffset) + "," + Math.sin(val) * (r+textOffset) + ")";
 	};
     }
+
 }
+
+///////////////////////////////////////////////////////////
+// PUBLIC FUNCIONTS ////////////////////////////////////
+///////////////////////////////////////////////////////////
+
 
 PieChart.prototype.setUrlParams = function(url_params) {
-  
   this.url_params = url_params;
+  this.update();
 }
 
+PieChart.prototype.forceUpdate = function(url_params) {
+  this.update();
+}
 
+///////////////////////////////////////////////////////////
+// INIT FUNCIONTS ////////////////////////////////////
+///////////////////////////////////////////////////////////
 
 function create_pie_chart(name, units) {
     var w = 600; //380 - Please keep in sync with pie-chart.css

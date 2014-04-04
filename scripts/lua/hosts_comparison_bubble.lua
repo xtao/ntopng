@@ -7,37 +7,74 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-sendHTTPHeader('application/json')
+sendHTTPHeader('text/html')
+local debug = false
 
+------------------------
+
+function setAggregationValue(p_type,p_flow,p_key)
+  l_array = {}
+  if (p_type == "ndpi") then
+    l_array = ndpi
+  elseif (p_type == "l4proto") then
+    l_array = l4
+  else -- port
+    l_array = ports
+  end
+
+  if (l_array[p_flow[p_key]] == nil) then
+      aggregation_value[aggregation_value_size] = p_flow[p_key];
+      aggregation_value_size = aggregation_value_size + 1
+      l_array[p_flow[p_key]] = {}
+      l_array[p_flow[p_key]]["flows.bytes"] = p_flow["bytes"]
+  else
+      l_array[p_flow[p_key]]["flows.bytes"] = l_array[p_flow[p_key]]["flows.bytes"] + p_flow["bytes"]
+  end
+
+  if(debug) then io.write(p_type.." bytes: "..l_array[p_flow[p_key]]["flows.bytes"].."\n") end
+
+  if (p_type == "ndpi") then
+    ndpi = l_array
+  elseif (p_type == "l4proto") then
+    l4 = l_array
+  else -- port
+    ports =l_array 
+  end
+
+end
+
+------------------------
 
 
 -- Defaul value
-local debug = false
 interface.find(ifname)
 aggregation = "ndpi"
 
 max_num_hosts = 24
-
 compared_hosts = {}
 compared_hosts_size = 0;
 
-if(debug) then io.write("==== hosts_compared_sankey ====\n") end
+
 hosts = _GET["hosts"]
-if(debug) then io.write("Host:"..hosts.."\n") end
+aggregation = _GET["aggregation"]
 
-if (_GET["hosts"] ~= nil) then
+if(hosts == nil) then
+  print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
+else
 
-  compared_hosts, compared_hosts_size = getHostCommaSeparatedList(_GET["hosts"])
+  if(debug) then io.write("Host:"..hosts.."\n") end
+
+  compared_hosts, compared_hosts_size = getHostCommaSeparatedList(hosts)
 
   if (compared_hosts_size >= 2) then
 
-    if(_GET["aggregation"] ~= nil) then
-        aggregation = _GET["aggregation"]
+    if(_GET["aggregation"] == nil) then
+      aggregation = "ndpi"
     end
 
     -- 1.    Find all flows between compared hosts
     flows_stats = interface.getFlowsInfo()
-    
+
     ndpi = {}
     l4 = {}
     ports = {}
@@ -46,138 +83,65 @@ if (_GET["hosts"] ~= nil) then
     aggregation_value_size = 1
     num = 0
     for key, value in pairs(flows_stats) do
+      flow = flows_stats[key]
+      process = 0
+      if ((findStringArray(flow["cli.ip"],compared_hosts) ~= nil) and
+        (findStringArray(flow["srv.ip"],compared_hosts) ~= nil))then
+      process  = 1
+      end -- findStringArray
 
-        process = 0
-        if ((findStringArray(flows_stats[key]["cli.ip"],compared_hosts) ~= nil) and
-            (findStringArray(flows_stats[key]["srv.ip"],compared_hosts) ~= nil))then
-        process  = 1
-        end -- findStringArray
+      if (num > max_num_hosts)then process = 0 end
+
+      if (process == 1) then
+
+        if (debug) then io.write("PROCESS => Cli:"..flow["cli.ip"]..",Srv:"..flow["srv.ip"]..",Ndpi:"..flow["proto.ndpi"]..",L4:"..flow["proto.l4"]..",Bytes:"..flow["bytes"].."\n") end
         
-        if (num > max_num_hosts)then process = 0 end
-
-        if (process == 1) then
-
-            if (debug) then io.write("PROCESS => Cli:"..flows_stats[key]["cli.ip"]..",Srv:"..flows_stats[key]["srv.ip"]..",Ndpi:"..flows_stats[key]["proto.ndpi"]..",L4:"..flows_stats[key]["proto.l4"]..",Bytes:"..flows_stats[key]["bytes"].."\n") end
-            
-            -- 1.1   Save ndpi protocol
-            if (aggregation == "ndpi") then
-
-                if (ndpi[flows_stats[key]["proto.ndpi"]] == nil) then
-                    aggregation_value[aggregation_value_size] = flows_stats[key]["proto.ndpi"];
-                    aggregation_value_size = aggregation_value_size + 1
-                    ndpi[flows_stats[key]["proto.ndpi"]] = {}
-                    ndpi[flows_stats[key]["proto.ndpi"]]["flows.bytes"] = flows_stats[key]["bytes"]
-                else
-                    ndpi[flows_stats[key]["proto.ndpi"]]["flows.bytes"] = ndpi[flows_stats[key]["proto.ndpi"]]["flows.bytes"] + flows_stats[key]["bytes"]
-                end
-
-                if(debug) then io.write("Ndpi bytes: "..ndpi[flows_stats[key]["proto.ndpi"]]["flows.bytes"].."\n") end
-            end
-
-            -- 1.2   Save l4 protocol
-            if (aggregation == "l4proto") then
-
-                if (l4[flows_stats[key]["proto.l4"]] == nil) then
-                    aggregation_value[aggregation_value_size] = flows_stats[key]["proto.l4"];
-                    aggregation_value_size = aggregation_value_size + 1
-                    l4[flows_stats[key]["proto.l4"]] = {}
-                    l4[flows_stats[key]["proto.l4"]]["flows.bytes"] = flows_stats[key]["bytes"]
-
-                else
-                    l4[flows_stats[key]["proto.l4"]]["flows.bytes"] = l4[flows_stats[key]["proto.l4"]]["flows.bytes"] + flows_stats[key]["bytes"]
-                end
-
-
-                if(debug) then io.write("Proto L4 bytes: "..l4[flows_stats[key]["proto.l4"]]["flows.bytes"].."\n") end
-            end
-
-            -- 1.3   Save port
-            if (aggregation == "port") then
-                if(debug) then io.write("Cli port: "..flows_stats[key]["cli.port"].."\n") end
-                if(debug) then io.write("Srv port: "..flows_stats[key]["srv.port"].."\n") end
-                
-                if (ports[flows_stats[key]["cli.port"]] == nil) then
-                    aggregation_value[aggregation_value_size] = flows_stats[key]["cli.port"];
-                    aggregation_value_size = aggregation_value_size + 1
-                    ports[flows_stats[key]["cli.port"]] = {}
-                    ports[flows_stats[key]["cli.port"]]["flows.bytes"] = flows_stats[key]["cli2srv.bytes"]
-                else
-                    ports[flows_stats[key]["cli.port"]]["flows.bytes"] = ports[flows_stats[key]["cli.port"]]["flows.bytes"] + flows_stats[key]["cli2srv.bytes"]
-                end
-
-
-                if (ports[flows_stats[key]["srv.port"]] == nil) then
-                    aggregation_value[aggregation_value_size] = flows_stats[key]["srv.port"];
-                    aggregation_value_size = aggregation_value_size + 1
-                    ports[flows_stats[key]["srv.port"]] = {}
-                    ports[flows_stats[key]["srv.port"]]["flows.bytes"] = flows_stats[key]["srv2cli.bytes"]
-                else
-                    if(debug) then io.write("Srv port: "..flows_stats[key]["srv.port"].."\n") end
-                    if(debug) then io.write("Srv bytes: "..ports[flows_stats[key]["srv.port"]]["flows.bytes"].."\n") end
-
-                    ports[flows_stats[key]["srv.port"]]["flows.bytes"] = ports[flows_stats[key]["srv.port"]]["flows.bytes"] + flows_stats[key]["srv2cli.bytes"]
-
-                end
-                
-            end
-
-
-
-            num = num + 1
+        -- 1.1   Save ndpi protocol
+        if (aggregation == "ndpi") then
+          setAggregationValue(aggregation,flow,"proto.ndpi")
         end
+        -- 1.2   Save l4 protocol
+        if (aggregation == "l4proto") then
+          setAggregationValue(aggregation,flow,"proto.l4")
+        end
+        -- 1.3   Save port
+        if (aggregation == "port") then
+          setAggregationValue(aggregation,flow,"cli.port")
+          setAggregationValue(aggregation,flow,"srv.port")
+        end
+        num = num + 1
+      end
     end
 
     print( "{\n\"name\": \"flare\",\n\"children\": [\n")
     num = 0
     for key, value in pairs(aggregation_value) do
 
-     if(num > 0) then
+      if(num > 0) then
        print ",\n"
-   end
+      end
 
-   flow_bytes = 1;
-   if (aggregation == "port") then
-     flow_bytes = ports[aggregation_value[key]]["flows.bytes"]
-     elseif (aggregation == "l4proto") then
-         flow_bytes = l4[aggregation_value[key]]["flows.bytes"]
-     else
-         flow_bytes = ndpi[aggregation_value[key]]["flows.bytes"]
-     end
+      flow_bytes = 1;
+      if (aggregation == "port") then
+       flow_bytes = ports[aggregation_value[key]]["flows.bytes"]
+       elseif (aggregation == "l4proto") then
+           flow_bytes = l4[aggregation_value[key]]["flows.bytes"]
+       else
+           flow_bytes = ndpi[aggregation_value[key]]["flows.bytes"]
+       end
+       url = "/lua/flows_stats.lua?hosts=".._GET["hosts"].."&aggregation="..aggregation.."&key="..aggregation_value[key]
 
-     print ("\t{\n\t\"name\": \"" ..aggregation_value[key].. "\",\n\t\"children\": [ \n\t{\"name\": \"" .. aggregation_value[key] .. "\", \"size\": " .. flow_bytes ..", \"aggregation\": \"" .. aggregation .. "\", \"key\": \"" .. aggregation_value[key] .."\"}\n\t]\n\t}")
+       print ("\t{\n\t\"name\": \"" ..aggregation_value[key].. "\",\n\t\"children\": [ \n\t{\"name\": \"" .. aggregation_value[key] .. "\", \"size\": " .. flow_bytes ..", \"aggregation\": \"" .. aggregation .. "\", \"key\": \"" .. aggregation_value[key] .."\", \"url\": \"" .. url .."\"}\n\t]\n\t}")
 
-     num = num + 1
+       num = num + 1
 
- end
+    end
 
   end --End if (compared host size)
   print ("\n]}\n")
+
 end -- End if _GET[hosts]
 
-
--- {
---   "name": "flare",
---   "children": [
---       {
---        "name": "Juniper Networks",
---        "children": [
---         {"name": "Juniper Networks", "size": 159990}
---        ]
---       },
---       {
---        "name": "LinkedIn",
---        "children": [
---         {"name": "LinkedIn", "size": 136427}
---        ]
---       },
---       {
---        "name": "YAHOO!",
---        "children": [
---         {"name": "YAHOO!", "size": 130312}
---        ]
---       }
---     ]
--- }
 
 
 
