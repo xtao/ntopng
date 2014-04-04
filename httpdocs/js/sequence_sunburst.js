@@ -294,7 +294,7 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
     };
 
     //D3 helper function to create colors from an ordinal scale
-    var color = d3.scale.category20();
+    var color = d3.scale.category20c();
 
     var partition = d3.layout.partition()
       .size([2 * Math.PI, radius * radius])

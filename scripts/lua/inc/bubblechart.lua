@@ -72,7 +72,7 @@ print [[
 
   node.append("circle")
       .attr("r", function(d) { return (d.r); })
-      .style("fill", function(d) { return color(d.r); })
+      .style("fill", function(d) { return color(d.r+d.className); })
       .on("dblclick", function(d) { window.location.href = "/lua/flows_stats.lua?hosts=]]
 
 print(_GET["hosts"])
