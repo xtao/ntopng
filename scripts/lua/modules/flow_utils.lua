@@ -242,6 +242,8 @@ local flow_fields_description = {
     ['PROC_CPU_ID'] = "Process CPU ID",
     ['PROC_ACTUAL_MEMORY'] = "Used Memory (KB)",
     ['PROC_PEAK_MEMORY'] = "Peak Memory (KB)",
+    ['PROC_AVERAGE_CPU_LOAD'] = "Average Process CPU Load (%)",
+    ['PROC_NUM_PAGE_FAULTS'] = "Number of page faults",
  }
 
 -- #######################
