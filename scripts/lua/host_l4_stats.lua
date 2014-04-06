@@ -20,10 +20,10 @@ else
    _ifstats = {}
 
    tot = 0
-   traffic = 0
    for id, _ in ipairs(l4_keys) do
       label = l4_keys[id][1]
       key = l4_keys[id][2]
+      traffic = 0		
       if(host[key..".bytes.sent"] ~= nil) then traffic = traffic + host[key..".bytes.sent"] end
       if(host[key..".bytes.recv"] ~= nil) then traffic = traffic + host[key..".bytes.recv"] end
 
@@ -36,7 +36,6 @@ else
 
    -- Print entries whose value >= 5% of the total
    threshold = (tot * 3) / 100
-
 
    print "[\n"
    num = 0

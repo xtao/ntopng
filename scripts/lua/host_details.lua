@@ -484,7 +484,7 @@ end
      for id, _ in ipairs(l4_keys) do
 	k = l4_keys[id][2]
 	if(host[k..".bytes.sent"] ~= nil) then total = total + host[k..".bytes.sent"] end
-	if(host[k..".bytes.recv"] ~= nil) then total = total + host[k..".bytes.recv"] end
+	if(host[k..".bytes.rcvd"] ~= nil) then total = total + host[k..".bytes.rcvd"] end
      end
 
      if(total == 0) then
@@ -518,7 +518,6 @@ end
 	if(rcvd == nil) then rcvd = 0 end
 
 	if((sent > 0) or (rcvd > 0)) then
-	   -- if(true) then
 	    print("<tr><th>")
 	    fname = getRRDName(ifname, host_ip, k)
 	    if(ntop.exists(fname)) then
@@ -608,7 +607,7 @@ end
 	 print("</td></tr>")
 
 	 if(host["dns"]["sent"]["num_queries"] > 0) then
-	    print [[         
+	    print [[
 		     <tr><th>DNS Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
@@ -627,7 +626,7 @@ end
 	 print("</td></tr>")
 
 	 if(host["dns"]["rcvd"]["num_queries"] > 0) then
-print [[         
+print [[
 	 <tr><th>DNS Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
@@ -653,7 +652,7 @@ end
 	 print("</td></tr>")
 
 	 if(host["epp"]["sent"]["num_queries"] > 0) then
-	    print [[         
+	    print [[
 		     <tr><th>EPP Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
@@ -672,7 +671,7 @@ end
 	 print("</td></tr>")
 
 	 if(host["epp"]["rcvd"]["num_queries"] > 0) then
-print [[         
+print [[
 	 <tr><th>EPP Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
@@ -930,11 +929,11 @@ for v,k in pairsByKeys(vals, rev) do
       end
 
       correlated_host = interface.getHostInfo(k)
-      if(correlated_host ~= nil) then 
+      if(correlated_host ~= nil) then
 	 if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
 	 print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
 	 n = n +1
-	 
+
 	 if(n >= max_hosts) then
 	    break
 	 end
@@ -1076,7 +1075,7 @@ else
       if((value ~= nil) and (operator ~= nil)) then
 	 to_save = true
 	 value = tonumber(value)
-	 if(value ~= nil) then 
+	 if(value ~= nil) then
 	    if(alerts ~= "") then alerts = alerts .. "," end
 	    alerts = alerts .. k .. ";" .. operator .. ";" .. value
 	 end
@@ -1097,7 +1096,7 @@ else
 end
 
 if(alerts ~= nil) then
-   --print(alerts)   
+   --print(alerts)
    --tokens = string.split(alerts, ",")
    tokens = split(alerts, ",")
 
@@ -1220,24 +1219,24 @@ print [[
   <br>
   <!-- Left Tab -->
   <div class="tabbable tabs-left">
-    
+
     <ul class="nav nav-tabs">
       <li class="active"><a href="#Users" data-toggle="tab">Users</a></li>
       <li><a href="#Processes" data-toggle="tab">Processes</a></li>
       <li ><a href="#Tree" data-toggle="tab">Tree</a></li>
     </ul>
-    
+
     <!-- Tab content-->
     <div class="tab-content">
 
       <div class="tab-pane active" id="Users">
-      Show : 
+      Show :
           <div class="btn-group btn-small" id="show_users" data-toggle="buttons-radio">
             <button type="button" class="btn btn-small active">All</button>
             <button type="button" class="btn btn-small">Client</button>
             <button type="button" class="btn btn-small">Server</button>
           </div>
-        Aggregated by : 
+        Aggregated by :
           <div class="btn-group">
             <button id="aggregation_users_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">
             Traffic <span class="caret"></span></button>
@@ -1253,19 +1252,19 @@ print [[
           <tr>
             <th class="text-center span3">Top Users</th>
             <td class="span3"><div class="pie-chart" id="topUsers"></div></td>
-            
+
           </tr>
         </table>
       </div> <!-- Tab Users-->
 
       <div class="tab-pane" id="Processes">
-      Show : 
+      Show :
           <div class="btn-group btn-small" id="show_processes" data-toggle="buttons-radio">
             <button type="button" class="btn btn-small active">All</button>
             <button type="button" class="btn btn-small">Client</button>
             <button type="button" class="btn btn-small">Server</button>
           </div>
-        Aggregated by : 
+        Aggregated by :
           <div class="btn-group">
             <button id="aggregation_processes_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
             <ul class="dropdown-menu" id="aggregation_processes">
@@ -1280,20 +1279,20 @@ print [[
           <tr>
             <th class="text-center span3">Top Processes</th>
              <td class="span3"><div class="pie-chart" id="topProcess"></div></td>
-            
+
           </tr>
         </table>
       </div> <!-- Tab Processes-->
 
       <div class="tab-pane" id="Tree">
-    
-        Show : 
+
+        Show :
           <div class="btn-group btn-small" id="show_tree" data-toggle="buttons-radio">
             <button type="button" class="btn btn-small active">All</button>
             <button type="button" class="btn btn-small">Client</button>
             <button type="button" class="btn btn-small">Server</button>
           </div>
-        Aggregated by : 
+        Aggregated by :
           <div class="btn-group">
             <button id="aggregation_tree_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
             <ul class="dropdown-menu" id="aggregation_tree">
@@ -1326,10 +1325,10 @@ print [[
 ]]
 
  print [[
-      
+
         <link href="/css/sequence_sunburst.css" rel="stylesheet">
         <script src="/js/sequence_sunburst.js"></script>
-        
+
         <script type='text/javascript'>
         // Default value
         var sprobe_debug = false;
@@ -1342,17 +1341,17 @@ print [[
         var tree;
         var tree_type = "bytes";
         var tree_filter = "All";
-        
+
        var refresh = 3000 /* ms */;
 ]]
 
--- Users graph javascritp 
+-- Users graph javascritp
 print [[
       users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }, \"\", refresh); \n")
 
 print [[
-  
+
   $('#aggregation_users li > a').click(function(e){
     $('#aggregation_users_displayed').html(this.innerHTML+' <span class="caret"></span>');
 
@@ -1378,14 +1377,14 @@ print [[
 });]]
 
 
--- Processes graph javascritp 
+-- Processes graph javascritp
 
 print [[
 processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }, \"\", refresh); \n")
 
 print [[
-  
+
   $('#aggregation_processes li > a').click(function(e){
     $('#aggregation_processes_displayed').html(this.innerHTML+' <span class="caret"></span>');
 
@@ -1400,7 +1399,7 @@ print [[
     processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('", host: ')
   print("\""..host_ip.."\" }") print [[ );
     }); ]]
-  
+
 print [[
   $('#show_processes button').click(function() {
     processes_filter = this.innerHTML;
@@ -1411,14 +1410,14 @@ print [[
 });]]
 
 
--- Processes Tree graph javascritp 
+-- Processes Tree graph javascritp
 
-print [[ 
+print [[
   tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (', host: ')
   print("\""..host_ip.."\"") print [[ },"","Bytes"); ]]
 
 print [[
-  
+
   $('#aggregation_tree li > a').click(function(e){
     $('#aggregation_tree_displayed').html(this.innerHTML+' <span class="caret"></span>');
 

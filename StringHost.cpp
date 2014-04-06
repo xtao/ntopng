@@ -38,6 +38,7 @@ StringHost::StringHost(NetworkInterface *_iface, char *_key,
     written on disk
   */
   tracked_host = false, queriesReceived = 0;
+  mode = aggregation_client_name;
   readStats();
 }
 

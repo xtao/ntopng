@@ -54,9 +54,9 @@ end
 
 if(num > 0) then
    if(page == "contacts") then
-      print("<li class=\"active\"><a href=\"#\">Queries</a></li>\n")
+      print("<li class=\"active\"><a href=\"#\">Contacts</a></li>\n")
    else
-      print("<li><a href=\""..url.."&page=contacts\">Queries</a></li>")
+      print("<li><a href=\""..url.."&page=contacts\">Contacts</a></li>")
    end
 end
 
@@ -83,7 +83,7 @@ if(page == "overview") then
    print("<tr><th>First Seen</th><td>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</td></tr>\n")
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
-   print("<tr><th>Query Number</th><td><span id=contacts>" .. formatValue(host["queries.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
+   print("<tr><th>Contacts Number</th><td><span id=contacts>" .. formatValue(host["queries.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
    print("<tr><th>Traffic Volume</th><td><span id=traffic_volume>".. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).."</span></td></tr>\n")
 
    print [[

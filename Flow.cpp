@@ -121,7 +121,7 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
 
   if(ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) {
     StringHost *host;
-    char *name = _name;
+    char *name = _name, *first_name = NULL;
 
     if(ntop->getPrefs()->use_short_aggregation_names()
        && (mode == aggregation_domain_name)
@@ -135,9 +135,13 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
       for(i=strlen(_name)-2; i>0; i--) {
 	if(_name[i] == '.') {
 	  num++;
-	  if(num == 2) {
+
+	  first_name = &_name[i+1];
+
+	  if(num == 2)
 	    name = &_name[i+1];
-	    break;
+	  else if(num > 2) {
+	    name = first_name;
 	  }
 	}
       }
@@ -225,6 +229,14 @@ void Flow::processDetectedProtocol() {
 
   case NDPI_PROTOCOL_SSL:
   case NDPI_PROTOCOL_HTTP:
+  case NDPI_PROTOCOL_HTTP_PROXY:
+  case NDPI_SERVICE_GOOGLE:
+    if(ndpi_flow->nat_ip[0] != '\0') {
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "-> %s", (char*)ndpi_flow->nat_ip);
+
+      aggregateInfo((char*)ndpi_flow->nat_ip, ndpi_detected_protocol, aggregation_client_name, true);
+    }
+
     if(ndpi_flow->host_server_name[0] != '\0') {
       char buf[64], *doublecol, delimiter = ':';
       u_int16_t sport = htons(cli_port), dport = htons(srv_port);
@@ -237,7 +249,6 @@ void Flow::processDetectedProtocol() {
 	doublecol[0] = '\0';
 
       if(svr) {
-	svr->setName((char*)ndpi_flow->host_server_name, true);
 	aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
 
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
@@ -245,8 +256,12 @@ void Flow::processDetectedProtocol() {
 	  categorization.flow_categorized = true;
 	  categorization.category = strdup(buf);
 	}
-	ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
-					     (char*)ndpi_flow->host_server_name);
+
+	if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
+	  svr->setName((char*)ndpi_flow->host_server_name, true);
+	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
+					       (char*)ndpi_flow->host_server_name);
+	}
 
 	if(ndpi_flow->detected_os[0] != '\0') {
 	  aggregateInfo((char*)ndpi_flow->detected_os, NTOPNG_NDPI_OS_PROTO_ID, aggregation_os_name, true);
