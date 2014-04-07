@@ -7,6 +7,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
+ifstats = interface.getStats()
 names = interface.getIfNames()
 num_ifaces = 0
 for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
@@ -71,6 +72,10 @@ print [[
 	 <li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>
    ]]
 
+if(ifstats.iface_sprobe) then
+   print('<li><a href="/lua/processes_stats.lua">Processes List</a></li>')
+end
+
 agg = interface.getNumAggregatedHosts()
 
 if((agg ~= nil) and (agg > 0)) then
@@ -82,7 +87,6 @@ print [[
       <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
 ]]
 
-ifstats = interface.getStats()
 if(ifstats.iface_sprobe) then
    print('<li><a href="/lua/system_hosts_interaction.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
 end
