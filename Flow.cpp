@@ -599,6 +599,8 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
   lua_push_str_table_entry(vm, "user_name", proc->user_name);
   lua_push_int_table_entry(vm, "actual_memory", proc->actual_memory);
   lua_push_int_table_entry(vm, "peak_memory", proc->peak_memory);
+  lua_push_int_table_entry(vm, "average_cpu_load", proc->average_cpu_load);
+  lua_push_int_table_entry(vm, "num_vm_page_faults", proc->num_vm_page_faults);
 
   lua_pushstring(vm, client ? "client_process" : "server_process");
   lua_insert(vm, -2);

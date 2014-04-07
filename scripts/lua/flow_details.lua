@@ -13,13 +13,41 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+function displayProc(proc) 
+   print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&host="..flow["cli.ip"]..">".. proc.user_name .."</A></td></tr>\n")
+   print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&host="..flow["cli.ip"].. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+   print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
+   print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")
+   print("<tr><th width=30%>Average CPU Load</th><td colspan=2>")
+
+   if(proc.average_cpu_load < 33) then
+      if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
+      print("<font color=green>"..proc.average_cpu_load.." %</font>")
+      elseif(proc.average_cpu_load < 66) then
+      print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+   else
+      print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+   end
+   print(" </td></tr>\n")
+
+   print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")
+   print("<tr><th width=30%>VM Page Faults</th><td colspan=2>")
+   if(proc.num_vm_page_faults > 0) then
+      print("<font color=red><b>"..proc.num_vm_page_faults.."</b></font>")
+   else
+      print("<font color=green>"..proc.num_vm_page_faults.."</font>")
+   end
+
+   print("</td></tr>\n")
+end
+
 active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
 patterns = {
-   ['_'] = "", 
+   ['_'] = "",
    ['-_'] = "<i class=\"fa fa-exchange fa-lg\"></i>"
 }
 for search,replace in pairs(patterns) do
@@ -93,31 +121,21 @@ else
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
 
-   if((flow.client_process == nil) and (flow.server_process == nil)) then	   
+   if((flow.client_process == nil) and (flow.server_process == nil)) then
       print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
-      
+
       print("<span id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</span> <span id=throughput_trend></span>")
       print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
-      
+
       print("</td></tr>\n")
    else
       if(flow.client_process ~= nil) then
          print("<tr><th colspan=3 bgcolor=lightgray>Client Process Information</th></tr>\n")
-         proc = flow.client_process
-         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&host="..flow["cli.ip"]..">".. proc.user_name .."</A></td></tr>\n")
-         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&host="..flow["cli.ip"].. ">".. proc.pid .. "/" .. proc.name .. "</A>")
-         print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
-         print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
-         print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    
+         displayProc(flow.client_process)
       end
       if(flow.server_process ~= nil) then
          print("<tr><th colspan=3 bgcolor=lightgray>Server Process Information</th></tr>\n")
-         proc = flow.server_process
-         print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&host="..flow["srv.ip"]..">".. proc.user_name .."</A></td></tr>\n")
-         print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&host="..flow["srv.ip"].. ">".. proc.pid .. "/" .. proc.name .. "</A>")
-         print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
-         print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")      
-         print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")    
+         displayProc(flow.server_process)	 
       end
    end
 

@@ -276,6 +276,12 @@ void CollectorInterface::collect_flows() {
 		case PROC_PEAK_MEMORY:
 		  flow.process.peak_memory = atoi(value);
 		  break;
+		case PROC_AVERAGE_CPU_LOAD:
+		  flow.process.average_cpu_load = (u_int8_t)atoi(value);
+		  break;
+		case PROC_NUM_PAGE_FAULTS:
+		  flow.process.num_vm_page_faults = atoi(value);
+		  break;
 		default:
 		  ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);
 		  json_object_object_add(flow.additional_fields, key, json_object_new_string(value));
