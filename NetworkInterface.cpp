@@ -1645,11 +1645,14 @@ static bool proc_name_finder_walker(GenericHashEntry *node, void *user_data) {
   struct proc_name_flows *info = (struct proc_name_flows*)user_data;
   char *name = f->get_proc_name(true);
 
-  if(name == NULL)
-    name = f->get_proc_name(false);
-
   if(name && (strcmp(name, info->proc_name) == 0))
     f->lua(info->vm, false /* Minimum details */);
+  else {
+    name = f->get_proc_name(false);
+
+    if(name && (strcmp(name, info->proc_name) == 0))
+      f->lua(info->vm, false /* Minimum details */);    
+  }
 
   return(false); /* false = keep on walking */
 }

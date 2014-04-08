@@ -67,10 +67,12 @@ for _key, value in pairs(flows_stats) do
 	 processes[key]["bytes_sent"] = p["cli2srv.bytes"]
 	 processes[key]["bytes_rcvd"] = p["srv2cli.bytes"]
 	 processes[key]["duration"] = p["duration"]
+	 processes[key]["count"] = 1
       else
 	 processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
 	 processes[key]["bytes_sent"] = processes[key]["bytes_sent"] + p["cli2srv.bytes"]
          processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["srv2cli.bytes"]
+	 processes[key]["count"] = processes[key]["count"] + 1
       end
    end
 
@@ -83,10 +85,12 @@ for _key, value in pairs(flows_stats) do
 	 processes[key]["bytes_sent"] = p["srv2cli.bytes"]
 	 processes[key]["bytes_rcvd"]  = p["cli2srv.bytes"]
 	 processes[key]["duration"] = p["duration"]
+	 processes[key]["count"] = 1
       else
 	 processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
 	 processes[key]["bytes_sent"] = processes[key]["bytes_sent"] + p["srv2cli.bytes"]
          processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["cli2srv.bytes"]
+	 processes[key]["count"] = processes[key]["count"] + 1
       end
    end
 end
@@ -104,6 +108,8 @@ for key, value in pairs(processes) do
 	 vkey = processes[key]["bytes_sent"]+postfix
 	 elseif(sortColumn == "column_duration") then
 	 vkey = processes[key]["duration"]+postfix	  
+	 elseif(sortColumn == "column_count") then
+	 vkey = processes[key]["count"]+postfix	  
       else
 	 vkey = key
       end
@@ -139,6 +145,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("{ \"column_name\" : \"".."<A HREF='/lua/get_process_info.lua?name=" .. key .. "'>".. key .. "</A>")
 
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
+	 print ("\", \"column_count\" : \"" .. value["count"])
 	 print ("\", \"column_bytes_sent\" : \"" .. bytesToSize(value["bytes_sent"]) .. "")
 	 print ("\", \"column_bytes_rcvd\" : \"" .. bytesToSize(value["bytes_rcvd"]) .. "")
 

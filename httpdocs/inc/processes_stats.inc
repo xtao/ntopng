@@ -10,6 +10,15 @@
 			     }
 				 },
 			     {
+			     title: "Flows Count",
+				 field: "column_count",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+
+				 },			     
+			     {
 			     title: "Active Since",
 				 field: "column_duration",
 				 sortable: true,

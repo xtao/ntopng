@@ -27,6 +27,8 @@ if(mode == nil) then
    mode = "host"
 end
 
+local debug = false
+
 if(flows == nil) then
    print('[ { "label": "No flows", "value": 1 } ]') -- No flows found
 else   
@@ -35,6 +37,7 @@ else
    for k,f in pairs(flows) do 
       process = 1
       if (debug) then io.write("Cli:"..f["cli.ip"].." - Srv:"..f["srv.ip"].."\n") end
+      if(debug) then print(k.."\n") end
       if((host ~= nil) and ((f["cli.ip"] ~= host) and (f["srv.ip"] ~= host))) then
          process = 0
       end
@@ -44,6 +47,7 @@ else
         v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
       elseif(mode == "l4") then
         key = f["proto.l4"]
+	if(debug) then print(key.."\n") end
         v = f["cli2srv.bytes"] + f["srv2cli.bytes"]
       elseif(mode == "host") then
         if ((f["client_process"] ~= nil) and (f["client_process"]["name"] == name)) then
