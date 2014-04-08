@@ -1228,7 +1228,9 @@ print [[
 
     <!-- Tab content-->
     <div class="tab-content">
+]]
 
+print [[
       <div class="tab-pane active" id="Users">
       Show :
           <div class="btn-group btn-small" id="show_users" data-toggle="buttons-radio">
@@ -1256,7 +1258,9 @@ print [[
           </tr>
         </table>
       </div> <!-- Tab Users-->
+]]
 
+print [[
       <div class="tab-pane" id="Processes">
       Show :
           <div class="btn-group btn-small" id="show_processes" data-toggle="buttons-radio">
@@ -1283,7 +1287,9 @@ print [[
           </tr>
         </table>
       </div> <!-- Tab Processes-->
+]]
 
+print [[
       <div class="tab-pane" id="Tree">
 
         Show :
@@ -1319,7 +1325,9 @@ print [[
 
         </table>
       </div> <!-- Tab Tree-->
+]]
 
+print [[
     </div> <!-- End Tab content-->
   </div> <!-- End Left Tab -->
 ]]

@@ -117,7 +117,9 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
       var value = data[0]
       if (last_byte < d.value) {
         value = data[0]+ ' \uf062';
-      }else {
+      }else if (last_byte > d.value) {
+        value = data[0]+ ' \uf063';
+      } else {
         value = data[0]+ ' \uf068';
       }
       
