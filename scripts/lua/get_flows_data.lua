@@ -194,27 +194,34 @@ for key, value in pairs(flows_stats) do
    if (debug) then io.write("port -\t"..process.."\n")end   
 
    ---------------- HOST ----------------
-   if(num_host_list > 0) then
-      if(sigle_host == 1) then
-        if (debug) then io.write("Host:"..host.."\n")end 
-   if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
-      process = 0
-   end
-      elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
-     (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
-   process  = 0
-      end 
-   end
+  if(num_host_list > 0) then
+    if(sigle_host == 1) then
+      if (debug) then io.write("Host:"..host.."\n")end 
+      if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
+        process = 0
+      end
+    else
+      cli_num = findStringArray(flows_stats[key]["cli.ip"],host_list)
+      srv_num = findStringArray(flows_stats[key]["srv.ip"],host_list)
+
+      if ((cli_num ~= nil) and
+          (srv_num ~= nil))then
+          process  = 1
+      end -- findStringArray
+
+      if ( ((cli_num ~= nil) and (cli_num < 1)) or
+          ((srv_num ~= nil) and (srv_num < 1)) 
+      ) then
+       if (flows_stats[key]["cli.ip"] == flows_stats[key]["srv.ip"]) then process = 0 end
+      end
+    end
+  end
    if (debug) then io.write("Host -\t"..process.."\n")end
-   
 
   ---------------- TABLE SORTING ----------------
    if(process == 1) then 
     if (debug) then io.write("Flow Processing\n")end
-    if ((flows_stats[key]["cli.ip"] == "192.12.193.5") or 
-          (flows_stats[key]["srv.ip"] == "192.12.193.5"))then
-    debug = false
-  end
+    
       -- postfix is used to create a unique key otherwise entries with the same key will disappear
       num = num + 1
       postfix = string.format("0.%04u", num)

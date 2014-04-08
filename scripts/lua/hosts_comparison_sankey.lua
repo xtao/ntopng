@@ -52,10 +52,19 @@ if (_GET["hosts"] ~= nil) then
     for key, value in pairs(flows_stats) do
 
         process = 0
-        if ((findStringArray(flows_stats[key]["cli.ip"],compared_hosts) ~= nil) and
-            (findStringArray(flows_stats[key]["srv.ip"],compared_hosts) ~= nil))then
+        cli_num = findStringArray(flows_stats[key]["cli.ip"],compared_hosts)
+        srv_num = findStringArray(flows_stats[key]["srv.ip"],compared_hosts)
+
+        if ((cli_num ~= nil) and
+            (srv_num ~= nil))then
             process  = 1
         end -- findStringArray
+
+        if ( ((cli_num ~= nil) and (cli_num < 1)) or
+            ((srv_num ~= nil) and (srv_num < 1)) 
+        ) then
+         if (flows_stats[key]["cli.ip"] == flows_stats[key]["srv.ip"]) then process = 0 end
+        end
         
         if (links_size > max_num_links) then process = 0 end
         if ((ndpi_size > max_num_hosts) or 

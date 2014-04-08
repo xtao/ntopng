@@ -41,7 +41,7 @@ hosts = {}
 num = 0
 print '{"nodes":[\n'
 
---print(" >>>[" .. tracked_host .. "]\n")
+-- print(" >>>[" .. tracked_host .. "]\n")
 
 while(num == 0) do
    for key, values in pairs(peers) do
@@ -51,9 +51,11 @@ while(num == 0) do
 	 last = values["sent"] + values["rcvd"]
       end
       if(last > threshold) then 
-	 if(debug) then io.write("==>"..key.."\t[".. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
-
-	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["client"], tracked_host) or findString(values["server"], tracked_host)) then
+	 if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
+   if((debug) and (findString(key, tracked_host) ~= nil))then io.write("findString(key, tracked_host)==>"..findString(key, tracked_host)) end
+   if((debug) and (findString(values["cli.ip"], tracked_host) ~= nil)) then io.write("findString(values[cli.ip], tracked_host)==>"..findString(values["cli.ip"], tracked_host)) end
+   if((debug) and (findString(values["srv.ip"], tracked_host) ~= nil)) then io.write("findString(values[srv.ip], tracked_host)==>"..findString(values["srv.ip"], tracked_host)) end
+	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["cli.ip"], tracked_host) or findString(values["srv.ip"], tracked_host)) then
 	   -- print("[" .. key .. "][" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do

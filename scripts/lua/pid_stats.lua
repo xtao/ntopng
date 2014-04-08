@@ -13,7 +13,7 @@ mode = _GET["mode"] --l4,l7,host
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
 host = _GET["host"]
-
+local debug = false
 
 interface.find(ifname)
 
@@ -33,9 +33,8 @@ else
    apps = { }
    tot = 0
    for k,f in pairs(flows) do 
-
       process = 1
-
+      if (debug) then io.write("Cli:"..f["cli.ip"].." - Srv:"..f["srv.ip"].."\n") end
       if((host ~= nil) and ((f["cli.ip"] ~= host) and (f["srv.ip"] ~= host))) then
          process = 0
       end
