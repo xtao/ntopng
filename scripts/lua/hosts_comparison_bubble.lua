@@ -54,6 +54,13 @@ max_num_hosts = 24
 compared_hosts = {}
 compared_hosts_size = 0;
 
+ifstats = interface.getStats()
+
+if(ifstats.iface_sprobe) then
+   base_url = "/lua/sflows_stats.lua?"
+else
+   base_url = "/lua/flows_stats.lua?"
+end
 
 hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
@@ -129,7 +136,7 @@ else
        else
            flow_bytes = ndpi[aggregation_value[key]]["flows.bytes"]
        end
-       url = "/lua/flows_stats.lua?hosts=".._GET["hosts"].."&aggregation="..aggregation.."&key="..aggregation_value[key]
+       url = base_url.."hosts=".._GET["hosts"].."&aggregation="..aggregation.."&key="..aggregation_value[key]
 
        print ("\t{\n\t\"name\": \"" ..aggregation_value[key].. "\",\n\t\"children\": [ \n\t{\"name\": \"" .. aggregation_value[key] .. "\", \"size\": " .. flow_bytes ..", \"aggregation\": \"" .. aggregation .. "\", \"key\": \"" .. aggregation_value[key] .."\", \"url\": \"" .. url .."\"}\n\t]\n\t}")
 

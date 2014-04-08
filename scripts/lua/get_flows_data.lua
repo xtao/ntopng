@@ -8,7 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
-local debug = false
+local debug = true
 
 -- Table parameters
 currentPage = _GET["currentPage"]
@@ -74,27 +74,18 @@ end
 
 vals = {}
 num = 0
+
 for key, value in pairs(flows_stats) do
    --   print(key.."\n")
-
-   process = 1
-
-   ---------------- HOST ----------------
-   if(num_host_list > 0) then
-      if(sigle_host == 1) then
-        if (debug) then io.write("Host:"..host.."\n")end
-        if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
-        if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
-	 if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
-	    process = 0
-	 end
-      elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
-	   (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
-	 process  = 0
-      end 
-   end
-   if (debug) then io.write("Host -\t"..process.."\n")end
+   if (debug) then io.write("==================\n")end
    
+   process = 1
+   client_process = 0
+   server_process = 0
+
+  if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
+  if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
+
 
    ---------------- L4 PROTO ----------------
    if(l4proto ~= nil) then
@@ -104,57 +95,53 @@ for key, value in pairs(flows_stats) do
    end
    if (debug) then io.write("L4 -\t"..process.."\n")end
    
-
-
-   ---------------- PORT ----------------
-   if(port ~= nil) then
-      if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
-	 process = 0
-      end
-   end
-   if (debug) then io.write("port -\t"..process.."\n")end
-   
+   ---------------- USER ----------------
    if(user ~= nil) then
     if (debug) then io.write("User:"..user.."\n")end
     if (flows_stats[key]["client_process"] ~= nil) then 
       if (debug) then io.write("Client user:"..flows_stats[key]["client_process"]["user_name"].."\n") end
-      if ((flows_stats[key]["client_process"]["user_name"] ~= user)) then 
-        process = 0
-      else 
-        if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["client_process"]["user_name"] == user)) then 
+        client_process = 1
       end
+      if (debug) then io.write("USER: => ClientProcess -\t"..client_process.."\n")end
     end
       if (flows_stats[key]["server_process"] ~= nil) then 
       if (debug) then io.write("Server user:"..flows_stats[key]["server_process"]["user_name"].."\n") end
-      if ((flows_stats[key]["server_process"]["user_name"] ~= user)) then 
-        process = 0
-      else 
-        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["server_process"]["user_name"] == user)) then 
+        server_process = 1
+        if (debug) then io.write("USER: => 1ServerProcess -\t"..server_process.."\n")end
       end
+      if (debug) then io.write("USER: => ServerProcess -\t"..server_process.."\n")end
+      end
+     if ((client_process == 1) or (server_process == 1)) then
+      process = 1
+    else
+      process = 0
     end
    end
    if (debug) then io.write("user -\t"..process.."\n")end
-
-
 
    ---------------- PID ----------------
    if(pid ~= nil) then
     if (debug) then io.write("Pid:"..pid.."\n")end
     if (flows_stats[key]["client_process"] ~= nil) then 
       if (debug) then io.write("Client pid:"..flows_stats[key]["client_process"]["pid"].."\n") end
-      if ((flows_stats[key]["client_process"]["pid"] ~= pid)) then 
-        process = 0
-      else 
-        if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["client_process"]["pid"] == pid)) then 
+        client_process = 1
       end
+      if (debug) then io.write("PID: => ClientProcess -\t"..client_process.."\n")end
     end
     if (flows_stats[key]["server_process"] ~= nil) then 
       if (debug) then io.write("Server pid:"..flows_stats[key]["server_process"]["pid"].."\n") end
-      if ((flows_stats[key]["server_process"]["pid"] ~= pid)) then 
-        process = 0
-      else 
-        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["server_process"]["pid"] == pid)) then 
+        server_process = 1
       end
+      if (debug) then io.write("PID: => ServerProcess -\t"..server_process.."\n")end
+    end
+    if ((client_process == 1) or (server_process == 1)) then
+      process = 1
+    else
+      process = 0
     end
    end
    if (debug) then io.write("pid -\t"..process.."\n")end
@@ -165,19 +152,22 @@ for key, value in pairs(flows_stats) do
     if (debug) then io.write("Name:"..name.."\n")end
     if (flows_stats[key]["client_process"] ~= nil) then 
       if (debug) then io.write("Client name:"..flows_stats[key]["client_process"]["name"].."\n") end
-      if ((flows_stats[key]["client_process"]["name"] ~= name)) then 
-        process = 0
-      else 
-       if ((host ~= nil) and(flows_stats[key]["cli.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["client_process"]["name"] == name)) then 
+        client_process = 1
       end
+      if (debug) then io.write("ClientProcess -\t"..client_process.."\n")end
     end
     if (flows_stats[key]["server_process"] ~= nil) then 
       if (debug) then io.write("Server name:"..flows_stats[key]["server_process"]["name"].."\n") end
-      if ((flows_stats[key]["server_process"]["name"] ~= name)) then 
-        process = 0
-      else 
-        if ((host ~= nil) and(flows_stats[key]["srv.ip"] == host)) then process = 1 end
+      if ((flows_stats[key]["server_process"]["name"] == name)) then 
+        server_process = 1
       end
+      if (debug) then io.write("ServerProcess -\t"..server_process.."\n")end
+    end
+    if ((client_process == 1) or (server_process == 1)) then
+      process = 1
+    else
+      process = 0
     end
    end
    if (debug) then io.write("name -\t"..process.."\n")end
@@ -194,9 +184,37 @@ for key, value in pairs(flows_stats) do
       end
    end
    if (debug) then io.write("ndpi -\t"..process.."\n")end
+
+  ---------------- PORT ----------------
+   if(port ~= nil) then
+      if((flows_stats[key]["cli.port"] ~= port) and (flows_stats[key]["srv.port"] ~= port)) then
+   process = 0
+      end
+   end
+   if (debug) then io.write("port -\t"..process.."\n")end   
+
+   ---------------- HOST ----------------
+   if(num_host_list > 0) then
+      if(sigle_host == 1) then
+        if (debug) then io.write("Host:"..host.."\n")end 
+   if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
+      process = 0
+   end
+      elseif ((findStringArray(flows_stats[key]["cli.ip"],host_list) == nil) and
+     (findStringArray(flows_stats[key]["srv.ip"],host_list) == nil))then
+   process  = 0
+      end 
+   end
+   if (debug) then io.write("Host -\t"..process.."\n")end
    
 
+  ---------------- TABLE SORTING ----------------
    if(process == 1) then 
+    if (debug) then io.write("Flow Processing\n")end
+    if ((flows_stats[key]["cli.ip"] == "192.12.193.5") or 
+          (flows_stats[key]["srv.ip"] == "192.12.193.5"))then
+    debug = false
+  end
       -- postfix is used to create a unique key otherwise entries with the same key will disappear
       num = num + 1
       postfix = string.format("0.%04u", num)
@@ -346,11 +364,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
 	 if(value["client_process"] ~= nil) then
-	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["name"].."</A>")
+	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. value["client_process"]["name"].."</A>")
 	    print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["user_name"].."</A>")
 	 end
 	 if(value["server_process"] ~= nil) then
-	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["name"].."</A>")
+	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&name="..value["server_process"]["name"].."&host="..value["srv.ip"]..">" .. value["server_process"]["name"].."</A>")
 	    print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["user_name"].."</A>")
 	 end
 

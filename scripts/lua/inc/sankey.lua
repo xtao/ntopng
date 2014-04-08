@@ -60,16 +60,16 @@ active_sankey = "host"
 local debug = false
 
 if(_GET["host"] ~= nil) then
-  print('d3.json("/lua/iface_flows_sankey.lua?host=' .. _GET["host"] .. '" ')
+  print('d3.json("/lua/iface_flows_sankey.lua?host=' .. _GET["host"] .. '"')
 
 elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil))then
-  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..' "')
+  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
   active_sankey = "comparison"
 elseif(_GET["hosts"] ~= nil) then
-  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] ..' "')
+  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] ..'"')
   active_sankey = "comparison"
 else
-  print('d3.json("/lua/iface_flows_sankey.lua" ')
+  print('d3.json("/lua/iface_flows_sankey.lua"')
  
 end
 
@@ -171,6 +171,13 @@ print [[
 
 elseif(active_sankey == "comparison") then
 
+ifstats = interface.getStats()
+
+if(ifstats.iface_sprobe) then
+   url = "/lua/sflows_stats.lua?"
+else
+   url = "/lua/flows_stats.lua?"
+end
 
 print [[ 
   
@@ -187,11 +194,11 @@ print [[
     .style("stroke-width", function(d) { return Math.max(1, d.dy); })
     .style("stroke", function(d){ return d.color = colorlink(d); })
     .sort(function(a, b) { return b.dy - a.dy; })
-   .on("dblclick", function(d) { window.location.href = "/lua/flows_stats.lua?hosts=]]
+   .on("dblclick", function(d) { window.location.href = "]]
 
-print(_GET["hosts"])
+print(url.."hosts=".._GET["hosts"])
 
-  print [[&aggregation="+escape(d.aggregation)+"&key="+escape(d.key) ;  });
+  print [[&aggregation="+escape(d.aggregation)+"&key="+escape(d.target.name) ;  });
 
 
   link.append("title")

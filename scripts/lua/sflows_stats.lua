@@ -65,13 +65,13 @@ print [[",
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
-print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
+print('<li><a href="/lua/sflows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key..'">'..key..'</a></li>')
+   print('<li '..class_active..'><a href="/lua/sflows_stats.lua?application=' .. key..'">'..key..'</a></li>')
 end
 
 

@@ -1,10 +1,9 @@
 // Wrapper function
 function do_sequence_sunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units) {
   var graph = new SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_params,title,units);
-  var graphInterval = setInterval(function(){graph.update();}, refresh);
-  
+  graph.setInterval(window.setInterval(function(){graph.update();}, refresh));
   // Return new class instance, with
-  return [graph,graphInterval];
+  return [graph];
 }
 
 
@@ -17,6 +16,7 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
   this.url_params = url_params;
   this.units = units;
   this.refresh = refresh;
+  this.sunburstInterval;
 
   var oldPieData = [];
   var filteredPieData = [];
@@ -375,6 +375,21 @@ SequenceSunburst.prototype.setUrlParams = function(url_params) {
 }
 
 SequenceSunburst.prototype.forceUpdate = function(url_params) {  
+  // this.stopInterval();
   this.falshUpdate(0,1);
   this.update();
+  // this.startInterval();
+}
+
+SequenceSunburst.prototype.setInterval = function(p_sunburstInterval) {
+  this.sunburstInterval = p_sunburstInterval;
+}
+
+SequenceSunburst.prototype.stopInterval = function() {
+  //disabled graph interval
+    window.clearInterval(this.sunburstInterval);
+}
+
+SequenceSunburst.prototype.startInterval = function() {
+  this.sunburstInterval = window.setInterval(this.update(), this.refresh)
 }

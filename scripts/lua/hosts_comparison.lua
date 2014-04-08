@@ -8,10 +8,8 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
-
 page        = _GET["page"]
 hosts_ip     = _GET["hosts"]
-
 
 -- Default values
 if(page == nil) then 
@@ -192,12 +190,7 @@ print [[
   print("\""..hosts_ip.."\" }, 10); \n")
 
 print [[
-  
-  $(window).load(function() 
-  {
-    //disabled graph interval
-    clearInterval(bubble[1]);
-  });  
+  bubble.stopInterval();
 
   </script>
 ]]
@@ -206,7 +199,7 @@ print [[
 print [[
   <script>
    $("#graph_refresh").click(function() {
-    bubble[0].forceUpdate();
+    bubble.forceUpdate();
   });
 
   $('#aggregation_bubble li > a').click(function(e){
@@ -220,9 +213,9 @@ print [[
       bubble_aggregation = "port";
     }
     //alert(this.innerHTML + "-" + bubble_aggregation);
-    bubble[0].setUrlParams({ aggregation: bubble_aggregation, hosts:]]
+    bubble.setUrlParams({ aggregation: bubble_aggregation, hosts:]]
     print("\""..hosts_ip.."\" }") print [[ );
-    bubble[0].forceUpdate();
+    bubble.forceUpdate();
     }); 
 </script>
 

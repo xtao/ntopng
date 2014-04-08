@@ -1,11 +1,10 @@
 // Wrapper function
 function do_bubble_chart(contanerId,update_url,url_params,refresh) {
   var bubble = new BubbleChart(contanerId,update_url,url_params);
-  var graphInterval = setInterval(function(){bubble.update();}, refresh);
-  
+  bubble.setInterval(setInterval(function(){bubble.update();}, refresh));
   
   // Return new class instance, with
-  return [bubble,graphInterval];
+  return bubble;
 }
 
 
@@ -15,7 +14,7 @@ function BubbleChart(contanerId,update_url,url_params) {
   this.contanerId = contanerId;
   this.update_url = update_url;
   this.url_params = url_params;
-  
+  this.bubbleInterval;
   
   var rsp = create_bubble_chart(contanerId);
   var margin = rsp[0];
@@ -114,8 +113,23 @@ BubbleChart.prototype.setUrlParams = function(url_params) {
 }
 
 BubbleChart.prototype.forceUpdate = function(url_params) {  
+  this.stopInterval();
   this.falshUpdate(0,1);
   this.update();
+  this.startInterval();
+}
+
+BubbleChart.prototype.setInterval = function(p_bubbleInterval) {
+  this.bubbleInterval = p_bubbleInterval;
+}
+
+BubbleChart.prototype.stopInterval = function() {
+    //disabled graph interval
+    clearInterval(this.bubbleInterval);
+  }
+
+BubbleChart.prototype.startInterval = function() {
+  this.bubbleInterval = setInterval(this.update(), this.refresh)
 }
 
 ///////////////////////////////////////////////////////////

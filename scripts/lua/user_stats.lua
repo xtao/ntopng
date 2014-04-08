@@ -30,8 +30,6 @@ else
 
    apps = {}
    tot = 0
-
-
    for k,f in pairs(flows) do
     process = 1
     -- Filer users
@@ -73,7 +71,7 @@ print "[\n"
 num = 0
 accumulate = 0
 for key, value in pairs(apps) do
-   if(value < threshold) then
+   if ((value < threshold) and (num ~= 0)) then
       break
    end
 

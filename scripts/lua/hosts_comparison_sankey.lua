@@ -179,16 +179,18 @@ if (_GET["hosts"] ~= nil) then
 
        for aggregation_key,value in pairs(aggregation_node) do
            
-           if(num > 0) then
-               print ",\n"
-           end
+           
 
            if(links[host_ip..":"..aggregation_key] ~= nil) then
+
+            if(num > 0) then
+               print ",\n"
+           end
                val = links[host_ip..":"..aggregation_key]["value"]
                
                if (val == 0 ) then val = 1 end
 
-               print ("\t{\"source\": "..(i -1).. ", \"target\": "..(compared_hosts_size + value -2)..", \"value\": " .. val .. ", \"aggregation\": \""..aggregation.."\", \"key\": \"" .. aggregation_key .."\"}")
+               print ("\t{\"source\": "..(i -1).. ", \"target\": "..(compared_hosts_size + value -2)..", \"value\": " .. val .. ", \"aggregation\": \""..aggregation.."\"}")
                num = num + 1
            end
 

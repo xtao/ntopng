@@ -3,7 +3,7 @@
 // Wrapper function
 function do_pie(name, update_url, url_params, units, refresh) {
   var pie = new PieChart(name, update_url, url_params, units, refresh);
-  var pieInterval = setInterval(function(){pie.update();}, refresh);
+  pie.setInterval(setInterval(function(){pie.update();}, refresh));
 
   // Return new class instance, with
   return pie;
@@ -20,7 +20,7 @@ function PieChart(name, update_url, url_params, units, refresh) {
   this.url_params = url_params;
   this.units = units;
   this.refresh = refresh;
-
+  this.pieInterval;
 
     var pieData = [];    
     var oldPieData = [];
@@ -293,13 +293,27 @@ function PieChart(name, update_url, url_params, units, refresh) {
 
 PieChart.prototype.setUrlParams = function(url_params) {
   this.url_params = url_params;
-  this.update();
+  this.forceUpdate();
 }
 
 PieChart.prototype.forceUpdate = function(url_params) {
+  this.stopInterval();
   this.update();
+  this.startInterval();
 }
 
+PieChart.prototype.setInterval = function(p_pieInterval) {
+  this.pieInterval = p_pieInterval;
+}
+
+PieChart.prototype.stopInterval = function() {
+    //disabled graph interval
+    clearInterval(this.pieInterval);
+}
+
+PieChart.prototype.startInterval = function() {
+  this.pieInterval = setInterval(this.update(), this.refresh)
+}
 ///////////////////////////////////////////////////////////
 // INIT FUNCIONTS ////////////////////////////////////
 ///////////////////////////////////////////////////////////
