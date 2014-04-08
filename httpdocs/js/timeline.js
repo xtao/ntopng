@@ -80,10 +80,6 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
     legend: legend
   } );
 
-  var smoother = new Rickshaw.Graph.Smoother( {
-    graph: graph,
-    element: $('#smoother')
-  } );
 
   var ticksTreatment = 'glow';
 
@@ -103,11 +99,6 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
 
   yAxis.render();
 
-  var controls = new RenderControls( {
-    element: document.querySelector('form'),
-    graph: graph
-  } );
-
   var previewXAxis = new Rickshaw.Graph.Axis.Time({
     graph: preview.previews[0],
     timeFixture: new Rickshaw.Fixtures.Time.Local(),
@@ -123,26 +114,14 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
     graph.update();
   }
 
-  // var messages = [
-  //   "Changed home page welcome message",
-  //   "Minified JS and CSS",
-  //   "Changed button color from blue to green",
-  //   "Refactored SQL query to use indexed columns",
-  //   "Added additional logging for debugging",
-  //   "Fixed typo",
-  //   "Rewrite conditional logic for clarity",
-  //   "Added documentation for new methods"
-  // ];
-
-  // function addAnnotation(force) {
-  //   if (messages.length > 0 && (force || Math.random() >= 0.95)) {
-  //     annotator.add(seriesData[2][seriesData[2].length-1].x, messages.shift());
-  //     annotator.update();
-  //   }
-  // }
-
-  // addAnnotation(true);
-  // setTimeout( function() { setInterval( addAnnotation, 6000 ) }, 6000 );
+  //  var smoother = new Rickshaw.Graph.Smoother( {
+  //   graph: graph,
+  //   element: $('#smoother')
+  // } );
+  //  var controls = new RenderControls( {
+  //   element: document.querySelector('form'),
+  //   graph: graph
+  // } );
 
 }
 
@@ -173,6 +152,7 @@ Timeline.prototype.addAnnotation = function(p_proc_name,p_message) {
   if(index != -1){
     this.n_seriesData[index]
     this.annotator.add(this.n_seriesData[index][this.n_seriesData[index].length-1].x, p_message);
+    this.annotator.update();
   } else {
     console.log("Process doesn't found. Impossible insert messages.");
   }

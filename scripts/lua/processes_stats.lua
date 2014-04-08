@@ -54,7 +54,6 @@ print [[
   <link type="text/css" rel="stylesheet" href="/css/Rickshaw/graph.css">
   <link type="text/css" rel="stylesheet" href="/css/Rickshaw/detail.css">
   <link type="text/css" rel="stylesheet" href="/css/Rickshaw/legend.css">
-  <link type="text/css" rel="stylesheet" href="/css/Rickshaw/extensions.css?v=2">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
   <script>
@@ -89,8 +88,24 @@ print [[
   <script src="/js/Rickshaw/Rickshaw.Fixtures.Color.js"></script>
   <script src="/js/Rickshaw/Rickshaw.Color.Palette.js"></script>
   <script src="/js/Rickshaw/Rickshaw.Graph.Axis.Y.js"></script>
-
-  <script src="/js/Rickshaw/extensions.js"></script>
+<style>
+#legend {
+  background-color: white;
+  margin-left: 0;
+  padding: 0;
+  left: 0;
+}
+#legend .label {
+  color: #404040;
+}
+#legend .action {
+  color: black;
+  opacity: 0.5;
+}
+#legend ul {
+  padding: 0;
+}
+</style>
 <div class="tab-pane" id="Timeline">
   <h2>Processes Timeline</h2><br/> 
   <table class="table table-bordered">
