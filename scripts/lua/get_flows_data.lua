@@ -8,7 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
-local debug = true
+local debug = false
 
 -- Table parameters
 currentPage = _GET["currentPage"]

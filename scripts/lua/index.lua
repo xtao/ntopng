@@ -9,6 +9,14 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
+-- Check if we have set a specific interface name
+
+id = ntop.getCache('ntopng.prefs.'.._SESSION["user"]..'.iface')
+if(id ~= nil) then
+   ifname = interface.setActiveInterfaceId(tonumber(id))
+   -- print("====="..id.."("..ifname..")===========")
+end
+
 interface.find(ifname)
 ifstats = interface.getStats()
 

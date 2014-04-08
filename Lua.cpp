@@ -2225,7 +2225,7 @@ static char* http_decode(char *str) {
 
 int Lua::handle_script_request(struct mg_connection *conn,
 			       const struct mg_request_info *request_info, char *script_path) {
-  char buf[64], key[64], val[64], *_cookies;
+  char buf[64], key[64], val[64], *_cookies, user[64];
 
   luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
@@ -2283,8 +2283,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
   if((_cookies = (char*)mg_get_header(conn, "Cookie")) != NULL) {
     char *cookies = strdup(_cookies);
     char *tok, *val, *where;
-    
-    
+        
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "=> '%s'", cookies);
     tok = strtok_r(cookies, "=", &where);
     while(tok != NULL) {
@@ -2307,19 +2306,25 @@ int Lua::handle_script_request(struct mg_connection *conn,
   /* Put the _SESSION params into the environment */
   lua_newtable(L);
 
-  mg_get_cookie(conn, "user", buf, sizeof(buf));
-  lua_push_str_table_entry(L, "user", buf);
+  mg_get_cookie(conn, "user", user, sizeof(user));
+  lua_push_str_table_entry(L, "user", user);
   mg_get_cookie(conn, "session", buf, sizeof(buf));
   lua_push_str_table_entry(L, "session", buf);
 
   if(buf[0] != '\0') {
     snprintf(key, sizeof(key), "sessions.%s.ifname", buf);
     if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
-    set_default_if_name_in_session:
-      snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
-      lua_push_str_table_entry(L, "ifname", val);
-      ntop->getRedis()->set(key, val, 3600 /* 1h */);
+      snprintf(key, sizeof(key), "sessions.%s.ifname", user);
+      if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
+      set_default_if_name_in_session:
+	snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
+	lua_push_str_table_entry(L, "ifname", val);
+	ntop->getRedis()->set(key, val, 3600 /* 1h */);
+      } else {
+	goto set_preferred_interface;
+      }
     } else {
+    set_preferred_interface:
       if(ntop->getInterface(val) != NULL) {
 	/* The specified interface still exists */
 	lua_push_str_table_entry(L, "ifname", val);

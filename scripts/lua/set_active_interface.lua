@@ -29,6 +29,8 @@ if(ifname ~= nil) then
    end
 
    print("</b> is now active</div>")
+   
+   ntop.setCache('ntopng.prefs.'.._SESSION["user"]..'.iface', _GET["id"])
 
 print [[
 
