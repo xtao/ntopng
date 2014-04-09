@@ -23,7 +23,7 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 					title: "Hosts List",
-					url: "/lua/get_hosts_data.lua?mode=]] 
+					url: "/lua/get_hosts_data.lua?mode=]]
 print(mode..'",')
 
 if(mode == "all") then
@@ -33,6 +33,39 @@ elseif(mode == "local") then
 else
    print('title: "Remote Hosts",\n')
 end
+
+print [[
+	       showPagination: true,
+	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
+	        columns: [
+			     {
+			     title: "IP Address",
+				 field: "column_ip",
+				 sortable: true,
+	 	             css: {
+			        textAlign: 'left'
+			     }
+				 },
+			     {
+			  ]]
+
+ifstats = interface.getStats()
+
+if(ifstats.iface_sprobe) then
+   print('title: "Source Id",\n')
+else
+   print('title: "VLAN",\n')
+end
+
+print [[
+				 field: "column_vlan",
+				 sortable: true,
+	 	             css: {
+			        textAlign: 'center'
+			     }
+
+				 },
+]]
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_top.inc")
 
@@ -44,7 +77,7 @@ print [[
 			     title: "Category",
 				 field: "column_category",
 				 sortable: true,
-	 	             css: { 
+	 	             css: {
 			        textAlign: 'center'
 			       }
 			       },

@@ -119,7 +119,6 @@ filter = _GET["filter"] -- all,client,server
 
 interface.find(ifname)
 
-
 if(host == nil) then
   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else

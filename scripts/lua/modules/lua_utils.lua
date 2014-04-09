@@ -4,9 +4,15 @@
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
+   ifdebug = false
+
    ifname = _GET["ifname"]
+   
    if((ifname == nil) and (_SESSION ~= nil)) then
+      if(ifdebug) then print("_SESSION set ifname\n") end
       ifname = _SESSION["ifname"]
+   else
+      if(ifdebug) then print("_GET set ifname\n") end
    end
 end
 

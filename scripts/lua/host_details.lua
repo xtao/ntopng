@@ -325,7 +325,19 @@ print [[
       print('</form></td></tr>')
    end
 
-   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then print("<tr><th>VLAN Id</th><td colspan=2>"..host["vlan"].."</td></tr>\n") end
+   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then
+      print("<tr><th>")
+
+      ifstats = interface.getStats()
+      
+      if(ifstats.iface_sprobe) then
+	 print('Source Id')
+      else
+	 print('VLAN ID')
+      end
+
+      print("</th><td colspan=2>"..host["vlan"].."</td></tr>\n") 
+   end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
    if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td colspan=2>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
 

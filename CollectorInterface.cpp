@@ -131,9 +131,9 @@ void CollectorInterface::collect_flows() {
       if((rc < 0) || (!isRunning())) return;
     } while(rc == 0);
 
-    for(int i=0; i<num_subscribers; i++) {
-      if(items[i].revents & ZMQ_POLLIN) {
-	size = zmq_recv(items[i].socket, &h, sizeof(h), 0);
+    for(int source_id=0; source_id<num_subscribers; source_id++) {
+      if(items[source_id].revents & ZMQ_POLLIN) {
+	size = zmq_recv(items[source_id].socket, &h, sizeof(h), 0);
 
 	if((size != sizeof(h)) || (h.version != MSG_VERSION)) {
 	  ntop->getTrace()->traceEvent(TRACE_WARNING,
@@ -142,7 +142,7 @@ void CollectorInterface::collect_flows() {
 	  continue;
 	}
 
-	size = zmq_recv(items[i].socket, payload, payload_len, 0);
+	size = zmq_recv(items[source_id].socket, payload, payload_len, 0);
 
 	if(size > 0) {
 	  json_object *o;
@@ -159,6 +159,9 @@ void CollectorInterface::collect_flows() {
 	    memset(&flow, 0, sizeof(flow));
 	    flow.additional_fields = json_object_new_object();
 	    flow.pkt_sampling_rate = 1; /* 1:1 (no sampling) */
+	    flow.source_id = source_id;
+
+	    // flow.vlan_id = source_id;
 
 	    while(!json_object_iter_equal(&it, &itEnd)) {
 	      const char *key   = json_object_iter_peek_name(&it);
