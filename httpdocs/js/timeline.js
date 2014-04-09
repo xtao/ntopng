@@ -51,8 +51,13 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
     graph: graph,
     xFormatter: function(x) {
       return new Date(x * 1000).toString();
+    },
+    yFormatter: function(bits) { return(bytesToVolume(bits)); },
+    formatter: function(series, x, y, formattedX, formattedY, d) {
+      return series.name + ':&nbsp;' + bytesToVolume(y+d.value.y0);
     }
   } );
+
 
   this.annotator = new Rickshaw.Graph.Annotate( {
     graph: graph,
@@ -114,15 +119,23 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
     graph.update();
   }
 
-  //  var smoother = new Rickshaw.Graph.Smoother( {
-  //   graph: graph,
-  //   element: $('#smoother')
-  // } );
-  //  var controls = new RenderControls( {
-  //   element: document.querySelector('form'),
-  //   graph: graph
-  // } );
+  var offsetForm = document.getElementById('offset_form');
 
+  offsetForm.addEventListener('change', function(e) {
+    var offsetMode = e.target.value;
+
+    if (offsetMode == 'lines') {
+      graph.setRenderer('line');
+      graph.offset = 'zero';
+      
+    } else {
+      graph.setRenderer('stack');
+      graph.offset = offsetMode;
+    } 
+    graph.render();
+   
+  }, false);
+  
 }
 
 ///////////////////////////////////////////////////////////
@@ -171,7 +184,7 @@ function TimelineValue (p_timeline,p_update_url, p_url_params, p_url_id_name, p_
   this.timeline = p_timeline;
 
   var addData;
-  var palette = new Rickshaw.Color.Palette( /*{ scheme: 'classic9' }*/ );
+  var palette = new Rickshaw.Color.Palette( { scheme: 'cool' } );
   var timeBase = Math.floor(new Date().getTime() / 1000) - (p_init_period*timeInterval);
   var n_lastValuesSeriesData = [];
 

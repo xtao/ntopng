@@ -6,6 +6,7 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "graph_utils"
 
 sendHTTPHeader('text/html')
 
@@ -88,6 +89,7 @@ print [[
   <script src="/js/Rickshaw/Rickshaw.Fixtures.Color.js"></script>
   <script src="/js/Rickshaw/Rickshaw.Color.Palette.js"></script>
   <script src="/js/Rickshaw/Rickshaw.Graph.Axis.Y.js"></script>
+
 <style>
 #legend {
   background-color: white;
@@ -106,13 +108,30 @@ print [[
   padding: 0;
 }
 </style>
+
 <div class="tab-pane" id="Timeline">
   <h2>Processes Timeline</h2><br/> 
   <table class="table table-bordered">
     <tr>
       
       <th class="text-center span3">
+        <legend>Legend</legend>
         <div id="legend"></div>
+        <br/><br/>
+        <legend>Type</legend>
+        <form id="offset_form" class="toggler">
+          <fieldset>
+            <label class="radio inline">
+              <input type="radio" name="offset" id="stack" value="zero" checked>
+              Stack
+            </label>
+            <label class="radio inline">
+              <input type="radio" name="offset" id="lines" value="lines">
+              Lines
+            </label>
+          </fieldset>
+        </form>
+       
       </th>
 
       <td class="span3">
