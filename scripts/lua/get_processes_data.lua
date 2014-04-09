@@ -128,15 +128,23 @@ for _key, value in pairs(flows_stats) do
 
       if(processes[key] == nil) then
     processes[key] = { }
+    -- Flow information
     processes[key]["bytes_sent"] = p["cli2srv.bytes"]
     processes[key]["bytes_rcvd"] = p["srv2cli.bytes"]
     processes[key]["duration"] = p["duration"]
     processes[key]["count"] = 1
+    -- Process information
+    processes[key]["actual_memory"] = p["client_process"]["actual_memory"]
+    processes[key]["average_cpu_load"] = p["client_process"]["average_cpu_load"]
       else
+    -- Flow information
     processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
     processes[key]["bytes_sent"] = processes[key]["bytes_sent"] + p["cli2srv.bytes"]
-         processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["srv2cli.bytes"]
+    processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["srv2cli.bytes"]
     processes[key]["count"] = processes[key]["count"] + 1
+    -- Process information
+    processes[key]["actual_memory"] = processes[key]["actual_memory"] + p["client_process"]["actual_memory"]
+    processes[key]["average_cpu_load"] = processes[key]["average_cpu_load"] + p["client_process"]["average_cpu_load"]
       end
     end
 
@@ -146,20 +154,39 @@ for _key, value in pairs(flows_stats) do
 
       if(processes[key] == nil) then
     processes[key] = { }
+    -- Flow information
     processes[key]["bytes_sent"] = p["srv2cli.bytes"]
     processes[key]["bytes_rcvd"]  = p["cli2srv.bytes"]
     processes[key]["duration"] = p["duration"]
     processes[key]["count"] = 1
+    -- Process information
+    processes[key]["actual_memory"] = p["server_process"]["actual_memory"]
+    processes[key]["average_cpu_load"] = p["server_process"]["average_cpu_load"]
       else
+    -- Flow information
     processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
     processes[key]["bytes_sent"] = processes[key]["bytes_sent"] + p["srv2cli.bytes"]
-         processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["cli2srv.bytes"]
+    processes[key]["bytes_rcvd"] = processes[key]["bytes_rcvd"] + p["cli2srv.bytes"]
     processes[key]["count"] = processes[key]["count"] + 1
+    -- Process information
+    processes[key]["actual_memory"] = processes[key]["actual_memory"] + p["server_process"]["actual_memory"]
+    processes[key]["average_cpu_load"] = processes[key]["average_cpu_load"] + p["server_process"]["average_cpu_load"]
       end
     end
   end
 end
 
+
+-- Aggregated value
+
+for key, value in pairs(processes) do
+  -- Process information
+  processes[key]["actual_memory"] = (processes[key]["actual_memory"] / processes[key]["count"])
+  processes[key]["average_cpu_load"] = (processes[key]["average_cpu_load"] / processes[key]["count"])
+
+end
+
+-- Sorting table
 
 for key, value in pairs(processes) do
       -- postfix is used to create a unique key otherwise entries with the same key will disappear
@@ -251,7 +278,9 @@ elseif (mode == "timeline") then
     print('{'..
       '\"name\":\"'       .. key                                                .. '\",' ..
       '\"label\":\"'      .. key                                                .. '\",' ..
-      '\"value\":'        .. (value["bytes_sent"] + value["bytes_rcvd"])        ..
+      '\"value\":'        .. (value["bytes_sent"] + value["bytes_rcvd"])        .. ',' ..
+      '\"memory\":'       .. value["actual_memory"]                             .. ',' ..
+      '\"cpu\":'          .. value["average_cpu_load"]                          ..
     '}')
     num = num + 1
 
