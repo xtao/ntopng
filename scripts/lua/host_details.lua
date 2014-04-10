@@ -937,13 +937,61 @@ for v,k in pairsByKeys(vals, rev) do
    if(v > 0) then
       if(n == 0) then
 	 print("<table class=\"table table-bordered\">\n")
-	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Jaccard Coefficient</th></tr>\n")
+	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Jaccard Coefficient</th><th>Activity Map</th>\n")
       end
 
       correlated_host = interface.getHostInfo(k)
       if(correlated_host ~= nil) then
 	 if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
-	 print("<tr><th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th><td class=\"text-right\">"..v.."</td></tr>\n")
+
+         -- print the host row together with the Jaccard coefficient
+	 print("<tr>")
+	 print("<th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th>")
+	 print("<th>"..round(v,2).."</th>");
+
+	 -- print the activity map row
+	 print("<td>");
+	 print("<span id=\"sentHeatmap"..n.."\"></span>");
+	 print [[
+	 <script type="text/javascript">
+	 	 var sent_calendar = new CalHeatMap();
+		 sent_calendar.init({
+	 ]]
+	print("itemSelector: \"#sentHeatmap"..n.."\",data: \"");
+     	print("/lua/get_host_activitymap.lua?host="..k..'",\n')
+
+	timezone = get_timezone()
+
+	now = ((os.time()-5*3600)*1000)
+	today = os.time()
+	today = today - (today % 86400) - 2*3600
+	today = today * 1000
+
+	print("/* "..timezone.." */\n")
+	print("\t\tstart:   new Date("..now.."),\n") -- now-3h
+	print("\t\tminDate: new Date("..today.."),\n")
+	print("\t\tmaxDate: new Date("..(os.time()*1000).."),\n")
+	print [[
+	domain : "hour",
+	range : 6,
+	nextSelector: "#sent-heatmap-next-selector",
+	previousSelector: "#sent-heatmap-prev-selector",
+	    });
+
+	    $(document).ready(function(){
+			    $('#heatmap-refresh').click(function(){
+				    sent_calendar.update(]]
+					    print("\"/lua/get_host_activitymap.lua?host="..k..'\");\n')
+				    print [[
+				    });
+			    });
+
+	    </script>
+
+		    </td>
+	 ]]
+
+	 print("</td></tr>")
 	 n = n +1
 
 	 if(n >= max_hosts) then

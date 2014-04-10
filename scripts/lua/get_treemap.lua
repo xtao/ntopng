@@ -38,7 +38,10 @@ for key, value in pairs(hosts_stats) do
    if(val > threshold) then
 
    if(num > 0) then print(",\n") else print("\n") end
-   print("{ \"name\": \"" .. ntop.getResolvedAddress(hosts_stats[key]["ip"]).. "\", \"size\": " .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]).. "} ")
+   res = ntop.getResolvedAddress(hosts_stats[key]["ip"])
+
+   --if(res == nil) then res = "AAA" end
+   print("{ \"name\": \"" .. res .. "\", \"size\": " .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]).. "} ")
    num = num + 1
 
 else
