@@ -92,7 +92,7 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
       formatter: function(series, x, y, formattedX, formattedY, d) {
         var l_index = name2id(series.name);
         
-        str = series.name + ':&nbsp;' + bytesToVolume(y);
+        str = 'Process:&nbsp;' + series.name + '<br/>Traffic:&nbsp;' + bytesToVolume(y);
         
         if (l_index != -1) {
            var l_data = seriesHistoryData[l_index];
