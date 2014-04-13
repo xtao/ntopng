@@ -12,7 +12,9 @@ sendHTTPHeader('text/html')
 -- Check if we have set a specific interface name
 
 id = ntop.getCache('ntopng.prefs.'.._SESSION["user"]..'.iface')
-if(id ~= nil) then
+-- print("Sessio_user:".._SESSION["user"].."Id:"..id..)
+
+if((id ~= nil) and (id ~= ""))then
    ifname = interface.setActiveInterfaceId(tonumber(id))
    -- print("====="..id.."("..ifname..")===========")
 end

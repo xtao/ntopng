@@ -5,8 +5,10 @@
 -- Ntop lua class example
 
 function printTable(table,key)
+  traceError(TRACE_DEBUG,TRACE_CONSOLE, "Extern\n")
   if (key ~= nil) then print(""..key..":<ul>") end
   for k, v in pairs(table) do
+    traceError(TRACE_DEBUG,TRACE_CONSOLE, "Intern\n")
     if (type(v) == "table") then
      printTable(table[k],k)
    else
@@ -22,7 +24,11 @@ end
 -- Set package.path information to be able to require lua module
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+
 require "lua_utils"
+
+local debug = false
+-- setTraceLevel(TRACE_DEBUG) -- Debug mode
 
 host_ip       = _GET["host"]
 hostinfotype  = _GET["hostinfotype"]
@@ -103,7 +109,11 @@ print('<ul>')
 if (hostinfotype == "minimal_one_host" ) or (hostinfotype == "minimal_all_host") then
   print('<pre><code>hosts = interface.getHosts()</code></pre>')
   hosts = interface.getHosts()
+
+  if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
+  traceError(TRACE_DEBUG,TRACE_CONSOLE, "bug\n")
   for key, value in pairs(hosts) do
+    traceError(TRACE_DEBUG,TRACE_CONSOLE, "bug\n")
     print("<li> HostName: ".. key.."   -- Sent Byte + Received Byte: " .. value.."<br>")
     if (hostinfotype == "minimal_one_host" ) then break end
   end
@@ -112,7 +122,7 @@ end
 if (hostinfotype == "more_one_host" ) or (hostinfotype == "more_all_host") then
   print('<pre><code>hosts = interface.getHostsInfo()</code></pre>')
   hosts = interface.getHostsInfo()
-
+  if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
   for key, value in pairs(hosts) do
     print("<li> HostName: ".. key.."<br>")
     printTable(hosts[key],key)

@@ -101,7 +101,7 @@ function Timeline(p_update_url, p_url_params, p_url_id_name, p_timeInterval, p_i
            if ((l_data.average_cpu_load == 0) || (l_data.average_cpu_load < 1)) {
             str += '<br>Average CPU Load:&nbsp;< 1 %';
           } else
-           str += '<br>Average CPU Load:&nbsp;'+ l_data.average_cpu_load + '%';
+           str += '<br>Average CPU Load:&nbsp;'+ Number((l_data.average_cpu_load).toFixed(2)) + '%';
         
         }
        
