@@ -213,9 +213,15 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
 
-	    if((value["vlan"] ~= nil) and (value["vlan"] ~= 0)) then 
-	       print("\", \"column_vlan\" : "..value["vlan"]) 
-	    else
+	    if (value["vlan"] ~= nil) then 
+      
+        if (value["vlan"] ~= 0) then
+          print("\", \"column_vlan\" : "..value["vlan"]) 
+        else
+          print("\", \"column_vlan\" : \"0\"")
+        end 
+
+      else
 	       print("\", \"column_vlan\" : \"\"") 
 	    end
 

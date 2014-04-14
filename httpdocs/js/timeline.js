@@ -279,11 +279,13 @@ function TimelineValue (p_update_url, p_url_params, p_url_id_name, p_timeInterva
 
       if (jsonData[0] != null) {
         value = jsonData[0].value;
-
+  
         // Update historical value
         p_h_data[i].value = value;
         p_h_data[i].actual_memory = jsonData[0].actual_memory;
         p_h_data[i].average_cpu_load = jsonData[0].average_cpu_load;
+        
+        // console.log("Name:"+p_h_data[i].name+",Diff value:"+value+"\n");
       }
       
       if (value == -1) {
