@@ -3,7 +3,7 @@
 --
 
 -- Trace Level
-TRACE_LEVEL = 0
+TRACE_LEVEL = 1
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then

@@ -12,11 +12,17 @@ sendHTTPHeader('text/html')
 -- Check if we have set a specific interface name
 
 id = ntop.getCache('ntopng.prefs.'.._SESSION["user"]..'.iface')
--- print("Sessio_user:".._SESSION["user"].."Id:"..id..)
+-- print("Sessio_user:".._SESSION["user"].."Id:"..id)
 
 if((id ~= nil) and (id ~= ""))then
-   ifname = interface.setActiveInterfaceId(tonumber(id))
-   -- print("====="..id.."("..ifname..")===========")
+   redis_ifname = interface.setActiveInterfaceId(tonumber(id))
+   if (redis_ifname ~= nil) then 
+      ifname = redis_ifname  
+   else
+      id = interface.name2id(ifname)
+      ntop.setCache('ntopng.prefs.'.._SESSION["user"]..'.iface', tostring(id))
+      traceError(TRACE_WARNING,TRACE_CONSOLE, "Update interface id  stored in redis for user".._SESSION["user"].." to "..id.." and set "..ifname.." how current interface.\n")
+   end
 end
 
 interface.find(ifname)

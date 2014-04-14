@@ -504,7 +504,7 @@ print [[
 
 		this.selected_epoch = point.value.x;
 
-		event
+		//event
 	}
 } );
 
