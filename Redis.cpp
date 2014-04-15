@@ -343,15 +343,29 @@ int Redis::del(char *key) {
 
 /* **************************************** */
 
-int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost) {
+int Redis::pushHostToHTTPBL(char *hostname, bool dont_check_for_existance, bool localHost) {
+  if(!ntop->getPrefs()->is_httpbl_enabled()) return(0);
+
+  return pushHost(HTTPBL_CACHE, HTTPBL_TO_RESOLVE, hostname, dont_check_for_existance, localHost);
+}
+ 
+/* **************************************** */
+
+int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost) {
+  if(!ntop->getPrefs()->is_dns_resolution_enabled()) return(0);
+
+  return pushHost(DNS_CACHE, DNS_TO_RESOLVE, hostname, dont_check_for_existance, localHost);
+}
+ 
+/* **************************************** */
+
+int Redis::pushHost(const char* ns_cache, char* ns_list, char *hostname, bool dont_check_for_existance, bool localHost) {
   int rc;
   char key[128];
   bool found;
   redisReply *reply;
 
-  if(!ntop->getPrefs()->is_dns_resolution_enabled()) return(0);
-
-  snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, hostname);
+  snprintf(key, sizeof(key), "%s.%s", ns_cache, hostname);
 
   l->lock(__FILE__, __LINE__);
 
@@ -379,7 +393,7 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, boo
 
     reply = (redisReply*)redisCommand(redis, "%s %s %s",
 				      localHost ? "LPUSH" : "RPUSH",
-				      DNS_TO_RESOLVE, hostname);
+				      ns_list, hostname);
     if(reply && (reply->type == REDIS_REPLY_ERROR))
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
@@ -388,7 +402,7 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, boo
       We make sure that no more than MAX_NUM_QUEUED_ADDRS entries are in queue
       This is important in order to avoid the cache to grow too much
     */
-    reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", DNS_TO_RESOLVE, MAX_NUM_QUEUED_ADDRS);
+    reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", ns_list, MAX_NUM_QUEUED_ADDRS);
     if(reply && (reply->type == REDIS_REPLY_ERROR))
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
@@ -402,12 +416,24 @@ int Redis::queueHostToResolve(char *hostname, bool dont_check_for_existance, boo
 
 /* **************************************** */
 
+int Redis::popHostToHTTPBL(char *hostname, u_int hostname_len) {
+  return popHost(HTTPBL_TO_RESOLVE, hostname, hostname_len);
+}
+ 
+/* **************************************** */
+
 int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
+  return popHost(DNS_TO_RESOLVE, hostname, hostname_len);
+}
+ 
+/* **************************************** */
+
+int Redis::popHost(const char* ns_list, char *hostname, u_int hostname_len) {
   int rc;
   redisReply *reply;
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "LPOP %s", DNS_TO_RESOLVE);
+  reply = (redisReply*)redisCommand(redis, "LPOP %s", ns_list);
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
 
@@ -420,6 +446,47 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
+}
+
+/* **************************************** */
+
+char* Redis::getHTTPBLCategory(char *numeric_ip, char *buf,
+			     u_int buf_len, bool categorize_if_unknown) {
+  char key[128];
+  redisReply *reply;
+
+  buf[0] = '\0';
+
+  if(!ntop->getPrefs()->is_httpbl_enabled())  return(NULL);
+
+  l->lock(__FILE__, __LINE__);
+
+  snprintf(key, sizeof(key), "%s.%s", HTTPBL_CACHE, numeric_ip);
+
+  /*
+    Add only if the ip has not been checked against the blacklist
+  */
+  reply = (redisReply*)redisCommand(redis, "GET %s", key);
+  if(reply && (reply->type == REDIS_REPLY_ERROR))
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
+
+  if(reply && reply->str) {
+    snprintf(buf, buf_len, "%s", reply->str);
+    if(reply) freeReplyObject(reply);
+  } else {
+    buf[0] = '\0';
+
+    if(categorize_if_unknown) {
+      reply = (redisReply*)redisCommand(redis, "RPUSH %s %s", HTTPBL_TO_RESOLVE, numeric_ip);
+      if(reply && (reply->type == REDIS_REPLY_ERROR))
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
+      if(reply) freeReplyObject(reply);
+    }
+  }
+
+  l->unlock(__FILE__, __LINE__);
+
+  return(buf);
 }
 
 /* **************************************** */
@@ -505,6 +572,30 @@ void Redis::setDefaults() {
 
 /* **************************************** */
 
+int Redis::getAddressHTTPBL(char *numeric_ip, char *rsp,
+		      u_int rsp_len, bool queue_if_not_found) {
+  char key[64];
+  int rc;
+
+  rsp[0] = '\0';
+  snprintf(key, sizeof(key), "%s.%s", HTTPBL_CACHE, numeric_ip);
+
+  rc = get(key, rsp, rsp_len);
+
+  if(rc != 0) {
+    if(queue_if_not_found)
+      pushHostToHTTPBL(numeric_ip, true, false);
+  } else {
+    /* We need to extend expire */
+
+    expire(numeric_ip, 300 /* expire */);
+  }
+
+  return(rc);
+}
+
+/* **************************************** */
+
 int Redis::getAddress(char *numeric_ip, char *rsp,
 		      u_int rsp_len, bool queue_if_not_found) {
   char key[64];
@@ -517,7 +608,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 
   if(rc != 0) {
     if(queue_if_not_found)
-      queueHostToResolve(numeric_ip, true, false);
+      pushHostToResolve(numeric_ip, true, false);
   } else {
     /* We need to extend expire */
 
@@ -525,6 +616,15 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
   }
 
   return(rc);
+}
+
+/* **************************************** */
+
+int Redis::setHTTPBLAddress(char *numeric_ip, char *httpbl) {
+  char key[64];
+
+  snprintf(key, sizeof(key), "%s.%s", HTTPBL_CACHE, numeric_ip);
+  return(set(key, httpbl, 300));
 }
 
 /* **************************************** */

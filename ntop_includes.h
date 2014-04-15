@@ -142,6 +142,7 @@ extern "C" {
 #include "Lua.h"
 #include "AddressResolution.h"
 #include "Categorization.h"
+#include "HTTPBL.h"
 #include "HTTPserver.h"
 #include "Ntop.h"
 

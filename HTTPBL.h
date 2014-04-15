@@ -19,32 +19,25 @@
  *
  */
 
-#ifndef _CATEGORIZATION_H_
-#define _CATEGORIZATION_H_
+#ifndef _HTTPBL_H_
+#define _HTTPBL_H_
 
 #include "ntop_includes.h"
 
-typedef struct {
-  u_int8_t major, minor;
-} HostCategory;
-
-class Categorization {
-  u_int32_t num_categorized_categorizationes, num_categorized_fails;
+class HTTPBL {
+  u_int32_t num_httpblized_categorizations, num_httpblized_fails;
   char *api_key;
 
-  pthread_t categorizeThreadLoop;
-
-  void categorizeHostName(char *numeric_ip, char *buf, u_int buf_len);
-
-  static const int default_expire_time = 3600;
+  pthread_t httpblThreadLoop;
+  void queryHTTPBL(char *numeric_ip);
 
  public:
-  Categorization(char *_api_key);
-  ~Categorization();
+  HTTPBL(char *_api_key);
+  ~HTTPBL();
 
-  void startCategorizeCategorizationLoop();
-  char* findCategory(char *url, char *buf, u_int buf_len, bool add_if_needed);
-  void* categorizeLoop();
+  char* findHTTPBL(char *name, char *buf, u_int buf_len, bool add_if_needed); 
+  void startHTTPBLLoop();
+  void* httpblLoop(void* ptr);
 };
 
-#endif /* _CATEGORIZATION_H_ */
+#endif /* _HTTPBL_H_ */

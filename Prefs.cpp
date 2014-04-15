@@ -27,7 +27,7 @@ Prefs::Prefs(Ntop *_ntop) {
   ntop = _ntop, dump_timeline = false, sticky_hosts = location_none;
   local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
   enable_dns_resolution = sniff_dns_responses = true;
-  categorization_enabled = false, resolve_all_host_ip = false;
+  categorization_enabled = false, httpbl_enabled = false, resolve_all_host_ip = false;
   non_local_host_max_idle = 60 /* sec */, local_host_max_idle = 300 /* sec */, flow_max_idle = 30 /* sec */;
   max_num_hosts = MAX_NUM_INTERFACE_HOSTS, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
   data_dir = strdup(CONST_DEFAULT_DATA_DIR);
@@ -40,6 +40,7 @@ Prefs::Prefs(Ntop *_ntop) {
   change_user = true, daemonize = false;
   user = strdup(CONST_DEFAULT_NTOP_USER);
   categorization_key = NULL;
+  httpbl_key = NULL;
   cpu_affinity = -1;
   redis_host = strdup("127.0.0.1");
   redis_port = 6379;
@@ -93,7 +94,7 @@ void usage() {
 #endif
 	 "[-n mode] [-i <iface|pcap file>]\n"
 	 "         [-w <http port>] [-W <https port>] [-p <protos>] [-P] [-d <path>]\n"
-	 "         [-c <categorization key>] [-r <redis>]\n"
+	 "         [-c <categorization key>] [-k <httpbl key>] [-r <redis>]\n"
 	 "         [-l] [-U <sys user>] [-s] [-v] [-C]\n"
 	 "         [-F] [-D <mode>] [-E <mode>]\n"
 	 "         [-B <filter>] [-A <mode>]\n"
@@ -125,6 +126,10 @@ void usage() {
 	 "[--categorization-key|-c] <key>     | Key used to access host categorization\n"
 	 "                                    | services (default: disabled). \n"
 	 "                                    | Please read README.categorization for\n"
+	 "                                    | more info.\n"
+	 "[--httpbl-key|-k] <key>             | Key used to access httpbl\n"
+	 "                                    | services (default: disabled). \n"
+	 "                                    | Please read README.httpbl for\n"
 	 "                                    | more info.\n"
 	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
 	 "[--https-port|-W] <http port>       | HTTPS port. Default: %u\n"
@@ -203,6 +208,7 @@ static const struct option long_options[] = {
   { "data-dir",                          required_argument, NULL, 'd' },
 #endif
   { "categorization-key",                required_argument, NULL, 'c' },
+  { "httpbl-key",                        required_argument, NULL, 'k' },
   { "daemonize",                         required_argument, NULL, 'e' },
   { "core-affinity",                     required_argument, NULL, 'g' },
   { "help",                              no_argument,       NULL, 'h' },
@@ -270,6 +276,10 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'c':
     categorization_key = optarg;
+    break;
+
+  case 'k':
+    httpbl_key = optarg;
     break;
 
   case 'C':
@@ -488,7 +498,7 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HS:U:X:W:",
+  while((c = getopt_long(argc, argv, "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HS:U:X:W:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -582,6 +592,7 @@ int Prefs::save() {
   }
   if(data_dir)            fprintf(fd, "data-dir=%s\n", data_dir);
   if(categorization_key)  fprintf(fd, "categorization-key=%s\n", categorization_key);
+  if(httpbl_key)          fprintf(fd, "httpbl-key=%s\n", httpbl_key);
   if(local_networks)      fprintf(fd, "local-networks=%s\n", local_networks);
   if(ndpi_proto_path)     fprintf(fd, "ndpi-protocols=%s\n", ndpi_proto_path);
   if(redis_host)          fprintf(fd, "redis=%s:%d\n", redis_host, redis_port);

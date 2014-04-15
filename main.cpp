@@ -190,6 +190,13 @@ int main(int argc, char *argv[])
     prefs->enable_categorization();
   }
 
+  if(prefs->get_httpbl_key() != NULL) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
+        "HTTPBL categorization is not enabled: using default key");
+    ntop->setHTTPBL(new HTTPBL(prefs->get_httpbl_key()));
+    prefs->enable_httpbl();
+  }
+
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Working directory: %s",
 			       ntop->get_working_dir());
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Scripts/HTML pages directory: %s",

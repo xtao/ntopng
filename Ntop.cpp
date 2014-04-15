@@ -34,6 +34,7 @@ Ntop::Ntop(char *appName) {
   pa = new PeriodicActivities();
   address = new AddressResolution();
   categorization = NULL;
+  httpbl = NULL;
   custom_ndpi_protos = NULL;
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL, redis = NULL;
@@ -170,6 +171,7 @@ void Ntop::start() {
 
   pa->startPeriodicActivitiesLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
+  if(httpbl) httpbl->startHTTPBLLoop();
 
   for(int i=0; i<num_defined_interfaces; i++)
     iface[i]->startPacketPolling();

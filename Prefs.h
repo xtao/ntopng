@@ -32,7 +32,7 @@ class Prefs {
  private:
   Ntop *ntop;
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
-    categorization_enabled, resolve_all_host_ip, change_user, daemonize,
+    categorization_enabled, httpbl_enabled, resolve_all_host_ip, change_user, daemonize,
     dump_timeline, shorten_aggregation_names, enable_auto_logout,
     disable_alerts;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
@@ -45,6 +45,7 @@ class Prefs {
   char *ifNames[MAX_NUM_INTERFACES], *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
   char *categorization_key;
+  char *httpbl_key;
   char *config_file_path, *ndpi_proto_path;
   char *packet_filter;
   char *user;
@@ -74,7 +75,9 @@ class Prefs {
   inline void disable_dns_responses_decoding()          { sniff_dns_responses = false;    };
   inline bool decode_dns_responses()                    { return(sniff_dns_responses);    };
   inline void enable_categorization()                   { categorization_enabled = true;  };
+  inline void enable_httpbl()                           { httpbl_enabled = true;  };
   inline bool is_categorization_enabled()               { return(categorization_enabled); };
+  inline bool is_httpbl_enabled()                       { return(httpbl_enabled); };
   inline bool do_change_user()                          { return(change_user);            };
   inline char* get_user()                               { return(user);                   };
   inline AggregationMode get_aggregation_mode()         { return(enable_aggregations);    };
@@ -86,6 +89,7 @@ class Prefs {
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
   inline char* get_categorization_key()                 { return(categorization_key); };
+  inline char* get_httpbl_key()                         { return(httpbl_key); };
   inline bool  are_alerts_disabled()                    { return(disable_alerts);     };
   inline bool  is_host_persistency_enabled()            { return(disable_host_persistency ? false : true); };
   inline bool  use_short_aggregation_names()            { return(shorten_aggregation_names); };

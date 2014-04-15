@@ -52,14 +52,20 @@ class Redis {
   int del(char *key); 
   int zincrbyAndTrim(char *key, char *member, u_int value, u_int trim_len);
 
-  int queueHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost);
+  int pushHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost);
   int popHostToResolve(char *hostname, u_int hostname_len);
 
+  int pushHostToHTTPBL(char *hostname, bool dont_check_for_existance, bool localHost);
+  int popHostToHTTPBL(char *hostname, u_int hostname_len);
+
+  char* getHTTPBLCategory(char *numeric_ip, char *buf, u_int buf_len, bool query_httpbl_if_unknown);
   char* getFlowCategory(char *domainname, char *buf, u_int buf_len, bool categorize_if_unknown);
   int popDomainToCategorize(char *domainname, u_int domainname_len);
   
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
+  int getAddressHTTPBL(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
+  int setHTTPBLAddress(char* numeric_ip, char* httpbl);
 
   void getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts);
   int incrHostContacts(char *key, u_int16_t family_id, u_int32_t peer_id, u_int32_t value);
@@ -119,6 +125,10 @@ class Redis {
    *
    */
   inline void flushAllQueuedAlerts() { del((char*)CONST_ALERT_MSG_QUEUE); };
+
+ private:
+  int pushHost(const char* ns_cache, char* ns_list, char *hostname, bool dont_check_for_existance, bool localHost);
+  int popHost(const char* ns_list, char *hostname, u_int hostname_len);
 };
 
 #endif /* _REDIS_H_ */

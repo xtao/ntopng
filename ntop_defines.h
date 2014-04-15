@@ -84,7 +84,8 @@
 #define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
 #define DNS_CACHE               "dns.cache"
 #define DNS_TO_RESOLVE          "dns.toresolve"
-#define DNS_HASH_TO_RESOLVE     "dns.toresolvehash"
+#define HTTPBL_CACHE            "httpbl.cache"
+#define HTTPBL_TO_RESOLVE       "httpbl.toresolve"
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
 #ifndef TH_FIN
@@ -172,6 +173,11 @@
 #define CONST_DB_DAY_FORMAT            "%y%m%d"
 
 #define CONST_EPP_MAX_CMD_NUM          34
+
+#define HTTPBL_DOMAIN                  "dnsbl.httpbl.org"
+#define NULL_BL                        "''"
+//#define DEBUG_HTTPBL
+
 
 #ifdef __cplusplus
 #define EXTERNC extern "C"

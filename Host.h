@@ -28,7 +28,7 @@ class Host : public GenericHost {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
-  char *symbolic_name, *alternate_name, *country, *city, *asname, category[8], os[16];
+  char *symbolic_name, *alternate_name, *country, *city, *asname, category[8], os[16], httpbl[12];
   u_int16_t num_uses, vlan_id;
   float latitude, longitude;
   IpAddress *ip;
@@ -45,6 +45,7 @@ class Host : public GenericHost {
 
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
+  void refreshHTTPBL();
   void refreshCategory();
   void read_alternate_name();
   void save_alternate_name();
@@ -77,6 +78,7 @@ class Host : public GenericHost {
   inline char* get_country()                   { return(country);       }
   inline char* get_city()                      { return(city);          }
   inline char* get_category()                  { refreshCategory(); return(category); }
+  inline char* get_httpbl()                    { refreshHTTPBL();   return(httpbl); }
   inline u_int32_t get_asn()                   { return(asn);           }
   inline bool isPrivateHost()                  { return((ip && ip->isPrivateAddress()) ? true : false); }
   inline float get_latitude()                  { return(latitude);      }

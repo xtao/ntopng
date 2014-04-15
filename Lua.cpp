@@ -68,7 +68,7 @@ Lua::~Lua() {
 /**
  * @brief Check the expected type of lua function.
  * @details Find in the lua stack the function and check the function parameters types.
- * 
+ *
  * @param vm The lua state.
  * @param func The function name.
  * @param pos Index of lua stack.
@@ -132,7 +132,7 @@ static int ntop_dump_file(lua_State* vm) {
 /**
  * @brief Get default interface name.
  * @details Push the default interface name of ntop into the lua stack.
- * 
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK.
  */
@@ -145,7 +145,7 @@ static int ntop_get_default_interface_name(lua_State* vm) {
 
 /**
  * @brief Set the name of active interface id into lua stack.
- * 
+ *
  * @param vm The lua stack.
  * @return @ref CONST_LUA_OK.
  */
@@ -161,15 +161,15 @@ static int ntop_set_active_interface_id(lua_State* vm) {
   if(iface != NULL)
     lua_pushstring(vm, iface->get_name());
   else
-    lua_pushnil(vm);  
-  
+    lua_pushnil(vm);
+
   return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
 /**
  * @brief Get the ntopng interface names.
- * 
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK.
  */
@@ -189,7 +189,7 @@ static int ntop_get_interface_names(lua_State* vm) {
 /* ****************************************** */
 /**
  * @brief Flush the host contacts of the network interface defined into lua.
- * 
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK if the network_interface lua variable is not NULL, @ref CONST_LUA_ERROR otherwise.
  */
@@ -212,7 +212,7 @@ static int ntop_flush_host_contacts(lua_State* vm) {
 
 /**
  * @brief Find the network interface and set it as global variable to lua.
- * 
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK
  */
@@ -232,8 +232,8 @@ static int ntop_find_interface(lua_State* vm) {
 
 /**
  * @brief Get the ndpi statistics of interface.
- * @details Get the ntop interface global variable of lua, get nDpistats of interface and push it into lua stack. 
- * 
+ * @details Get the ntop interface global variable of lua, get nDpistats of interface and push it into lua stack.
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK
  */
@@ -261,7 +261,7 @@ static int ntop_get_ndpi_interface_stats(lua_State* vm) {
 /**
  * @brief Get the ndpi protocol name of protocol id of network interface.
  * @details Get the ntop interface global variable of lua. Once do that, get the protocol id of lua stack and return into lua stack "Host-to-Host Contact" if protocol id is equal to host family id; the protocol name or null otherwise.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -294,7 +294,7 @@ static int ntop_get_ndpi_protocol_name(lua_State* vm) {
 /**
  * @brief Get the hosts of network interface.
  * @details Get the ntop interface global variable of lua and return into lua stack a new hash table of host information (Host name and number of bytes sent and received).
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -316,7 +316,7 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 /**
  * @brief Get the hosts information of network interface.
  * @details Get the ntop interface global variable of lua and return into lua stack a new hash table of hash tables containing the host information.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -345,7 +345,7 @@ static int ntop_get_interface_hosts_info(lua_State* vm) {
 /**
  * @brief Get the aggregated host information of network interface.
  * @details Get the family, the host name from the lua stack and the ntop interface global variable of lua and return into lua stack a new hash table of hash tables containing the aggregated host information.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -374,7 +374,7 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
 /**
  * @brief Get the number of aggregated hosts of network interface.
  * @details Get the ntop interface global variable of lua and return into lua stack the number of aggregated hosts.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -395,8 +395,8 @@ static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
 
 /**
  * @brief Check if the specified path is a directory and it exists.
- * @details True if if the specified path is a directory and it exists, false otherwise. 
- * 
+ * @details True if if the specified path is a directory and it exists, false otherwise.
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK
  */
@@ -418,8 +418,8 @@ static int ntop_is_dir(lua_State* vm) {
 
 /**
  * @brief Check if the file or directory exists.
- * @details Get the path of file/direcrotry from to lua stack and push true into lua stack if it exists, false otherwise. 
- * 
+ * @details Get the path of file/direcrotry from to lua stack and push true into lua stack if it exists, false otherwise.
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK
  */
@@ -443,7 +443,7 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
 /**
  * @brief Check if ntop is running on windows.
  * @details Push into lua stack 1 if ntop is running on windows, 0 otherwise.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -464,7 +464,7 @@ static int ntop_is_windows(lua_State* vm) {
 /**
  * @brief Scan the input directory and return the list of files.
  * @details Get the path from the lua stack and push into a new hashtable the files name existing in the directory.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -494,7 +494,7 @@ static int ntop_list_dir_files(lua_State* vm) {
 
 /**
  * @brief Get the system time and push it into the lua stack.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -550,7 +550,7 @@ static int ntop_zmq_connect(lua_State* vm) {
 /**
  * @brief Delete the specified member(field) from the redis hash stored at key.
  * @details Get the key parameter from the lua stack and delete it from redis.
- * 
+ *
  * @param vm The lua stack.
  * @return CONST_LUA_OK.
  */
@@ -568,7 +568,7 @@ static int ntop_delete_redis_key(lua_State* vm) {
 /**
  * @brief Get the members of a redis set.
  * @details Get the set key form the lua stack and push the mambers name into lua stack.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -586,7 +586,7 @@ static int ntop_get_set_members_redis(lua_State* vm) {
 /**
  * @brief Delete the specified member(field) from the redis hash stored at key.
  * @details Get the member name and the hash key form the lua stack and remove the specified member.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -704,7 +704,7 @@ static int ntop_zmq_receive(lua_State* vm) {
 /**
  * @brief Check if the trace level of ntop is verbose.
  * @details Push true into the lua stack if the trace level of ntop is set to MAX_TRACE_LEVEL, false otherwise.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -718,7 +718,7 @@ static int ntop_verbose_trace(lua_State* vm) {
 /**
  * @brief Get the flow information of network interface.
  * @details Get the ntop interface global variable of lua and push the minimal information of flows into the lua stack as a new hashtable.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_OK.
  */
@@ -740,7 +740,7 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 /**
  * @brief Get the host information of network interface.
  * @details Get the ntop interface global variable of lua, the host ip and optional the VLAN id form the lua stack and push a new hash table of hash tables containing the host information into lua stack.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null or the host is null, CONST_LUA_OK otherwise.
  */
@@ -862,7 +862,7 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
 /**
  * @brief Restore the host of network interface.
  * @details Get the ntop interface global variable of lua and the IP address of host form the lua stack and restore the host into hash host of network interface.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null or if is impossible to restore the host, CONST_LUA_OK otherwise.
  */
@@ -889,7 +889,7 @@ static int ntop_restore_interface_host(lua_State* vm) {
 /**
  * @brief Get the aggregated host information of network interface.
  * @details Get the host name from the lua stack and the ntop interface global variable of lua and return into lua stack a new hash table of hash tables containing the aggregated host information.
- * 
+ *
  * @param vm The lua state.
  * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
  */
@@ -1023,7 +1023,7 @@ static int ntop_get_interface_find_pid_flows(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   pid = (u_int32_t)lua_tonumber(vm, 1);
-  
+
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop_interface = handle_null_interface(vm);
@@ -1043,7 +1043,7 @@ static int ntop_get_interface_find_father_pid_flows(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   father_pid = (u_int32_t)lua_tonumber(vm, 1);
-  
+
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop_interface = handle_null_interface(vm);
@@ -1063,7 +1063,7 @@ static int ntop_get_interface_find_proc_name_flows(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   proc_name = (char*)lua_tostring(vm, 1);
-  
+
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop_interface = handle_null_interface(vm);
@@ -1329,6 +1329,7 @@ static int ntop_get_prefs(lua_State* vm) {
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts());
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", ntop->getPrefs()->is_dns_resolution_enabled());
   lua_push_bool_table_entry(vm, "is_categorization_enabled", ntop->getPrefs()->is_categorization_enabled());
+  lua_push_bool_table_entry(vm, "is_httpbl_enabled", ntop->getPrefs()->is_httpbl_enabled());
   lua_push_int_table_entry(vm, "local_host_max_idle", ntop->getPrefs()->get_host_max_idle(true));
   lua_push_int_table_entry(vm, "non_local_host_max_idle", ntop->getPrefs()->get_host_max_idle(false));
   lua_push_int_table_entry(vm, "flow_max_idle", ntop->getPrefs()->get_flow_max_idle());
@@ -1509,7 +1510,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2014 - ntop.org");
   lua_push_str_table_entry(vm, "authors", (char*)"The ntop.org team");
   lua_push_str_table_entry(vm, "license", (char*)"GNU GPLv3");
-  snprintf(rsp, sizeof(rsp), "%s (%s)", 
+  snprintf(rsp, sizeof(rsp), "%s (%s)",
 	   PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
   lua_push_str_table_entry(vm, "version", rsp);
   snprintf(rsp, sizeof(rsp), "%s (%s)", PACKAGE_OSNAME, PACKAGE_MACHINE);
@@ -1555,7 +1556,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
     else
       lua_pushfstring(vm, "%s", value);
   } else
-    lua_pushfstring(vm, "%s", value);  
+    lua_pushfstring(vm, "%s", value);
 
   return(CONST_LUA_OK);
 }
@@ -1565,7 +1566,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
 /**
  * @brief Send a message to the system syslog
  * @details Send a message to the syslog syslog: callers can specify if it is an error or informational message
- * 
+ *
  * @param vm The lua state.
  * @return @ref CONST_LUA_ERROR if the expected type is equal to function type, @ref CONST_LUA_PARAM_ERROR otherwise.
  */
@@ -1637,7 +1638,7 @@ static int ntop_set_hash_redis(lua_State* vm) {
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
   if((member = (char*)lua_tostring(vm, 2)) == NULL)    return(CONST_LUA_PARAM_ERROR);
   if((value  = (char*)lua_tostring(vm, 3)) == NULL)    return(CONST_LUA_PARAM_ERROR);
-  
+
   redis->hashSet(key, member, value);
 
   return(CONST_LUA_OK);
@@ -1755,7 +1756,7 @@ static int ntop_delete_queued_alert(lua_State* vm) {
   lua_pushnil(vm); /* Always return a value to Lua */
   return(CONST_LUA_OK);
 }
-  
+
 /* ****************************************** */
 
 static int ntop_flush_all_queued_alerts(lua_State* vm) {
@@ -1774,7 +1775,7 @@ static int ntop_queue_alert(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   alert_level = (AlertLevel)lua_tonumber(vm, 1);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   alert_type = (AlertType)lua_tonumber(vm, 2);
 
@@ -1794,10 +1795,10 @@ static int ntop_get_queued_alerts(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   start_idx = (u_int32_t)lua_tonumber(vm, 1);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   num = (u_int32_t)lua_tonumber(vm, 2);
-  
+
   if(num < 1) num = 1;
   else if(num > CONST_MAX_NUM_READ_ALERTS) num = CONST_MAX_NUM_READ_ALERTS;
 
@@ -2265,7 +2266,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	    }
 
 	    // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
-	    
+
 	    lua_push_str_table_entry(L, tok, decoded_buf);
 	    free(decoded_buf);
 	  }
@@ -2284,7 +2285,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
   if((_cookies = (char*)mg_get_header(conn, "Cookie")) != NULL) {
     char *cookies = strdup(_cookies);
     char *tok, *val, *where;
-        
+
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "=> '%s'", cookies);
     tok = strtok_r(cookies, "=", &where);
     while(tok != NULL) {

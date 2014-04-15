@@ -23,6 +23,11 @@
 
 #include "third-party/htmlget.c"
 
+#define DEFAULT_CATEGORIZATION_KEY "9hoAtewwpC2tXRMJBfifrY24B"
+#define CATEGORIZATION_HOST        "service.block.si"
+#define CATEGORIZATION_URL         "/getRating"
+#define NULL_CATEGORY              "''"
+
 /* **************************************** */
 
 Categorization::Categorization(char *_api_key) {
@@ -62,9 +67,9 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
   if(ntop->getPrefs()->is_categorization_enabled()) {
     char key[256];
 
-    snprintf(key, sizeof(key), "domain.category.%s", _url);
+    snprintf(key, sizeof(key), "%s.%s", DOMAIN_CATEGORY, _url);
     if(ntop->getRedis()->get(key, buf, buf_len) == 0) {
-      ntop->getRedis()->expire(key, 3600);
+      ntop->getRedis()->expire(key, Categorization::default_expire_time);
       ntop->getTrace()->traceEvent(TRACE_INFO, "%s => %s (cached)", _url, buf);
     } else {
       char url_buf[256], body[256];
@@ -73,7 +78,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 	Save category into the cache so that if the categorization service is slow, we do not
 	recursively add the domain into the list of domains to solve
       */
-      ntop->getRedis()->set(key, (char*)NULL_CATEGORY, 3600);
+      ntop->getRedis()->set(key, (char*)NULL_CATEGORY, Categorization::default_expire_time);
 
       snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
@@ -99,7 +104,7 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
 	      doublecolumn = (char*)NULL_CATEGORY;
 	    } else	    
-	      ntop->getRedis()->set(key, doublecolumn, 3600); /* Save category into the cache */
+	      ntop->getRedis()->set(key, doublecolumn, Categorization::default_expire_time); /* Save category into the cache */
 
 	    snprintf(buf, buf_len, "%s", doublecolumn);
 	  }

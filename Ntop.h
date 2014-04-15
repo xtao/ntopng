@@ -53,6 +53,7 @@
    Prefs *prefs;
    Geolocation *geo;
    Categorization *categorization;
+   HTTPBL* httpbl;
    Mutex *rrd_lock;
    long time_offset;
 
@@ -173,6 +174,13 @@
    */
   inline Categorization* get_categorization()        { return(categorization);             };
   /**
+   * @brief Get httpbl.
+   * 
+   * @return Current httpbl instance.
+   */
+  inline HTTPBL* get_httpbl()                        { return(httpbl);             };
+
+  /**
    * @brief Register the network interface.
    * @details Check for duplicated interface and add the network interface in to @ref iface.
    * 
@@ -220,6 +228,13 @@
    * @param c The categorization instance.
    */
   inline void setCategorization(Categorization *c)   { categorization = c; };
+  /**
+   * @brief Set httpbl.
+   * 
+   * @param h The categorization instance.
+   */
+  inline void setHTTPBL(HTTPBL *h)                   { httpbl = h; };
+
   /**
    * @brief Get the network interface identified by name or Id.
    * @details This method accepts both interface names or Ids.

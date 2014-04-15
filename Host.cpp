@@ -169,7 +169,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
   syn_flood_alert = new AlertCounter(CONST_MAX_NUM_SYN_PER_SECOND, CONST_MAX_THRESHOLD_CROSS_DURATION);
-  category[0] = '\0', os[0] = '\0';
+  category[0] = '\0', os[0] = '\0', httpbl[0] = '\0';
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
@@ -199,7 +199,14 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	  if(symbolic_name) free(symbolic_name);
 	  symbolic_name = strdup(rsp);
 	}
-	// else ntop->getRedis()->queueHostToResolve(host, false, localHost);
+	// else ntop->getRedis()->pushHostToResolve(host, false, localHost);
+      }
+
+      if(!localHost && ip->isIPv4()) { // http:bl only works for IPv4 addresses
+	if(ntop->getRedis()->getAddressHTTPBL(host, rsp, sizeof(rsp), true) == 0) {
+	  snprintf(httpbl, sizeof(httpbl), "%s", rsp);
+          //ntop->getTrace()->traceEvent(TRACE_WARNING,"%s=>%s", host, httpbl);
+	}
       }
 
       if(asname) { free(asname); asname = NULL; }
@@ -287,7 +294,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
        && ((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0))) {
       /* We resolve immediately the IP address by queueing on the top of address queue */
       
-      ntop->getRedis()->queueHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
+      ntop->getRedis()->pushHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
       lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
     }
     
@@ -344,6 +351,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "num_alerts", getNumAlerts());
 
     if(ip) lua_push_str_table_entry(vm, "category", get_category());
+    if(ip) lua_push_str_table_entry(vm, "httpbl", get_httpbl());
 
     if(verbose) {
       char *rsp = serialize();
@@ -411,6 +419,18 @@ void Host::set_alternate_name(char *name) {
 void Host::refreshCategory() {
   if((symbolic_name != NULL) && (category[0] == '\0')) {
     ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), false);
+  }
+}
+
+/* ***************************************** */
+
+void Host::refreshHTTPBL() {
+  char buf[128];
+
+  if(ip && ip->isIPv4() && !localHost && (httpbl[0] == '\0')) {
+    memset(buf, 0, sizeof(buf));
+    char* ip_addr = ip->print(buf, sizeof(buf));
+    ntop->get_httpbl()->findHTTPBL(ip_addr, httpbl, sizeof(httpbl), false);
   }
 }
 
@@ -567,6 +587,7 @@ char* Host::serialize() {
   if(city)                json_object_object_add(my_object, "city",      json_object_new_string(city));
   if(asname)              json_object_object_add(my_object, "asname",    json_object_new_string(asname));
   if(category[0] != '\0') json_object_object_add(my_object, "category",  json_object_new_string(category));
+  if(httpbl[0] != '\0')   json_object_object_add(my_object, "httpbl",    json_object_new_string(httpbl));
   if(vlan_id != 0)        json_object_object_add(my_object, "vlan_id",   json_object_new_int(vlan_id));
   if(latitude)            json_object_object_add(my_object, "latitude",  json_object_new_double(latitude));
   if(longitude)           json_object_object_add(my_object, "longitude", json_object_new_double(longitude));
@@ -645,6 +666,7 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "city", &obj))           { if(city) free(city); city = strdup(json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "asname", &obj))         { if(asname) free(asname); asname = strdup(json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "category", &obj))       { snprintf(category, sizeof(category), "%s", json_object_get_string(obj)); }
+  if(json_object_object_get_ex(o, "httpbl", &obj))         { snprintf(httpbl, sizeof(httpbl), "%s", json_object_get_string(obj)); }
   if(json_object_object_get_ex(o, "vlan_id", &obj))   vlan_id = json_object_get_int(obj);
   if(json_object_object_get_ex(o, "latitude", &obj))  latitude  = (float)json_object_get_double(obj);
   if(json_object_object_get_ex(o, "longitude", &obj)) longitude = (float)json_object_get_double(obj);
