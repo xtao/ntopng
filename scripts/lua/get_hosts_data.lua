@@ -123,6 +123,9 @@ for key, value in pairs(hosts_stats) do
 	 elseif(sortColumn == "column_category") then
 	 if(hosts_stats[key]["category"] == nil) then hosts_stats[key]["category"] = "" end
 	 vals[hosts_stats[key]["category"]..postfix] = key
+         elseif(sortColumn == "column_httpbl") then
+	 if(hosts_stats[key]["httpbl"] == nil) then hosts_stats[key]["httpbl"] = "" end
+	 vals[hosts_stats[key]["httpbl"]..postfix] = key
 	 elseif(sortColumn == "column_asn") then
 	 vals[hosts_stats[key]["asn"]..postfix] = key
 	 elseif(sortColumn == "column_aggregation") then
@@ -214,6 +217,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
+	    if(value["httpbl"] ~= nil) then print("\", \"column_httpbl\" : \"".. value["httpbl"]) end
 
 	    if (value["vlan"] ~= nil) then 
       

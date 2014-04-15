@@ -62,6 +62,7 @@ print [[
 <ul class="nav">
 	 <li><a href="#">Flow: ]] print(a) print [[ </a></li>
 <li class="active"><a href="#">Overview</a></li>
+<li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </div>
 </div>
 </div>

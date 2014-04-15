@@ -265,6 +265,7 @@ end
 end
 
 print [[
+<li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </ul>
 </div>
 </div>

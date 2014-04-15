@@ -85,5 +85,21 @@ print [[
 		       ]]
 end
 
+if(prefs.is_httpbl_enabled) then
+print [[
+			     {
+			     title: "HTTP:BL",
+				 field: "column_httpbl",
+				 sortable: true,
+	 	             css: {
+			        textAlign: 'center'
+			       }
+			       },
+
+		       ]]
+end
+
+
+
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_bottom.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
