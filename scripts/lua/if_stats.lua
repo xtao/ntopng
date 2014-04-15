@@ -238,6 +238,7 @@ print [[";
 
 ]]
 print [[
+<script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
 <script>
 $(document).ready(function() 
     { 
