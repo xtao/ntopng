@@ -174,6 +174,30 @@ print('<ul>')
 print("<li>Check the output: tail -f /var/log/system.log .<br>By default, syslog configuration does not show in the system.log file the messages with Level set to info.<br>")
 print('</ul>')
 
+print('<br><h2>Users</h2>')
+print('<h4>List of current ntop users</h4>')
+print('<pre><code>ntop.getUsers()</code></pre>')
+printTable(ntop.getUsers())
+
+print('<br><h4>Create new ntop user</h4>')
+print('<pre><code>ntop.addUser("test","test_full_name","test_pw")</code></pre>')
+ntop.addUser("test","test_full_name","test_pw")
+
+print('<h4>List of current ntop users</h4>')
+printTable(ntop.getUsers())
+
+print('<br><h4>Reset user password</h4>')
+print('<pre><code>ntop.resetUserPassword("test","test_pw","new_pw")</code></pre>')
+ntop.resetUserPassword("test","test_pw","new_pw")
+
+print('<br><h4>Delete user</h4>')
+print('<pre><code>ntop.deleteUser("test")</code></pre>')
+ntop.deleteUser("test")
+
+print('<h4>List of current ntop users</h4>')
+printTable(ntop.getUsers())
+
+
 
 print('<br><h4>TDB</h4>')
 print('<p><ul>')
