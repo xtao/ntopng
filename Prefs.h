@@ -36,7 +36,7 @@ class Prefs {
     dump_timeline, shorten_aggregation_names, enable_auto_logout,
     disable_alerts;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
-  u_int16_t host_max_idle, flow_max_idle;
+  u_int16_t non_local_host_max_idle, local_host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port, https_port;
   u_int8_t num_interfaces;
@@ -97,7 +97,7 @@ class Prefs {
   inline u_int get_redis_port()                         { return(redis_port);     };
   inline char* get_pid_path()                           { return(pid_path);       };
   inline char* get_packet_filter()                      { return(packet_filter);  };
-  inline u_int16_t get_host_max_idle()                  { return(host_max_idle);  };
+  inline u_int16_t get_host_max_idle(bool localHost)    { return(localHost ? local_host_max_idle : non_local_host_max_idle);  };
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };

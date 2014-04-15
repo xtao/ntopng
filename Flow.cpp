@@ -147,6 +147,13 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
       }
     }
 
+#if 0
+    if(mode == aggregation_domain_name)
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "%s", name);
+    else
+      return; // FIX
+#endif
+
     host = iface->findHostByString(name, ndpi_proto_id, true);
 
     if(host != NULL) {
@@ -702,7 +709,7 @@ bool Flow::idle() {
     return(true);
   }
 
-  return(isIdle(ntop->getPrefs()->get_host_max_idle()));
+  return(isIdle(ntop->getPrefs()->get_flow_max_idle()));
 };
 
 /* *************************************** */

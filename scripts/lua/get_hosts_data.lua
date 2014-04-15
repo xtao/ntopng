@@ -131,6 +131,8 @@ for key, value in pairs(hosts_stats) do
 	 vals[hosts_stats[key]["vlan"]..postfix] = key
 	 elseif(sortColumn == "column_thpt") then
 	 vals[hosts_stats[key]["throughput"]+postfix] = key
+	 elseif(sortColumn == "column_queries") then
+	 vals[hosts_stats[key]["queries.rcvd"]+postfix] = key
       else
 	 -- io.write(key.."\n")
 	 -- io.write(hosts_stats[key].."\n")

@@ -1329,7 +1329,8 @@ static int ntop_get_prefs(lua_State* vm) {
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts());
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", ntop->getPrefs()->is_dns_resolution_enabled());
   lua_push_bool_table_entry(vm, "is_categorization_enabled", ntop->getPrefs()->is_categorization_enabled());
-  lua_push_int_table_entry(vm, "host_max_idle", ntop->getPrefs()->get_host_max_idle());
+  lua_push_int_table_entry(vm, "local_host_max_idle", ntop->getPrefs()->get_host_max_idle(true));
+  lua_push_int_table_entry(vm, "non_local_host_max_idle", ntop->getPrefs()->get_host_max_idle(false));
   lua_push_int_table_entry(vm, "flow_max_idle", ntop->getPrefs()->get_flow_max_idle());
   lua_push_int_table_entry(vm, "max_num_hosts", ntop->getPrefs()->get_max_num_hosts());
   lua_push_int_table_entry(vm, "max_num_flows", ntop->getPrefs()->get_max_num_flows());

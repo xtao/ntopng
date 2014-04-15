@@ -84,7 +84,12 @@ if(page == "overview") then
    print("<tr><th>Last Seen</th><td><div id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
    print("<tr><th>Contacts Number</th><td><span id=contacts>" .. formatValue(host["queries.rcvd"]) .. "</span> <span id=contacts_trend></span></td></tr>\n")
-   print("<tr><th>Traffic Volume</th><td><span id=traffic_volume>".. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).."</span></td></tr>\n")
+
+   vol = host["bytes.sent"]+host["bytes.rcvd"]
+
+   if(vol > 0) then
+      print("<tr><th>Traffic Volume</th><td><span id=traffic_volume>".. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).."</span></td></tr>\n")
+   end
 
    print [[
 	    <tr><th>Activity Map</th><td>

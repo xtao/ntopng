@@ -269,15 +269,23 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
 
   if(zflow->epp_cmd_args[0] != '\0') {
     char *domain, *status, *pos;
+    bool next_break = false;
 
     domain = strtok_r(zflow->epp_cmd_args, "=", &pos);
     
-    while(domain != NULL) {
-      if((status = strtok_r(NULL, ",", &pos)) == NULL)
-	break;
+    while((domain != NULL) && strcmp(domain, "null")) {
+      if((status = strtok_r(NULL, ",", &pos)) == NULL) {
+	status = (char*)"true";
+	next_break = true;
+      }
 
+      // ntop->getTrace()->traceEvent(TRACE_INFO, "%s = %s", domain, status);
       flow->aggregateInfo(domain, NDPI_PROTOCOL_EPP, aggregation_domain_name,
-			  (strncasecmp(status, "true" /* true = AVAILABLE */, 4) == 0) ? false : true);
+			  (strncasecmp(status, "true" /* true = AVAILABLE */, 
+				       4) == 0) ? false : true);
+
+      if(next_break) break;
+
       domain = strtok_r(NULL, "=", &pos);
     }
   }
@@ -1274,7 +1282,7 @@ u_int NetworkInterface::purgeIdleAggregatedHosts() {
   if(next_idle_aggregated_host_purge == 0) {
     next_idle_aggregated_host_purge = last_pkt_rcvd + HOST_PURGE_FREQUENCY;
     return(0);
-  } else if(last_pkt_rcvd < next_idle_aggregated_host_purge)
+  } else if(last_pkt_rcvd <= next_idle_aggregated_host_purge)
     return(0); /* Too early */
   else {
     /* Time to purge hosts */
