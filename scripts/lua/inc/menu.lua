@@ -131,7 +131,7 @@ for k,v in pairs(names) do
 
     if(v ~= ifname) then print(" class=\"disabled\"") end
     print(">")
-    print("<a href=/lua/if_stats.lua> ")
+    print("<a href=/lua/if_stats.lua?if_name="..v.."> ")
     if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
     print(v)
 
