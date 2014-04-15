@@ -132,6 +132,15 @@ then
   DL_LIB="-ldl"
 fi
 
+AC_CHECK_LIB([numa], [numa_available], AC_DEFINE_UNQUOTED(HAVE_LIBNUMA, 1, [libnuma is installed]))
+AC_MSG_CHECKING([if libnuma is present])
+if test "x$ac_cv_lib_numa_numa_available" = xyes; then :
+   NUMA_LIB="-lnuma"
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT(no)
+fi
+
 dnl> Check for package install
 DOWNLOAD_GEOIP=0
 AC_CHECK_LIB([GeoIP], [GeoIP_record_by_ipnum])
@@ -213,6 +222,7 @@ AC_SUBST(SVN)
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(DL_LIB)
+AC_SUBST(NUMA_LIB)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(NTOPNG_VERSION)
