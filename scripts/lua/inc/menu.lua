@@ -80,6 +80,25 @@ agg = interface.getNumAggregatedHosts()
 
 if((agg ~= nil) and (agg > 0)) then
    print("<li><a href=\"/lua/aggregated_hosts_stats.lua\"><i class=\"fa fa-group\"></i> Aggregations</a></li>\n")
+
+ifstats = interface.getStats()
+
+if((ifstats["ndpi"]["EPP"] ~= nil) or (ifstats["ndpi"]["DNS"] ~= nil)) then
+
+print [[
+   <li class="dropdown-submenu">
+    <a tabindex="-1" href="#">Protocols</a>
+    <ul class="dropdown-menu">
+   ]]
+
+if(ifstats["ndpi"]["EPP"] ~= nil) then print('<li><A href="/lua/protocols/epp_aggregations.lua">EPP</A>') end
+if(ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
+
+print [[
+    </ul>
+   </li>
+   ]]
+end
 end
 
 print [[
