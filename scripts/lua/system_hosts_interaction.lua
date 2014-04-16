@@ -280,6 +280,16 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
     .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
     .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
+    .on("mousedown", 
+        function(d) { 
+          // disable zoom
+          svg.call(d3.behavior.zoom().on("zoom"), null);
+        })
+      .on("mouseup", 
+        function(d) { 
+         // enable zoom
+         svg.call(d3.behavior.zoom().on("zoom"), rescale);
+        })
   ;
 
   var text = svg.append("g").selectAll("text")

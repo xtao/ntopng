@@ -240,11 +240,28 @@ px;
 	       return "url(#" + (options.styleColumn ? d[options.styleColumn].toLowerCase() : linkStyles[0] ) + ")";
 	     });
 
-	 var circle = svg.append("svg:g").selectAll("circle").data(force.nodes()).enter().append("svg:circle").attr("r", function(d) {
-	     return getRadius(d);
-	   }).style("fill", function(d) {
+	 var circle = svg.append("svg:g").selectAll("circle")
+    .data(force.nodes())
+    .enter()
+    .append("svg:circle")
+      .attr("r", function(d) {
+	      return getRadius(d);
+	     })
+      .style("fill", function(d) {
 				  return color[d.group];
-	     }).call(force.drag);
+	     })
+      .call(force.drag)
+      .on("mousedown", 
+        function(d) { 
+          // disable zoom
+          svg.call(d3.behavior.zoom().on("zoom"), null);
+        })
+      .on("mouseup", 
+        function(d) { 
+         // enable zoom
+         svg.call(d3.behavior.zoom().on("zoom"), rescale);
+        })
+          ;
 
 	 if (options.nodeLabel) {
 	   circle.append("title").html(function(d) {
