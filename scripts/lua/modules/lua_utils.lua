@@ -350,9 +350,11 @@ function secondsToTime(seconds)
 
 	 msg = msg .. ", "
       end
-      msg = msg .. days .. " day"
-      if(days > 1) then msg = msg .. "s" end
-      msg = msg .. ", "
+      if(days > 0) then
+            msg = msg .. days .. " day"
+      	    if(days > 1) then msg = msg .. "s" end
+	    msg = msg .. ", "
+      end		  
    end
 
    if(hours > 0) then

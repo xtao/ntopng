@@ -47,7 +47,7 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic
     Format <tcp|udp>://<host>:<port>
   */
   if((slash = strchr(ifname, '/')) != NULL) {
-    char buf[64];
+    char buf[64], *comma;
     int i = 1, len;
 
     while(slash[i] == '/') i++;
@@ -55,8 +55,12 @@ CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic
     snprintf(buf, sizeof(buf), "zmq@%s", &slash[i]);
     free(ifname);
 
-    len = strlen(buf);
-    if(len > 16) buf[16] = '.', buf[17] = '.', buf[18] = '.', buf[19] = '\0';
+    comma = strchr(buf, ',');
+
+    if(comma != NULL) {
+      len = strlen(buf);
+      if(len > 16) buf[16] = '.', buf[17] = '.', buf[18] = '.', buf[19] = '\0';
+    }
 
     ifname = strdup(buf);
   }

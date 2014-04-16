@@ -121,7 +121,38 @@ print [[
 
    ]]
 
+
+-- Protocols
+
+if(not(ifstats.iface_sprobe)) then
+if((ifstats["ndpi"]["EPP"] ~= nil) or (ifstats["ndpi"]["DNS"] ~= nil)) then
+
+if active_page == "protocols_stats" then
+  print [[ <li class="dropdown active"> ]]
+else
+  print [[ <li class="dropdown"> ]]
+end
+print [[
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">Protocols <b class="caret"></b>
+      </a>
+
+    <ul class="dropdown-menu">
+   ]]
+
+if(ifstats["ndpi"]["EPP"] ~= nil) then print('<li><A href="/lua/protocols/epp_aggregations.lua">EPP</A>') end
+if(ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
+
+print [[
+    </ul>
+   </li>
+   ]]
+end
+end
+
+
+
 -- Interfaces
+if(num_ifaces > 1) then
 if active_page == "if_stats" then
   print [[ <li class="dropdown active"> ]]
 else
@@ -134,21 +165,13 @@ print [[
       <ul class="dropdown-menu">
 ]]
 
-if(num_ifaces == 1) then
-print [[
-    <li class=disabled><a href="#" data-toggle="tooltip" data-original-title="You can specify multiple interfaces by repeating the -i &lt;iface&gt; CLI option" >
-    <small>Available Interfaces</small></a></li>
-   ]]
-else
-print('<li class=disabled><a href="#"><small>Available Interfaces</small></a></li>')
-end
 
 for k,v in pairs(names) do
+    if(v == ifname) then 
     print("<li");
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
 
-    if(v ~= ifname) then print(" class=\"disabled\"") end
     print(">")
     print("<a href=/lua/if_stats.lua?if_name="..v.."> ")
     if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
@@ -158,23 +181,14 @@ for k,v in pairs(names) do
        print(" (".. custom_name ..")")
     end
     print("</a></li>")
+    end
 end
 
 
-
-if(num_ifaces > 1) then
-
-print [[
-<li class="divider"></li>
-<li class="dropdown-submenu">
-    <a tabindex="-1" href="#">Switch Interfaces</a>
-    <ul class="dropdown-menu">
-]]
-
 for k,v in pairs(names) do
+    if(v ~= ifname) then
     print("<li");
-    if(v == ifname) then print(" class=\"disabled\"") end
-    print("><a tabindex=\"-1\" href=\"/lua/set_active_interface.lua?id="..k.."\"> " .. v)
+    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\"> " .. v)
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
 
@@ -183,11 +197,9 @@ for k,v in pairs(names) do
     end
 
     print(" </a></li>")
-end
+    end
 
 print [[
-    </ul>
-  </li>
 ]]
 
 end
@@ -197,6 +209,9 @@ print [[
 </ul>
 </li>
 ]]
+end
+
+
 
 -- Admin
 if active_page == "admin" then

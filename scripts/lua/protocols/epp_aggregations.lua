@@ -11,7 +11,7 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
-active_page = "hosts"
+active_page = "protocols_stats"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 aggregation = _GET["aggregation"]
