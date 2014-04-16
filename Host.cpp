@@ -203,9 +203,10 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       }
 
       if(!localHost && ip->isIPv4()) { // http:bl only works for IPv4 addresses
-	if(ntop->getRedis()->getAddressHTTPBL(host, rsp, sizeof(rsp), true) == 0) {
-	  snprintf(httpbl, sizeof(httpbl), "%s", rsp);
-          //ntop->getTrace()->traceEvent(TRACE_WARNING,"%s=>%s", host, httpbl);
+	if(ntop->getRedis()->getAddressHTTPBL(host, httpbl, sizeof(httpbl), true) == 0) {
+          if(strcmp(httpbl, NULL_BL)) {
+	    ntop->getTrace()->traceEvent(TRACE_WARNING,"%s=>%s", host, httpbl);
+	  }
 	}
       }
 
@@ -425,11 +426,10 @@ void Host::refreshCategory() {
 /* ***************************************** */
 
 void Host::refreshHTTPBL() {
-  char buf[128];
-
-  if(ip && ip->isIPv4() && !localHost && (httpbl[0] == '\0')) {
-    memset(buf, 0, sizeof(buf));
+  if(ip && ip->isIPv4() && (!localHost) && (httpbl[0] == '\0')) {
+    char buf[128] =  { 0 };
     char* ip_addr = ip->print(buf, sizeof(buf));
+
     ntop->get_httpbl()->findHTTPBL(ip_addr, httpbl, sizeof(httpbl), false);
   }
 }

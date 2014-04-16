@@ -121,7 +121,7 @@ clean:
 
 /* **************************************************** */
 
-int prepare_dns_query_string(char* key, char* numeric_ip, char* buf, u_int buf_len) {
+static int prepare_dns_query_string(char* key, char* numeric_ip, char* buf, u_int buf_len) {
   char* reversed_ip = reverse_ipv4(numeric_ip);
 
   if (reversed_ip == NULL)
@@ -135,8 +135,7 @@ int prepare_dns_query_string(char* key, char* numeric_ip, char* buf, u_int buf_l
 
 /* **************************************************** */
 
-static void *get_in_addr(struct sockaddr *sa)
-{
+static void *get_in_addr(struct sockaddr *sa) {
   if (sa->sa_family == AF_INET)
     return &(((struct sockaddr_in*)sa)->sin_addr);
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
@@ -144,7 +143,7 @@ static void *get_in_addr(struct sockaddr *sa)
 
 /* **************************************************** */
 
-int dns_query_execute(char* query, char* resp, u_int resp_len) {
+static int dns_query_execute(char* query, char* resp, u_int resp_len) {
   struct addrinfo *result = NULL, *cur = NULL;
   int rc;
   struct addrinfo hint;
@@ -188,12 +187,9 @@ int dns_query_execute(char* query, char* resp, u_int resp_len) {
 /* **************************************************** */
 
 void HTTPBL::queryHTTPBL(char* numeric_ip) {
-  char buf[256];
-  char dns_query_str[1024];
-  char query_resp[1024];
+  char dns_query_str[256], query_resp[256], alert_msg[512];
   int rc;
 
-  memset(buf, 0, sizeof(buf));
   memset(dns_query_str, 0, sizeof(dns_query_str));
 
   if (prepare_dns_query_string(api_key, numeric_ip, dns_query_str, sizeof(dns_query_str)) < 0) {
@@ -206,22 +202,22 @@ void HTTPBL::queryHTTPBL(char* numeric_ip) {
   rc = dns_query_execute(dns_query_str, query_resp, sizeof(query_resp));
   switch (rc) {
     case 0: // failure while querying the dns, just return
-      ntop->getTrace()->traceEvent(TRACE_ERROR, 
-          "HTTP:BL resolution: unable to query the DNS for [%s][%s]", 
-          dns_query_str, query_resp);
+      ntop->getTrace()->traceEvent(TRACE_INFO, 
+				   "HTTP:BL resolution: unable to query the DNS for [%s][%s]", 
+				   dns_query_str, query_resp);
 
       num_httpblized_fails++;
       return;
 
     case 1: // the host is not blacklisted
-      snprintf(buf, sizeof(buf), "%s", NULL_BL);
+      snprintf(query_resp, sizeof(query_resp), "%s", NULL_BL);
       break;
 
     case 2: // the host is blacklisted: get the response
-      snprintf(buf, sizeof(buf), "%s", query_resp);
-      ntop->getTrace()->traceEvent(TRACE_WARNING, 
-          "HTTP:BL blacklisted address seen %s [code=%s]",
-          numeric_ip, buf);
+      snprintf(alert_msg, sizeof(alert_msg), "Host <A HREF=/lua/host_details.lua?host=%s" /* "&ifname=%s" */ ">%s</A> blacklisted on HTTP:BL [code=%s]",
+	       numeric_ip, /* iface->get_name(), */ numeric_ip, query_resp);
+
+      ntop->getRedis()->queueAlert(alert_level_warning, alert_dangerous_host, alert_msg);
       break;
   }
 
@@ -230,11 +226,11 @@ void HTTPBL::queryHTTPBL(char* numeric_ip) {
   ntop->getTrace()->traceEvent(TRACE_ERROR, 
       "HTTPBL resolution stats [%u categorized][%u failures][%s][%s][%s]",
       num_httpblized_categorizations, num_httpblized_fails, 
-      numeric_ip, dns_query_str, buf);
+      numeric_ip, dns_query_str, query_resp);
 */
   // Always set the response, even if not in blacklist, to avoid
   // consulting the blacklist again
-  ntop->getRedis()->setHTTPBLAddress(numeric_ip, buf);
+  ntop->getRedis()->setHTTPBLAddress(numeric_ip, query_resp);
 }
 
 /* **************************************************** */

@@ -44,7 +44,8 @@ typedef enum {
 typedef enum {
   alert_syn_flood = 0,
   alert_flow_flood,
-  alert_threshold_exceeded
+  alert_threshold_exceeded,
+  alert_dangerous_host
 } AlertType;
 
 typedef enum {

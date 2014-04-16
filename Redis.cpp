@@ -359,7 +359,8 @@ int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool
  
 /* **************************************** */
 
-int Redis::pushHost(const char* ns_cache, char* ns_list, char *hostname, bool dont_check_for_existance, bool localHost) {
+int Redis::pushHost(const char* ns_cache, char* ns_list, char *hostname, 
+		    bool dont_check_for_existance, bool localHost) {
   int rc;
   char key[128];
   bool found;
@@ -417,13 +418,13 @@ int Redis::pushHost(const char* ns_cache, char* ns_list, char *hostname, bool do
 /* **************************************** */
 
 int Redis::popHostToHTTPBL(char *hostname, u_int hostname_len) {
-  return popHost(HTTPBL_TO_RESOLVE, hostname, hostname_len);
+  return(popHost(HTTPBL_TO_RESOLVE, hostname, hostname_len));
 }
  
 /* **************************************** */
 
 int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
-  return popHost(DNS_TO_RESOLVE, hostname, hostname_len);
+  return(popHost(DNS_TO_RESOLVE, hostname, hostname_len));
 }
  
 /* **************************************** */
@@ -588,7 +589,7 @@ int Redis::getAddressHTTPBL(char *numeric_ip, char *rsp,
   } else {
     /* We need to extend expire */
 
-    expire(numeric_ip, 300 /* expire */);
+    expire(numeric_ip, HTTPBL_CACHE_DURATIION /* expire */);
   }
 
   return(rc);
@@ -612,7 +613,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
   } else {
     /* We need to extend expire */
 
-    expire(numeric_ip, 300 /* expire */);
+    expire(numeric_ip, DNS_CACHE_DURATION /* expire */);
   }
 
   return(rc);
@@ -624,7 +625,7 @@ int Redis::setHTTPBLAddress(char *numeric_ip, char *httpbl) {
   char key[64];
 
   snprintf(key, sizeof(key), "%s.%s", HTTPBL_CACHE, numeric_ip);
-  return(set(key, httpbl, 300));
+  return(set(key, httpbl, HTTPBL_CACHE_DURATIION));
 }
 
 /* **************************************** */
@@ -633,7 +634,7 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
   char key[64];
 
   snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, numeric_ip);
-  return(set(key, symbolic_ip, 300));
+  return(set(key, symbolic_ip, DNS_CACHE_DURATION));
 }
 
 /* **************************************** */

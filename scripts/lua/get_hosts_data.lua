@@ -205,6 +205,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print (" ["..value["alternate_name"].."]") 
 	    end
 
+	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then
+		  print (" <i class='fa fa-frown-o'></i>")
+	       end
+
 	    if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
 	       print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
 	    end
@@ -217,7 +221,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
-	    if(value["httpbl"] ~= nil) then print("\", \"column_httpbl\" : \"".. value["httpbl"]) end
+	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then print("\", \"column_httpbl\" : \"".. value["httpbl"]) end
 
 	    if (value["vlan"] ~= nil) then 
       

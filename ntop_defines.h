@@ -86,6 +86,8 @@
 #define DNS_TO_RESOLVE          "dns.toresolve"
 #define HTTPBL_CACHE            "httpbl.cache"
 #define HTTPBL_TO_RESOLVE       "httpbl.toresolve"
+#define HTTPBL_CACHE_DURATIION  43200 /* 12 h */
+#define DNS_CACHE_DURATION      300 /* 5 mins */
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
 #ifndef TH_FIN
