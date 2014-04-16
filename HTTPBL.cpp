@@ -214,6 +214,7 @@ void HTTPBL::queryHTTPBL(char* numeric_ip) {
       break;
 
     case 2: // the host is blacklisted: get the response
+      /* https://www.projecthoneypot.org/httpbl_api.php */
       snprintf(alert_msg, sizeof(alert_msg), "Host <A HREF=/lua/host_details.lua?host=%s" /* "&ifname=%s" */ ">%s</A> blacklisted on HTTP:BL [code=%s]",
 	       numeric_ip, /* iface->get_name(), */ numeric_ip, query_resp);
 
