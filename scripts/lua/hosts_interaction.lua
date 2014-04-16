@@ -202,7 +202,20 @@ px;
 	 
 	 var force = d3.layout.force().nodes(nodes).links(links).size([width, height]).linkDistance(options.linkDistance).charge(options.charge).on("tick", tick).start();
 
-	 var svg = d3.select(divName).append("svg:svg").attr("width", width).attr("height", height);
+	 var main = d3.select(divName).append("svg:svg").attr("width", width).attr("height", height);
+
+   var svg = main.append('svg:g')
+    .call(d3.behavior.zoom().on("zoom", rescale))
+    .on("dblclick.zoom", null);
+
+    function rescale() {
+      trans=d3.event.translate;
+      scale=d3.event.scale;
+
+      svg.attr("transform",
+          "translate(" + trans + ")"
+          + " scale(" + scale + ")");
+    }
 
 	 // get list of unique values in stylecolumn
 	 linkStyles = [];
