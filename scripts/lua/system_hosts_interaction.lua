@@ -108,10 +108,23 @@ var force = d3.layout.force()
   .linkDistance(200)
   .size([width, height]);
 
-var svg = d3.select("#chart")
+var main = d3.select("#chart")
   .append("svg")
     .attr("width", width)
     .attr("height", height);
+
+var svg = main.append('svg:g')
+    .call(d3.behavior.zoom().on("zoom", rescale))
+    .on("dblclick.zoom", null);
+
+function rescale() {
+  trans=d3.event.translate;
+  scale=d3.event.scale;
+
+  svg.attr("transform",
+      "translate(" + trans + ")"
+      + " scale(" + scale + ")");
+}
 
 var explode_process = '';
 
