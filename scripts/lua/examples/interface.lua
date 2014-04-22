@@ -5,10 +5,10 @@
 -- Ntop lua class example
 
 function printTable(table,key)
-  traceError(TRACE_DEBUG,TRACE_CONSOLE, "Extern\n")
+  -- traceError(TRACE_DEBUG,TRACE_CONSOLE, "Extern\n")
   if (key ~= nil) then print(""..key..":<ul>") end
   for k, v in pairs(table) do
-    traceError(TRACE_DEBUG,TRACE_CONSOLE, "Intern\n")
+    -- traceError(TRACE_DEBUG,TRACE_CONSOLE, "Intern\n")
     if (type(v) == "table") then
      printTable(table[k],k)
    else
@@ -173,7 +173,7 @@ end
 
 if (flowtype == "peers" ) then
   print('<pre><code>flows_stats = interface.getFlowPeers(random_host)\nprint(\'Host: \'..random_host..)\nprintTable(flows_peers,"Peers")</code></pre>')
-  flows_peers = interface.getFlowPeers("192.168.1.134")
+  flows_peers = interface.getFlowPeers()
   print('Host: '..random_host.."<br>")
   printTable(flows_peers,"Peers")
 end

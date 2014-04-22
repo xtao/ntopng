@@ -952,6 +952,7 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
 static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
+  
 
   if(lua_type(vm, 1) == LUA_TSTRING)
     host_name = (char*)lua_tostring(vm, 1);

@@ -171,7 +171,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print ("{ \"column_ip\" : \"<A HREF='/lua/")
 	    if(aggregated ~= nil) then print("aggregated_") end
-	    print("host_details.lua?host=" .. key .. "'>")
+	    print("host_details.lua?" ..host2url(key,value["vlan"]) .. "'>")
 	    if(aggregated == nil) then
 	       print(key)
 	    else

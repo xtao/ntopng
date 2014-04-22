@@ -436,7 +436,9 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm,  "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm,  "client.vlan", get_cli_host()->get_vlan_id());
   lua_push_str_table_entry(vm,  "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm,  "server.vlan", get_srv_host()->get_vlan_id());
   lua_push_int_table_entry(vm,  "sent", cli2srv_bytes);
   lua_push_int_table_entry(vm,  "rcvd", srv2cli_bytes);
   lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());

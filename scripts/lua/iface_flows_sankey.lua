@@ -45,17 +45,21 @@ print '{"nodes":[\n'
 
 while(num == 0) do
    for key, values in pairs(peers) do
-      --print("[" .. key .. "][" .. values["client"] .. "][" .. values["server"] .. "]\n")
+      -- print("[" .. key .. "][" .. values["client"] .. ",".. values["client.vlan_id"] .. "][" .. values["server"] .. ",".. values["client.vlan_id"] .. "]\n")
       last = values["sent.last"] + values["rcvd.last"]
       if((last == 0) and (values.duration < 3)) then
 	 last = values["sent"] + values["rcvd"]
       end
       if(last > threshold) then 
-	 if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
+	 
+   if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
    if((debug) and (findString(key, tracked_host) ~= nil))then io.write("findString(key, tracked_host)==>"..findString(key, tracked_host)) end
    if((debug) and (findString(values["cli.ip"], tracked_host) ~= nil)) then io.write("findString(values[cli.ip], tracked_host)==>"..findString(values["cli.ip"], tracked_host)) end
    if((debug) and (findString(values["srv.ip"], tracked_host) ~= nil)) then io.write("findString(values[srv.ip], tracked_host)==>"..findString(values["srv.ip"], tracked_host)) end
-	 if((tracked_host == nil) or findString(key, tracked_host) or findString(values["cli.ip"], tracked_host) or findString(values["srv.ip"], tracked_host)) then
+	 
+
+
+   if((tracked_host == nil) or findString(key, tracked_host) or findString(values["cli.ip"], tracked_host) or findString(values["srv.ip"], tracked_host)) then
 	   -- print("[" .. key .. "][" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
@@ -69,8 +73,15 @@ while(num == 0) do
 		  if(num > 0) then
 		     print ",\n"
 		  end
+      node_info = interface.getHostInfo(word)
+      if (node_info ~= nil) then 
+        vlan_id = node_info["vlan"]
+      else
+        vlan_id = " " 
+      end
+      
 		  -- 3. print nodes
-		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\", \"ip\": \"" .. word .. "\"}")
+		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\", \"ip\": \"" .. word .. "\", \"vlan\": \"" .. vlan_id .. "\"}")
 		  num = num + 1
 	       end
 	    end

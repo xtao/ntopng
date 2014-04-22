@@ -1,21 +1,20 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2014 - ntop.org
 --
-
--- Trace Level
-TRACE_LEVEL = 1
+require "lua_trace"
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
-   ifdebug = false
 
    ifname = _GET["ifname"]
-   
+   if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"].."\n") end 
+
    if((ifname == nil) and (_SESSION ~= nil)) then
-      if(ifdebug) then print("_SESSION set ifname\n") end
+      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _SESSION value\n") end 
       ifname = _SESSION["ifname"]
+      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => ifname:"..ifname.."\n") end
    else
-      if(ifdebug) then print("_GET set ifname\n") end
+      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _GET value\n") end 
    end
 end
 
@@ -867,56 +866,46 @@ function getHostCommaSeparatedList(p_hosts)
   return hosts,hosts_size
 end
 
--------------------------------- Trace Event ----------------------------------
--- Trace level
-TRACE_ERROR    = 0
-TRACE_WARNING  = 1
-TRACE_NORMAL   = 2
-TRACE_INFO     = 3
-TRACE_DEBUG    = 6
 
-MAX_TRACE_LEVEL = 6
--- Trace mode
-TRACE_CONSOLE = 0
-TRACE_WEB = 1
+-- Url Util --
 
-function traceError(p_trace_level, p_trace_mode,p_message)
-  currentline = debug.getinfo(2).currentline
-  what =  debug.getinfo(2).what
-  src =  debug.getinfo(2).short_src
-  filename = src
-  for i,str in pairs(split(src, "/")) do
-    filename = str
+function urt2hostinfo(get_info)
+   host = {};
+   
+  if(get_info["host"] ~= nil) then 
+    host["host"] = get_info["host"]
+    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Host:"..get_info["host"].."\n") end 
   end
-  date = os.date("%d/%b/%Y %X")
 
-  trace_prefix = ''
-
-  if (p_trace_level == TRACE_ERROR) then trace_prefix = 'ERROR: ' end
-  if (p_trace_level == TRACE_WARNING) then trace_prefix = 'WARNING: ' end
-  if (p_trace_level == TRACE_INFO) then trace_prefix = 'INFO: ' end
-  if (p_trace_level == TRACE_DEBUG) then trace_prefix = 'DEBUG: ' end
-
-  if ((p_trace_level <= MAX_TRACE_LEVEL) and (p_trace_level <= TRACE_LEVEL) )then
-    if (p_trace_mode == TRACE_WEB) then
-      print(date..' ['..filename..':'..currentline..'] '..trace_prefix..p_message)
-    elseif (p_trace_mode == TRACE_CONSOLE) then
-      io.write(date..' ['..filename..':'..currentline..'] '..trace_prefix..p_message)
-    end
+  if(get_info["vlan"] ~= nil) then 
+    host["vlan"] = tonumber(get_info["vlan"])
+    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Vlan:"..get_info["vlan"].."\n") end
+  else
+    host["vlan"] = 0
   end
+  return host
 end
 
-function setTraceLevel(p_trace_level) 
-  if (p_trace_level <= MAX_TRACE_LEVEL) then
-    TRACE_LEVEL = p_trace_level
+function hostinfo2url(host_info)
+  local rsp = ''
+   
+  if(host_info["host"] ~= nil) then 
+    rsp = rsp..'host='..host_info["host"]
   end
+
+  if(host_info["ip"] ~= nil) then 
+    rsp = rsp..'host='..host_info["ip"]
+  end
+
+  if(host_info["vlan"] ~= nil) then 
+    rsp = rsp..'&vlan='..tostring(host_info["vlan"])
+  end
+  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
+  return rsp
 end
 
-function resetTraceLevel()
-  TRACE_LEVEL = 0
-end
 
---------------------------------
+
 
 -- version is major.minor.veryminor
 function version2int(v)

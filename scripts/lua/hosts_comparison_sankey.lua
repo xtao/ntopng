@@ -148,8 +148,15 @@ if (_GET["hosts"] ~= nil) then
       if(node_size > 0) then
         print ",\n"
       end
+      node_info = interface.getHostInfo(host_ip)
       
-      print ("\t{\"name\": \"" .. ntop.getResolvedAddress(host_ip) .. "\", \"ip\": \"" .. host_ip .. "\"}")     
+      if (node_info ~= nil) then 
+        vlan_id = node_info["vlan"]
+      else
+        vlan_id = " " 
+      end
+
+      print ("\t{\"name\": \"" .. ntop.getResolvedAddress(host_ip) .. "\", \"ip\": \"" .. host_ip .. "\", \"vlan\": \"" .. vlan_id .. "\"}")
       node_size = node_size + 1
     end
     
@@ -170,7 +177,7 @@ if (_GET["hosts"] ~= nil) then
             print ",\n"
           end
       
-          print ("\t{\"name\": \"" .. key .. "\", \"ip\": \"" .. key .. "\"}")    
+          print ("\t{\"name\": \"" .. key .. "\", \"ip\": \"" .. key ..  "\"}")
           
           node_size = node_size + 1
       end
