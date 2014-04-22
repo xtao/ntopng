@@ -79,7 +79,7 @@ while(num == 0) do
       else
         vlan_id = " " 
       end
-      
+
 		  -- 3. print nodes
 		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\", \"ip\": \"" .. word .. "\", \"vlan\": \"" .. vlan_id .. "\"}")
 		  num = num + 1
@@ -108,6 +108,7 @@ if(num == 0) then
 
    hosts_stats = interface.getHosts()
    for key, value in pairs(hosts_stats) do
+    value = hosts_stats[key]["traffic"]
       if(value > top_value) then
 	 top_host = key
 	 top_value = value

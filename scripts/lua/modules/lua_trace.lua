@@ -3,13 +3,14 @@
 --
 
 -- Trace Level
-TRACE_LEVEL = 0
+TRACE_LEVEL = 1
 
 
 -- Login & session
 degub_login = false
 debug_session = false
 debug_host = false
+debug_flow_data = false
 
 -------------------------------- Trace Event ----------------------------------
 -- Trace level
@@ -28,6 +29,19 @@ function traceError(p_trace_level, p_trace_mode,p_message)
   currentline = debug.getinfo(2).currentline
   what =  debug.getinfo(2).what
   src =  debug.getinfo(2).short_src
+  traceback = debug.traceback()
+
+  for str in (string.gmatch(traceback, '([^\n]+)')) do
+    traceback = str
+  end
+  for str in (string.gmatch(traceback, '([^/]+)')) do
+    traceback = str
+  end
+  i = 0
+  for str in (string.gmatch(traceback, '([^:][^ ]+)')) do
+    if (i == 0) then traceback = str end
+    i = i + 1
+  end
   filename = src
   for str in (string.gmatch(src, '([^/]+)')) do
     filename = str
@@ -43,9 +57,9 @@ function traceError(p_trace_level, p_trace_mode,p_message)
 
   if ((p_trace_level <= MAX_TRACE_LEVEL) and (p_trace_level <= TRACE_LEVEL) )then
     if (p_trace_mode == TRACE_WEB) then
-      print(date..' ['..filename..':'..currentline..'] '..trace_prefix..p_message)
+      print(date..' ['..filename..':'..currentline..'] ['..traceback..'] ' ..trace_prefix..p_message)
     elseif (p_trace_mode == TRACE_CONSOLE) then
-      io.write(date..' ['..filename..':'..currentline..'] '..trace_prefix..p_message)
+      io.write(date..' ['..filename..':'..currentline..'] ['..traceback..'] ' ..trace_prefix..p_message)
     end
   end
 end

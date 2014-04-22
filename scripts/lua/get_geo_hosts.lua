@@ -15,12 +15,9 @@ host = _GET["host"]
 
 
 print [[
-
-      {"center":[0, 0],
-       "objects":
-       [
-
-    ]]
+{"center":[0, 0],
+ "objects":
+ []]
 
 
     max_num = 100

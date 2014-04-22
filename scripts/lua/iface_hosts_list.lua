@@ -18,6 +18,9 @@ top_key = nil
 top_value = 0
 num = 0
 for key, value in pairs(hosts_stats) do
+   
+   value = hosts_stats[key]["traffic"]
+   
    if(key == "255.255.255.255") then
       key = "Broadcast"
    end
@@ -46,8 +49,8 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
    if(num > 0) then
       print ",\n"
    end
-
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?host=".. value .."\" }")
+   hosts_stats[value]["ip"] = value
+   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(hosts_stats[value]).."\" }")
    accumulate = accumulate + key
    num = num + 1
 
@@ -57,7 +60,8 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
 end
 
 if((num == 0) and (top_key ~= nil)) then
-   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?host=".. top_key .."\" }")
+   hosts_stats[top_key]["ip"] = top_key
+   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(hosts_stats[top_key]).."\" }")
    accumulate = accumulate + top_value
 end
 

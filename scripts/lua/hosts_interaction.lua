@@ -7,6 +7,9 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
+-- host_info = urt2hostinfo(_GET)
+
+
 if(host_ip == nil) then
    host_ip = _GET["host"]
 end
@@ -251,16 +254,16 @@ px;
 				  return color[d.group];
 	     })
       .call(force.drag)
-      .on("mousedown", 
-        function(d) { 
+      //.on("mousedown", 
+       // function(d) { 
           // disable zoom
-          svg.call(d3.behavior.zoom().on("zoom"), null);
-        })
-      .on("mouseup", 
-        function(d) { 
+       //   svg.call(d3.behavior.zoom().on("zoom"), null);
+      //  })
+      //.on("mouseup", 
+      //  function(d) { 
          // enable zoom
-         svg.call(d3.behavior.zoom().on("zoom"), rescale);
-        })
+      //   svg.call(d3.behavior.zoom().on("zoom"), rescale);
+      //  })
           ;
 
 	 if (options.nodeLabel) {

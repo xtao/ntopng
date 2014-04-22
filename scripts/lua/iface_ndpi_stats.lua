@@ -10,13 +10,14 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 
 interface.find(ifname)
+host_info = urt2hostinfo(_GET)
 
 if(_GET["mode"] == "sinceStartup") then
    stats = interface.getStats()
-elseif(_GET["host"] == nil) then
+elseif(host_info["host"] == nil) then
    stats = interface.getNdpiStats()
 else
-   stats = interface.getHostInfo(_GET["host"])
+   stats = interface.getHostInfo(host_info["host"],host_info["vlan"])
 end
 
 print "[\n"

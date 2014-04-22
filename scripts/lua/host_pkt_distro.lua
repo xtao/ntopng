@@ -13,7 +13,8 @@ interface.find(ifname)
 
 mode = _GET["mode"]
 type = _GET["type"]
-host = interface.getHostInfo(_GET["host"])
+host_info = urt2hostinfo(_GET)
+host = interface.getHostInfo(host_info["host"],host_info["vlan"])
 
 
 if(host == nil) then

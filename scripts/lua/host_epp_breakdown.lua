@@ -48,7 +48,8 @@ local epp_cmd_description = {
 
 interface.find(ifname)
 
-host_ip = _GET["host"]
+
+host_info = urt2hostinfo(_GET)
 mode = _GET["mode"]
 
 if(mode == "sent") then
@@ -57,7 +58,7 @@ else
    what = "rcvd"
 end
 
-host = interface.getHostInfo(host_ip)
+host = interface.getHostInfo(host_info["host"],host_info["vlan"])
 
 left = 0
 

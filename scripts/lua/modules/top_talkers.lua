@@ -221,7 +221,7 @@ function getActualTopTalkers(ifname, mode, epoch)
       rsp = rsp .. "\n\t]\n"
       rsp = rsp .. "\n}\n"
    else
-      rsp = rsp .. " }\n"
+       if(num > 0) then rsp = rsp .. " }\n" end
       rsp = rsp .. "\n]\n"
    end
 

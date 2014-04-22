@@ -60,7 +60,7 @@ active_sankey = "host"
 local debug = false
 
 if(_GET["host"] ~= nil) then
-  print('d3.json("/lua/iface_flows_sankey.lua?host=' .. _GET["host"] .. '"')
+  print('d3.json("/lua/iface_flows_sankey.lua?' ..hostinfo2url(host_info).. '"')
 
 elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil))then
   print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')

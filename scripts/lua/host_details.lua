@@ -41,6 +41,7 @@ if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info
    restoreFailed = false
 
    if((host == nil) and (_GET["mode"] == "restore")) then
+      if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Restored Host Info\n") end
       interface.restoreHost(host_info["host"],host_vlan)
       host = interface.getHostInfo(host_info["host"],host_vlan)
       restoreFailed = true
@@ -52,7 +53,7 @@ if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info
 if(host == nil) then
    -- We need to check if this is an aggregated host
    host = interface.getAggregatedHostInfo(host_info["host"])
-
+   if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated Host Info\n") end
    if(host == nil) then
       stats = interface.getIfNames()
       for id, name in pairs(stats) do
@@ -473,19 +474,16 @@ end
       if(host["bytes.rcvd"] > 0) then
 	 print('<tr><th class="text-center">Receive Distribution</th><td colspan=5><div class="pie-chart" id="sizeRecvDistro"></div></td></tr>')
       end
-
+hostinfo2json(host_info)
       print [[
       </table>
 
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(_ifname) print ('", host: ')
-	print("\""..host_info["host"].."\" }, \"\", refresh); \n")
+		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(_ifname) print ('", host: ')
-
-	print("\""..host_info["host"].."\" }, \"\", refresh); \n")
+		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -513,9 +511,8 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(_ifname) print ('", host: ')
-	print("\""..host_info["host"].."\"")
-	print [[ }, "", refresh);
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(_ifname) print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+  print [[
 				}
 
 	    </script><p>
@@ -626,7 +623,7 @@ end
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
 					 var refresh = 3000 /* ms */;
-					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { host: "]] print(host_info["host"]) print [[", mode: "sent" }, "", refresh);
+					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
            ]]
@@ -645,7 +642,7 @@ print [[
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
          var refresh = 3000 /* ms */;
-	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { host: "]] print(host_info["host"]) print [[", mode: "rcvd" }, "", refresh);
+	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
 ]]
@@ -671,7 +668,7 @@ end
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
 					 var refresh = 3000 /* ms */;
-					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { host: "]] print(host_info["host"]) print [[", mode: "sent" }, "", refresh);
+					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
            ]]
@@ -690,7 +687,7 @@ print [[
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
          var refresh = 3000 /* ms */;
-	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { host: "]] print(host_info["host"]) print [[", mode: "rcvd" }, "", refresh);
+	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
 ]]
@@ -737,7 +734,27 @@ print [[
 	 	             css: {
 			        textAlign: 'center'
 			     }
-				 },
+				 },{]]
+
+ifstats = interface.getStats()
+
+if(ifstats.iface_sprobe) then
+   print('title: "Source Id",\n')
+else
+   print('title: "VLAN",\n')
+end
+
+print [[
+         field: "column_vlan",
+         sortable: true,
+                 css: {
+              textAlign: 'center'
+           }
+
+         },
+]]
+
+print [[
 			     {
 			     title: "Client",
 				 field: "column_client",
@@ -1420,8 +1437,7 @@ print [[
 
 -- Users graph javascritp
 print [[
-      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(_ifname) print ('", host: ')
-  print("\""..host_info["host"].."\" }, \"\", refresh); \n")
+      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1436,8 +1452,7 @@ print [[
       users_type = "bytes";
     }
     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
-    print("\""..host_info["host"].."\" }") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
@@ -1445,16 +1460,14 @@ print [[
     users_filter = this.innerHTML;
     // Default
      if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('", host: ')
-    print("\""..host_info["host"].."\" }") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
 -- Processes graph javascritp
 
 print [[
-processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('", host: ')
-  print("\""..host_info["host"].."\" }, \"\", refresh); \n")
+processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname)print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1469,8 +1482,7 @@ print [[
       processes_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('", host: ')
-  print("\""..host_info["host"].."\" }") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
@@ -1478,16 +1490,14 @@ print [[
     processes_filter = this.innerHTML;
     // Default
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type+"-"+processes_filter); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('", host: ')
-    print("\""..host_info["host"].."\" }") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
 -- Processes Tree graph javascritp
 
 print [[
-  tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (', host: ')
-  print("\""..host_info["host"].."\"") print [[ },"","Bytes"); ]]
+  tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (','.. hostinfo2json(host_info)) print [[ },"","Bytes"); ]]
 
 print [[
 
@@ -1502,7 +1512,7 @@ print [[
       tree_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+tree_type); }
-    tree[0].setUrlParams({type: tree_type , filter: tree_filter ]] print (', host: ') print("\""..host_info["host"].."\" }") print [[ );
+    tree[0].setUrlParams({type: tree_type , filter: tree_filter ]] print (','.. hostinfo2json(host_info).." }") print [[ );
     }); ]]
 
 print [[
@@ -1510,7 +1520,7 @@ print [[
     tree_filter = this.innerHTML;
     // Default
     if (sprobe_debug) { alert(this.innerHTML+"=>"+tree_type+"-"+tree_filter); }
-    tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (', host: ') print("\""..host_info["host"].."\" }") print [[ );
+    tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (','.. hostinfo2json(host_info).." }") print [[ );
 });]]
 
 print [[ </script>]]
@@ -1564,7 +1574,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
-		    data: { ifname: "]] print(_ifname) print [[", host: "]] print(host_info["host"]) print [[" },
+		    data: { ifname: "]] print(_ifname)  print('", '..hostinfo2json(host_info)) print [[ },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);

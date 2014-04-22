@@ -111,10 +111,10 @@ if (hostinfotype == "minimal_one_host" ) or (hostinfotype == "minimal_all_host")
   hosts = interface.getHosts()
 
   if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
-  traceError(TRACE_DEBUG,TRACE_CONSOLE, "bug\n")
+  
   for key, value in pairs(hosts) do
-    traceError(TRACE_DEBUG,TRACE_CONSOLE, "bug\n")
-    print("<li> HostName: ".. key.."   -- Sent Byte + Received Byte: " .. value.."<br>")
+  
+    print("<li> HostName: ".. key.." -- Vlan: "..hosts[key]["vlan"].."   -- Sent Byte + Received Byte: " .. hosts[key]["traffic"].."<br>")
     if (hostinfotype == "minimal_one_host" ) then break end
   end
 end

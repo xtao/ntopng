@@ -8,7 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 
-host_ip = _GET["host"]
+host_info = urt2hostinfo(_GET)
 
 sendHTTPHeader('application/json')
 
@@ -22,6 +22,6 @@ else
    --print("true")
 end
 
-rsp = interface.getHostActivityMap(host_ip, aggregation)
+rsp = interface.getHostActivityMap(host_info["host"], aggregation)
 --print (host_ip)
 print(rsp)

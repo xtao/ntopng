@@ -8,14 +8,14 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 sendHTTPHeader('text/html')
-local debug = false
+local debug = debug_flow_data
 
 -- Table parameters
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
-host        = _GET["host"]
+host_info = urt2hostinfo(_GET)
 port        = _GET["port"]
 application = _GET["application"]
 
@@ -55,11 +55,11 @@ to_skip = (currentPage-1) * perPage
 -- Prepare host
 host_list = {}
 num_host_list = 0
-sigle_host = 0
+single_host = 0
 
 if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
-if (host ~= nil) then
-   sigle_host = 1
+if (host_info["host"] ~= nil) then
+   single_host = 1
    num_host_list = 1
 end
 
@@ -195,9 +195,14 @@ for key, value in pairs(flows_stats) do
 
    ---------------- HOST ----------------
   if(num_host_list > 0) then
-    if(sigle_host == 1) then
-      if (debug) then io.write("Host:"..host.."\n")end 
-      if((flows_stats[key]["cli.ip"] ~= host) and (flows_stats[key]["srv.ip"] ~= host)) then
+    if(single_host == 1) then
+      if (debug) then io.write("Host:"..host_info["host"].."\n")end 
+      if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
+       if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
+       if (debug) then io.write("vlan:"..flows_stats[key]["vlan"].."  ".. host_info["vlan"].."\n")end 
+      if(((flows_stats[key]["cli.ip"] ~= host_info["host"]) and (flows_stats[key]["srv.ip"] ~= host_info["host"])) 
+        or (flows_stats[key]["vlan"] ~= host_info["vlan"])) then
+       
         process = 0
       end
     else
@@ -216,6 +221,12 @@ for key, value in pairs(flows_stats) do
       end
     end
   end
+
+  -- if((flows_stats[key]["vlan"] ~= host_info["vlan"])) then
+  --       process = 0
+  --       print (flows_stats[key]["vlan"].."  ".. host_info["vlan"])
+  --     end
+
    if (debug) then io.write("Host -\t"..process.."\n")end
 
   ---------------- TABLE SORTING ----------------
@@ -314,7 +325,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    cli_tooltip = value["cli.ip"]
 	 end
 
-	 src_key="<A HREF='/lua/host_details.lua?host=" .. value["cli.ip"] .. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
+	 src_key="<A HREF='/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
 	 if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
 	 src_key = src_key .. "</A>"
 
@@ -324,7 +335,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    src_port=""
          end
 
-	 dst_key="<A HREF='/lua/host_details.lua?host=" .. value["srv.ip"] .. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
+	 dst_key="<A HREF='/lua/host_details.lua?".. hostinfo2url(value,"srv").. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
 	 if(value["srv.systemhost"] == true) then dst_key = dst_key .. "&nbsp;<i class='fa fa-flag'></i>" end
 	 dst_key = dst_key .. "</A>"
 
@@ -360,8 +371,8 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print(dst_port)
 	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
 
-	 if((value["vlan"] ~= nil) and (value["vlan"] ~= 0)) then 
-	    print("\", \"column_vlan\" : "..value["vlan"]) 
+	 if((value["vlan"] ~= nil)) then 
+	    print("\", \"column_vlan\" : \""..value["vlan"].."\"") 
 	 else
 	    print("\", \"column_vlan\" : \"\"") 
 	 end

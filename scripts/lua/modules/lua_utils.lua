@@ -870,7 +870,7 @@ end
 -- Url Util --
 
 function urt2hostinfo(get_info)
-   host = {};
+   local host = {};
    
   if(get_info["host"] ~= nil) then 
     host["host"] = get_info["host"]
@@ -886,24 +886,81 @@ function urt2hostinfo(get_info)
   return host
 end
 
-function hostinfo2url(host_info)
+function hostinfo2url(host_info,type)
   local rsp = ''
-   
-  if(host_info["host"] ~= nil) then 
-    rsp = rsp..'host='..host_info["host"]
-  end
 
-  if(host_info["ip"] ~= nil) then 
-    rsp = rsp..'host='..host_info["ip"]
+  if(type == "cli") then
+
+    if(host_info["cli.ip"] ~= nil) then 
+      rsp = rsp..'host='..host_info["cli.ip"]
+    end
+
+  elseif (type == "srv") then
+
+    if(host_info["srv.ip"] ~= nil) then 
+      rsp = rsp..'host='..host_info["srv.ip"]
+    end
+
+  else
+
+    if(host_info["host"] ~= nil) then 
+      rsp = rsp..'host='..host_info["host"]
+    end
+
+    if(host_info["ip"] ~= nil) then 
+      rsp = rsp..'host='..host_info["ip"]
+    end
+
   end
+   
 
   if(host_info["vlan"] ~= nil) then 
     rsp = rsp..'&vlan='..tostring(host_info["vlan"])
   end
+
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
+  
   return rsp
 end
 
+function hostinfo2json(host_info,type)
+  local rsp = ''
+
+  if(type == "cli") then
+
+    if(host_info["cli.ip"] ~= nil) then 
+      rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
+    end
+
+  elseif (type == "srv") then
+
+    if(host_info["srv.ip"] ~= nil) then 
+      rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
+    end
+
+  else
+
+    if(host_info["host"] ~= nil) then 
+    
+      rsp = rsp..'host: "'..host_info["host"]..'"'
+    
+    elseif(host_info["ip"] ~= nil) then 
+    
+      rsp = rsp..'host: "'..host_info["ip"]..'"'
+    
+    end
+
+  end
+   
+
+  if(host_info["vlan"] ~= nil) then 
+    rsp = rsp..', vlan: "'..tostring(host_info["vlan"]) .. '"'
+  end
+
+  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2JSON => ".. rsp .. "\n") end
+  
+  return rsp
+end
 
 
 

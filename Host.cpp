@@ -375,8 +375,13 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       lua_settable(vm, -3);
     }
   } else {
-    lua_pushstring(vm, get_name(buf, sizeof(buf), false));
-    lua_pushinteger(vm, (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
+    lua_newtable(vm);
+
+    lua_push_int_table_entry(vm, "traffic",  (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
+    lua_push_int_table_entry(vm, "vlan", vlan_id);
+    
+    lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
+    lua_insert(vm, -2);
     lua_settable(vm, -3);
   }
 }
