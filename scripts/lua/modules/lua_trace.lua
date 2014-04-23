@@ -18,9 +18,9 @@ TRACE_ERROR    = 0
 TRACE_WARNING  = 1
 TRACE_NORMAL   = 2
 TRACE_INFO     = 3
-TRACE_DEBUG    = 6
+TRACE_DEBUG    = 4
 
-MAX_TRACE_LEVEL = 6
+MAX_TRACE_LEVEL = 4
 -- Trace mode
 TRACE_CONSOLE = 0
 TRACE_WEB = 1
@@ -42,6 +42,7 @@ function traceError(p_trace_level, p_trace_mode,p_message)
     if (i == 0) then traceback = str end
     i = i + 1
   end
+  traceback = traceback:sub(1, string.len(traceback)-1)
   filename = src
   for str in (string.gmatch(src, '([^/]+)')) do
     filename = str
@@ -57,9 +58,17 @@ function traceError(p_trace_level, p_trace_mode,p_message)
 
   if ((p_trace_level <= MAX_TRACE_LEVEL) and (p_trace_level <= TRACE_LEVEL) )then
     if (p_trace_mode == TRACE_WEB) then
-      print(date..' ['..filename..':'..currentline..'] ['..traceback..'] ' ..trace_prefix..p_message)
+      if (filename..':'..currentline ~= traceback) then
+        print('<b>'..date..' ['..traceback..'] ['..filename..':'..currentline..'] ' ..trace_prefix..p_message..'</b></br>')
+      else
+        print('<b>'..date..' ['..filename..':'..currentline..'] ' ..trace_prefix..p_message..'</b></br>')
+      end
     elseif (p_trace_mode == TRACE_CONSOLE) then
-      io.write(date..' ['..filename..':'..currentline..'] ['..traceback..'] ' ..trace_prefix..p_message)
+      if (filename..':'..currentline ~= traceback) then
+        io.write(date..' ['..traceback..'] ['..filename..':'..currentline..'] ' ..trace_prefix..p_message..'\n')
+      else
+        io.write(date..' ['..filename..':'..currentline..'] ' ..trace_prefix..p_message..'\n')
+      end
     end
   end
 end
@@ -71,7 +80,7 @@ function setTraceLevel(p_trace_level)
 end
 
 function resetTraceLevel()
-  TRACE_LEVEL = 0
+  TRACE_LEVEL = 1
 end
 
 --------------------------------
