@@ -17,14 +17,18 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 aggregation = _GET["aggregation"]
 if(aggregation == nil) then aggregation = 1 end
 
+tracked = _GET["tracked"]
+if(tracked == nil) then tracked = 0 else tracked = tonumber(tracked) end
+
 
 print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
 	 $("#table-hosts").datatable({
-					url: "/lua/get_hosts_data.lua?aggregated=1&protocol=38]] -- 38 == EPP
+					url: "/lua/get_hosts_data.lua?aggregation=1&protocol=38]] -- 38 == EPP
 					if(_GET["client"]) then print("&client=".._GET["client"]) end
+					if(_GET["tracked"]) then print("&tracked=".._GET["tracked"]) end
 					print("&aggregation="..aggregation)
 print [[",
 	       showPagination: true,
@@ -44,8 +48,10 @@ aggregation = tonumber(aggregation)
 
 if(aggregation == 1) then
    print("title: \"EPP Servers\",\n")
+   elseif((aggregation == 2) and (tracked == 1)) then
+   print("title: \"EPP Existing Domains\",\n")
    elseif(aggregation == 2) then
-   print("title: \"EPP Queried Domains\",\n")
+   print("title: \"EPP Unknown Domains\",\n")
    elseif(aggregation == 4) then
    print("title: \"EPP Registrars\",\n")
 else

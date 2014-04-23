@@ -12,10 +12,10 @@ currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
-aggregated  = _GET["aggregated"]
 protocol    = _GET["protocol"]
 mode        = _GET["mode"]
 aggregation = _GET["aggregation"]
+tracked     = _GET["tracked"]
 
 -- Only for aggregations
 client      = _GET["client"]
@@ -37,12 +37,13 @@ else
 end
 
 if(aggregation ~= nil) then aggregation = tonumber(aggregation) end 
+if(tracked ~= nil) then tracked = tonumber(tracked) else tracked = 0 end 
 
 if((mode == nil) or (mode == "")) then mode = "all" end
 
 interface.find(ifname)
 
-if(aggregated == nil) then
+if(aggregation == nil) then
    hosts_stats = interface.getHostsInfo()
 else
    hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol), client)
@@ -69,6 +70,18 @@ for key, value in pairs(hosts_stats) do
       -- io.write("'"..hosts_stats[key]["aggregation"].."' <> '"..aggregation.."'\n")
       if(tonumber(hosts_stats[key]["aggregation"]) ~= aggregation) then
 	 ok = false      
+      else
+	 if(aggregation == 2) then
+	    if(hosts_stats[key]["tracked"] == true) then
+	       t = 1
+	    else
+	       t = 0
+	    end
+
+	    if(t ~= tracked) then
+	       ok = false
+	    end
+	 end
       end
    end
 
@@ -170,9 +183,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 
 	    print ("{ \"column_ip\" : \"<A HREF='/lua/")
-	    if(aggregated ~= nil) then print("aggregated_") end
+	    if(aggregation ~= nil) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
-	    if(aggregated == nil) then
+	    if(aggregation == nil) then
 	       print(key)
 	    else
 	       print(mapOS2Icon(key))
@@ -180,7 +193,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(" </A> ")
 
-	    if(aggregated ~= nil) then
+	    if(aggregation ~= nil) then
 	       --if(value["tracked"]) then
 
 	       -- EPP + domain + tracked
@@ -193,10 +206,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-
 	    print(getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
 
-	    if(aggregated == nil) then
+	    if(aggregation == nil) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
 	    print(shortHostName(value["name"]))
@@ -243,7 +255,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-	    if(aggregated ~= nil) then 
+	    if(aggregation ~= nil) then 
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
 	    end
@@ -256,7 +268,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print("\",")
 	    end
 
-	    if(aggregated ~= nil) then
+	    if(aggregation ~= nil) then
 	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 

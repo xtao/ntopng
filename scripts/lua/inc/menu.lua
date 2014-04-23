@@ -80,25 +80,6 @@ agg = interface.getNumAggregatedHosts()
 
 if((agg ~= nil) and (agg > 0)) then
    print("<li><a href=\"/lua/aggregated_hosts_stats.lua\"><i class=\"fa fa-group\"></i> Aggregations</a></li>\n")
-
-ifstats = interface.getStats()
-
-if((ifstats["ndpi"]["EPP"] ~= nil) or (ifstats["ndpi"]["DNS"] ~= nil)) then
-
-print [[
-   <li class="dropdown-submenu">
-    <a tabindex="-1" href="#">Protocols</a>
-    <ul class="dropdown-menu">
-   ]]
-
-if(ifstats["ndpi"]["EPP"] ~= nil) then print('<li><A href="/lua/protocols/epp_aggregations.lua">EPP</A>') end
-if(ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
-
-print [[
-    </ul>
-   </li>
-   ]]
-end
 end
 
 print [[
@@ -139,7 +120,27 @@ print [[
     <ul class="dropdown-menu">
    ]]
 
-if(ifstats["ndpi"]["EPP"] ~= nil) then print('<li><A href="/lua/protocols/epp_aggregations.lua">EPP</A>') end
+if(ifstats["ndpi"]["EPP"] ~= nil) then
+print [[
+
+
+
+<li class="dropdown-submenu">
+    <a tabindex="-1" href="#">EPP</a>
+    <ul class="dropdown-menu">
+   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=1"> Server </a></li>
+   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=4"> Registrar </a></li>
+   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=1"> Existing Domains </a></li>
+   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=0"> Unknown Domains </a></li>
+
+  </ul>
+
+
+
+   ]]
+end
+
+
 if(ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
 
 print [[

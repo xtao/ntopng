@@ -7,14 +7,14 @@ require "lua_trace"
 if((ifname == nil) and (_GET ~= nil)) then
 
    ifname = _GET["ifname"]
-   if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"].."\n") end 
+   if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"].."\n") end
 
    if((ifname == nil) and (_SESSION ~= nil)) then
-      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _SESSION value\n") end 
+      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _SESSION value\n") end
       ifname = _SESSION["ifname"]
       if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => ifname:"..ifname.."\n") end
    else
-      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _GET value\n") end 
+      if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _GET value\n") end
    end
 end
 
@@ -50,7 +50,7 @@ end
 
 function findString(str, tofind)
    if(str == nil) then return(nil) end
-   
+
    str1    = string.gsub(str, "-", "_")
    tofind1 = string.gsub(tofind, "-", "_")
    rsp = string.find(str1, tofind1, 1)
@@ -66,9 +66,9 @@ function findStringArray(str, tofind)
    if(str == nil) then return(nil) end
    if(tofind == nil) then return(nil) end
    local rsp = nil
-   
+
    num = 0
-   for k,v in pairs(tofind) do 
+   for k,v in pairs(tofind) do
      str1    = string.gsub(str, "-", "_")
      tofind1 = string.gsub(v, "-", "_")
      if(string.find(str1, tofind1, 1) == 1) then
@@ -353,7 +353,7 @@ function secondsToTime(seconds)
             msg = msg .. days .. " day"
       	    if(days > 1) then msg = msg .. "s" end
 	    msg = msg .. ", "
-      end		  
+      end
    end
 
    if(hours > 0) then
@@ -744,7 +744,7 @@ function isLocal(host_ip)
       return(true)
    end
 end
-   
+
 -- Return the first 'howmany' hosts
 function getTopInterfaceHosts(howmany, localHostsOnly)
    hosts_stats = interface.getHostsInfo()
@@ -797,7 +797,7 @@ function fixPath(path)
 end
 
 -- See datatype AggregationType in ntop_typedefs.h
-function aggregation2String(value) 
+function aggregation2String(value)
    if(value == 0) then return("Client Name")
    elseif (value == 1) then return("Server Name")
    elseif (value == 2) then return("Domain Name")
@@ -845,7 +845,7 @@ function mapOS2Icon(name)
    end
 end
 
-function getItemsNumber(n) 
+function getItemsNumber(n)
    tot = 0
    for k,v in pairs(n) do
       --io.write(k.."\n")
@@ -869,19 +869,19 @@ end
 
 -- Url Util --
 
--- 
+--
 -- Analyze the get_info and return a new table containing the url information about an host.
 -- Example: url2host(_GET)
--- 
+--
 function urt2hostinfo(get_info)
    local host = {};
-   
-  if(get_info["host"] ~= nil) then 
+
+  if(get_info["host"] ~= nil) then
     host["host"] = get_info["host"]
-    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Host:"..get_info["host"].."\n") end 
+    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Host:"..get_info["host"].."\n") end
   end
 
-  if(get_info["vlan"] ~= nil) then 
+  if(get_info["vlan"] ~= nil) then
     host["vlan"] = tonumber(get_info["vlan"])
     if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Vlan:"..get_info["vlan"].."\n") end
   else
@@ -890,95 +890,90 @@ function urt2hostinfo(get_info)
   return host
 end
 
--- 
+--
 -- Catch the main information about an host from the host_info table and return the corresponding url.
--- Example: 
+-- Example:
 --          hostinfo2url(host[key]), return an url based on the host value
 --          hostinfo2url(flow[key],"cli"), return an url based on the client host information in the flow table
 --          hostinfo2url(flow[key],"srv"), return an url based on the server host information in the flow table
--- 
+--
 
 function hostinfo2url(host_info,type)
   local rsp = ''
 
   if(type == "cli") then
-
-    if(host_info["cli.ip"] ~= nil) then 
+    if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["cli.ip"]
     end
-
   elseif (type == "srv") then
-
-    if(host_info["srv.ip"] ~= nil) then 
+    if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["srv.ip"]
     end
-
   else
-
-    if(host_info["host"] ~= nil) then 
+    if(host_info["host"] ~= nil) then
       rsp = rsp..'host='..host_info["host"]
     end
 
-    if(host_info["ip"] ~= nil) then 
+    if(host_info["ip"] ~= nil) then
       rsp = rsp..'host='..host_info["ip"]
+      elseif(host_info["name"] ~= nil) then
+      rsp = rsp..'host='..host_info["name"]
     end
-
   end
-   
 
-  if(host_info["vlan"] ~= nil) then 
+  if(host_info["vlan"] ~= nil) then
     rsp = rsp..'&vlan='..tostring(host_info["vlan"])
   end
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
-  
+
   return rsp
 end
 
 
--- 
+--
 -- Catch the main information about an host from the host_info table and return the corresponding json.
--- Example: 
+-- Example:
 --          hostinfo2json(host[key]), return a json string based on the host value
 --          hostinfo2json(flow[key],"cli"), return a json string based on the client host information in the flow table
 --          hostinfo2json(flow[key],"srv"), return a json string based on the server host information in the flow table
--- 
+--
 function hostinfo2json(host_info,type)
   local rsp = ''
 
   if(type == "cli") then
 
-    if(host_info["cli.ip"] ~= nil) then 
+    if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
 
   elseif (type == "srv") then
 
-    if(host_info["srv.ip"] ~= nil) then 
+    if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
 
   else
 
-    if(host_info["host"] ~= nil) then 
-    
+    if(host_info["host"] ~= nil) then
+
       rsp = rsp..'host: "'..host_info["host"]..'"'
-    
-    elseif(host_info["ip"] ~= nil) then 
-    
+
+    elseif(host_info["ip"] ~= nil) then
+
       rsp = rsp..'host: "'..host_info["ip"]..'"'
-    
+
     end
 
   end
-   
 
-  if(host_info["vlan"] ~= nil) then 
+
+  if(host_info["vlan"] ~= nil) then
     rsp = rsp..', vlan: "'..tostring(host_info["vlan"]) .. '"'
   end
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2JSON => ".. rsp .. "\n") end
-  
+
   return rsp
 end
 
@@ -987,11 +982,11 @@ end
 -- version is major.minor.veryminor
 function version2int(v)
    e = string.split(v, "%.");
-   if(e ~= nil) then   
+   if(e ~= nil) then
       major = e[1]
       minor = e[2]
       veryminor = e[3]
-      
+
       if(major == nil)     then major = 0 end
       if(minor == nil)     then minor = 0 end
       if(veryminor == nil) then veryminor = 0 end
