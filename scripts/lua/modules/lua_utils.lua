@@ -942,7 +942,6 @@ function hostinfo2json(host_info,type)
   local rsp = ''
 
   if(type == "cli") then
-
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
@@ -952,19 +951,13 @@ function hostinfo2json(host_info,type)
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
-
   else
 
     if(host_info["host"] ~= nil) then
-
       rsp = rsp..'host: "'..host_info["host"]..'"'
-
     elseif(host_info["ip"] ~= nil) then
-
       rsp = rsp..'host: "'..host_info["ip"]..'"'
-
     end
-
   end
 
 
@@ -976,8 +969,6 @@ function hostinfo2json(host_info,type)
 
   return rsp
 end
-
-
 
 -- version is major.minor.veryminor
 function version2int(v)

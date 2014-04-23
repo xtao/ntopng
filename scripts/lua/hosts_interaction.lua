@@ -11,7 +11,11 @@ require "lua_utils"
 
 
 if(host_ip == nil) then
-   host_ip = _GET["host"]
+   host_info = urt2hostinfo(_GET)
+else
+  host_info = {}
+  host_info["host"] = host_ip
+  host_info["vlan"] = 0
 end
 
 if(mode == nil) then
@@ -31,7 +35,7 @@ end
 
 num_top_hosts = 10
 
-if(host_ip ~= nil) then
+if(host_info["host"] ~= nil) then
    num = 1
 else
    interface.find(ifname)
@@ -44,11 +48,11 @@ end
 
 if(num > 0) then
    if(mode ~= "embed") then
-      if(host_ip == nil) then
+      if(host_info["host"] == nil) then
 	 print("<hr><h2>Top Hosts Interaction</H2>")
       else
 	 name = host_name
-	 if(name == nil) then name = host_ip end
+	 if(name == nil) then name = host_info["host"] end
 	 print("<hr><h2>"..name.." Interactions</H2><i class=\"fa fa-chevron-left fa-lg\"></i><small><A onClick=\"javascript:history.back()\">Back</A></small>")
       end
    end
@@ -322,11 +326,11 @@ window['ntopData'] = {"d3":{"options":
 
 interface.find(ifname)
 
-if(host_ip == nil) then
+if(host_info["host"] == nil) then
    hosts_stats = getTopInterfaceHosts(num_top_hosts, true)
 else
    hosts_stats = {}
-   hosts_stats[host_ip] = interface.getHostInfo(host_ip)
+   hosts_stats[host_info["host"]] = interface.getHostInfo(host_info["host"],host_info["vlan"])
 end
 
 hosts_id = {}
@@ -393,8 +397,8 @@ end
 
 aggregation_ids = {}
 
-if(host_ip ~= nil) then
-   aggregations = interface.getAggregationsForHost(host_ip)
+if(host_info["host"] ~= nil) then
+   aggregations = interface.getAggregationsForHost(host_info["host"])
 else
    aggregations = {}
 end
@@ -452,7 +456,7 @@ for i=0,tot_hosts-1 do
       end
    end
    
-   if((host_ip ~= nil) and (host_ip == k)) then label = "sun" end
+   if((host_info["host"] ~= nil) and (host_info["host"] == k)) then label = "sun" end
    -- f(name == k) then name = ntop.getResolvedAddress(k) end
    if(name == nil) then name = k end
    if(maxval == 0) then 
@@ -467,7 +471,7 @@ for i=0,tot_hosts-1 do
 
    if(target_host ~= nil) then
       -- Host still in memory      
-      if((host_ip == nil) or (k ~= host_ip)) then
+      if((host_info["host"] == nil) or (k ~= host_info["host"])) then
 	 print(', "link": "/lua/hosts_interaction.lua?host='.. k.. '&name='.. name .. '"}')
       else
 	 print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
@@ -485,11 +489,11 @@ for i=0,tot_hosts-1 do
    num = num + 1
 end
 
-if((num == 0) and (host_ip ~= nil)) then
+if((num == 0) and (host_info["host"] ~= nil)) then
    tot = 1
    label = ""
-   name = host_ip
-   print('\n{"name":"'.. host_ip ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. host_ip.. '"}')
+   name = host_info["host"]
+   print('\n{"name":"'.. host_info["host"] ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. host_info["host"].. '"}')
 end
 
 print [[
@@ -506,8 +510,8 @@ print [[
 <ol>
 ]]
 
-if(host_ip ~= nil) then
-   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_ip)
+if(host_info["host"] ~= nil) then
+   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_info["host"])
    if(host_name ~= nil) then print('('.. host_name .. ')') end
    print('</font>. Clicking on this host you will visualize its details.</small></li>\n')
 else

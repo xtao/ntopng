@@ -21,7 +21,7 @@ else
    aggregation = true
    --print("true")
 end
-
-rsp = interface.getHostActivityMap(host_info["host"], aggregation)
+-- print(host_info["host"].."-".."-"..host_info["vlan"])
+rsp = interface.getHostActivityMap(host_info["host"], aggregation,host_info["vlan"])
 --print (host_ip)
 print(rsp)
