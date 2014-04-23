@@ -869,6 +869,10 @@ end
 
 -- Url Util --
 
+-- 
+-- Analyze the get_info and return a new table containing the url information about an host.
+-- Example: url2host(_GET)
+-- 
 function urt2hostinfo(get_info)
    local host = {};
    
@@ -885,6 +889,14 @@ function urt2hostinfo(get_info)
   end
   return host
 end
+
+-- 
+-- Catch the main information about an host from the host_info table and return the corresponding url.
+-- Example: 
+--          hostinfo2url(host[key]), return an url based on the host value
+--          hostinfo2url(flow[key],"cli"), return an url based on the client host information in the flow table
+--          hostinfo2url(flow[key],"srv"), return an url based on the server host information in the flow table
+-- 
 
 function hostinfo2url(host_info,type)
   local rsp = ''
@@ -923,6 +935,14 @@ function hostinfo2url(host_info,type)
   return rsp
 end
 
+
+-- 
+-- Catch the main information about an host from the host_info table and return the corresponding json.
+-- Example: 
+--          hostinfo2json(host[key]), return a json string based on the host value
+--          hostinfo2json(flow[key],"cli"), return a json string based on the client host information in the flow table
+--          hostinfo2json(flow[key],"srv"), return a json string based on the server host information in the flow table
+-- 
 function hostinfo2json(host_info,type)
   local rsp = ''
 
