@@ -35,9 +35,7 @@ Binary Packages
 Using ntopng as a flow collector
 --------------------------------
 In order to use ntopng as a flow collector with nprobe you need to start the
-apps as follows: "script_name@endpoint" where the
- - script_name is stored in scripts/callbacks
- - endpoint is the nProbe endpoint
+apps as follows:
 
 - collector
   ntopng -i tcp://127.0.0.1:5556
