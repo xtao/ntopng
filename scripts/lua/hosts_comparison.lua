@@ -136,7 +136,7 @@ end -- End if(show_aggregation)
 
 -- =========================== Aggregation Menu =================
 print("<center>")
-print("<div class=\"row-fluid\">")
+print('<div class="jumbotron">')
 print("  <div>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
 print("  </div>")

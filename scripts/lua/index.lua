@@ -63,9 +63,41 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    print('</ul>\n\t</div>\n\t</div>\n')
 
    if(page == "TopFlowTalkers") then
-      print('<div class="jumbotron">\n<h4>Top Flow Talkers</h4>\n')      
+      print('<div style="text-align: center;">\n<h4>Top Flow Talkers</h4></div>\n') 
+
+
+      print('<div class="jumbotron">')
       dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
-      print('\n</div>\n')
+      print('\n</div><br/>\n')
+      print [[
+<div class="control-group" style="text-align: center;">
+    <div class="controls">
+      &nbsp;Live update:  <div class="btn-group btn-small" data-toggle="buttons-radio" data-toggle-name="topflow_graph_state">
+        <button id="topflow_graph_state_play" value="1" type="button" class="btn btn-small active" data-toggle="button" ><i class="fa fa-play"></i></button>
+        <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-small" data-toggle="button" ><i class="fa fa-stop"></i></button>
+      </div>
+    </div>
+  </div>
+]]
+      print [[
+      <script>
+         var topflow_stop = false;
+         $("#topflow_graph_state_play").click(function() {
+            if (topflow_stop) {
+               sankey();
+               sankey_interval = window.setInterval(sankey, 5000);
+               topflow_stop = false;
+            }
+         });
+         $("#topflow_graph_state_stop").click(function() {
+            if (!topflow_stop) {
+               clearInterval(sankey_interval);
+               topflow_stop = true;
+            }
+        });
+      </script>
+
+      ]]
    else 
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_" .. page .. ".inc")
    end
