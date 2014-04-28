@@ -35,6 +35,20 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "home"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+-- Load from or set in redis the refresh frequency for the top flow sankey
+
+refresh = _GET["refresh"]
+
+if (refresh ~= nil) then
+  ntop.setCache('ntopng.prefs.'..ifname..'.top_flow_refresh',refresh)
+else
+  refresh = ntop.getCache('ntopng.prefs.'..ifname..'.top_flow_refresh')
+end
+-- Default frequency (ms)
+if (refresh == '') then refresh = 5000 end
+
+-- 
+
 page = _GET["page"]
 if(page == nil) then page = "TopFlowTalkers" end
 
@@ -64,23 +78,63 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 
    if(page == "TopFlowTalkers") then
       print('<div style="text-align: center;">\n<h4>Top Flow Talkers</h4></div>\n') 
+  print [[
+<div class="btn-group">
+  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Refresh frequency <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+]]
+print('<li> <a href="?refresh=5000" >5 seconds</a></li>\n')
+print('<li> <a href="?refresh=10000" >10 seconds</a></li>\n')
+print('<li> <a href="?refresh=30000" >30 seconds</a></li>\n')
+print('<li> <a href="?refresh=60000" >1 minute</a></li>\n')
+print('<li> <a href="?refresh=0" >Never</a></li>\n')
+print [[
+  </ul>
+</div><!-- /btn-group -->
 
+
+]]
 
       print('<div class="jumbotron">')
       dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
       print('\n</div><br/>\n')
       print [[
-<div class="control-group" style="text-align: center;">
-    <div class="controls">
-      &nbsp;Live update:  <div class="btn-group btn-small" data-toggle="buttons-radio" data-toggle-name="topflow_graph_state">
-        <button id="topflow_graph_state_play" value="1" type="button" class="btn btn-small active" data-toggle="button" ><i class="fa fa-play"></i></button>
-        <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-small" data-toggle="button" ><i class="fa fa-stop"></i></button>
-      </div>
+<div class="control-group" style="text-align: center;"> ]]
+
+if (refresh ~= '0') then
+  print [[
+    <div id="live_update" class="controls">
+          &nbsp;Live update:  <div class="btn-group btn-small" data-toggle="buttons-radio" data-toggle-name="topflow_graph_state">
+            <button id="topflow_graph_state_play" value="1" type="button" class="btn btn-small active" data-toggle="button" ><i class="fa fa-play"></i></button>
+            <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-small" data-toggle="button" ><i class="fa fa-stop"></i></button>
+          </div>
     </div>
-  </div>
+  ]]
+else 
+  print [[
+    <div id="live_refresh" class="controls">
+         &nbsp;Refresh:  <div class="btn-group btn-small">
+          <button id="topflow_graph_refresh" class="btn btn-small">
+            <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="icon-refresh"></i></button>")
+          </div>
+    </div>
+  ]]
+  end
+print [[
+</div>
 ]]
-      print [[
+
+print [[
       <script>
+      // Stop sankey interval in order to change the default refresh frequency
+      clearInterval(sankey_interval);
+]]
+
+if (refresh ~= '0') then 
+  print ('sankey_interval = window.setInterval(sankey,'..refresh..');')
+end
+
+print [[
          var topflow_stop = false;
          $("#topflow_graph_state_play").click(function() {
             if (topflow_stop) {
@@ -94,7 +148,11 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
                clearInterval(sankey_interval);
                topflow_stop = true;
             }
-        });
+        }); 
+        $("#topflow_graph_refresh").click(function() {
+          sankey();
+        }); 
+        
       </script>
 
       ]]
