@@ -3,12 +3,12 @@
 --
 
 -- Trace Level
-TRACE_LEVEL = 1
+TRACE_LEVEL = 4
 
 
 -- Login & session
-degub_login = false
-debug_session = false
+debug_login = false
+debug_session = true
 debug_host = false
 debug_flow_data = false
 

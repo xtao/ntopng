@@ -16,6 +16,7 @@ protocol    = _GET["protocol"]
 mode        = _GET["mode"]
 aggregation = _GET["aggregation"]
 tracked     = _GET["tracked"]
+protocol    = _GET["protocol"]
 
 -- Only for aggregations
 client      = _GET["client"]
@@ -47,6 +48,7 @@ if(aggregation == nil) then
    hosts_stats = interface.getHostsInfo()
 else
    hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol), client)
+   protocol = nil -- Not applicable
 end
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
@@ -108,6 +110,14 @@ for key, value in pairs(hosts_stats) do
 	 end
       else
 	 ok = true
+      end
+   end
+
+   if((protocol ~= nil) and (ok == true)) then
+      info = interface.getHostInfo(key)
+      
+      if(info["ndpi"][protocol] == nil) then
+	 ok = false
       end
    end
 

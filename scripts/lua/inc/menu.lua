@@ -128,6 +128,7 @@ print [[
 <li class="dropdown-submenu">
     <a tabindex="-1" href="#">EPP</a>
     <ul class="dropdown-menu">
+   <li><a tabindex="-1" href="/lua/hosts_stats.lua?mode=local&protocol=EPP"> Hosts </a></li>
    <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=1"> Server </a></li>
    <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=4"> Registrar </a></li>
    <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=1"> Existing Domains </a></li>

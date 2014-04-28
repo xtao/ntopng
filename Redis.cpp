@@ -346,7 +346,7 @@ int Redis::del(char *key) {
 int Redis::pushHostToHTTPBL(char *hostname, bool dont_check_for_existance, bool localHost) {
   if(!ntop->getPrefs()->is_httpbl_enabled()) return(0);
 
-  return pushHost(HTTPBL_CACHE, HTTPBL_TO_RESOLVE, hostname, dont_check_for_existance, localHost);
+  return(pushHost(HTTPBL_CACHE, HTTPBL_TO_RESOLVE, hostname, dont_check_for_existance, localHost));
 }
  
 /* **************************************** */
@@ -354,12 +354,12 @@ int Redis::pushHostToHTTPBL(char *hostname, bool dont_check_for_existance, bool 
 int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost) {
   if(!ntop->getPrefs()->is_dns_resolution_enabled()) return(0);
 
-  return pushHost(DNS_CACHE, DNS_TO_RESOLVE, hostname, dont_check_for_existance, localHost);
+  return(pushHost(DNS_CACHE, DNS_TO_RESOLVE, hostname, dont_check_for_existance, localHost));
 }
  
 /* **************************************** */
 
-int Redis::pushHost(const char* ns_cache, char* ns_list, char *hostname, 
+int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname, 
 		    bool dont_check_for_existance, bool localHost) {
   int rc;
   char key[128];

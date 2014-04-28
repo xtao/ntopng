@@ -11,6 +11,8 @@ sendHTTPHeader('text/html')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+protocol = _GET["protocol"]
+
 mode = _GET["mode"]
 if(mode == nil) then mode = "all" end
 
@@ -24,14 +26,22 @@ print [[
 	 $("#table-hosts").datatable({
 					title: "Hosts List",
 					url: "/lua/get_hosts_data.lua?mode=]]
-print(mode..'",')
+print(mode)
+
+if(protocol ~= nil) then
+   print('&protocol='..protocol)
+end
+
+print('",')
+
+if(protocol == nil) then protocol = "" end
 
 if(mode == "all") then
-   print('title: "All Hosts",\n')
+   print('title: "All '..protocol..' Hosts",\n')
 elseif(mode == "local") then
-   print('title: "Local Hosts",\n')
+   print('title: "Local '..protocol..' Hosts",\n')
 else
-   print('title: "Remote Hosts",\n')
+   print('title: "Remote '..protocol..' Hosts",\n')
 end
 
 print [[

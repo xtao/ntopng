@@ -127,7 +127,8 @@ class Redis {
   inline void flushAllQueuedAlerts() { del((char*)CONST_ALERT_MSG_QUEUE); };
 
  private:
-  int pushHost(const char* ns_cache, char* ns_list, char *hostname, bool dont_check_for_existance, bool localHost);
+  int pushHost(const char* ns_cache, const char* ns_list, char *hostname,
+	       bool dont_check_for_existance, bool localHost);
   int popHost(const char* ns_list, char *hostname, u_int hostname_len);
 };
 
