@@ -2305,7 +2305,6 @@ int Lua::handle_script_request(struct mg_connection *conn,
   }
   lua_setglobal(L, "_COOKIE"); /* Like in php */
 
-
   /* Put the _SESSION params into the environment */
   lua_newtable(L);
 
@@ -2314,31 +2313,28 @@ int Lua::handle_script_request(struct mg_connection *conn,
   mg_get_cookie(conn, "session", buf, sizeof(buf));
   lua_push_str_table_entry(L, "session", buf);
 
-  if(buf[0] != '\0') {
-    snprintf(key, sizeof(key), "sessions.%s.ifname", buf);
+  if(user[0] != '\0') {
+    snprintf(key, sizeof(key), "ntopng.prefs.%s.iface", user);
     if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
-      snprintf(key, sizeof(key), "sessions.%s.ifname", user);
-      if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
-      set_default_if_name_in_session:
-	snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
-	lua_push_str_table_entry(L, "ifname", val);
-	ntop->getRedis()->set(key, val, 3600 /* 1h */);
-      } else {
-	goto set_preferred_interface;
-      }
+    set_default_if_name_in_session:
+      snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
+      lua_push_str_table_entry(L, "ifname", val);
+      ntop->getRedis()->set(key, val, 3600 /* 1h */);
     } else {
-    set_preferred_interface:
-      if(ntop->getInterface(val) != NULL) {
-	/* The specified interface still exists */
-	lua_push_str_table_entry(L, "ifname", val);
-	ntop->getRedis()->expire(key, 3600); /* Extend session */
-      } else {
-	goto set_default_if_name_in_session;
-      }
+      goto set_preferred_interface;
     }
   } else {
-    goto set_default_if_name_in_session;
-  }
+    NetworkInterface *iface;
+
+  set_preferred_interface:
+    if((iface = ntop->getInterface(val)) != NULL) {
+      /* The specified interface still exists */
+      lua_push_str_table_entry(L, "ifname", iface->get_name());
+      ntop->getRedis()->expire(key, 3600); /* Extend session */
+    } else {
+      goto set_default_if_name_in_session;
+    }
+  }  
 
   lua_setglobal(L, "_SESSION"); /* Like in php */
 
