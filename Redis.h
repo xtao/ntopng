@@ -63,7 +63,8 @@ class Redis {
   int popDomainToCategorize(char *domainname, u_int domainname_len);
   
   int getAddress(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
-  int getAddressHTTPBL(char *numeric_ip, char *rsp, u_int rsp_len, bool queue_if_not_found);
+  int getAddressHTTPBL(char *numeric_ip, NetworkInterface *iface,
+		       char *rsp, u_int rsp_len, bool queue_if_not_found);
   int setResolvedAddress(char *numeric_ip, char *symbolic_ip);
   int setHTTPBLAddress(char* numeric_ip, char* httpbl);
 

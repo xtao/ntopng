@@ -573,8 +573,10 @@ void Redis::setDefaults() {
 
 /* **************************************** */
 
-int Redis::getAddressHTTPBL(char *numeric_ip, char *rsp,
-		      u_int rsp_len, bool queue_if_not_found) {
+int Redis::getAddressHTTPBL(char *numeric_ip,
+			    NetworkInterface *iface,
+			    char *rsp, u_int rsp_len,
+			    bool queue_if_not_found) {
   char key[64];
   int rc;
 
@@ -584,8 +586,12 @@ int Redis::getAddressHTTPBL(char *numeric_ip, char *rsp,
   rc = get(key, rsp, rsp_len);
 
   if(rc != 0) {
-    if(queue_if_not_found)
-      pushHostToHTTPBL(numeric_ip, true, false);
+    if(queue_if_not_found) {
+      char buf[64];
+
+      snprintf(buf, sizeof(buf), "%s@%s", numeric_ip, iface->get_name());
+      pushHostToHTTPBL(buf, true, false);
+    }
   } else {
     /* We need to extend expire */
 

@@ -168,7 +168,8 @@ alert_level_keys = {
 alert_type_keys = {
    { "<i class='fa fa-tint'></i> TCP SYN Flood", 0 },
    { "<i class='fa fa-tint'></i> Flows Flood",   1 },
-   { "<i class='fa fa-arrow-circle-up'></i> Threshold Cross",  2 }
+   { "<i class='fa fa-arrow-circle-up'></i> Threshold Cross",  2 },
+   { "<i class='fa fa-frown-o'></i> Blacklist Host",  3 }
 }
 
 function alertSeverityLabel(v)
@@ -180,6 +181,7 @@ function alertTypeLabel(v)
 end
 
 function firstToUpper(str)
+   str = tostring(str)
    return (str:gsub("^%l", string.upper))
 end
 

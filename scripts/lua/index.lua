@@ -72,7 +72,8 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 print [[
 <div class="control-group" style="text-align: center;">
 &nbsp;Refresh frequency: <div class="btn-group btn-small">
-  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown"> ]] 
+  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown"> 
+]] 
 if (refresh ~= '0') then
   if (refresh == '60000') then 
     print('1 Minute')
@@ -86,11 +87,11 @@ end
 print [[<span class="caret"></span></button>
   <ul class="dropdown-menu ">
 ]]
-print('<li> <a href="?refresh=5000" >5 Seconds</a></li>\n')
-print('<li> <a href="?refresh=10000" >10 Seconds</a></li>\n')
-print('<li> <a href="?refresh=30000" >30 Seconds</a></li>\n')
-print('<li> <a href="?refresh=60000" >1 Minute</a></li>\n')
-print('<li> <a href="?refresh=0" >Never</a></li>\n')
+print('<li style="text-align: left;"> <a href="?refresh=5000" >5 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="?refresh=10000" >10 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="?refresh=30000" >30 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="?refresh=60000" >1 Minute</a></li>\n')
+print('<li style="text-align: left;"> <a href="?refresh=0" >Never</a></li>\n')
 print [[
   </ul>
 </div><!-- /btn-group -->

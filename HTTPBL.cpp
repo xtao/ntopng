@@ -187,10 +187,17 @@ static int dns_query_execute(char* query, char* resp, u_int resp_len) {
 /* **************************************************** */
 
 void HTTPBL::queryHTTPBL(char* numeric_ip) {
-  char dns_query_str[256], query_resp[256], alert_msg[512];
+  char dns_query_str[256] = { 0 }, query_resp[256], alert_msg[512], *iface;
   int rc;
 
-  memset(dns_query_str, 0, sizeof(dns_query_str));
+  /* Format numeric_ip@interface_name */
+  iface = strchr(numeric_ip, '@');
+
+  if(iface) {
+    iface[0] = '\0';
+    iface = &iface[1]; 
+  } else 
+    iface = (char*)"";
 
   if (prepare_dns_query_string(api_key, numeric_ip, dns_query_str, sizeof(dns_query_str)) < 0) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, 
@@ -215,8 +222,12 @@ void HTTPBL::queryHTTPBL(char* numeric_ip) {
 
     case 2: // the host is blacklisted: get the response
       /* https://www.projecthoneypot.org/httpbl_api.php */
-      snprintf(alert_msg, sizeof(alert_msg), "Host <A HREF=/lua/host_details.lua?host=%s" /* "&ifname=%s" */ ">%s</A> blacklisted on HTTP:BL [code=%s]",
-	       numeric_ip, /* iface->get_name(), */ numeric_ip, query_resp);
+
+      /* We need to figure out the current list of peers speaking with this host */
+
+      snprintf(alert_msg, sizeof(alert_msg), 
+	       "Host <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> blacklisted on HTTP:BL [code=%s]",
+	       numeric_ip, iface, numeric_ip, query_resp);
 
       ntop->getRedis()->queueAlert(alert_level_warning, alert_dangerous_host, alert_msg);
       break;

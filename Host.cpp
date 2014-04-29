@@ -202,8 +202,9 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	// else ntop->getRedis()->pushHostToResolve(host, false, localHost);
       }
 
-      if(!localHost && ip->isIPv4()) { // http:bl only works for IPv4 addresses
-	if(ntop->getRedis()->getAddressHTTPBL(host, httpbl, sizeof(httpbl), true) == 0) {
+      if(!localHost && ip->isIPv4()) {
+	// http:bl only works for IPv4 addresses
+	if(ntop->getRedis()->getAddressHTTPBL(host, iface, httpbl, sizeof(httpbl), true) == 0) {
           if(strcmp(httpbl, NULL_BL)) {
 	    ntop->getTrace()->traceEvent(TRACE_WARNING,"%s=>%s", host, httpbl);
 	  }
