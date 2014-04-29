@@ -18,7 +18,8 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 page = _GET["page"]
 if_name = _GET["if_name"]
 
-interface.find(if_name)
+if(if_name == nil) then if_name = ifname end
+interface.find(ifname)
 ifstats = interface.getStats()
 
 interface_name = purifyInterfaceName(ifstats.name)
