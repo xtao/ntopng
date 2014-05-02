@@ -6,7 +6,7 @@ Standards-Version: @NTOPNG_VERS@
 Build-Depends:
 Build-Conflicts:
 
-Depends: libsqlite3-0, redis-server, librrd4
+Depends: libsqlite3-0, redis-server, librrd4, libnuma1
 Package: ntopng
 Architecture: @EXTN@
 Recommends: ntopng-data
