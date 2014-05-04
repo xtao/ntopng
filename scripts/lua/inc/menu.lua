@@ -170,18 +170,21 @@ print [[
 
 for k,v in pairs(names) do
     if(v == ifname) then 
-    print("<li");
+    print("<li")
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
 
     print(">")
     print("<a href=/lua/if_stats.lua?if_name="..v.."> ")
     if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
-    print(v)
-
+    
     if((custom_name ~= nil) and (custom_name ~= "")) then
-       print(" (".. custom_name ..")")
+       print(custom_name)
+    else
+      print (v)
     end
+
+    
     print("</a></li>")
     end
 end
@@ -189,13 +192,15 @@ end
 
 for k,v in pairs(names) do
     if(v ~= ifname) then
-    print("<li");
-    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\"> " .. v)
+    print("<li")
+    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\"> ")
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
 
     if((custom_name ~= nil) and (custom_name ~= "")) then
-       print(" (".. custom_name ..")")
+       print(custom_name)
+    else
+      print (v)
     end
 
     print(" </a></li>")

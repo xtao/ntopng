@@ -18,8 +18,14 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 page = _GET["page"]
 if_name = _GET["if_name"]
 
+
 if(if_name == nil) then if_name = ifname end
-interface.find(ifname)
+
+if(_GET["custom_name"] ~=nil) then
+      ntop.setCache('ntopng.prefs.'..if_name..'.name',_GET["custom_name"])
+end
+
+interface.find(if_name)
 ifstats = interface.getStats()
 
 interface_name = purifyInterfaceName(ifstats.name)
@@ -32,7 +38,11 @@ else
   _ifname = if_name
 end
 
+
+
 url= '/lua/if_stats.lua?if_name=' .. _ifname
+
+
 
 print [[
             <div class="navbar">
@@ -75,12 +85,31 @@ print [[
 </div>
 </div>
    ]]
-
+print ('<div id="alert_placeholder"></div>')
 if((page == "overview") or (page == nil)) then
+    
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td></tr>\n")
-   print("<tr><th>Family</th><td>" .. ifstats.type .. "</td></tr>\n")
-   print("<tr><th>Bytes</th><td><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
+   print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
+  
+  if(ifstats.name ~= nil) then
+    alternate_name = ntop.getCache('ntopng.prefs.'..ifstats.name..'.name')
+    print [[
+    <td>
+    <form class="form-inline" style="margin-bottom: 0px;">
+       <input type="hidden" name="if_name" value="]]
+          print(ifstats.name)
+    print [[">
+       <input type="text" name="custom_name" placeholder="Custom Name" value="]]
+          if(alternate_name ~= nil) then print(alternate_name) end
+    print [["></input>
+      <button type="submit" class="btn">Save Name</button>
+    </form>
+    </td></tr>
+       ]]
+  end
+   
+   print("<tr><th>Family</th><td colspan=2>" .. ifstats.type .. "</td></tr>\n")
+   print("<tr><th>Bytes</th><td colspan=2><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
    print [[
    <p>
    <small>
@@ -95,9 +124,9 @@ if(ifstats.type ~= "zmq") then
 else
    label = "Flows"
 end
-   print("<tr><th>Received Packets</th><td><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
+   print("<tr><th>Received Packets</th><td colspan=2><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
 
-   print("<tr><th>Dropped "..label.."</th><td><span id=if_drops>")
+   print("<tr><th>Dropped "..label.."</th><td colspan=2><span id=if_drops>")
    
    if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
    print(formatValue(ifstats.stats_drops).. " " .. label)
