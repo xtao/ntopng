@@ -11,6 +11,7 @@ sendHTTPHeader('text/html')
 local debug = debug_flow_data
 
 -- Table parameters
+all = _GET["all"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
@@ -43,12 +44,19 @@ end
 
 if(port ~= nil) then port = tonumber(port) end
 
+to_skip = (currentPage-1) * perPage
+
+if (all ~= nil) then
+  perPage = 0
+  currentPage = 0
+end
+
 interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 total = 0
-to_skip = (currentPage-1) * perPage
+
 
 --host = "a"
 
@@ -297,10 +305,10 @@ for _key, _value in pairsByKeys(vals, funct) do
    --   print(key.."="..flows_stats[key]["duration"].."\n");
    --   print(key.."=".."\n");
    -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
-   if(to_skip > 0) then
+   if (to_skip > 0) then
       to_skip = to_skip-1
    else
-      if(num < perPage) then
+      if((num < perPage) or (all ~= nil))then
 	 if(num > 0) then
 	    print ",\n"
 	 end
@@ -345,9 +353,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    dst_port=""
          end
 
+  print ("{ \"key\" : " .. key)
+
 	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
-	 print ("{ \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
+	 print (", \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key)
+
 
 	 info = interface.getHostInfo(value["cli.ip"])
 	 if(info ~= nil) then
@@ -419,8 +430,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    total = total + 1
 end -- for
 
-
-print ("\n], \"perPage\" : " .. perPage .. ",\n")
+print ("\n], \"perPage\" : " .. perPage.. ",\n")
 
 if(sortColumn == nil) then
    sortColumn = ""
