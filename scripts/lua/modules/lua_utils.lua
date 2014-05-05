@@ -959,6 +959,8 @@ function hostinfo2json(host_info,type)
       rsp = rsp..'host: "'..host_info["host"]..'"'
     elseif(host_info["ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["ip"]..'"'
+    elseif(host_info["name"] ~= nil) then
+      rsp = rsp..'host: "'..host_info["name"] ..'"'
     end
   end
 
@@ -968,6 +970,45 @@ function hostinfo2json(host_info,type)
   end
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2JSON => ".. rsp .. "\n") end
+
+  return rsp
+end
+
+--
+-- Catch the main information about an host from the host_info table and return the corresponding jqueryid.
+-- Example: host 192.168.1.254, vlan0  ==> 1921681254_0
+function hostinfo2jqueryid(host_info,type)
+  local rsp = ''
+
+  if(type == "cli") then
+    if(host_info["cli.ip"] ~= nil) then
+      rsp = rsp..''..host_info["cli.ip"]
+    end
+
+  elseif (type == "srv") then
+
+    if(host_info["srv.ip"] ~= nil) then
+      rsp = rsp..''..host_info["srv.ip"]
+    end
+  else
+
+    if(host_info["host"] ~= nil) then
+      rsp = rsp..''..host_info["host"]
+    elseif(host_info["ip"] ~= nil) then
+      rsp = rsp..''..host_info["ip"]
+    elseif(host_info["name"] ~= nil) then
+      rsp = rsp..''..host_info["name"]
+    end
+  end
+
+
+  if(host_info["vlan"] ~= nil) then
+    rsp = rsp..'_'..tostring(host_info["vlan"])
+  end
+
+  rsp = string.gsub (rsp, "%.", "")
+
+  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2KEY => ".. rsp .. "\n") end
 
   return rsp
 end

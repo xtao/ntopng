@@ -8,11 +8,15 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
+-- Table parameters
+all = _GET["all"]
 currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 protocol    = _GET["protocol"]
+
+-- Host comparison parameters
 mode        = _GET["mode"]
 aggregation = _GET["aggregation"]
 tracked     = _GET["tracked"]
@@ -51,10 +55,16 @@ else
    protocol = nil -- Not applicable
 end
 
+to_skip = (currentPage-1) * perPage
+
+if (all ~= nil) then
+  perPage = 0
+  currentPage = 0
+end
+
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 num = 0
 total = 0
-to_skip = (currentPage-1) * perPage
 
 now = os.time()
 vals = {}
@@ -124,16 +134,17 @@ for key, value in pairs(hosts_stats) do
    if(ok) then
       --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
 
-      if(sortColumn == "column_ip") then
+    if(hosts_stats[key]["name"] == nil) then 
+      if(hosts_stats[key]["ip"] ~= nil) then
+         hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
+      else
+         hosts_stats[key]["name"] = hosts_stats[key]["mac"]
+      end
+    end
+
+   if(sortColumn == "column_ip") then
 	 vals[key] = key
 	 elseif(sortColumn == "column_name") then
-	 if(hosts_stats[key]["name"] == nil) then 
-	    if(hosts_stats[key]["ip"] ~= nil) then
-	       hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
-	    else
-	       hosts_stats[key]["name"] = hosts_stats[key]["mac"]
-	    end
-	 end
 	 vals[hosts_stats[key]["name"]..postfix] = key
 	 elseif(sortColumn == "column_since") then
 	 vals[(now-hosts_stats[key]["seen.first"])+postfix] = key
@@ -187,12 +198,12 @@ for _key, _value in pairsByKeys(vals, funct) do
       if(to_skip > 0) then
 	 to_skip = to_skip-1
       else
-	 if(num < perPage) then
+	 if((num < perPage) or (all ~= nil))then
 	    if(num > 0) then
 	       print ",\n"
 	    end
-
-	    print ("{ \"column_ip\" : \"<A HREF='/lua/")
+      print ('{ \"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\"')
+	    print (", \"column_ip\" : \"<A HREF='/lua/")
 	    if(aggregation ~= nil) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
 	    if(aggregation == nil) then
@@ -273,10 +284,20 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
 
-	    if(value["throughput_trend"] > 0) then
-	       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
-	       print("\",")
-	    end
+      if(value["throughput_trend"] > 0) then 
+       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
+      
+      if(value["throughput_trend"] == 1) then 
+         print("<i class='fa fa-arrow-up'></i>")
+         elseif(value["throughput_trend"] == 2) then
+         print("<i class='fa fa-arrow-down'></i>")
+         elseif(value["throughput_trend"] == 3) then
+         print("<i class='fa fa-minus'></i>")
+      end
+      print("\",")
+   else
+      print ("\", \"column_thpt\" : \"NaN\",")
+   end
 
 	    if(aggregation ~= nil) then
 	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")

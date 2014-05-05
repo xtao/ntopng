@@ -30,7 +30,7 @@ function flow_table_setID (row) {
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_server");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_duration");
     //custom
-    if ((type == 'flow') && (flow_rows_option["categorization"])) row.find("td").eq(index++).attr('id', flow_key+"_categorization");
+    if ((type == 'flow') && (flow_rows_option["categorization"])) row.find("td").eq(index++).attr('id', flow_key+"_category");
     // flows_stats_bottom
     if (type == 'flow') row.find("td").eq(index++).attr('id', flow_key+"_breakdown");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_throughput");
@@ -76,7 +76,7 @@ function flow_table_update () {
 
       for (var row in rows_data["data"]) {
         //console.log(rows_data.data[row].key);
-        var flow_key = rows_data.data[row].key.toString();
+        var flow_key = rows_data.data[row].key;
 
         if (flow_rows.indexOf(flow_key) != -1) {
           // console.log('OK '+flow_key);
@@ -99,4 +99,4 @@ function flow_table_update () {
 }
 
 // Interval
-var flow_table_interval = window.setInterval(flow_table_update,2000);
+var flow_table_interval = window.setInterval(flow_table_update,1000);

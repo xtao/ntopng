@@ -721,6 +721,7 @@ print [[
 	       title: "Active Flows",
 	        columns: [
            {
+        title: "Key",
          field: "key",
          hidden: true
          },

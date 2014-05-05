@@ -19,20 +19,38 @@ if(mode == nil) then mode = "all" end
 active_page = "hosts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+
+prefs = ntop.getPrefs()
+
+if(prefs.is_categorization_enabled) then print ()end 
+
+
 print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-	 $("#table-hosts").datatable({
-					title: "Hosts List",
-					url: "/lua/get_hosts_data.lua?mode=]]
+	 var url_update = "/lua/get_hosts_data.lua?mode=]]
 print(mode)
 
 if(protocol ~= nil) then
    print('&protocol='..protocol)
 end
 
-print('",')
+print [[";
+   var url_update_all = url_update + "]]
+print('&all=1";')
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_id.inc") 
+-- Set the flow table option
+if(prefs.is_categorization_enabled) then print ('flow_rows_option["categorization"] = true;') end
+
+if(prefs.is_httpbl_enabled) then print ('flow_rows_option["httpb"] = true;') end 
+print [[
+	 host_rows_option["ip"] = true;
+	 $("#table-hosts").datatable({ 
+	 		title: "Hosts List",
+			url: url_update ,
+	 ]]
 
 if(protocol == nil) then protocol = "" end
 
@@ -43,12 +61,20 @@ elseif(mode == "local") then
 else
    print('title: "Remote '..protocol..' Hosts",\n')
 end
-
-print [[
+print [[			
+      	 rowCallback: function ( row ) { return host_table_setID(row); },
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
 	        columns: [
-			     {
+	        	{
+	        		title: "Key",
+         			field: "key",
+         			hidden: true,
+         			css: { 
+              textAlign: 'center'
+           }
+         		},
+         		{
 			     title: "IP Address",
 				 field: "column_ip",
 				 sortable: true,
@@ -79,7 +105,7 @@ print [[
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_top.inc")
 
-prefs = ntop.getPrefs()
+
 
 if(prefs.is_categorization_enabled) then
 print [[

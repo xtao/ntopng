@@ -353,7 +353,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    dst_port=""
          end
 
-  print ("{ \"key\" : " .. key)
+  print ("{ \"key\" : \"" .. key..'\"')
 
 	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
 	 print (", \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
@@ -416,7 +416,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 	    print("\"")
 	 else
-	    print ("\", \"column_thpt\" : \"\"")
+	    print ("\", \"column_thpt\" : \"NaN\"")
 	 end
 
 	 cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)

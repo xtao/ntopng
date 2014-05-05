@@ -1,8 +1,12 @@
          title: "Active Flows",
           columns: [
            {
+         title: "Key",
          field: "key",
-         hidden: true
+         hidden: true,
+         css: { 
+              textAlign: 'center'
+           }
          },
          {
            title: "Info",
