@@ -22,11 +22,11 @@ stats = interface.getNdpiStats()
 num_param = 0
 print [[
       <hr>
-      <div id="table-hosts"></div>
-	 <script>
-	 $("#table-hosts").datatable({
-			url: "/lua/get_flows_data.lua]] 
-if(application ~= nil) then
+      <div id="table-flow"></div>
+   <script>
+   var url_update = "/lua/get_flows_data.lua]]
+
+   if(application ~= nil) then
    print("?application="..application)
    num_param = num_param + 1
 end
@@ -61,7 +61,24 @@ if(key ~= nil) then
   num_param = num_param + 1
 end
 
-print [[",
+
+
+print [[";
+   var url_update_all = url_update + "]]
+
+if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print('all=1";')
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")    
+   print [[
+   flow_rows_option["sprobe"] = true;
+   $("#table-flow").datatable({
+      url: url_update ,
+      rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
 

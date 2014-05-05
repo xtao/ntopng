@@ -1,31 +1,71 @@
+// Use the flow_rows_option object in order to simplify the option setting from lua script.
+
+var flow_rows_option = {};
+flow_rows_option["type"] = "flow";
+flow_rows_option["categorization"] = false;
+flow_rows_option["sprobe"] = false;
+
 var flow_rows = [];
 var flow_rows_index = 0;
 
 
 function flow_table_setID (row) {
-
+  var index = 0;
   var flow_key = row.find("td").eq(0).text();
+  var type = flow_rows_option["type"];
+  // console.log(type);
+  
+  // Set the row index to the flow key
   row.attr('id', flow_key);
-  row.find("td").eq(0).attr('id', flow_key+"_key");
-  row.find("td").eq(1).attr('id', flow_key+"_info");
-  row.find("td").eq(2).attr('id', flow_key+"_application");
-  row.find("td").eq(3).attr('id', flow_key+"_l4");
-  row.find("td").eq(4).attr('id', flow_key+"_vlan");
-  row.find("td").eq(5).attr('id', flow_key+"_client");
-  row.find("td").eq(6).attr('id', flow_key+"_server");
-  row.find("td").eq(7).attr('id', flow_key+"_duration");
-  row.find("td").eq(8).attr('id', flow_key+"_breakdown");
-  row.find("td").eq(9).attr('id', flow_key+"_throughput");
-  row.find("td").eq(10).attr('id', flow_key+"_bytes");
+
+  if (!flow_rows_option["sprobe"]) {
+    
+    // flows_stats_top
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_key");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_info");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_application");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_l4");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_vlan");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_client");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_server");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_duration");
+    //custom
+    if ((type == 'flow') && (flow_rows_option["categorization"])) row.find("td").eq(index++).attr('id', flow_key+"_categorization");
+    // flows_stats_bottom
+    if (type == 'flow') row.find("td").eq(index++).attr('id', flow_key+"_breakdown");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_throughput");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_bytes");
+  
+  } else {
+
+    // flows_stats_top
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_key");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_info");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_cliproc");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_srvproc");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_application");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_l4");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_client");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_server");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_duration");
+    //custom
+    
+    // flows_stats_bottom
+    if (type == 'flow') row.find("td").eq(index++).attr('id', flow_key+"_breakdown");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_bytes");
+
+  }
+
   flow_rows[flow_rows_index] = flow_key;
   flow_rows_index++;
-  // console.log(row);
+  
+  //console.log(row);
   //console.log(flow_rows);
   return row;
 
 }
 
-
+// Updating function
 function flow_table_update () {
   $.ajax({
     type: 'GET',
@@ -58,4 +98,5 @@ function flow_table_update () {
   });
 }
 
+// Interval
 var flow_table_interval = window.setInterval(flow_table_update,2000);

@@ -18,6 +18,7 @@ hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 key = _GET["key"]
 
+prefs = ntop.getPrefs()
 stats = interface.getNdpiStats()
 num_param = 0
 print [[
@@ -73,7 +74,11 @@ if (num_param > 0) then
   end
   print('all=1";')
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")    
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
+-- Set the flow table option
+if(prefs.is_categorization_enabled) then
+  print ('flow_rows["categorization"] = true;')
+end
    print [[
 
 	 $("#table-flow").datatable({
@@ -98,7 +103,7 @@ print("</ul> </div>' ],\n")
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_top.inc")
 
-prefs = ntop.getPrefs()
+
 
 if(prefs.is_categorization_enabled) then
 print [[

@@ -1,6 +1,10 @@
 	       title: "Active Flows",
 	        columns: [
 			     {
+         field: "key",
+         hidden: true
+         	},
+         {
 			     title: "Info",
 				 field: "column_key",
 	 	             css: { 
