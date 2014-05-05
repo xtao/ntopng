@@ -296,7 +296,7 @@ for _key, _value in pairsByKeys(vals, funct) do
       end
       print("\",")
    else
-      print ("\", \"column_thpt\" : \"NaN\",")
+      print ("\"column_thpt\" : \"NaN\",")
    end
 
 	    if(aggregation ~= nil) then
