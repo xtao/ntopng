@@ -99,4 +99,4 @@ function flow_table_update () {
 }
 
 // Interval
-var flow_table_interval = window.setInterval(flow_table_update,1000);
+// var flow_table_interval = window.setInterval(flow_table_update,10000);

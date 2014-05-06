@@ -82,8 +82,9 @@ end
    print [[
 
 	 $("#table-flow").datatable({
-			url: url_update ,
-      rowCallback: function ( row ) { return flow_table_setID(row); },
+			url: url_update , ]]
+-- print ('rowCallback: function ( row ) { return host_table_setID(row); },')
+print [[ 
          showFilter: true,
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]

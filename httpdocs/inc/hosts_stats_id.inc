@@ -16,8 +16,6 @@ function host_table_setID (row) {
   // Set the row index to the host key
   row.attr('id', host_key);
 
-    
-  
   row.find("td").eq(index++).attr('id', host_key+"_key");
   //custom
   if (host_rows_option["ip"]) row.find("td").eq(index++).attr('id', host_key+"_ip");
@@ -68,8 +66,6 @@ function host_table_update () {
           $("#"+host_key+'_traffic').html(rows_data.data[row].column_traffic);
         } else {
         //console.log('New host: '+host_key);
-        //$("#table-hosts tr#"+host_key).remove()
-        //$('#table-hosts').find('table').append('<tr><td>my data</td><td>more data</td></tr>');
       }
       }
 
@@ -81,4 +77,4 @@ function host_table_update () {
 }
 
 // Interval
-var host_table_interval = window.setInterval(host_table_update,1000);
+// var host_table_interval = window.setInterval(host_table_update,10000);

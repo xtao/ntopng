@@ -202,8 +202,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if(num > 0) then
 	       print ",\n"
 	    end
-      print ('{ \"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\"')
-	    print (", \"column_ip\" : \"<A HREF='/lua/")
+      print ('{ ')
+      print ('\"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\",')
+	    print ("\"column_ip\" : \"<A HREF='/lua/")
 	    if(aggregation ~= nil) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
 	    if(aggregation == nil) then
