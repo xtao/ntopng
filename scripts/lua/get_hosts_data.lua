@@ -19,6 +19,7 @@ protocol    = _GET["protocol"]
 -- Host comparison parameters
 mode        = _GET["mode"]
 aggregation = _GET["aggregation"]
+aggregated  = _GET["aggregated"]
 tracked     = _GET["tracked"]
 protocol    = _GET["protocol"]
 
@@ -41,14 +42,14 @@ else
    perPage = tonumber(perPage)
 end
 
-if(aggregation ~= nil) then aggregation = tonumber(aggregation) end 
+if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end 
 if(tracked ~= nil) then tracked = tonumber(tracked) else tracked = 0 end 
 
 if((mode == nil) or (mode == "")) then mode = "all" end
 
 interface.find(ifname)
 
-if(aggregation == nil) then
+if((aggregation == nil) and (aggregated == nil)) then
    hosts_stats = interface.getHostsInfo()
 else
    hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol), client)
@@ -205,9 +206,9 @@ for _key, _value in pairsByKeys(vals, funct) do
       print ('{ ')
       print ('\"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\",')
 	    print ("\"column_ip\" : \"<A HREF='/lua/")
-	    if(aggregation ~= nil) then print("aggregated_") end
+	    if((aggregation ~= nil) or (aggregated ~= nil)) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
-	    if(aggregation == nil) then
+	    if((aggregation == nil) and (aggregated == nil)) then
 	       print(key)
 	    else
 	       print(mapOS2Icon(key))
@@ -215,7 +216,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(" </A> ")
 
-	    if(aggregation ~= nil) then
+	    if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       --if(value["tracked"]) then
 
 	       -- EPP + domain + tracked
@@ -230,7 +231,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
 
-	    if(aggregation == nil) then
+	    if((aggregation == nil) and (aggregated == nil)) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
 	    print(shortHostName(value["name"]))
@@ -277,7 +278,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-	    if(aggregation ~= nil) then 
+	    if((aggregation ~= nil) or (aggregated ~= nil)) then 
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
 	    end
@@ -300,7 +301,7 @@ for _key, _value in pairsByKeys(vals, funct) do
       print ("\"column_thpt\" : \"NaN\",")
    end
 
-	    if(aggregation ~= nil) then
+	    if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 

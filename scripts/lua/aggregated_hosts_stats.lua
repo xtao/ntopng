@@ -32,11 +32,11 @@ print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
-   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..' (All)</a></li>')
+   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..'</a></li>')
 
-   for key1,v1 in pairs(families["aggregations"]) do
-      print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
-   end
+--   for key1,v1 in pairs(families["aggregations"]) do
+--      print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
+--   end
 end 
 
 print("</ul> </div>' ],\n")
