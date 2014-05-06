@@ -41,10 +41,10 @@ print [[";
 print('&all=1";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_id.inc") 
--- Set the flow table option
-if(prefs.is_categorization_enabled) then print ('flow_rows_option["categorization"] = true;') end
+-- Set the host table option
+if(prefs.is_categorization_enabled) then print ('host_rows_option["categorization"] = true;') end
 
-if(prefs.is_httpbl_enabled) then print ('flow_rows_option["httpb"] = true;') end 
+if(prefs.is_httpbl_enabled) then print ('host_rows_option["httpb"] = true;') end 
 print [[
 	 host_rows_option["ip"] = true;
 	 $("#table-hosts").datatable({ 
