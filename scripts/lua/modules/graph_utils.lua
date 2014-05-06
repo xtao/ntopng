@@ -68,25 +68,23 @@ function getRRDName(ifname, host, rrdFile)
    return(rrdname  .. rrdFile)
 end
 
-function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
-   dirs = ntop.getDirs()
+zoom_vals = {
+   { "5m",  "now-300s", 60*5 },
+   { "10m", "now-600s", 60*10 },
+   { "1h",  "now-1h",   60*60*1 },
+   { "3h",  "now-3h",   60*60*3 },
+   { "6h",  "now-6h",   60*60*6 },
+   { "12h", "now-12h",  60*60*12 },
+   { "1d",  "now-1d",   60*60*24 },
+   { "1w",  "now-1w",   60*60*24*7 },
+   { "2w",  "now-2w",   60*60*24*14 },
+   { "1m",  "now-1mon", 60*60*24*31 },
+   { "6m",  "now-6mon", 60*60*24*31*6 },
+   { "1y",  "now-1y",   60*60*24*366 }
+}
+
+function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
    rrdname = getRRDName(ifname, host, rrdFile)
-   names =  {}
-   series = {}
-   vals = {
-      { "5m",  "now-300s", 60*5 },
-      { "10m", "now-600s", 60*10 },
-      { "1h",  "now-1h",   60*60*1 },
-      { "3h",  "now-3h",   60*60*3 },
-      { "6h",  "now-6h",   60*60*6 },
-      { "12h", "now-12h",  60*60*12 },
-      { "1d",  "now-1d",   60*60*24 },
-      { "1w",  "now-1w",   60*60*24*7 },
-      { "2w",  "now-2w",   60*60*24*14 },
-      { "1m",  "now-1mon", 60*60*24*31 },
-      { "6m",  "now-6mon", 60*60*24*31*6 },
-      { "1y",  "now-1y",   60*60*24*366 }
-   }
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -95,17 +93,103 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
    nextZoomLevel = zoomLevel;
    epoch = tonumber(selectedEpoch);
 
-   for k,v in ipairs(vals) do
-      if(vals[k][1] == zoomLevel) then
+   for k,v in ipairs(zoom_vals) do
+      if(zoom_vals[k][1] == zoomLevel) then
          if (k > 1) then
-           nextZoomLevel = vals[k-1][1]
+           nextZoomLevel = zoom_vals[k-1][1]
          end
          if (epoch) then
-           start_time = epoch - vals[k][3]/2
-           end_time = epoch + vals[k][3]/2
+           start_time = epoch - zoom_vals[k][3]/2
+           end_time = epoch + zoom_vals[k][3]/2
          else
-	   start_time = vals[k][2]
+	   start_time = zoom_vals[k][2]
            end_time = "now"
+         end
+      end
+   end
+
+   if(ntop.exists(rrdname)) then
+      --print("=> Found "..rrdname.."<p>\n")
+      --print("=> Found ".. start_time .. "|" .. end_time .. "<p>\n")
+      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      local max_num_points = 512 -- This is to avoid having too many points and thus a fat graph
+      local num_points_found = table.getn(fdata)
+      local sample_rate = round(num_points_found / max_num_points)
+      local num_points = 0
+      local step = 1
+      local series = {}
+
+      print("<span class=\"peity_rrd\">")
+
+      if(sample_rate < 1) then
+	 sample_rate = 1
+      end
+
+      -- print("=> "..num_points_found.."[".. sample_rate .."]["..fstart.."]<p>")
+
+      id = 0
+      num = 0
+      sample_rate = sample_rate-1
+      for i, v in ipairs(fdata) do
+	 timestamp = fstart + (i-1)*fstep
+	 num_points = num_points + 1
+	 
+	 local elemId = 1
+	 for _, w in ipairs(v) do
+	    if(w ~= w) then
+	       -- This is a NaN
+	       v = 0
+	    else
+	       v = tonumber(w)
+	       if(v < 0) then
+		  v = 0
+	       end
+	    end
+	    
+	    value = v*8 -- bps
+	    
+	    if(id == sample_rate) then
+	       if(num > 0) then print(",") end
+	       print(round(value))
+	       num = num+1
+	       id = 0
+	    else
+	       id = id + 1
+	    end
+	    elemId = elemId + 1
+	 end   
+      end
+      print("</span>\n")
+  end
+end
+
+
+
+
+function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
+   dirs = ntop.getDirs()
+   rrdname = getRRDName(ifname, host, rrdFile)
+   names =  {}
+   series = {}
+
+   if(zoomLevel == nil) then
+      zoomLevel = "1h"
+   end
+
+   nextZoomLevel = zoomLevel;
+   epoch = tonumber(selectedEpoch);
+
+   for k,v in ipairs(zoom_vals) do
+      if(zoom_vals[k][1] == zoomLevel) then
+         if (k > 1) then
+	    nextZoomLevel = zoom_vals[k-1][1]
+         end
+         if (epoch) then
+	    start_time = epoch - zoom_vals[k][3]/2
+	    end_time = epoch + zoom_vals[k][3]/2
+         else
+	    start_time = zoom_vals[k][2]
+	    end_time = "now"
          end
       end
    end
@@ -129,7 +213,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
    if(ntop.exists(rrdname)) then
       -- print("=> Found ".. start_time .. "|" .. end_time .. "\n")
       local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
-      --print("=> here we gho")
+      --print("=> here we go")
       local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
       local sample_rate = round(num_points_found / max_num_points)
@@ -144,6 +228,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 names[num] = prefixLabel
 	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
 	 num = num + 1
+	 io.write(prefixLabel.."\n")
 	 -- print(num.."\n")
       end
 
@@ -189,28 +274,28 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 end
       end
 
-   for key, value in pairs(series) do
-      local t = 0
+      for key, value in pairs(series) do
+	 local t = 0
 
-      for elemId=0,(num-1) do
-	 -- print(">"..value[elemId+1].. "<")
-	 t = t + value[elemId+1] -- bps
+	 for elemId=0,(num-1) do
+	    -- print(">"..value[elemId+1].. "<")
+	    t = t + value[elemId+1] -- bps
+	 end
+
+	 t = t * step
+
+	 if((minval_bits_time == 0) or (minval_bits >= t)) then
+	    minval_bits_time = value[0]
+	    minval_bits = t
+	 end
+
+	 if((maxval_bits_time == 0) or (maxval_bits <= t)) then
+	    maxval_bits_time = value[0]
+	    maxval_bits = t
+	 end
       end
 
-      t = t * step
-
-      if((minval_bits_time == 0) or (minval_bits >= t)) then
-	 minval_bits_time = value[0]
-	 minval_bits = t
-      end
-
-      if((maxval_bits_time == 0) or (maxval_bits <= t)) then
-	 maxval_bits_time = value[0]
-	 maxval_bits = t
-      end
-   end
-
-print [[
+      print [[
 
 <style>
 #chart_container {
@@ -239,46 +324,41 @@ font-family: Arial, Helvetica, sans-serif;
 
 if(show_timeseries == 1) then
    print [[
-
-
 <div class="btn-group">
   <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
   <ul class="dropdown-menu">
 ]]
 
-print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
-print('<li class="divider"></li>\n')
-dirs = ntop.getDirs()
-p = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"
-if(host ~= nil) then 
-	p = p .. host 
-	go_deep = true
-else
-	go_deep = false
-end
-d = fixPath(p)
-
-navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, go_deep)
-
-print [[
+   print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
+   print('<li class="divider"></li>\n')
+   dirs = ntop.getDirs()
+   p = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"
+   if(host ~= nil) then 
+      p = p .. host 
+      go_deep = true
+   else
+      go_deep = false
+   end
+   d = fixPath(p)
+   
+   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, go_deep)
+   
+   print [[
   </ul>
 </div><!-- /btn-group -->
-
-
 ]]
-
 end
 
 print('&nbsp;Timeframe:  <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
 
-for k,v in ipairs(vals) do
+for k,v in ipairs(zoom_vals) do
    print('<a class="btn btn-small ')
-
-   if(vals[k][1] == zoomLevel) then
+   
+   if(zoom_vals[k][1] == zoomLevel) then
       print("active")
    end
 
-   print('" href="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. vals[k][1] .. '&epoch=' .. (selectedEpoch or '') ..'">'.. vals[k][1] ..'</a>\n')
+   print('" href="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. zoom_vals[k][1] .. '&epoch=' .. (selectedEpoch or '') ..'">'.. zoom_vals[k][1] ..'</a>\n')
 end
 
 print [[
@@ -334,27 +414,27 @@ var graph = new Rickshaw.Graph( {
 
 				]]
 
-				if(names ~= nil) then
-for elemId=0,(num-1) do
-   if(elemId > 0) then
-      print ","
-   end
-
-   print ("{\nname: '".. names[elemId] .. "',\n")
-
-   print("color: palette.color(),\ndata: [\n")
-
-   n = 0
-   for key, value in pairs(series) do
-      if(n > 0) then
-	 print(",\n")
+if(names ~= nil) then
+   for elemId=0,(num-1) do
+      if(elemId > 0) then
+	 print ","
       end
-      print ("\t{ x: "..  value[0] .. ", y: ".. value[elemId+1] .. " }")
-      n = n + 1
-   end
-
+      
+      print ("{\nname: '".. names[elemId] .. "',\n")
+      
+      print("color: palette.color(),\ndata: [\n")
+      
+      n = 0
+      for key, value in pairs(series) do
+	 if(n > 0) then
+	    print(",\n")
+	 end
+	 print ("\t{ x: "..  value[0] .. ", y: ".. value[elemId+1] .. " }")
+	 n = n + 1
+      end
+      
       print("\n]}\n")
-end
+   end
 end
 
 print [[

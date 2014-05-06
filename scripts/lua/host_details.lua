@@ -653,7 +653,20 @@ end
 
 
    elseif(page == "epp") then
+
       if(host["epp"] ~= nil) then
+
+print [[
+
+<div class="tabbable tabs-left">
+              <ul class="nav nav-tabs">
+                <li class="active"><a href="#lA" data-toggle="tab">Live Stats</a></li>
+                <li><a href="#lB" data-toggle="tab">Historical</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active" id="lA">
+     ]]
+
 	 print("<table class=\"table table-bordered table-striped\">\n")
 	 print("<tr><th>EPP Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
 	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=epp_sent_num_queries>".. formatValue(host["epp"]["sent"]["num_queries"]) .."</span> <span id=trend_sent_num_queries></span></td>")
@@ -696,7 +709,33 @@ end
 	 print("</table>\n")
       end
 
+print [[
+                  </div>
+                <div class="tab-pane" id="lB">
+]]
 
+
+
+print('<table class="table table-bordered table-striped">')
+
+print("<tr><th>Replies Sent OK</th>\n<td>")
+drawPeity(ifname, host_info["host"], "epp/sent/num_replies_ok.rrd", _GET["graph_zoom"], _GET["epoch"])
+print(" <i class='fa fa-search'></i> </td></tr>\n")
+print("<tr><th>Replies Sent Error</th>\n<td>")
+drawPeity(ifname, host_info["host"], "epp/sent/num_replies_error.rrd", _GET["graph_zoom"], _GET["epoch"])
+print(" <i class='fa fa-search'></i> </td></tr>\n")
+print("</table>\n")
+
+
+print [[
+                </div>
+              </div>
+            </div> <!-- /tabbable -->
+
+ <script type="text/javascript">
+$(".peity_rrd").peity("line", { width: 256, height: 32 });
+</script>
+]]
 
 
    elseif(page == "flows") then
