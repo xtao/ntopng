@@ -119,7 +119,7 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
       local step = 1
       local series = {}
 
-      print("<span class=\"peity_rrd\">")
+      print("<span class=\"peity-line\">")
 
       if(sample_rate < 1) then
 	 sample_rate = 1
@@ -150,7 +150,7 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
 	    
 	    if(id == sample_rate) then
 	       if(num > 0) then print(",") end
-	       print(round(value))
+	       print(round(value).."")
 	       num = num+1
 	       id = 0
 	    else

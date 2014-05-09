@@ -175,7 +175,7 @@ for k,v in pairs(names) do
     custom_name = ntop.getCache(key)
 
     print(">")
-    print("<a href=/lua/if_stats.lua?if_name="..v.."> ")
+    print("<a href=\"/lua/if_stats.lua?if_name="..v.."\"> ")
     if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
     
     if((custom_name ~= nil) and (custom_name ~= "")) then

@@ -656,16 +656,6 @@ end
 
       if(host["epp"] ~= nil) then
 
-print [[
-
-<div class="tabbable tabs-left">
-              <ul class="nav nav-tabs">
-                <li class="active"><a href="#lA" data-toggle="tab">Live Stats</a></li>
-                <li><a href="#lB" data-toggle="tab">Historical</a></li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="lA">
-     ]]
 
 	 print("<table class=\"table table-bordered table-striped\">\n")
 	 print("<tr><th>EPP Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
@@ -709,33 +699,38 @@ end
 	 print("</table>\n")
       end
 
-print [[
-                  </div>
-                <div class="tab-pane" id="lB">
-]]
+path = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"..host_info["host"].."/")
+
+   print('<table class="table table-bordered table-striped">')
+for i=1,2 do
+   if(i == 1) then
+      base = "epp/sent/"
+   else
+      base = "epp/rcvd/"
+   end
+   
+   s = path..base
+   rrds = ntop.readdir(s)
+   
+   for k,v in pairs(rrds) do
+      print("<tr><th>"..k.."</th>\n<td>")
+      drawPeity(ifname, host_info["host"], base.."/"..k, _GET["graph_zoom"], _GET["epoch"])
+      print(" <i class='fa fa-search'></i> </td></tr>\n")
+   end
+end
 
 
 
-print('<table class="table table-bordered table-striped">')
 
-print("<tr><th>Replies Sent OK</th>\n<td>")
-drawPeity(ifname, host_info["host"], "epp/sent/num_replies_ok.rrd", _GET["graph_zoom"], _GET["epoch"])
-print(" <i class='fa fa-search'></i> </td></tr>\n")
-print("<tr><th>Replies Sent Error</th>\n<td>")
-drawPeity(ifname, host_info["host"], "epp/sent/num_replies_error.rrd", _GET["graph_zoom"], _GET["epoch"])
-print(" <i class='fa fa-search'></i> </td></tr>\n")
+
 print("</table>\n")
 
 
-print [[
-                </div>
-              </div>
-            </div> <!-- /tabbable -->
 
- <script type="text/javascript">
-$(".peity_rrd").peity("line", { width: 256, height: 32 });
-</script>
+print [[
+ <script type="text/javascript">$(".peity-line").peity("line", { width: 128});</script>
 ]]
+
 
 
    elseif(page == "flows") then
