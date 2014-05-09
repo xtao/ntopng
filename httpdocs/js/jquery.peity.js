@@ -1,4 +1,4 @@
-// Peity jQuery plugin version 2.0.1
+// Peity jQuery plugin version 2.0.3
 // (c) 2014 Ben Pickles
 //
 // http://benpickles.github.io/peity
@@ -17,6 +17,8 @@
 
   // https://gist.github.com/madrobby/3201472
   var svgSupported = "createElementNS" in document && svgElement("svg", {}).createSVGRect
+
+  var pixel = 1 / (window.devicePixelRatio || 1)
 
   var peity = $.fn.peity = function(type, options) {
     if (svgSupported) {
@@ -219,7 +221,8 @@
         , width = $svg.width()
         , height = $svg.height() - opts.strokeWidth
         , xQuotient = width / (values.length - 1)
-        , yQuotient = height / (max - min)
+        , diff = max - min
+        , yQuotient = diff == 0 ? height : height / diff
         , zero = height + (min * yQuotient)
         , coords = [0, zero]
 
@@ -281,17 +284,14 @@
       for (var i = 0; i < values.length; i++) {
         var value = values[i]
         var y = height - (yQuotient * (value - min))
-        var h
+        var h = yQuotient * value
 
-        if (value == min) {
-          var pixel = 1 / (window.devicePixelRatio || 1)
-          if (min >= 0 || max > 0) y -= pixel
+        if (h == 0) {
+          // Always show a bar even if it represents zero.
           h = pixel
-        } else {
-          h = yQuotient * value
-        }
 
-        if (h < 0) {
+          if (min <= 0 && max > 0 || diff == 0) y -= pixel
+        } else if (h < 0) {
           y += h
           h = -h
         }
