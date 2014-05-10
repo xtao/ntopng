@@ -228,14 +228,16 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 names[num] = prefixLabel
 	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
 	 num = num + 1
-	 io.write(prefixLabel.."\n")
+	 --io.write(prefixLabel.."\n")
 	 -- print(num.."\n")
       end
 
       id = 0
       fend = 0
       sampling = 0
+      --sample_rate = 1
       sample_rate = sample_rate-1
+      accumulated = 0
       for i, v in ipairs(fdata) do
 	 s = {}
 	 s[0] = fstart + (i-1)*fstep
@@ -259,17 +261,23 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	    end
 
 	    s[elemId] = v*8 -- bps
+	    -- if(s[elemId] > 0) then io.write("[".. elemId .. "]=" .. s[elemId] .."\n") end
 	    elemId = elemId + 1
 	 end
 
 	 total_bytes = total_bytes + v*fstep
-	 --print(" | " .. (v*fstep) .." |\n")
+	 --if((v*fstep) > 0) then io.write(" | " .. (v*fstep) .." | [sampling: ".. sampling .. "/" .. sample_rate.."]\n") end
 
 	 if(sampling == sample_rate) then
+	    if(sample_rate > 0) then
+	       s[1] = accumulated / sample_rate 
+	    end
 	    series[id] = s
 	    id = id + 1
 	    sampling = 0
+	    accumulated = 0
 	 else
+	    accumulated = accumulated + s[1]
 	    sampling = sampling + 1
 	 end
       end
@@ -278,7 +286,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 local t = 0
 
 	 for elemId=0,(num-1) do
-	    -- print(">"..value[elemId+1].. "<")
+	    --io.write(key.."="..value[elemId+1].. "\n")
 	    t = t + value[elemId+1] -- bps
 	 end
 
