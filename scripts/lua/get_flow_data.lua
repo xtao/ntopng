@@ -23,11 +23,11 @@ end
 if(flow == nil) then
    print('{}')
 else
-  print ("{ \"duration\" : \"" .. secondsToTime(flow["duration"]))
-  print ("\", \"bytes\" : \"" .. bytesToSize(flow["bytes"]) .. "")
+  print ("{ \"column_duration\" : \"" .. secondsToTime(flow["duration"]))
+  print ("\", \"column_bytes\" : \"" .. bytesToSize(flow["bytes"]) .. "")
 
   if(flow["throughput_trend"] > 0) then 
-      print ("\", \"thpt\" : \"" .. bitsToSize(8*flow["throughput"]).. " ")
+      print ("\", \"column_thpt\" : \"" .. bitsToSize(8*flow["throughput"]).. " ")
 
       if(flow["throughput_trend"] == 1) then 
          print("<i class='fa fa-arrow-up'></i>")
@@ -38,11 +38,11 @@ else
       end
       print("\"")
    else
-      print ("\", \"thpt\" : \"NaN\"")
+      print ("\", \"column_thpt\" : \"NaN\"")
    end
 
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
-   print (", \"breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")
+   print (", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='bar bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")
 
    print ("\" }")
 

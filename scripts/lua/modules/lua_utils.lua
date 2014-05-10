@@ -876,7 +876,7 @@ end
 -- Example: url2host(_GET)
 --
 function urt2hostinfo(get_info)
-   local host = {};
+   local host = {}
 
   if(get_info["host"] ~= nil) then
     host["host"] = get_info["host"]
@@ -1006,7 +1006,7 @@ function hostinfo2jqueryid(host_info,type)
     rsp = rsp..'_'..tostring(host_info["vlan"])
   end
 
-  rsp = string.gsub (rsp, "%.", "")
+  rsp = string.gsub (rsp, "%.", "_")
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2KEY => ".. rsp .. "\n") end
 

@@ -36,9 +36,7 @@ if(protocol ~= nil) then
    print('&protocol='..protocol)
 end
 
-print [[";
-   var url_update_all = url_update + "]]
-print('&all=1";')
+print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_id.inc") 
 -- Set the host table option
@@ -61,7 +59,7 @@ elseif(mode == "local") then
 else
    print('title: "Remote '..protocol..' Hosts",\n')
 end
--- print ('rowCallback: function ( row ) { return host_table_setID(row); },')
+print ('rowCallback: function ( row ) { return host_table_setID(row); },')
 print [[ 
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],

@@ -5,9 +5,6 @@ host_rows_option["ip"] = false;
 host_rows_option["categorization"] = false;
 host_rows_option["httpbl"] = false;
 
-var host_rows = [];
-var host_rows_index = 0;
-
 
 function host_table_setID (row) {
   var index = 0;
@@ -35,46 +32,56 @@ function host_table_setID (row) {
   row.find("td").eq(index++).attr('id', host_key+"_breakdown");
   row.find("td").eq(index++).attr('id', host_key+"_throughput");
   row.find("td").eq(index++).attr('id', host_key+"_traffic");
-
-  host_rows[host_rows_index] = host_key;
-  host_rows_index++;
   
   // console.log(row);
-  // console.log(host_rows);
   return row;
 
 }
 
-// Updating function
-function host_table_update () {
+function hostkey2hostInfo(host_key) {
+    var info = host_key.split("_");
+    var hostinfo = [];
+    hostinfo[0] = info[0] + '.' + info[1] + '.' + info[2] + '.' + info[3];
+    hostinfo[1] = info[4];
+    return (hostinfo);
+} 
+
+
+function row_update(host_key) {
+   var hostInfo = hostkey2hostInfo(host_key);
+   var url = "/lua/get_host_data.lua?host="+hostInfo[0]+"&vlan=" + hostInfo[1];
+
   $.ajax({
     type: 'GET',
-    url: url_update_all,
+    url: url,
+    cache: false,
     success: function(content) {
-      // console.log(jQuery.parseJSON(content));
-      var rows_data = jQuery.parseJSON(content);
-
-      for (var row in rows_data["data"]) {
-        //console.log(rows_data.data[row].key);
-        var host_key = rows_data.data[row].key;
-
-        if (host_rows.indexOf(host_key) != -1) {
-          // console.log("#"+host_key+'_traffic -->' + $("#"+host_key+'_traffic').html());
-          $("#"+host_key+'_since').html(rows_data.data[row].column_since);
-          $("#"+host_key+'_breakdown').html(rows_data.data[row].column_breakdown);
-          $("#"+host_key+'_throughput').html(rows_data.data[row].column_thpt);
-          $("#"+host_key+'_traffic').html(rows_data.data[row].column_traffic);
-        } else {
-        //console.log('New host: '+host_key);
-      }
-      }
-
+      var data = jQuery.parseJSON(content);
+      // console.log(url);
+      // console.log(data);
+      $("#"+host_key+'_since').html(data.column_since);
+      $("#"+host_key+'_breakdown').html(data.column_breakdown);
+      $("#"+host_key+'_throughput').html(data.column_thpt);
+      $("#"+host_key+'_traffic').html(data.column_traffic);
     },
     error: function(content) {
       console.log("error");
     }
   });
+
+}
+
+// Updating function
+function host_table_update () {
+
+  var $dt = $("#table-hosts").data("datatable");
+  var rows = $dt.rows;
+
+  for (var row in rows){
+    var host_key = rows[row][0].id;
+    row_update(host_key);
+  }
 }
 
 // Interval
-// var host_table_interval = window.setInterval(host_table_update,10000);
+// var host_table_interval = window.setInterval(host_table_update,3000);

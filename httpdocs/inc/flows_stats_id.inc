@@ -70,10 +70,10 @@ function row_update(flow_key) {
       var data = jQuery.parseJSON(content);
       // console.log(url);
       // console.log(data);
-      $("#"+flow_key+'_duration').html(data.duration);
-      $("#"+flow_key+'_breakdown').html(data.breakdown);
-      $("#"+flow_key+'_throughput').html(data.thpt);
-      $("#"+flow_key+'_bytes').html(data.bytes);
+      $("#"+flow_key+'_duration').html(data.column_duration);
+      $("#"+flow_key+'_breakdown').html(data.column_breakdown);
+      $("#"+flow_key+'_throughput').html(data.column_thpt);
+      $("#"+flow_key+'_bytes').html(data.column_bytes);
 
     },
     error: function(content) {
