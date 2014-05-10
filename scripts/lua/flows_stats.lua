@@ -23,7 +23,7 @@ stats = interface.getNdpiStats()
 num_param = 0
 print [[
       <hr>
-      <div id="table-flow"></div>
+      <div id="table-flows"></div>
 	 <script>
    var url_update = "/lua/get_flows_data.lua]]
 
@@ -62,17 +62,7 @@ if(key ~= nil) then
   num_param = num_param + 1
 end
 
-
-
-print [[";
-   var url_update_all = url_update + "]]
-
-if (num_param > 0) then
-    print("&")
-  else
-    print("?")
-  end
-  print('all=1";')
+print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
 -- Set the flow table option
@@ -81,9 +71,9 @@ if(prefs.is_categorization_enabled) then
 end
    print [[
 
-	 $("#table-flow").datatable({
+	 var table = $("#table-flows").datatable({
 			url: url_update , ]]
--- print ('rowCallback: function ( row ) { return host_table_setID(row); },')
+print ('rowCallback: function ( row ) { return flow_table_setID(row); },')
 print [[ 
          showFilter: true,
 	       showPagination: true,

@@ -5,10 +5,6 @@ flow_rows_option["type"] = "flow";
 flow_rows_option["categorization"] = false;
 flow_rows_option["sprobe"] = false;
 
-var flow_rows = [];
-var flow_rows_index = 0;
-
-
 function flow_table_setID (row) {
   var index = 0;
   var flow_key = row.find("td").eq(0).text();
@@ -55,48 +51,54 @@ function flow_table_setID (row) {
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_bytes");
 
   }
-
-  flow_rows[flow_rows_index] = flow_key;
-  flow_rows_index++;
   
   //console.log(row);
-  //console.log(flow_rows);
   return row;
 
 }
 
-// Updating function
-function flow_table_update () {
+
+function row_update(flow_key) {
+
+   var url = "/lua/get_flow_data.lua?flow_key="+flow_key;
+
   $.ajax({
     type: 'GET',
-    url: url_update_all,
+    url: url,
+    cache: false,
     success: function(content) {
-      // console.log(jQuery.parseJSON(content));
-      var rows_data = jQuery.parseJSON(content);
-
-      for (var row in rows_data["data"]) {
-        //console.log(rows_data.data[row].key);
-        var flow_key = rows_data.data[row].key;
-
-        if (flow_rows.indexOf(flow_key) != -1) {
-          // console.log('OK '+flow_key);
-          $("#"+flow_key+'_duration').html(rows_data.data[row].column_duration);
-          $("#"+flow_key+'_breakdown').html(rows_data.data[row].column_breakdown);
-          $("#"+flow_key+'_throughput').html(rows_data.data[row].column_thpt);
-          $("#"+flow_key+'_bytes').html(rows_data.data[row].column_bytes);
-        } else {
-        //console.log('New flow: '+flow_key);
-        //$("#table-hosts tr#"+flow_key).remove()
-        //$('#table-hosts').find('table').append('<tr><td>my data</td><td>more data</td></tr>');
-      }
-      }
+      var data = jQuery.parseJSON(content);
+      // console.log(url);
+      // console.log(data);
+      $("#"+flow_key+'_duration').html(data.duration);
+      $("#"+flow_key+'_breakdown').html(data.breakdown);
+      $("#"+flow_key+'_throughput').html(data.thpt);
+      $("#"+flow_key+'_bytes').html(data.bytes);
 
     },
     error: function(content) {
       console.log("error");
     }
   });
+
+}
+
+// Updating function
+function flow_table_update () {
+
+  var $dt = $("#table-flows").data("datatable"); 
+  // var currentPage = $dt.options.currentPage;
+  // var perPage = $dt.options.perPage;
+  var rows = $dt.rows;
+
+  for (var row in rows){
+    
+    var flow_key = rows[row][0].id;
+    // console.log(flow_key);
+    row_update(flow_key);
+  }
 }
 
 // Interval
-// var flow_table_interval = window.setInterval(flow_table_update,10000);
+
+// var flow_table_interval = window.setInterval(flow_table_update,3000);

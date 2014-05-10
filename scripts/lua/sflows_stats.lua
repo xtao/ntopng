@@ -22,7 +22,7 @@ stats = interface.getNdpiStats()
 num_param = 0
 print [[
       <hr>
-      <div id="table-flow"></div>
+      <div id="table-flows"></div>
    <script>
    var url_update = "/lua/get_flows_data.lua]]
 
@@ -63,20 +63,12 @@ end
 
 
 
-print [[";
-   var url_update_all = url_update + "]]
-
-if (num_param > 0) then
-    print("&")
-  else
-    print("?")
-  end
-  print('all=1";')
+print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")    
    print [[
    flow_rows_option["sprobe"] = true;
-   $("#table-flow").datatable({
+   $("#table-flows").datatable({
       url: url_update ,
       rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,

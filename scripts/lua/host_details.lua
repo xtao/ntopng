@@ -736,19 +736,16 @@ print [[
    elseif(page == "flows") then
 
 print [[
-      <div id="table-hosts"></div>
+      <div id="table-flows"></div>
 	 <script>
    var url_update = "/lua/get_flows_data.lua?]]
-print (hostinfo2url(host_info))
-
-print [[";
-   var url_update_all = url_update + "]] print('&all=1";\n')
+print (hostinfo2url(host_info)..'";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")   
 
 print [[
     flow_rows_option["type"] = 'host';
-	 $("#table-hosts").datatable({
+	 $("#table-flows").datatable({
          url: url_update,
          rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,
