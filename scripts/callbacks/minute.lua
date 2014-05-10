@@ -73,7 +73,7 @@ for _,_ifname in pairs(ifnames) do
 	 if(verbose) then print("[minute.lua] ".._ifname..": "..k.."="..v.."\n") end
 
          name = fixPath(basedir .. "/"..k..".rrd")
-         create_rrd(name, k)
+         createSingleRRDcounter(name, verbose)
          ntop.rrd_update(name, "N:".. v)
       end
 
