@@ -513,6 +513,7 @@ char* Flow::print(char *buf, u_int buf_len) {
 void Flow::update_hosts_stats(struct timeval *tv) {
   u_int64_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
   u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
+  bool updated = false;
 
   sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
@@ -541,23 +542,29 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
   if(last_update_time.tv_sec > 0) {
     float tdiff_msec = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000)+((tv->tv_usec-last_update_time.tv_usec)/(float)1000);
-    float bytes_msec = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff_msec;
 
-    if(bytes_msec < 0) bytes_msec = 0; /* Just to be safe */
+    if(tdiff_msec >= 1000 /* Do not updated when less than 1 second (1000 msec) */) {
+      float bytes_msec = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff_msec;
 
-    if(bytes_thpt < bytes_msec)      bytes_thpt_trend = trend_up;
-    else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
-    else                             bytes_thpt_trend = trend_stable;
+      if(bytes_msec < 0) bytes_msec = 0; /* Just to be safe */
 
-    /*
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][bytes: %u][bits_thpt: %.2f Mbps]",
-				 bytes_msec, (cli2srv_last_bytes-prev_cli2srv_last_bytes),
-				 (bytes_thpt*8)/((float)(1024*1024)));
-    */
-    bytes_thpt = bytes_msec;
-  }
+      if(bytes_thpt < bytes_msec)      bytes_thpt_trend = trend_up;
+      else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
+      else                             bytes_thpt_trend = trend_stable;
 
-  memcpy(&last_update_time, tv, sizeof(struct timeval));
+      /*
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][bytes: %u][bits_thpt: %.2f Mbps]",
+	bytes_msec, (cli2srv_last_bytes-prev_cli2srv_last_bytes),
+	(bytes_thpt*8)/((float)(1024*1024)));
+      */
+      bytes_thpt = bytes_msec;
+      updated = true;
+    }
+  } else
+    updated = true;
+  
+  if(updated)
+    memcpy(&last_update_time, tv, sizeof(struct timeval));
 }
 
 /* *************************************** */

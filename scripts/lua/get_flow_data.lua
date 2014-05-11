@@ -27,7 +27,7 @@ else
   print ("\", \"column_bytes\" : \"" .. bytesToSize(flow["bytes"]) .. "")
 
   if(flow["throughput_trend"] > 0) then 
-      print ("\", \"column_thpt\" : \"" .. bitsToSize(8*flow["throughput"]).. " ")
+     print ("\", \"column_thpt\" : \"" .. bitsToSize(8*flow["throughput"]).. " ")
 
       if(flow["throughput_trend"] == 1) then 
          print("<i class='fa fa-arrow-up'></i>")

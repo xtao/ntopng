@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* GeoIP support is present */
 #undef HAVE_GEOIP
@@ -17,6 +17,9 @@
 
 /* Define to 1 if you have the `GeoIP' library (-lGeoIP). */
 #undef HAVE_LIBGEOIP
+
+/* libnuma is installed */
+#undef HAVE_LIBNUMA
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

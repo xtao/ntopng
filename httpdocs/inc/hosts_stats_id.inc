@@ -83,5 +83,5 @@ function host_table_update () {
   }
 }
 
-// Interval
-// var host_table_interval = window.setInterval(host_table_update,3000);
+// Refresh Interval (5 sec)
+var host_table_interval = window.setInterval(host_table_update, 5000);

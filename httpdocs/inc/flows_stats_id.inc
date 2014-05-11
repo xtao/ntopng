@@ -99,6 +99,5 @@ function flow_table_update () {
   }
 }
 
-// Interval
-
-// var flow_table_interval = window.setInterval(flow_table_update,3000);
+// Refresh Interval (5 sec)
+var flow_table_interval = window.setInterval(flow_table_update, 5000);
