@@ -257,7 +257,10 @@ void ActivityStats::extractPoints(u_int8_t *elems) {
  for(Uint32EWAHBoolArray::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {
    u_int last_point = *i;
 
-   elems[last_point] = 1;
+   if(last_point < CONST_MAX_ACTIVITY_DURATION)
+     elems[last_point] = 1;
+   else
+     break;
  }
 
  m.unlock(__FILE__, __LINE__);
