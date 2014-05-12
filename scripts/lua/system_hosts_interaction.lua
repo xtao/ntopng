@@ -51,93 +51,122 @@ if(num > 0) then
    end
 
 print [[
-<div id="chart"></div>
-<style>
 
-.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 1.5px;
+<script>
+
+var graph = new Springy.Graph();
+
+var layout = new Springy.Layout.ForceDirected(
+  graph,
+  400.0, // stiffness
+  100.0, // repulsion
+  0.8    // damping
+);
+
+jQuery(function () {
+  var springy = window.springy = jQuery('#chart-canvas').springy({
+    graph: graph,
+    nodeSelected: function (node) {
+      //node.data.label;
+    }
+  });
+});
+
+function draw(translatePos){
+  var canvas = document.getElementById("chart-canvas");
+  //var context = canvas.getContext("2d");
+  //context.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.style.zoom = 100+'%';  
 }
 
-.link-group {
-  stroke: rgb(0, 136, 204);
-  stroke-width: 0.1px;
+window.onload = function(){
+  var canvas = document.getElementById("chart-canvas");
+  var startDragOffset = {};
+  var mouseDown = false;
+
+  var translatePos = {
+    x: canvas.width / 2,
+    y: canvas.height / 2
+  };
+
+  canvas.addEventListener("mousedown", function(evt){
+    mouseDown = true;
+    startDragOffset.x = evt.clientX - translatePos.x;
+    startDragOffset.y = evt.clientY - translatePos.y;
+  });
+
+  canvas.addEventListener("mouseup", function(evt){
+    mouseDown = false;
+  });
+
+  canvas.addEventListener("mouseover", function(evt){
+    mouseDown = false;
+  });
+
+  canvas.addEventListener("mouseout", function(evt){
+    mouseDown = false;
+  });
+
+  canvas.addEventListener("mousemove", function(evt){
+    if (mouseDown) {
+      translatePos.x = evt.clientX - startDragOffset.x;
+      translatePos.y = evt.clientY - startDragOffset.y;
+      draw(translatePos);
+    }
+  });
+
+  draw(translatePos);
+};
+
+function getJSONData(url, params, error_message) {
+  var jsonData = null;
+    
+  $.ajax({
+    type: 'GET',
+    url: url,
+    cache: false,
+    data: params,
+    async: false,
+    success: function(content) {
+      jsonData = content; //jQuery.parseJSON(content);
+    },
+    error: function(content) {
+      console.log(error_message);
+    }
+  });
+
+  return jsonData;
 }
 
-.node-tooltip {
-  font: 10px sans-serif;
-  color: #333;
-}
+function readableBytes(bytes) {
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes == 0) return '0 Bytes';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+};
 
-#licensing {
-  fill: green;
-}
-
-.link.licensing {
-  stroke: green;
-}
-
-.link.resolved {
-  stroke-dasharray: 0, 2 1;
-}
-
-circle {
-  fill: #ccc;
-  stroke: #333;
-  stroke-width: 1.5px;
-}
-
-text {
-  font: 10px sans-serif;
-  pointer-events: none;
-  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-}
-
-</style>
-
- <script>
-
-var width = 960,
-    height = 500;
-
-var color = d3.scale.category20();
-
-var force = d3.layout.force()
-  .charge(-300)
-  .linkDistance(200)
-  .size([width, height]);
-
-var main = d3.select("#chart")
-  .append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-var svg = main.append('svg:g')
-    .call(d3.behavior.zoom().on("zoom", rescale))
-    .on("dblclick.zoom", null);
-
-function rescale() {
-  trans=d3.event.translate;
-  scale=d3.event.scale;
-
-  svg.attr("transform",
-      "translate(" + trans + ")"
-      + " scale(" + scale + ")");
-}
-
+var colorGen = d3.scale.category20();
 var explode_process = '';
 
 function refreshGraph() {
-d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
   var nodes = {};
   var max_node_bytes = 0;
   var max_link_bytes = 0;
   var filtered_links = [];
   var systems = {};
 
-  function addNode(node_id, id, name, bytes, type, description, process_name) {
-    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description, process_name: process_name };
+  var links = getJSONData("/lua/get_system_hosts_interaction.lua");
+  
+  function addNode(node_id, id, name, bytes, type, process_name, icon_url, exploded) {
+    var description;
+    if (name == "Remote Hosts") {
+      description = name;
+      icon_url = "/img/interaction-graph-icons/remote_hosts.png";
+    } else {
+      description = process_instance_to_string(id);
+    }
+    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description, process_name: process_name, icon_url: icon_url };
+    else { if (name != "Remote Hosts" && !exploded) nodes[node_id]['description'] = 'Double-Click to expand'; }
 
     nodes[node_id]['bytes'] += bytes;
 
@@ -172,162 +201,134 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     var client_process_name = link.client_name,
         server_process_name = link.server_name;
 
-    var client_description = 'Double-Click to expand',
-        server_description = 'Double-Click to expand';
-
     if (explode_process != '') {
-      //filtering exploded process
+      // filtering exploded process
       if (explode_process != source && explode_process != target) return; /* skip this link */
 
       if (explode_process == source) {
         source_exploded = 1;
         source = link.client; 
         link.client_name = link.client_name + process_instance_suffix(link.client); 
-        client_description = process_instance_to_string(link.client); 
       }
 
       if (explode_process == target) { 
         target_exploded = 1;
         target = link.server; 
         link.server_name = link.server_name + process_instance_suffix(link.server); 
-        server_description = process_instance_to_string(link.server); 
       }
     }
 
-    addNode(source, link.client, link.client_name, link.bytes, link.client_type, client_description, client_process_name);
-    addNode(target, link.server, link.server_name, link.bytes, link.server_type, server_description, server_process_name);
+    addNode(source, link.client, link.client_name, link.bytes, link.client_type, client_process_name, link.client_icon, source_exploded);
+    addNode(target, link.server, link.server_name, link.bytes, link.server_type, server_process_name, link.server_icon, target_exploded);
 
-    if (link.bytes > max_link_bytes) max_link_bytes = link.bytes;
+    if (link.cli2srv_bytes > max_link_bytes) max_link_bytes = link.cli2srv_bytes;
+    if (link.srv2cli_bytes > max_link_bytes) max_link_bytes = link.srv2cli_bytes;
 
     link.source = nodes[source];
     link.target = nodes[target];
 
-    link.description = "Up: " + bytesToVolume(link.cli2srv_bytes) + " | Down: " + bytesToVolume(link.srv2cli_bytes);
+    // aggregating links with same source/target
+    var link_found = 0;
+    filtered_links.forEach(function(flink) {
+      if (flink.client_name == link.client_name && flink.server_name == link.server_name) {
+        flink.bytes += link.bytes;
+        flink.cli2srv_bytes += link.cli2srv_bytes;
+        flink.srv2cli_bytes += link.srv2cli_bytes;
+        link_found = 1;
+      }
+    });
 
-    filtered_links.push(link);
+    if (!link_found)
+      filtered_links.push(link);
   });
 
-  force
-    .nodes(d3.values(nodes))
-    .links(filtered_links)
-    .on("tick", tick)
-    .start()
-  ;
+  // cleanup 
+  graph.filterNodes(function(node) { 
+    if (nodes[node.data.id]) {
+      nodes[node.data.id].created = 1; 
+      nodes[node.data.id].obj = node;
+      return true;
+    } else {
+      return false;
+    } 
+  });
+  graph.filterEdges(function(edge) { 
+    return false; 
+  });
 
-  svg.append("svg:defs").selectAll("marker")
-    .data(["end"]).enter()
-    .append("svg:marker")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 10)
-    .attr("markerHeight", 10)
-    .attr("orient", "auto")
-    .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5")
-  ;
+  // adding nodes to the graph
+  for (node_id in nodes) {
+    /* Node attributes:
+      id
+      name
+      bytes
+      type
+      description
+      process_name
+      icon_url
+    */
+    if (!nodes[node_id].created) {
+      nodes[node_id].created = 1;
 
-  var path = svg.append("g").selectAll("path")
-    .data(force.links())
-    .enter().append("g")
-    //.attr("class", "link-group")
-    .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
-    .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
-    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
-    .append("path")
-      .attr("class", "link")
-      .attr("id", function(d, i) { return "link" + i; })
-      .style("stroke-width", function(d) { return getWeight(d.bytes); })
-      .attr("marker-end", "url(#end)")
-  ;
-
-  /* arc labels: this slows down the graph, don't know why..
-  svg.selectAll(".link-group").append("text")
-    .attr("dy", "-0.5em")
-    .append("textPath")
-    .attr("startOffset",function(d,i) { return 20/100; })
-    .attr("xlink:href", function(d,i) { return "#link" + i; })
-    .text(function(d) { return d.description; })
-  ;
-  */
-
-  var tooltip = d3.select("#chart")
-    .append("div")
-    .attr("class", "node-tooltip")
-    .style("position", "absolute")
-    .style("z-index", "10")
-    .style("visibility", "hidden")
-    .text("")
-  ;
-
-  var node = svg.selectAll(".node")
-    .data(force.nodes())
-    .enter().append("circle")
-    .attr("class", "circle")
-    .attr("r", function(d) { return getRadius(d.bytes); })
-    .style("fill", function(d) { return (d.type == "syshost" ? color(d.process_name) : "#666"); })
-    .call(force.drag)
-    .on("dblclick", function(d) { 
-      svg.selectAll("circle").remove(); 
-      svg.selectAll("path").remove(); 
-      svg.selectAll("text").remove(); 
-      tooltip.style("visibility", "hidden");
-      if (explode_process == d.process_name) explode_process = '';
-      else                           explode_process = d.process_name;
-      refreshGraph();
-    } )
-    .on("mouseover", function(d){ tooltip.text(d.description); return tooltip.style("visibility", "visible"); })
-    .on("mousemove", function(){ return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 10) + "px"); })
-    .on("mouseout",  function(){ return tooltip.style("visibility", "hidden");})
-    .on("mousedown", 
-        function(d) { 
-          // disable zoom
-          svg.call(d3.behavior.zoom().on("zoom"), null);
-        })
-      .on("mouseup", 
-        function(d) { 
-         // enable zoom
-         svg.call(d3.behavior.zoom().on("zoom"), rescale);
-        })
-  ;
-
-  var text = svg.append("g").selectAll("text")
-    .data(force.nodes())
-    .enter().append("text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .text(function(d) { return d.name; })
-  ;
-
-  function tick() {
-    path.attr("d", linkArc);
-    node.attr("transform", transform);
-    text.attr("transform", transform);
+      var image = null;
+      if (nodes[node_id].icon_url) {
+        image = {};
+        image.src = nodes[node_id].icon_url;
+      }
+      nodes[node_id].obj =  graph.newNode({
+        id: node_id,
+        label: nodes[node_id].process_name,
+        ip: nodes[node_id].description,
+        ondoubleclick: function(n) {
+          if (n.label == explode_process || n.label == "Remote Hosts") explode_process = '';
+          else explode_process = n.label;
+          refreshGraph();
+        },
+        image: image
+      });
+    }
   }
 
-  function linkArc(d) {
-    var dx = d.target.x - d.source.x,
-        dy = d.target.y - d.source.y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-    
-    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-  }
-
-  function transform(d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  }
+  // adding links to the graph
+  filtered_links.forEach(function(link) {
+    var color = colorGen(link.client_name);
+    /* Link attributes:
+      client - 0-192.168.1.205-6232
+      client_system_id - 0
+      client_name - links2
+      client_type - syshost
+      server - 0-173.194.116.23
+      server_system_id - 0
+      server_name - mil01s19-in-f23.1e10...
+      server_type - host
+      bytes - 2250886
+      cli2srv_bytes - 2248400
+      srv2cli_bytes - 2486
+    */
+    graph.newEdge(
+      link.source.obj, 
+      link.target.obj, 
+      {
+        color: color,
+        weight: getWeight(link.cli2srv_bytes),
+        label: readableBytes(link.cli2srv_bytes)
+      }
+    );
+    graph.newEdge(
+      link.target.obj, 
+      link.source.obj, 
+      {
+        color: color,
+        weight: getWeight(link.srv2cli_bytes),
+        label: readableBytes(link.srv2cli_bytes)
+      }
+    );
+  });
 
   function getWeight(size) {
     var weight = (size ? Math.sqrt((size / max_link_bytes) * 100) / Math.PI : 1);
     if (weight < 1) weight = 1;
     return weight;
-  }
-
-  function getRadius(size) {
-    var radius = 10 * (size ? Math.sqrt((size / max_node_bytes) * 100) / Math.PI : 1);
-    if (radius < 5) radius = 5;
-    return radius;
   }
 
   function process_instance_suffix(id) {
@@ -344,12 +345,18 @@ d3.json("/lua/get_system_hosts_interaction.lua", function(error, links) {
     return string;
   }
 
-});
 }
 
 refreshGraph();
+setInterval(function() {
+  refreshGraph();
+}, 2000);
 
 </script>
+
+<div id="chart">
+  <canvas id="chart-canvas" width="960" height="500" />
+</div>
 
 ]]
 else

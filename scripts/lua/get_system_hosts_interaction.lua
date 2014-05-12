@@ -13,9 +13,21 @@ interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
 
 local debug = false
+local httpdocs = dirs.installdir..'/httpdocs'
+local icon_root = '/img/interaction-graph-icons/'
+local icon_extension = '.png'
 links = {}
 num = 0
 
+function file_exists(path)
+  local f=io.open(path,"r")
+  if f~=nil then io.close(f) return true else return false end
+end
+
+function get_icon_url(name)
+  local icon_url = icon_root..name..icon_extension
+  if (file_exists(httpdocs..icon_url)) then return icon_url else return '' end
+end
 
 for key, value in pairs(flows_stats) do
   
@@ -107,10 +119,12 @@ for key, value in pairs(links) do
       '\"client_system_id\":\"' .. link["client_system_id"] .. '\",' ..
       '\"client_name\":\"'      .. link["client_name"]      .. '\",' ..
       '\"client_type\":\"'      .. link["client_type"]      .. '\",' ..
+      '\"client_icon\":\"'      .. get_icon_url(link["client_name"]) .. '\",' ..
       '\"server\":\"'           .. link["server_id"]        .. '\",' ..
       '\"server_system_id\":\"' .. link["server_system_id"] .. '\",' ..
       '\"server_name\":\"'      .. link["server_name"]      .. '\",' ..
       '\"server_type\":\"'      .. link["server_type"]      .. '\",' ..
+      '\"server_icon\":\"'      .. get_icon_url(link["server_name"]) .. '\",' ..
       '\"bytes\":'              .. link["bytes"]            .. ','   ..
       '\"cli2srv_bytes\":'      .. link["cli2srv.bytes"]    .. ','   ..
       '\"srv2cli_bytes\":'      .. link["srv2cli.bytes"]    ..

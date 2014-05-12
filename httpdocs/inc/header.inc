@@ -19,6 +19,8 @@
     <!-- http://kamisama.github.io/cal-heatmap/v2/ -->
     <script src="/js/cal-heatmap.js"></script>
     <link href="/css/cal-heatmap.css" rel="stylesheet">
+    <script src="/js/springy-ntop.js"></script>
+    <script src="/js/springyui-ntop.js"></script>
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
