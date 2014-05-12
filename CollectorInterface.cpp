@@ -165,7 +165,7 @@ void CollectorInterface::collect_flows() {
 	    flow.pkt_sampling_rate = 1; /* 1:1 (no sampling) */
 	    flow.source_id = source_id;
 
-	    // flow.vlan_id = source_id;
+	    flow.vlan_id = source_id;
 
 	    while(!json_object_iter_equal(&it, &itEnd)) {
 	      const char *key   = json_object_iter_peek_name(&it);

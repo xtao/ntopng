@@ -209,7 +209,7 @@ static const struct option long_options[] = {
 #endif
   { "categorization-key",                required_argument, NULL, 'c' },
   { "httpbl-key",                        required_argument, NULL, 'k' },
-  { "daemonize",                         required_argument, NULL, 'e' },
+  { "daemon",                            no_argument,       NULL, 'e' },
   { "core-affinity",                     required_argument, NULL, 'g' },
   { "help",                              no_argument,       NULL, 'h' },
   { "disable-login",                     no_argument,       NULL, 'l' },
