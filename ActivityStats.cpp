@@ -98,7 +98,9 @@ void ActivityStats::set(time_t when) {
 void ActivityStats::setDump(stringstream* dump) {
   Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
 
+  m.lock(__FILE__, __LINE__);
   bitset->read(*dump);
+  m.unlock(__FILE__, __LINE__);
 }
 
 /* *************************************** */
@@ -231,6 +233,7 @@ void ActivityStats::deserialize(json_object *o) {
   if(!o) return;
 
   /* Reset all */
+  m.lock(__FILE__, __LINE__);
   bitset->reset();
 
   it = json_object_iter_begin(o), itEnd = json_object_iter_end(o);
@@ -245,6 +248,7 @@ void ActivityStats::deserialize(json_object *o) {
 
     json_object_iter_next(&it);
   }
+  m.unlock(__FILE__, __LINE__);
 }
 
 /* *************************************** */
