@@ -165,8 +165,12 @@ function refreshGraph() {
     } else {
       description = process_instance_to_string(id);
     }
-    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description, process_name: process_name, icon_url: icon_url };
-    else { if (name != "Remote Hosts" && !exploded) nodes[node_id]['description'] = 'Double-Click to expand'; }
+    if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, bytes: 0, type: type, description: description, process_name: process_name, icon_url: icon_url, instances: {} };
+
+    if (!nodes[node_id]['instances'][id]) nodes[node_id]['instances'][id] = 1;
+    else nodes[node_id]['instances'][id]++;
+    if (Object.keys(nodes[node_id]['instances']).length > 1 && name != "Remote Hosts" && !exploded) 
+      nodes[node_id]['description'] = 'Double-Click to expand';
 
     nodes[node_id]['bytes'] += bytes;
 
