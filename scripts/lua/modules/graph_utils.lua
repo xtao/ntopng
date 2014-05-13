@@ -119,7 +119,6 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
       local step = 1
       local series = {}
 
-      print("<span class=\"peity-line\">")
 
       if(sample_rate < 1) then
 	 sample_rate = 1
@@ -129,7 +128,9 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
 
       id = 0
       num = 0
+      total = 0
       sample_rate = sample_rate-1
+      points = {}
       for i, v in ipairs(fdata) do
 	 timestamp = fstart + (i-1)*fstep
 	 num_points = num_points + 1
@@ -148,9 +149,9 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
 	    
 	    value = v*8 -- bps
 	    
+	    total = total + value
 	    if(id == sample_rate) then
-	       if(num > 0) then print(",") end
-	       print(round(value).."")
+	       points[num] = round(value)..""
 	       num = num+1
 	       id = 0
 	    else
@@ -159,8 +160,14 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
 	    elemId = elemId + 1
 	 end   
       end
-      print("</span>\n")
   end
+
+   print("<td class=\"text-right\">"..round(total).."</td><td> <span class=\"peity-line\">")
+   for i=0,10 do
+      if(i > 0) then print(",") end
+      print(points[i])
+   end
+   print("</span>\n")
 end
 
 
@@ -211,6 +218,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
    end
 
    if(ntop.exists(rrdname)) then
+      --print("=> "..rrdname)
       -- print("=> Found ".. start_time .. "|" .. end_time .. "\n")
       local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
       --print("=> here we go")
@@ -222,6 +230,9 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 sample_rate = 1
       end
 
+      -- DEBUG
+      --tprint(fdata, 1)
+      
       step = fstep
       num = 0
       for i, n in ipairs(fnames) do
@@ -229,7 +240,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
 	 num = num + 1
 	 --io.write(prefixLabel.."\n")
-	 -- print(num.."\n")
+	 --print(num.."\n")
       end
 
       id = 0
@@ -249,6 +260,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	       -- This is a NaN
 	       v = 0
 	    else
+	       --io.write(w.."\n")
 	       v = tonumber(w)
 	       if(v < 0) then
 		  v = 0
@@ -266,7 +278,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 end
 
 	 total_bytes = total_bytes + v*fstep
-	 --if((v*fstep) > 0) then io.write(" | " .. (v*fstep) .." | [sampling: ".. sampling .. "/" .. sample_rate.."]\n") end
+	 if((v*fstep) > 0) then io.write(" | " .. (v*fstep) .." | [sampling: ".. sampling .. "/" .. sample_rate.."]\n") end
 
 	 if(sampling == sample_rate) then
 	    if(sample_rate > 0) then
@@ -390,11 +402,21 @@ print [[
 
 
 print('   <tr><th>' .. prefixLabel .. '</th><th>Time</th><th>Value</th></tr>\n')
-print('   <tr><th>Min</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. bitsToSize(minval_bits/step) .. '</td></tr>\n')
-print('   <tr><th>Max</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. bitsToSize(maxval_bits/step) .. '</td></tr>\n')
-print('   <tr><th>Last</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval_bits/step)  .. '</td></tr>\n')
-print('   <tr><th>Average</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
-print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes)..  '</td></tr>\n')
+
+if(string.contains(rrdFile, "num_")) then
+   print('   <tr><th>Min</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. formatValue(round(minval_bits/step), 1) .. '</td></tr>\n')
+   print('   <tr><th>Max</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. formatValue(round(maxval_bits/step), 1) .. '</td></tr>\n')
+   print('   <tr><th>Last</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. formatValue(round(lastval_bits/step), 1) .. '</td></tr>\n')
+   
+   print('   <tr><th>Average</th><td colspan=2>' .. formatValue(round(total_bytes*8/(step*num_points), 2)) .. '</td></tr>\n')
+   print('   <tr><th>Total Number</th><td colspan=2>' ..  formatValue(round(total_bytes)) .. '</td></tr>\n')
+else
+   print('   <tr><th>Min</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. bitsToSize(minval_bits/step) .. '</td></tr>\n')
+   print('   <tr><th>Max</th><td>' .. os.date("%x %X", maxval_bits_time) .. '</td><td>' .. bitsToSize(maxval_bits/step) .. '</td></tr>\n')
+   print('   <tr><th>Last</th><td>' .. os.date("%x %X", last_time) .. '</td><td>' .. bitsToSize(lastval_bits/step)  .. '</td></tr>\n')
+   print('   <tr><th>Average</th><td colspan=2>' .. bitsToSize(total_bytes*8/(step*num_points)) .. '</td></tr>\n')
+   print('   <tr><th>Total Traffic</th><td colspan=2>' .. bytesToSize(total_bytes) .. '</td></tr>\n')
+end
 
 print('   <tr><th>Selection Time</th><td colspan=2><div id=when></div></td></tr>\n')
 print('   <tr><th>Minute<br>Top Talkers</th><td colspan=2><div id=talkers></div></td></tr>\n')

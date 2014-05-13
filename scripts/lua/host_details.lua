@@ -332,14 +332,14 @@ print [[
       print("<tr><th>")
 
       ifstats = interface.getStats()
-      
+
       if(ifstats.iface_sprobe) then
 	 print('Source Id')
       else
 	 print('VLAN ID')
       end
 
-      print("</th><td colspan=2>"..host["vlan"].."</td></tr>\n") 
+      print("</th><td colspan=2>"..host["vlan"].."</td></tr>\n")
    end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
    if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td colspan=2>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
@@ -701,37 +701,62 @@ end
 
 path = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"..host_info["host"].."/")
 
-   print('<table class="table table-bordered table-striped">')
+num_found = 0
+names = {}
+sbase = "epp/sent/"
+rbase = "epp/rcvd/"
+
 for i=1,2 do
    if(i == 1) then
-      base = "epp/sent/"
+      base = sbase
    else
-      base = "epp/rcvd/"
+      base = rbase
    end
-   
+
    s = path..base
    rrds = ntop.readdir(s)
-   
    for k,v in pairs(rrds) do
-      print("<tr><th>"..k.."</th>\n<td>")
-      drawPeity(ifname, host_info["host"], base.."/"..k, _GET["graph_zoom"], _GET["epoch"])
-      print(" <i class='fa fa-search'></i> </td></tr>\n")
+      names[k] = v
+      num_found = num_found +1
    end
 end
 
+if(num_found > 0) then
+   print('<table class="table table-bordered table-striped">')
+   print('<tr><th colspan=3>Queries Sent: Last Hour</th><th colspan=3>Queries Received: Last Hour</th></tr>\n')
 
+for k,_ in pairsByKeys(names, rev) do
+   print("<tr>")
 
+   path = getRRDName(ifname,  host_info["host"], sbase..k)
+   if(ntop.exists(path)) then
+      print("<th>"..mapEppRRDName(k).."</th>")
+      drawPeity(ifname, host_info["host"], sbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
+      print(" <A HREF=/lua/host_details.lua?host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..sbase.. k .."><i class='fa fa-search'></i></A></td>")
+   else
+      print("<td colspan=3>&nbsp;</td>")
+   end
 
+   path = getRRDName(ifname,  host_info["host"], rbase..k)
+   if(ntop.exists(path)) then
+      print("<th>"..mapEppRRDName(k).."</th>")
+      drawPeity(ifname, host_info["host"], rbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
+      print(" <A HREF=/lua/host_details.lua?host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..rbase.. k .."><i class='fa fa-search'></i></A></td>")
+   else
+      print("<td colspan=3>&nbsp;</td>")
+   end
+
+   print("</tr>")
+end
 
 print("</table>\n")
-
 
 
 print [[
  <script type="text/javascript">$(".peity-line").peity("line", { width: 128});</script>
 ]]
 
-
+end
 
    elseif(page == "flows") then
 
@@ -741,7 +766,7 @@ print [[
    var url_update = "/lua/get_flows_data.lua?]]
 print (hostinfo2url(host_info)..'";')
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")   
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
 
 print [[
     flow_rows_option["type"] = 'host';

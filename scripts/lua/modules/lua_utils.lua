@@ -153,8 +153,52 @@ function _handleArray(name, sev)
 end
 
 
+epp_rrd_names = {
+   { "Positive Replies Number", "num_replies_ok.rrd" },
+   { "Error Replies Number", "num_replies_error.rrd" },
+   { "Query Number", "num_queries.rrd" },
+   { "domain-create", "num_cmd_1.rrd" },
+   { "domain-update", "num_cmd_2.rrd" },
+   { "domain-delete", "num_cmd_3.rrd" },
+   { "domain-restore", "num_cmd_4.rrd" },
+   { "domain-transfer", "num_cmd_5.rrd" },
+   { "domain-transfer-trade", "num_cmd_6.rrd" },
+   { "domain-transfer-request", "num_cmd_7.rrd" },
+   { "domain-transfer-trade-request", "num_cmd_8.rrd" },
+   { "domain-transfer-cancel", "num_cmd_9.rrd" },
+   { "domain-transfer-approve", "num_cmd_10.rrd" },
+   { "domain-transfer-reject", "num_cmd_11.rrd" },
+   { "contact-create", "num_cmd_12.rrd" },
+   { "contact-update", "num_cmd_13.rrd" },
+   { "contact-delete", "num_cmd_14.rrd" },
+   { "domain-update-hosts", "num_cmd_15.rrd" },
+   { "domain-update-statuses", "num_cmd_16.rrd" },
+   { "domain-update-contacts", "num_cmd_17.rrd" },
+   { "domain-trade", "num_cmd_18.rrd" },
+   { "domain-update-simple", "num_cmd_19.rrd" },
+   { "domain-info", "num_cmd_20.rrd" },
+   { "contact-info", "num_cmd_21.rrd" },
+   { "domain-check", "num_cmd_22.rrd" },
+   { "contact-check", "num_cmd_23.rrd" },
+   { "poll-req", "num_cmd_24.rrd" },
+   { "domain-transfer-trade-cancel", "num_cmd_25.rrd" },
+   { "domain-transfer-trade-approve", "num_cmd_26.rrd" },
+   { "domain-transfer-trade-reject", "num_cmd_27.rrd" },
+   { "domain-transfer-query", "num_cmd_28.rrd" },
+   { "login", "num_cmd_29.rrd" },
+   { "login-chg-pwd", "num_cmd_30.rrd" },
+   { "logout", "num_cmd_31.rrd" },
+   { "poll-ack", "num_cmd_32.rrd" },
+   { "hello", "num_cmd_33.rrd" },
+   { "unknown-command", "num_cmd_34.rrd" }
+}
+
 function l4Label(proto)
    return(_handleArray(l4_keys, proto))
+end
+
+function mapEppRRDName(name)
+   return(_handleArray(epp_rrd_names, name))
 end
 
 -- Alerts (see ntop_typedefs.h)
@@ -1032,3 +1076,22 @@ function version2int(v)
    end
 end
 
+
+-- Print contents of `tbl`, with indentation.
+-- `indent` sets the initial level of indentation.
+function tprint (tbl, indent)
+  if not indent then indent = 0 end
+  for k, v in pairs(tbl) do
+     formatting = string.rep("  ", indent) .. k .. ": "
+     if type(v) == "table" then
+	io.write(formatting)
+	tprint(v, indent+1)
+     elseif type(v) == 'boolean' then
+	io.write(formatting .. tostring(v))      
+    else
+       io.write(formatting .. v)
+    end
+  end
+  
+  io.write("\n")
+end
