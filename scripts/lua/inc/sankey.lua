@@ -4,6 +4,8 @@
 
 print [[
 
+<div id = "alert_placeholder"></div>
+
 <style>
 
 #chart {
@@ -78,6 +80,11 @@ if (debug) then io.write("Active sankey: "..active_sankey.."\n") end
 
 print [[ 
     , function(hosts) {
+    
+    if ((hosts.links.length == 0) && (hosts.nodes.length == 0)) {
+      $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning: </strong>There are no talkers for the current host.</div>'); 
+      return;
+    }
   d3.select("#chart").select("svg").remove();
 
   var svg_sankey = d3.select("#chart").append("svg")
@@ -154,7 +161,7 @@ print [[
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 4 + sankey.nodeWidth())
 	  .append("title")
-	  .text(function(d) { return "About "+d.name });
+	  .text(function(d) { return "Ip: " + d.ip + "\nVlan: " + d.vlan});
 
 	node.append("text")
 	  .attr("x", -6)
@@ -234,7 +241,7 @@ print(url.."hosts=".._GET["hosts"])
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 4 + sankey.nodeWidth())
     .append("title")
-    .text(function(d) { return "About "+d.name });
+    .text(function(d) { return "Ip: " + d.name + "Vlan: " + d.vlan});
 
   node.append("text")
     .attr("x", -6)
