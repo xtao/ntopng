@@ -169,7 +169,13 @@ print [[
 	  .attr("dy", ".35em")
 	  .attr("text-anchor", "end")
 	  .attr("transform", null)
-	  .text(function(d) { return d.name; })
+	  .text(function(d) { 
+      if (d.vlan != 0) {
+        return (d.name);
+      } else {
+        return (d.ip);
+      }  
+     })
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 6 + sankey.nodeWidth())
 	  .attr("text-anchor", "start");
@@ -228,7 +234,13 @@ print(url.."hosts=".._GET["hosts"])
     .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
     .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
     .append("title")
-    .text(function(d) { return (d.name); });
+    .text(function(d) { 
+      if (d.vlan != 0) {
+        return (d.name);
+      } else {
+        return (d.ip);
+      }   
+    });
 
   /* Hook for clicking on host name */
   node.append("rect")
@@ -241,7 +253,7 @@ print(url.."hosts=".._GET["hosts"])
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 4 + sankey.nodeWidth())
     .append("title")
-    .text(function(d) { return "Ip: " + d.name + "Vlan: " + d.vlan});
+    .text(function(d) { return "Ip: " + d.ip + "Vlan: " + d.vlan});
 
   node.append("text")
     .attr("x", -6)
@@ -249,7 +261,13 @@ print(url.."hosts=".._GET["hosts"])
     .attr("dy", ".35em")
     .attr("text-anchor", "end")
     .attr("transform", null)
-    .text(function(d) { return d.name; })
+    .text(function(d) { 
+      if (d.vlan != 0) {
+        return (d.name);
+      } else {
+        return (d.ip);
+      }  
+     })
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 6 + sankey.nodeWidth())
     .attr("text-anchor", "start");
