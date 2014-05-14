@@ -737,6 +737,22 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 
 /* ****************************************** */
 
+static void host_vlan(char* lua_ip, char** host_ip, 
+		      u_int16_t* vlan_id,
+		      char *buf, u_int buf_len) {
+  char *where, *vlan;
+
+  snprintf(buf, buf_len, "%s", lua_ip);
+
+  (*host_ip) = strtok_r(buf, "@", &where);
+  vlan = strtok_r(NULL, "@", &where);
+
+  if(vlan)
+    (*vlan_id) = (u_int16_t)atoi(vlan);
+}
+
+/* ****************************************** */
+
 /**
  * @brief Get the host information of network interface.
  * @details Get the ntop interface global variable of lua, the host ip and optional the VLAN id form the lua stack and push a new hash table of hash tables containing the host information into lua stack.
@@ -747,13 +763,14 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 static int ntop_get_interface_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
-  u_int16_t vlan_id;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_ip = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
-  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+  if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -771,13 +788,14 @@ static int ntop_get_interface_host_info(lua_State* vm) {
 static int ntop_correalate_host_activity(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
-  u_int16_t vlan_id;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_ip = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
-  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+  if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -795,13 +813,14 @@ static int ntop_correalate_host_activity(lua_State* vm) {
 static int ntop_similar_host_activity(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
-  u_int16_t vlan_id;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_ip = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
-  if(lua_type(vm, 2) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+  if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -821,18 +840,19 @@ static int ntop_similar_host_activity(lua_State* vm) {
 static int ntop_get_interface_host_activitymap(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
-  u_int16_t vlan_id;
   GenericHost *h;
   bool aggregated;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_ip = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
   aggregated = lua_toboolean(vm, 2) ? true : false;
 
   /* Optional VLAN id */
-  if(lua_type(vm, 3) != LUA_TNUMBER) vlan_id = 0; else vlan_id = (u_int16_t)lua_tonumber(vm, 3);
+  if(lua_type(vm, 3) != LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 3);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -869,9 +889,11 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
 static int ntop_restore_interface_host(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_ip = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -896,9 +918,11 @@ static int ntop_restore_interface_host(lua_State* vm) {
 static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_name = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -932,9 +956,11 @@ static int ntop_get_interface_aggregation_families(lua_State* vm) {
 static int ntop_get_aggregregations_for_host(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_name = (char*)lua_tostring(vm, 1);
+  host_vlan((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -953,7 +979,6 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
   
-
   if(lua_type(vm, 1) == LUA_TSTRING)
     host_name = (char*)lua_tostring(vm, 1);
   else

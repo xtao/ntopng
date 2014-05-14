@@ -268,7 +268,8 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
   char key[64], val[64];
   char password_hash[33];
 
-  if(user == NULL) return(false);
+  if((user == NULL) || (user[0] == '\0'))
+    return(false);
 
   snprintf(key, sizeof(key), "user.%s.password", user);
 

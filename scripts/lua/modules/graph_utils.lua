@@ -278,7 +278,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
 	 end
 
 	 total_bytes = total_bytes + v*fstep
-	 if((v*fstep) > 0) then io.write(" | " .. (v*fstep) .." | [sampling: ".. sampling .. "/" .. sample_rate.."]\n") end
+	 --if((v*fstep) > 0) then io.write(" | " .. (v*fstep) .." | [sampling: ".. sampling .. "/" .. sample_rate.."]\n") end
 
 	 if(sampling == sample_rate) then
 	    if(sample_rate > 0) then
