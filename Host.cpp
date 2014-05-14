@@ -700,7 +700,7 @@ bool Host::deserialize(char *json_str) {
   }
 
   if(json_object_object_get_ex(o, "epp", &obj)) {
-    if(epp == NULL) epp = new EppStats();
+    allocEPP();
     if(epp) epp->deserialize(obj); 
   }
 
