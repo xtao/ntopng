@@ -412,6 +412,9 @@ void Host::setName(char *name, bool update_categorization) {
 /* ***************************************** */
 
 void Host::set_alternate_name(char *name) {
+  if(!strcmp(name, alternate_name))
+    return; /* Nothing changed */
+  
   if(alternate_name) {
     free(alternate_name);
     alternate_name = NULL;

@@ -133,9 +133,9 @@ void* Categorization::categorizeLoop() {
 
     int rc = r->popDomainToCategorize(domain_name, sizeof(domain_name));
 
-    if(rc == 0) {
+    if((rc == 0) && (domain_name[0] != '\0')) {
       char buf[8];
-
+      
       categorizeHostName(domain_name, buf, sizeof(buf));
     } else
       sleep(1);
