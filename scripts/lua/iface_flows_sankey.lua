@@ -102,7 +102,7 @@ end
 top_host = nil
 top_value = 0
 
-if(num == 0) then
+if ((num == 0) and (tracked_host == nil)) then
    -- 2.1 It looks like in this network there are many flows with no clear predominant traffic
    --     Then we take the host with most traffic and print flows belonging to it
 
