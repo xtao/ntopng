@@ -232,12 +232,16 @@ u_int32_t Redis::incrKey(char *key) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "INCR %s", key);
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = 0;
-  else
-    rc = (u_int)reply->integer;
+  if(reply) {
+    if(reply->type == REDIS_REPLY_ERROR)
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = 0;
+    else 
+      rc = (u_int)reply->integer;
 
-  if(reply) freeReplyObject(reply);
+    freeReplyObject(reply);
+  } else
+    rc = -1;
+
   l->unlock(__FILE__, __LINE__);
 
   return(rc);
