@@ -68,7 +68,6 @@ void DnsStats::lua(lua_State *vm) {
   lua_pushstring(vm, "dns");
   lua_insert(vm, -2);
   lua_settable(vm, -3);
-
 }
 
 /* *************************************** */
@@ -118,7 +117,7 @@ void DnsStats::deserialize(json_object *o) {
     deserializeStats(obj, &sent);  
 
   if(json_object_object_get_ex(o, "rcvd", &obj))
-    deserializeStats(obj, &sent);  
+    deserializeStats(obj, &rcvd);  
 }
 
 /* ******************************************* */
@@ -201,7 +200,6 @@ void DnsStats::incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_t
     bd->num_any++;
     break;
   default:
-    
     bd->num_other++;
     break;
   }
@@ -209,14 +207,8 @@ void DnsStats::incQueryBreakdown(struct queries_breakdown *bd, u_int16_t query_t
 
 /* ******************************************* */
 
-void DnsStats::incNumDNSQueriesSent(u_int16_t query_type) {
-  sent.num_queries++; 
-  incQueryBreakdown(&sent.breakdown, query_type);
-};
-
-/* ******************************************* */
-
-void DnsStats::incNumDNSQueriesRcvd(u_int16_t query_type /* IGNORED */) { 
-  rcvd.num_queries++; 
-  incQueryBreakdown(&rcvd.breakdown, query_type);
+void DnsStats::incNumDNSQueries(u_int16_t query_type,
+				struct dns_stats *stats) {
+  stats->num_queries++; 
+  incQueryBreakdown(&stats->breakdown, query_type);
 };
