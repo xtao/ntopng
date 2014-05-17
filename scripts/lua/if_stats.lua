@@ -21,16 +21,15 @@ if_name = _GET["if_name"]
 
 if(if_name == nil) then if_name = ifname end
 
-if(_GET["custom_name"] ~=nil) then
-      ntop.setCache('ntopng.prefs.'..if_name..'.name',_GET["custom_name"])
-end
-
 interface.find(if_name)
+--print(if_name)
 ifstats = interface.getStats()
 
-interface_name = purifyInterfaceName(ifstats.name)
+if(_GET["custom_name"] ~=nil) then
+      ntop.setCache('ntopng.prefs.'..ifstats.name..'.name',_GET["custom_name"])
+end
 
-rrdname = dirs.workingdir .. "/" .. interface_name .. "/rrd/bytes.rrd"
+rrdname = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd/bytes.rrd")
 
 if (if_name == nil) then 
   _ifname = ifname
@@ -89,6 +88,7 @@ print ('<div id="alert_placeholder"></div>')
 if((page == "overview") or (page == nil)) then
     
    print("<table class=\"table table-bordered\">\n")
+   print("<tr><th width=250>Interface Id</th><td>" .. ifstats.id .. "</td></tr>\n")
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
   
   if(ifstats.name ~= nil) then
@@ -179,25 +179,26 @@ elseif(page == "ndpi") then
 
      print("<thead><tr><th>Application Protocol</th><th>Total (Since Startup)</th><th>Percentage</th></tr></thead>\n")
 
-      total = ifstats["stats_bytes"]
+     total = ifstats["stats_bytes"]
+     
+     vals = {}
+     for k in pairs(ifstats["ndpi"]) do
+	vals[k] = k
+     end
+     table.sort(vals)
+     print ("<tbody>\n")
+     for _k in pairsByKeys(vals , desc) do
+	k = vals[_k]
+	print("<tr><th style=\"width: 33%;\">")
+	
+	fname = getRRDName(ifstats.id, nil, k..".rrd")
 
-      vals = {}
-      for k in pairs(ifstats["ndpi"]) do
-   vals[k] = k
-      end
-      table.sort(vals)
-      print ("<tbody>\n")
-      for _k in pairsByKeys(vals , desc) do
-   k = vals[_k]
-   print("<tr><th style=\"width: 33%;\">")
-
-   fname = getRRDName(ifstats.name, nil, k..".rrd")
-
-   if(ntop.exists(fname)) then
-      print("<A HREF=\"/lua/if_stats.lua?if_name=" .. _ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
-   else
-      print(k)
-   end
+	--print(fname.."<p>")
+	if(ntop.exists(fname)) then
+	   print("<A HREF=\"/lua/if_stats.lua?if_name=" .. _ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
+	else
+	   print(k)
+	end
 
    t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
    print("</th><td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
@@ -211,7 +212,7 @@ elseif(page == "ndpi") then
 else
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
-   drawRRD(interface_name, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
+   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

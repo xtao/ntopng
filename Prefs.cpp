@@ -79,7 +79,7 @@ Prefs::~Prefs() {
 
 /* C-binding needed by Win32 service call */
 void usage() {
-  NetworkInterface n;
+  NetworkInterface n(0);
 
   printf("ntopng %s v.%s (%s) - "NTOP_COPYRIGHT"\n\n"
 	 "Usage:\n"

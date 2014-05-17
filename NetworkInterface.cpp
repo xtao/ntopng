@@ -50,17 +50,17 @@ static void free_wrapper(void *freeable)
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface() {
+NetworkInterface::NetworkInterface(u_int8_t _id) {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
-    purge_idle_flows_hosts = true;
+    purge_idle_flows_hosts = true, id = _id;
 
   db = new DB(this);
 }
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(const char *name) {
+NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
   u_int32_t num_hashes;
@@ -70,6 +70,7 @@ NetworkInterface::NetworkInterface(const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
+  id = _id;
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
@@ -1301,6 +1302,8 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "name", ifname);
+  lua_push_int_table_entry(vm, "id", id);
+
   lua_push_str_table_entry(vm, "type", (char*)get_type());
   lua_push_bool_table_entry(vm, "iface_sprobe", sprobe_interface);
 

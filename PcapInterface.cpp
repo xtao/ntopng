@@ -27,7 +27,7 @@
 
 /* **************************************************** */
 
-PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
+PcapInterface::PcapInterface(u_int8_t _id, const char *name) : NetworkInterface(_id, name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
   if((pcap_handle = pcap_open_live(ifname, ntop->getGlobals()->getSnaplen(),

@@ -7,13 +7,13 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "persistence"
 
-function getTopTalkers(ifname, mode, epoch)
+function getTopTalkers(ifid, ifname, mode, epoch)
    -- if(ifname == nil) then ifname = "any" end
 
    if(epoch ~= nil) then
-      rsp = getHistoricalTopTalkers(ifname, mode, epoch)
+      rsp = getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    else
-      rsp = getActualTopTalkers(ifname, mode)
+      rsp = getActualTopTalkers(ifid, ifname, mode)
    end
 
    return(rsp)
@@ -22,10 +22,10 @@ end
 
 -- #################################################
 
-function getHistoricalTopTalkers(ifname, mode, epoch)
+function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    epoch = epoch - (epoch % 60)
    dirs = ntop.getDirs()
-   filename = fixPath(dirs.workingdir .. "/".. purifyInterfaceName(ifname) .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
+   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
 
    -- print(filename)
    if(ntop.exists(filename)) then
@@ -48,13 +48,12 @@ function getHistoricalTopTalkers(ifname, mode, epoch)
 end
 -- #################################################
 
-function getActualTopTalkers(ifname, mode, epoch)
+function getActualTopTalkers(ifid, ifname, mode, epoch)
    max_num_entries = 10
    rsp = ""
 
    interface.find(ifname)
    hosts_stats = interface.getFlowsInfo()
-   interfacename = purifyInterfaceName(ifname)
 
    sent = {}
    _sent = {}
@@ -102,7 +101,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    -- io.write("Hello\n")
    if((mode == nil) or (mode == "senders")) then
-      talkers_dir = fixPath(dirs.workingdir .. "/" .. interfacename .. "/top_talkers")
+      talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
       if(not(ntop.exists(talkers_dir))) then   
 	 ntop.mkdir(talkers_dir)
       end
@@ -166,7 +165,7 @@ function getActualTopTalkers(ifname, mode, epoch)
 
    if((mode == nil) or (mode == "receivers")) then
       -- Read the lastdump
-      lastdump = fixPath(dirs.workingdir .. "/" .. interfacename .. "/top_talkers/.rcvd_lastdump")
+      lastdump = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers/.rcvd_lastdump")
       last = nil
       if(ntop.exists(lastdump)) then
 	 last = persistence.load(lastdump)

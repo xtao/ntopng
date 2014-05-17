@@ -29,8 +29,8 @@
 
 /* **************************************************** */
 
-PF_RINGInterface::PF_RINGInterface(const char *name)
-  : NetworkInterface(name) {
+PF_RINGInterface::PF_RINGInterface(u_int8_t _id, const char *name)
+  : NetworkInterface(_id, name) {
 
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(),
 				  ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0)) == NULL) {

@@ -113,14 +113,14 @@ int main(int argc, char *argv[])
       else
 	endpoint = ifName;
 
-      iface = new CollectorInterface(endpoint, topic);
+      iface = new CollectorInterface(i, endpoint, topic);
     } else {
 #ifdef HAVE_PF_RING
       try {
-	iface = new PF_RINGInterface(ifName);
+	iface = new PF_RINGInterface(i, ifName);
       } catch (int) {
 #endif
-	iface = new PcapInterface(ifName);
+	iface = new PcapInterface(i, ifName);
 #ifdef HAVE_PF_RING
       }
 #endif

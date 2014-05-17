@@ -35,35 +35,12 @@ struct zmq_msg_hdr {
 
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic)
-  : NetworkInterface(_endpoint) {
-  char *slash, *tmp, *e;
+CollectorInterface::CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic)
+  : NetworkInterface(_id, _endpoint) {
+  char *tmp, *e;
 
   num_drops = 0, num_subscribers = 0;
   topic = strdup(_topic);
-
-  /*
-    We need to cleanup the interface name
-    Format <tcp|udp>://<host>:<port>
-  */
-  if((slash = strchr(ifname, '/')) != NULL) {
-    char buf[64], *comma;
-    int i = 1, len;
-
-    while(slash[i] == '/') i++;
-
-    snprintf(buf, sizeof(buf), "zmq@%s", &slash[i]);
-    free(ifname);
-
-    comma = strchr(buf, ',');
-
-    if(comma != NULL) {
-      len = strlen(buf);
-      if(len > 16) buf[16] = '.', buf[17] = '.', buf[18] = '.', buf[19] = '\0';
-    }
-
-    ifname = strdup(buf);
-  }
   
   context = zmq_ctx_new();
 

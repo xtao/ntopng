@@ -30,7 +30,7 @@ class PcapInterface : public NetworkInterface {
   bool read_pkts_from_pcap_dump;
 
  public:
-  PcapInterface(const char *name);
+  PcapInterface(u_int8_t _id, const char *name);
   ~PcapInterface();
 
   inline const char* get_type()    { return("pcap");      };

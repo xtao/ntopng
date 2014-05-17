@@ -2,6 +2,8 @@
 -- (C) 2013-14 - ntop.org
 --
 
+-- ########################################################
+
 function navigatedir(url, label, base, path, go_deep)
    local shown = false
    local to_skip = false
@@ -39,6 +41,8 @@ function navigatedir(url, label, base, path, go_deep)
    end
 end
 
+-- ########################################################
+
 function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
    if((sent+rcvd) > 0) then
       sent2rcvd = round((sent * 100) / (sent+rcvd), 0)
@@ -48,6 +52,8 @@ function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
       print('&nbsp;')
    end
 end
+
+-- ########################################################
 
 function percentageBar(total, value, valueLabel)
    if(total > 0) then
@@ -59,14 +65,31 @@ function percentageBar(total, value, valueLabel)
    end
 end
 
-function getRRDName(ifname, host, rrdFile)
-   rrdname = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/")
+-- ########################################################
+
+function ifName2Id(ifname)
+   stats = interface.getIfNames()
+   for id, name in pairs(stats) do
+      if(name == ifname) then
+	 return(id)
+      end
+   end
+
+   return(-1)
+end
+
+-- ########################################################
+
+function getRRDName(ifid, host, rrdFile)
+   rrdname = fixPath(dirs.workingdir .. "/" .. ifid .. "/rrd/")
    if(host ~= nil) then
      rrdname = rrdname .. host .. "/"
    end
 
    return(rrdname  .. rrdFile)
 end
+
+-- ########################################################
 
 zoom_vals = {
    { "5m",  "now-300s", 60*5 },
@@ -83,8 +106,10 @@ zoom_vals = {
    { "1y",  "now-1y",   60*60*24*366 }
 }
 
-function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
-   rrdname = getRRDName(ifname, host, rrdFile)
+-- ########################################################
+
+function drawPeity(ifid, host, rrdFile, zoomLevel, selectedEpoch)
+   rrdname = getRRDName(ifid, host, rrdFile)
 
    if(zoomLevel == nil) then
       zoomLevel = "1h"
@@ -170,12 +195,11 @@ function drawPeity(ifname, host, rrdFile, zoomLevel, selectedEpoch)
    print("</span>\n")
 end
 
+-- ########################################################
 
-
-
-function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
+function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
    dirs = ntop.getDirs()
-   rrdname = getRRDName(ifname, host, rrdFile)
+   rrdname = getRRDName(ifid, host, rrdFile)
    names =  {}
    series = {}
 
@@ -218,7 +242,7 @@ function drawRRD(ifname, host, rrdFile, zoomLevel, baseurl, show_timeseries, sel
    end
 
    if(ntop.exists(rrdname)) then
-      --print("=> "..rrdname)
+      -- print("=> "..rrdname)
       -- print("=> Found ".. start_time .. "|" .. end_time .. "\n")
       local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
       --print("=> here we go")
@@ -352,7 +376,7 @@ if(show_timeseries == 1) then
    print('<li><a  href="'..baseurl .. '&rrd_file=' .. "bytes.rrd" .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '') .. '">'.. "Traffic" ..'</a></li>\n')
    print('<li class="divider"></li>\n')
    dirs = ntop.getDirs()
-   p = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"
+   p = dirs.workingdir .. "/" .. purifyInterfaceName(ifid) .. "/rrd/"
    if(host ~= nil) then 
       p = p .. host 
       go_deep = true
@@ -650,6 +674,8 @@ else
 end
 end
 
+-- ########################################################
+
 function create_rrd(name, ds)
    if(not(ntop.exists(name))) then
       if(enable_second_debug == 1) then io.write('Creating RRD ', name, '\n') end
@@ -681,6 +707,7 @@ function createRRDcounter(path, verbose)
    end
 end
 
+-- ########################################################
 
 function createSingleRRDcounter(path, verbose)
    if(not(ntop.exists(path))) then
@@ -697,6 +724,7 @@ function createSingleRRDcounter(path, verbose)
    end
 end
 
+-- ########################################################
 
 function dumpSingleTreeCounters(basedir, label, host, verbose)
    what = host[label]

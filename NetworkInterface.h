@@ -83,6 +83,7 @@ typedef struct zmq_flow {
 class NetworkInterface {
  protected:  
   char *ifname; /**< Network interface name.*/
+  u_int8_t id;
   EthStats ethStats; 
   int pcap_datalink_type; /**< Datalink type of pcap.*/
   pthread_t pollLoop;
@@ -120,8 +121,8 @@ class NetworkInterface {
   *
   * @return A new instance of NetworkInteface.
   */
-  NetworkInterface();
-  NetworkInterface(const char *name);
+  NetworkInterface(u_int8_t _id);
+  NetworkInterface(u_int8_t _id, const char *name);
   virtual ~NetworkInterface();
 
   virtual void startPacketPolling();

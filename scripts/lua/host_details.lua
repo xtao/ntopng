@@ -29,6 +29,8 @@ if(protocol_id == nil) then protocol_id = "" end
 _ifname = tostring(interface.name2id(ifname))
 interface.find(ifname)
 
+ifId = ifName2Id(ifname)
+
 --ip_elems = split(host_info["host"], " ");
 --host_info["host"] = ip_elems[1]
 host = nil
@@ -55,14 +57,6 @@ if(host == nil) then
    host = interface.getAggregatedHostInfo(host_info["host"])
    if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated Host Info\n") end
    if(host == nil) then
-      stats = interface.getIfNames()
-      for id, name in pairs(stats) do
-	 if(name == ifname) then
-	    ifId = id
-	    break
-	 end
-      end
-
       if(not(restoreFailed)) then json = ntop.getCache(host_info["host"].. "." .. ifId .. ".json") end
       sendHTTPHeader('text/html')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
@@ -588,7 +582,8 @@ hostinfo2json(host_info)
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-	 fname = getRRDName(ifname, host_info["host"], k..".rrd")
+	 fname = getRRDName(ifId, host_info["host"], k..".rrd")
+	 --print(fname)
 	 if(ntop.exists(fname)) then
 	    print("<A HREF=\"/lua/host_details.lua?"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 else
@@ -1332,7 +1327,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(ifname, host_info["host"], rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
+drawRRD(ifId, host_info["host"], rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
 
 
 elseif(page == "aggregations") then

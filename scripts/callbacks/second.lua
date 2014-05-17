@@ -12,13 +12,16 @@ require "graph_utils"
 local enable_second_debug = 0
 
 ifnames = interface.getIfNames()
+id = 0
 for _,ifname in pairs(ifnames) do
    a = string.ends(ifname, ".pcap")
    if(not(a)) then 
+      iface_id = id
+      id = id + 1
       interface.find(ifname)
       ifstats = interface.getStats()
       dirs = ntop.getDirs()
-      basedir = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd")
+      basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/rrd")
 
       -- io.write(basedir.."\n")
       if(not(ntop.exists(basedir))) then

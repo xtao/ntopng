@@ -25,6 +25,8 @@ l4_keys = {
    { "Other IP", "other ip" }
 }
 
+function __FILE__() return debug.getinfo(2,'S').source end
+function __LINE__() return debug.getinfo(2, 'l').currentline end
 
 function sendHTTPHeaderIfName(mime, ifname, maxage)
    info = ntop.getInfo()
@@ -823,6 +825,16 @@ function http_escape(s)
 				   end)
    s = string.gsub(s, " ", "+")
    return s
+end
+
+function getInterfaceId(interface_name)
+   ifnames = interface.getIfNames()
+
+   for iface_id,_ifname in pairs(ifnames) do
+      if(_ifname == interface_name) then return(iface_id) end
+   end
+
+   return(-1)
 end
 
 -- Windows fixes for interfaces with "uncommon chars"
