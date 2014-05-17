@@ -81,18 +81,15 @@ char* EppStats::serialize() {
 
 void EppStats::deserializeStats(json_object *o, struct epp_stats *stats) {
   json_object *obj;
-
+  
+  memset(stats, 0, sizeof(struct epp_stats));
   for(int i=1; i < CONST_EPP_MAX_CMD_NUM; i++) {
-    if(stats->breakdown[i] > 0) {
-      char buf[32];
-
-      snprintf(buf, sizeof(buf), "num_cmd_%u", i);
-
-      if(json_object_object_get_ex(o, buf, &obj)) 
-	stats->breakdown[i] = json_object_get_int64(obj);
-      else 
-	stats->breakdown[i] = 0;
-    }
+    char buf[32];
+    
+    snprintf(buf, sizeof(buf), "num_cmd_%u", i);
+    
+    if(json_object_object_get_ex(o, buf, &obj)) 
+      stats->breakdown[i] = json_object_get_int64(obj);
   }
 }
 
