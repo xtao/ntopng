@@ -31,12 +31,13 @@ class EppStats {
   void deserializeStats(json_object *o, struct epp_stats *stats);
   json_object* getStatsJSONObject(struct epp_stats *stats);
   void luaStats(lua_State *vm, struct epp_stats *stats, const char *label);
+  void incNumEPPQueries(u_int16_t query_type, struct epp_stats *what);
 
  public:
   EppStats();
 
-  void incNumEPPQueriesSent(u_int16_t query_type);
-  void incNumEPPQueriesRcvd(u_int16_t query_type);
+  void incNumEPPQueriesSent(u_int16_t query_type)        { incNumEPPQueries(query_type, &sent); };
+  inline void incNumEPPQueriesRcvd(u_int16_t query_type) { incNumEPPQueries(query_type, &rcvd); };
   inline void incNumEPPResponsesSent(u_int32_t ret_code) { if((ret_code >= 1000) && (ret_code < 2000)) sent.num_replies_ok++; else sent.num_replies_error++; };
   inline void incNumEPPResponsesRcvd(u_int32_t ret_code) { if((ret_code >= 1000) && (ret_code < 2000)) rcvd.num_replies_ok++; else rcvd.num_replies_error++; };
 

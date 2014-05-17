@@ -352,8 +352,10 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
     lua_push_int_table_entry(vm, "num_alerts", getNumAlerts());
 
-    if(ip) lua_push_str_table_entry(vm, "category", get_category());
-    if(ip) lua_push_str_table_entry(vm, "httpbl", get_httpbl());
+    if(ip) {
+      lua_push_str_table_entry(vm, "category", get_category());
+      lua_push_str_table_entry(vm, "httpbl", get_httpbl());
+    }
 
     if(verbose) {
       char *rsp = serialize();

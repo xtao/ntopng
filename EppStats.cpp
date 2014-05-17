@@ -141,22 +141,11 @@ json_object* EppStats::getJSONObject() {
 
 /* ******************************************* */
 
-void EppStats::incNumEPPQueriesSent(u_int16_t query_type) {
-  sent.num_queries++; 
+void EppStats::incNumEPPQueries(u_int16_t query_type, struct epp_stats *what) {
+  what->num_queries++; 
 
   if((query_type < 1) || (query_type > CONST_EPP_MAX_CMD_NUM))
     query_type = epp_cmd_unknown_command;
 
-  sent.breakdown[query_type] += 1;
-};
-
-/* ******************************************* */
-
-void EppStats::incNumEPPQueriesRcvd(u_int16_t query_type) { 
-  rcvd.num_queries++; 
-
-  if((query_type < 1) || (query_type > CONST_EPP_MAX_CMD_NUM))
-    query_type = epp_cmd_unknown_command;
-
-  rcvd.breakdown[query_type] += 1;
+  what->breakdown[query_type] += 1;
 };
