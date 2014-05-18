@@ -42,7 +42,8 @@ StringHost* StringHash::get(char *key, u_int16_t family_id) {
     head = (StringHost*)table[hash];
     
     while(head != NULL) {      
-      if((head->get_family_id() == family_id)
+      if((!head->idle())
+	 && (head->get_family_id() == family_id)
 	 && (strcmp(key, head->host_key()) == 0))	 
 	break;
       else
