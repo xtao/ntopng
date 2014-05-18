@@ -142,7 +142,8 @@ Ntop::~Ntop() {
     delete(iface[i]);
   }
 
-  if(httpd) delete httpd;
+  if(httpbl) delete httpbl;
+  if(httpd)  delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
   delete rrd_lock;

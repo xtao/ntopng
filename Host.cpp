@@ -169,7 +169,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
   syn_flood_alert = new AlertCounter(CONST_MAX_NUM_SYN_PER_SECOND, CONST_MAX_THRESHOLD_CROSS_DURATION);
-  category[0] = '\0', os[0] = '\0', httpbl[0] = '\0';
+  category[0] = '\0', os[0] = '\0', httpbl = NULL;
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
@@ -202,7 +202,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	// else ntop->getRedis()->pushHostToResolve(host, false, localHost);
       }
 
-      if(!localHost && ip->isIPv4()) {
+      if((!localHost) && ntop->getPrefs()->is_httpbl_enabled() && ip->isIPv4()) {
 	// http:bl only works for IPv4 addresses
 	if(ntop->getRedis()->getAddressHTTPBL(host, iface, httpbl, sizeof(httpbl), true) == 0) {
           if(strcmp(httpbl, NULL_BL)) {
@@ -353,8 +353,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "num_alerts", getNumAlerts());
 
     if(ip) {
-      lua_push_str_table_entry(vm, "category", get_category());
-      lua_push_str_table_entry(vm, "httpbl", get_httpbl());
+      if(ntop->get_categorization()) lua_push_str_table_entry(vm, "category", get_category());
+      if(ntop->getPrefs()->is_httpbl_enabled()) lua_push_str_table_entry(vm, "httpbl", get_httpbl());
     }
 
     if(verbose) {
@@ -430,7 +430,7 @@ void Host::set_alternate_name(char *name) {
 /* ***************************************** */
 
 void Host::refreshCategory() {
-  if((symbolic_name != NULL) && (category[0] == '\0')) {
+  if((symbolic_name != NULL) && (category[0] == '\0') && ntop->get_categorization()) {
     ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category), false);
   }
 }
@@ -438,7 +438,7 @@ void Host::refreshCategory() {
 /* ***************************************** */
 
 void Host::refreshHTTPBL() {
-  if(ip && ip->isIPv4() && (!localHost) && (httpbl[0] == '\0')) {
+  if(ip && ip->isIPv4() && (!localHost) && (httpbl[0] == '\0') && ntop->getPrefs()->is_httpbl_enabled()) {
     char buf[128] =  { 0 };
     char* ip_addr = ip->print(buf, sizeof(buf));
 
