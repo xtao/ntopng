@@ -240,7 +240,8 @@ remote hosts), all (dumps all aggregations). If not specified, no hosts are dump
 
 .It -S|--sticky-hosts
 ntopng periodically purges idle hosts. With this option you can modify this behaviour by telling ntopng
-not to purge the hosts specified by -S.
+not to purge the hosts specified by -S. This parameter requires an argument that can be "all" (Keep all hosts in memory),
+"local" (Keep only local hosts), "remote" (Keep only remote hosts), "none" (Flush hosts when idle).
 
 .It -v|--verbose
 Verbose tracing
