@@ -90,6 +90,10 @@
 #define DNS_CACHE_DURATION      300 /* 5 mins */
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
+
+#define SPROBE_CLIENT_HASH_NAME "sprobe.client"
+#define SPROBE_SERVER_HASH_NAME "sprobe.server"
+
 #ifndef TH_FIN
 #define	TH_FIN	0x01
 #endif

@@ -40,4 +40,7 @@ class AddressResolution {
   bool findAddress(int family, void *addr);
 };
 
+extern void ptree_add_rule(patricia_tree_t *ptree, char *line);
+extern patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *addr, int bits);
+
 #endif /* _ADDRESS_RESOLUTION_H_ */

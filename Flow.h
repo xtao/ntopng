@@ -62,7 +62,10 @@ class Flow : public GenericHashEntry {
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
   void processLua(lua_State* vm, ProcessInfo *proc, bool client);
   json_object* processJson(ProcessInfo *proc);
-  
+
+  void refresh_process();
+  void refresh_process_peer(Host *host, u_int16_t port, bool as_client);
+
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol,
@@ -114,7 +117,7 @@ class Flow : public GenericHashEntry {
   u_int64_t get_current_bytes_srv2cli();
   void aggregateInfo(char *name, u_int16_t ndpi_proto_id,
 		     AggregationType mode, bool aggregation_to_track);
-  void handle_process(ZMQ_Flow *zflow);
+  void handle_process(ProcessInfo *pinfo, bool client_process);
   bool idle();
   int compare(Flow *fb);
   char* print(char *buf, u_int buf_len);

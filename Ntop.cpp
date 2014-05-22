@@ -20,6 +20,7 @@
  */
 
 #include "ntop_includes.h"
+#include <ifaddrs.h>
 
 #ifdef WIN32
 #include <shlobj.h> /* SHGetFolderPath() */
@@ -39,6 +40,7 @@ Ntop::Ntop(char *appName) {
   rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL, redis = NULL;
   num_defined_interfaces = 0;
+  local_interface_addresses = New_Patricia(128);
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
@@ -85,7 +87,7 @@ Ntop::Ntop(char *appName) {
 
 /*
   Setup timezone differences
-  
+
   We call it all the time as daylight can change
   during the night and thus we need to have it "fresh"
 */
@@ -146,10 +148,11 @@ Ntop::~Ntop() {
   if(httpd)  delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
+  delete local_interface_addresses;
   delete rrd_lock;
   delete address;
   delete pa;
-  if(geo) delete geo;
+  if(geo)   delete geo;
   if(redis) delete redis;
   delete globals;
   delete prefs;
@@ -174,6 +177,8 @@ void Ntop::start() {
   if(categorization) categorization->startCategorizeCategorizationLoop();
   if(httpbl) httpbl->startHTTPBLLoop();
 
+  loadLocalInterfaceAddress();
+
   for(int i=0; i<num_defined_interfaces; i++)
     iface[i]->startPacketPolling();
 
@@ -185,6 +190,56 @@ void Ntop::start() {
     runHousekeepingTasks();
     // break;
   }
+}
+
+/* ******************************************* */
+
+bool Ntop::isLocalInterfaceAddress(int family, void *addr) {
+  return((ptree_match(local_interface_addresses, family, addr, 
+		      (family == AF_INET) ? 32 : 128) != NULL) ? true /* found */ : false /* not found */);
+}
+
+/* ******************************************* */
+
+void Ntop::loadLocalInterfaceAddress() {
+  struct ifaddrs *local_addresses, *ifa;
+  /* buf must be big enough for an IPv6 address(e.g. 3ffe:2fa0:1010:ca22:020a:95ff:fe8a:1cf8) */
+  char buf[64];
+
+  if(getifaddrs(&local_addresses) != 0) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to read interface addresses");
+    return;
+  }
+
+  for(ifa = local_addresses; ifa != NULL; ifa = ifa->ifa_next) {
+    if((ifa->ifa_addr == NULL)
+       || ((ifa->ifa_flags & IFF_UP) == 0))
+      continue;
+
+    if(ifa->ifa_addr->sa_family == AF_INET) {
+      struct sockaddr_in* s4 =(struct sockaddr_in *)(ifa->ifa_addr);
+
+      if(inet_ntop(ifa->ifa_addr->sa_family,(void *)&(s4->sin_addr), buf, sizeof(buf)) != NULL) {
+	int l = strlen(buf);
+
+	snprintf(&buf[l], sizeof(buf)-l, "%s", "/32");
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv4 interface address", buf);
+	ptree_add_rule(local_interface_addresses, buf);
+      }
+    } else if(ifa->ifa_addr->sa_family == AF_INET6) {
+      struct sockaddr_in6 *s6 =(struct sockaddr_in6 *)(ifa->ifa_addr);
+
+      if(inet_ntop(ifa->ifa_addr->sa_family,(void *)&(s6->sin6_addr), buf, sizeof(buf)) != NULL) {
+	int l = strlen(buf);
+
+	snprintf(&buf[l], sizeof(buf)-l, "%s", "/128");
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv6 interface address", buf);
+	ptree_add_rule(local_interface_addresses, buf);
+      }
+    }
+  }
+
+  freeifaddrs(local_addresses);
 }
 
 /* ******************************************* */
@@ -459,8 +514,8 @@ void Ntop::setLocalNetworks(char *_nets) {
 
   len = strlen(_nets);
 
-  if((len > 2) 
-     && (_nets[0] == '"')  
+  if((len > 2)
+     && (_nets[0] == '"')
      && (_nets[len-1] == '"')) {
     nets = strdup(&_nets[1]);
     nets[len-2] = '\0';

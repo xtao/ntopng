@@ -36,9 +36,9 @@
  *  @ingroup Ntop
  *
  */
- class Ntop {
+class Ntop {
  private:
-
+  patricia_tree_t *local_interface_addresses;
   char working_dir[MAX_PATH]; /**< Array of working directory.*/
   char install_dir[MAX_PATH]; /**< Array of install directory.*/
   char startup_dir[MAX_PATH]; /**< Array of startup directory.*/
@@ -49,41 +49,43 @@
   NtopGlobals *globals; /**< Pointer of Ntop globals info and variables.*/
   Redis *redis; /**< Pointer of Radius server.*/
   PeriodicActivities *pa; /**< Instance of periodical activities.*/
-   AddressResolution *address;
-   Prefs *prefs;
-   Geolocation *geo;
-   Categorization *categorization;
-   HTTPBL* httpbl;
-   Mutex *rrd_lock;
-   long time_offset;
+  AddressResolution *address;
+  Prefs *prefs;
+  Geolocation *geo;
+  Categorization *categorization;
+  HTTPBL* httpbl;
+  Mutex *rrd_lock;
+  long time_offset;
+
+  void loadLocalInterfaceAddress();
 
  public:
- /**
-  * @brief A Constructor
-  * @details Creating a new Ntop.
-  *
-  * @param appName  Describe the application name.
-  * @return A new instance of Ntop.
-  */
+  /**
+   * @brief A Constructor
+   * @details Creating a new Ntop.
+   *
+   * @param appName  Describe the application name.
+   * @return A new instance of Ntop.
+   */
   Ntop(char *appName);
   /**
    * @brief A Destructor.
    *
    */
-   ~Ntop();
+  ~Ntop();
   /**
    * @brief Register the ntopng preferences.
    * @details Setting the ntopng preferences defined in a Prefs instance.
    *
    * @param _prefs Prefs instance containing the ntopng preferences.
    */
- void registerPrefs(Prefs *_prefs);
- /**
-  * @brief Set the path of custom nDPI protocols file.
-  * @details Set the path of protos.txt containing the defined custom protocols. For more information please read the nDPI quick start (cd ntopng source code directory/nDPI/doc/).
-  *
-  * @param path Path of protos.file.
-  */
+  void registerPrefs(Prefs *_prefs);
+  /**
+   * @brief Set the path of custom nDPI protocols file.
+   * @details Set the path of protos.txt containing the defined custom protocols. For more information please read the nDPI quick start (cd ntopng source code directory/nDPI/doc/).
+   *
+   * @param path Path of protos.file.
+   */
   void setCustomnDPIProtos(char *path);
   /**
    * @brief Get the custom nDPI protocols.
@@ -281,6 +283,7 @@
   void daemonize();
   void shutdown();
   void runHousekeepingTasks();
+  bool isLocalInterfaceAddress(int family, void *addr);
 };
 
 extern Ntop *ntop;

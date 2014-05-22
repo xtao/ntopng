@@ -83,6 +83,7 @@ class Host : public GenericHost {
   inline bool isPrivateHost()                  { return((ip && ip->isPrivateAddress()) ? true : false); }
   inline float get_latitude()                  { return(latitude);      }
   inline float get_longitude()                 { return(longitude);     }
+  bool isLocalInterfaceAddress();
   char* get_mac(char *buf, u_int buf_len);
   char* get_name(char *buf, u_int buf_len, bool force_resolution_if_not_found);
   char* get_string_key(char *buf, u_int buf_len);

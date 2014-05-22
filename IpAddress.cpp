@@ -61,6 +61,7 @@ IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
 void IpAddress::set(IpAddress *ip) {
   memcpy(&addr, &ip->addr, sizeof(struct ipAddress));
   ip_key = ip->ip_key;
+  compute_key();
 }
 
 /* ******************************************* */
@@ -134,13 +135,37 @@ int IpAddress::compare(IpAddress *ip) {
 
 /* ******************************************* */
 
+bool IpAddress::isLocalInterfaceAddress() {
+  bool systemHost;
+
+  if(addr.ipVersion == 4) {
+    ip_key = ntohl(addr.ipType.ipv4);
+
+    systemHost = ntop->isLocalInterfaceAddress(AF_INET, &addr.ipType.ipv4);
+  } else if(addr.ipVersion == 6) {
+    u_int32_t key = 0;
+
+    for(u_int32_t i=0; i<4; i++)
+      key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];
+
+    ip_key = key;
+
+    systemHost = ntop->isLocalInterfaceAddress(AF_INET6, &addr.ipType.ipv6);
+  } else
+    systemHost = false;
+
+  return(systemHost);
+}
+
+/* ******************************************* */
+
 void IpAddress::compute_key() {
   checkPrivate();
 
-  if(addr.ipVersion == 4)
+  if(addr.ipVersion == 4) {
     ip_key = ntohl(addr.ipType.ipv4);
-  else {
-    u_int32_t key=0;
+  } else if(addr.ipVersion == 6) {
+    u_int32_t key = 0;
 
     for(u_int32_t i=0; i<4; i++)
       key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];

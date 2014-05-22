@@ -186,6 +186,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
 
       updateLocal();
+      systemHost = ip->isLocalInterfaceAddress();
 
       if((localHost && ntop->getPrefs()->is_host_persistency_enabled())
 	 && (!ntop->getRedis()->get(redis_key, json, sizeof(json)))) {

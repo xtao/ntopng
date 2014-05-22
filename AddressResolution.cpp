@@ -103,7 +103,7 @@ static int remove_from_ptree(patricia_tree_t *tree, int family, void *addr, int 
 
 /* ******************************************* */
 
-static patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *addr, int bits) {
+patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *addr, int bits) {
   prefix_t prefix;
 
   if(family == AF_INET)
@@ -116,7 +116,7 @@ static patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *add
 
 /* ******************************************* */
 
-static void ptree_add_rule(patricia_tree_t *ptree, char *line) {
+void ptree_add_rule(patricia_tree_t *ptree, char *line) {
   char *ip, *bits;
   struct in_addr addr4;
   struct in6_addr addr6;

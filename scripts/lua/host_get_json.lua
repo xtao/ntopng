@@ -18,7 +18,7 @@ if(host_info["host"] == nil) then
 end
 
 interface.find(ifname)
-host = interface.getHostInfo(host_info["host"],host_info["vlan"])
+host = interface.getHostInfo(host_info["host"], host_info["vlan"])
 
 if(host == nil) then
    sendHTTPHeader('text/html')

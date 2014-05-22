@@ -46,7 +46,7 @@ class IpAddress {
   char* _intoa(char* buf, u_short bufLen);
   void checkPrivate();
   void compute_key();
-
+  
  public:
   IpAddress();
   IpAddress(char *string);
@@ -74,7 +74,7 @@ class IpAddress {
   inline bool isPrivateAddress()                       { return(addr.privateIP); };
   char* print(char *str, u_int str_len);
   bool isLocalHost();
-
+  bool isLocalInterfaceAddress();
   void deserialize(json_object *o);
   char* serialize();
   json_object* getJSONObject();

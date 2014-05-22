@@ -55,6 +55,8 @@ Flow::Flow(NetworkInterface *_iface,
     to guess protocols based on ports and IPs
    */
   /* if(iface->is_ndpi_enabled()) */ allocFlowMemory();
+
+  refresh_process();
 }
 
 /* *************************************** */
@@ -878,17 +880,94 @@ void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
 
 /* *************************************** */
 
-void Flow::handle_process(ZMQ_Flow *zflow) {
+void Flow::handle_process(ProcessInfo *pinfo, bool client_process) {
   ProcessInfo *proc = new ProcessInfo;
 
   if(!proc) return; /* Out of memory */
 
-  memcpy(proc, &zflow->process, sizeof(ProcessInfo));
+  memcpy(proc, pinfo, sizeof(ProcessInfo));
 
-  if(zflow->direction == 1)
+  if(client_process)
     client_proc = proc, cli_host->setSystemHost(); /* Outgoing */
   else
     server_proc = proc, srv_host->setSystemHost();  /* Incoming */
+}
+
+/* *************************************** */
+
+void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
+  ProcessInfo p;
+  char _port[8], rsp[128], *pid, *process_name, *w, path[MAX_PATH];
+  FILE *f;
+
+  snprintf(_port, sizeof(_port), "%u", port);
+  if(ntop->getRedis()->hashGet((char*)(as_client ? SPROBE_CLIENT_HASH_NAME : SPROBE_SERVER_HASH_NAME),
+			       _port, rsp, sizeof(rsp)) == -1)
+    return;
+
+  /* <PID>,<process name> */
+  if((pid = strtok_r(rsp, ",", &w)) == NULL) return;
+  if((process_name = strtok_r(NULL, ",", &w)) == NULL) return;
+    
+  snprintf(path, sizeof(path), "/proc/%s/status", pid);
+
+  if((f = fopen(path, "r")) != NULL) {
+    char *line, buf[128];
+
+    memset(&p, 0, sizeof(p));
+    snprintf(p.name, sizeof(p.name), "%s", process_name);
+    p.pid = atol(pid);
+
+    /*
+      typedef struct {
+      u_int8_t cpu_id;
+
+      char father_name[48], user_name[48];
+      u_int8_t average_cpu_load;
+      u_int32_t num_vm_page_faults;
+      } ProcessInfo;
+    */
+
+    while((line = fgets(buf, sizeof(buf), f)) != NULL) {
+      buf[strlen(buf)-1] = '\0';
+
+      if(strncmp(line, "Name:", 5) == 0) {
+	snprintf(p.name, sizeof(p.name), "%s", &buf[6]);
+      } else if(strncmp(line, "PPid:", 5) == 0) {
+        p.father_pid = atol(&line[6]);
+      } else if(strncmp(line, "VmPeak:", 7) == 0) {
+	p.peak_memory = atol(&line[8]);
+      } else if(strncmp(line, "VmSize:", 7) == 0) {
+	p.actual_memory = atol(&line[8]);
+	break;
+      }
+    }
+
+    fclose(f);
+
+    if(0) {
+      char buf1[32], buf2[32];
+
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "[port: %u][%s][%s:%u <-> %s:%u][%s]",
+				   port, as_client ? "CLIENT" : "SERVER",
+				   cli_host->get_ip()->print(buf1, sizeof(buf1)), ntohs(cli_port),
+				   srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
+				   p.name);
+    }
+
+
+    handle_process(&p, as_client);
+  }
+}
+
+/* *************************************** */
+
+void Flow::refresh_process() {
+  if(cli_host && cli_host->isSystemHost())
+    refresh_process_peer(cli_host, ntohs(cli_port), true);  
+
+  if(srv_host && srv_host->isSystemHost())
+    refresh_process_peer(srv_host, ntohs(srv_port), false);  
 }
 
 /* *************************************** */
