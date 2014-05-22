@@ -24,15 +24,25 @@ if(tracked == nil) then tracked = 0 else tracked = tonumber(tracked) end
 print [[
       <hr>
       <div id="table-hosts"></div>
-	 <script>
-	 $("#table-hosts").datatable({
-					url: "/lua/get_hosts_data.lua?aggregation=1&protocol=38]] -- 38 == EPP
-					if(_GET["client"]) then print("&client=".._GET["client"]) end
-					if(_GET["tracked"]) then print("&tracked=".._GET["tracked"]) end
-					print("&aggregation="..aggregation)
-print [[",
-	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
+    <script>
+   var url_update = "/lua/get_hosts_data.lua?aggregation=1&protocol=38]] -- 38 == EPP
+   if(_GET["client"]) then print("&client=".._GET["client"]) end
+   if(_GET["tracked"]) then print("&tracked=".._GET["tracked"]) end
+   print("&aggregation="..aggregation)
+   print ('";')
+
+   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
+
+print [[
+   $("#table-hosts").datatable({ 
+      url: url_update , 
+      showPagination: true,
+      ]]
+
+-- Uncomment this line to enable the automatic update of the table
+-- print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
+
+print [[buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
@@ -43,6 +53,7 @@ for key,v in pairs(families["families"]) do
 end 
 
 print("</ul> </div>' ],\n")
+
 
 aggregation = tonumber(aggregation)
 

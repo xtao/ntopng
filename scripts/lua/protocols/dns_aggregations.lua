@@ -22,17 +22,20 @@ print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-	 $("#table-hosts").datatable({
-					url: "/lua/get_hosts_data.lua?aggregated=1&protocol=5]] -- 5 == DNS
-					if(_GET["client"]) then print("&client=".._GET["client"]) end
+   var url_update = "/lua/get_hosts_data.lua?aggregated=1&protocol=5]] -- 5 == DNS
+   if(_GET["client"]) then print("&client=".._GET["client"]) end
+   print ('";')
 
-print [[",
-	       showPagination: true,
-]]
+   ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
 
+print [[
+   $("#table-hosts").datatable({ 
+      title: "DNS Queries",
+      url: url_update , 
+      showPagination: true,
+      ]]
 
-
-print("title: \"DNS Queries\",\n")
+print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")

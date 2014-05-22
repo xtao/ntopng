@@ -1,3 +1,6 @@
+
+
+// ---------------- Automatic table update code ------------------------
 // Use the host_rows_option object in order to simplify the option setting from lua script.
 
 var host_rows_option = {};
@@ -85,3 +88,5 @@ function host_table_update () {
 
 // Refresh Interval (5 sec)
 var host_table_interval = window.setInterval(host_table_update, 5000);
+// ---------------- End automatic table update code ------------------------
+

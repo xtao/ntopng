@@ -1,3 +1,6 @@
+
+
+// ---------------- Automatic table update code ------------------------
 // Use the flow_rows_option object in order to simplify the option setting from lua script.
 
 var flow_rows_option = {};
@@ -101,3 +104,6 @@ function flow_table_update () {
 
 // Refresh Interval (5 sec)
 var flow_table_interval = window.setInterval(flow_table_update, 5000);
+// ---------------- End automatic table update code ------------------------
+
+

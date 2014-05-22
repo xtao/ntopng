@@ -1334,14 +1334,21 @@ elseif(page == "aggregations") then
 print [[
       <div id="table-hosts"></div>
 	 <script>
-	 $("#table-hosts").datatable({
-					url: "/lua/get_hosts_data.lua?aggregated=1]]
-					print("&protocol="..protocol_id.."&client="..host_info["host"])
-print [[",
-	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
+   var url_update = "/lua/get_hosts_data.lua?aggregated=1]]
+   print("&protocol="..protocol_id.."&client="..host_info["host"]) print ('";')
 
-print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc") 
+
+  print [[
+   $("#table-hosts").datatable({ 
+      title: "Client Host Aggregations",
+      url: url_update , ]]
+
+print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
+
+print [[
+      showPagination: true,
+      buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/aggregated_hosts_stats.lua">All</a></li> ]]
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
@@ -1349,13 +1356,36 @@ for key,v in pairs(families["families"]) do
 end
 
 print("</ul> </div>' ],")
-print("title: \"Client Host Aggregations\",\n")
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
 
 prefs = ntop.getPrefs()
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.inc")
+
+
+-- 	 $("#table-hosts").datatable({
+-- 					url: "/lua/get_hosts_data.lua?aggregated=1]]
+-- 					print("&protocol="..protocol_id.."&client="..host_info["host"])
+-- print [[",
+-- 	       showPagination: true,
+-- 	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
+
+-- print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
+
+-- families = interface.getAggregationFamilies()
+-- for key,v in pairs(families["families"]) do
+--    print('<li><a href="/lua/host_details.lua?'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
+-- end
+
+-- print("</ul> </div>' ],")
+-- print("title: \"Client Host Aggregations\",\n")
+
+-- ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
+
+-- prefs = ntop.getPrefs()
+
+-- ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.inc")
 
 
 elseif(page == "sprobe") then
