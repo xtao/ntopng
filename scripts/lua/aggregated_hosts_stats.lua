@@ -19,14 +19,24 @@ print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-	 $("#table-hosts").datatable({
-					url: "/lua/get_hosts_data.lua?aggregated=1]]
-					if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
-					if(_GET["client"]) then print("&client=".._GET["client"]) end
-					if(_GET["aggregation"] ~= nil) then print("&aggregation=".._GET["aggregation"]) end
-print [[",
-	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
+   var url_update = "/lua/get_hosts_data.lua?aggregated=1]]
+          if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
+          if(_GET["client"]) then print("&client=".._GET["client"]) end
+          if(_GET["aggregation"] ~= nil) then print("&aggregation=".._GET["aggregation"]) end
+    print ('";')
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
+
+print [[
+   $("#table-hosts").datatable({ 
+      title: "Aggregations",
+      url: url_update , 
+      showPagination: true,
+      ]]
+
+print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
+print [[
+         buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
 
 print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
 
@@ -40,7 +50,7 @@ for key,v in pairs(families["families"]) do
 end 
 
 print("</ul> </div>' ],\n")
-print("title: \"Aggregations\",\n")
+
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_top.inc")
 
