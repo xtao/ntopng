@@ -40,7 +40,7 @@ print [[
       ]]
 
 -- Uncomment this line to enable the automatic update of the table
--- print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
+print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
 
 print [[buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu">]]
 

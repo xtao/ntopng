@@ -103,7 +103,7 @@ function flow_table_update () {
 }
 
 // Refresh Interval (5 sec)
-var flow_table_interval = window.setInterval(flow_table_update, 5000);
+var flow_table_interval = window.setInterval(flow_table_update, 10000);
 // ---------------- End automatic table update code ------------------------
 
 
