@@ -21,6 +21,6 @@ else
 end
 
 
-rsp = interface.getHostActivityMap(host_info["host"], aggregation, 1) -- host_info["vlan"])
+rsp = interface.getHostActivityMap(host_info["host"], aggregation, host_info["vlan"])
 
 print(rsp)
