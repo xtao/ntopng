@@ -125,7 +125,7 @@ print [[
 	  .style("stroke-width", function(d) { return Math.max(1, d.dy); })
 	  .style("stroke", function(d){ return d.color = colorlink(d); })
 	  .sort(function(a, b) { return b.dy - a.dy; })
-    .on("dblclick", function(d) { window.location.href = "/lua/hosts_comparison.lua?hosts="+escape(d.source.ip)+","+escape(d.target.ip);  });
+    .on("dblclick", function(d) { window.location.href = "/lua/hosts_comparison.lua?hosts="+escape(d.source.host)+"@"+escape(d.source.vlan)+","+escape(d.target.host)+"@"+escape(d.target.vlan);  });
 
 	link.append("title")
 	  .text(function(d) { return d.source.name + " - " + d.target.name + "\n" + format(d.sent, d.rcvd) + "\n Double click to show more information about the flows between this two host." ; });
@@ -156,12 +156,12 @@ print [[
 	  .attr("height", 12)
 	  .attr("width", 150)
 	  .style("opacity", "0")
-	  .on("click", function(d) { window.location.href = "/lua/host_details.lua?host="+escape(d.ip)+"&vlan="+escape(d.vlan);  })
+	  .on("click", function(d) { window.location.href = "/lua/host_details.lua?host="+escape(d.host)+"@"+escape(d.vlan);  })
 	  .attr("transform", null)
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 4 + sankey.nodeWidth())
 	  .append("title")
-	  .text(function(d) { return "Ip: " + d.ip + "\nVlan: " + d.vlan});
+	  .text(function(d) { return "Host: " + d.host + "\nVlan: " + d.vlan});
 
 	node.append("text")
 	  .attr("x", -6)
@@ -173,7 +173,7 @@ print [[
       if (d.vlan != 0) {
         return (d.name);
       } else {
-        return (d.ip);
+        return (d.host);
       }  
      })
 	  .filter(function(d) { return d.x < width / 2; })
@@ -238,7 +238,7 @@ print(url.."hosts=".._GET["hosts"])
       if (d.vlan != 0) {
         return (d.name);
       } else {
-        return (d.ip);
+        return (d.host);
       }   
     });
 
@@ -253,7 +253,7 @@ print(url.."hosts=".._GET["hosts"])
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 4 + sankey.nodeWidth())
     .append("title")
-    .text(function(d) { return "Ip: " + d.ip + "Vlan: " + d.vlan});
+    .text(function(d) { return "Host: " + d.host + "Vlan: " + d.vlan});
 
   node.append("text")
     .attr("x", -6)
@@ -265,7 +265,7 @@ print(url.."hosts=".._GET["hosts"])
       if (d.vlan != 0) {
         return (d.name);
       } else {
-        return (d.ip);
+        return (d.host);
       }  
      })
     .filter(function(d) { return d.x < width / 2; })

@@ -15,7 +15,7 @@ var g_InfowindowPolyline = new google.maps.InfoWindow();
 
 
 if(!(zoomIP === undefined)) {
-    g_UrlJsonFile = g_UrlJsonFile+"?host="+zoomIP;
+    g_UrlJsonFile = g_UrlJsonFile+"?"+zoomIP;
 }
 
 

@@ -1,6 +1,6 @@
 <h4>Top Hosts (Send+Receive)</h4>
 <div class="pie-chart" id="topHosts"></div>
-
+<span class="help-block" style="color: #dddddd;">Click on the host for more information.</span>
 <script type='text/javascript'>
 
 window.onload=function() {

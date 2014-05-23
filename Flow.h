@@ -91,7 +91,7 @@ class Flow : public GenericHashEntry {
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(const char *json);
-  bool isFlowPeer(char *numIP);
+  bool isFlowPeer(char *numIP, u_int16_t vlanId);
   void incStats(bool cli2srv_direction, u_int pkt_len);
   void updateActivities();
   void addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes, u_int out_pkts, u_int out_bytes, time_t last_seen);

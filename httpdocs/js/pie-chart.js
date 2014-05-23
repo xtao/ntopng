@@ -195,7 +195,7 @@ function PieChart(name, update_url, url_params, units, refresh) {
 		    }).text(function(d){
 			    return d.name;
 			})
-                .on("click", function(d) { if (d.url) window.location.href = d.url;  });
+      .on("click", function(d) { if (d.url) window.location.href = d.url;  });
 
 	    nameLabels.enter().append("svg:text")
 		.attr("class", "units")

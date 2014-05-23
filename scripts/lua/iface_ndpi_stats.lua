@@ -51,7 +51,11 @@ if(stats ~= nil) then
 	 print ",\n"
       end
 
-      print("\t { \"label\": \"" .. value .."\", \"value\": ".. key .." }")
+      if(host_info["host"] == nil) then
+         print("\t { \"label\": \"" .. value .."\", \"url\": \"/lua/flows_stats.lua?application="..value.."\", \"value\": ".. key .." }")
+      else
+         print("\t { \"label\": \"" .. value .."\", \"value\": ".. key .." }")
+      end
       accumulate = accumulate + key
       num = num + 1
 

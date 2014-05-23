@@ -42,7 +42,7 @@ if(protocol_id == "") then protocol_id = nil end
 if(protocol_id ~= nil) then protocol_id = tonumber(protocol_id) end
 host_peers = {}
 
--- io.write(protocol_id.."\n")
+
 if((protocol_id == nil) or (protocol_id == 65535)) then
    if(host_info.contacts ~= nil) then
       if(host_info["contacts"]["client"] ~= nil) then
@@ -80,7 +80,7 @@ if((protocol_id == nil) or (protocol_id ~= 65535)) then
    for key, value in pairs(hosts_stats) do
       for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
 	 if(k == host) then 
-	    --io.write(key.." ".. hosts_stats[key]["family"] .." "..v.."\n")
+	
 
 	    if(host_peers[key] == nil) then
 	       e = {}
@@ -95,7 +95,7 @@ if((protocol_id == nil) or (protocol_id ~= 65535)) then
       
       for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
 	 if(k == host) then 
-	    --io.write(key.." ".. hosts_stats[key]["family"] .." "..v.."\n")
+	
 
 	    if(host_peers[key] == nil) then
 	       e = {}
@@ -108,7 +108,6 @@ if((protocol_id == nil) or (protocol_id ~= 65535)) then
 	 end
       end
    end
-   --io.write(hosts_stats)
 end
 
 t = os.time()

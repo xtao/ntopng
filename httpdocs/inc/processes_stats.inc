@@ -9,6 +9,14 @@
 			        textAlign: 'left'
 			     }
 				 },
+           {
+           title: "Source Id",
+         field: "column_vlan",
+         sortable: true,
+                 css: { 
+              textAlign: 'center'
+           }
+         },
 			     {
 			     title: "Flows Count",
 				 field: "column_count",

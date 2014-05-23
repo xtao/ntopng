@@ -12,7 +12,12 @@ sendHTTPHeader('application/json')
 
 interface.find(ifname)
 if((_GET["hostIP"] ~= nil) and (_GET["hostIP"] ~= "")) then
-   host = interface.getHostInfo(_GET["hostIP"])
+   vlan = 0
+   if ((_GET["hostVlan"] ~= nil) and (_GET["hostIP"] ~= "")) then
+      vlan = tonumber(_GET["hostVlan"])
+   end
+  
+   host = interface.getHostInfo(_GET["hostIP"], vlan)
 
    if(host == nil) then 
       print("{ }\n")
@@ -21,12 +26,18 @@ if((_GET["hostIP"] ~= nil) and (_GET["hostIP"] ~= "")) then
    end
 else
    -- All hosts
+   
    hosts_stats = interface.getHostsInfo()
    num = 0
    print("[\n")
 
    for key, value in pairs(hosts_stats) do
-      host = interface.getHostInfo(key)
+      
+      host_info = split(key,"@")
+      ip = host_info[1]
+      vlan = host_info[2]
+       
+      host = interface.getHostInfo(ip,vlan)
       
       if((host ~= nil) and (host["json"] ~= nil)) then
 	 if(num > 0) then print(",\n") end

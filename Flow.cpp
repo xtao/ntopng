@@ -478,9 +478,18 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 	   src->Host::get_name(buf1, sizeof(buf1), false),
 	   dst->Host::get_name(buf2, sizeof(buf2), false));
 #else
-  snprintf(buf, sizeof(buf), "%s %s",
+  /*Use the ip@vlan_id as a key only in case of multi vlan_id, otherwise use only the ip as a key*/
+  if ((get_cli_host()->get_vlan_id() == 0) && (get_srv_host()->get_vlan_id() == 0)){
+    snprintf(buf, sizeof(buf), "%s %s",
            intoaV4(ntohl(get_cli_ipv4()), buf1, sizeof(buf1)),
            intoaV4(ntohl(get_srv_ipv4()), buf2, sizeof(buf2)));
+  } else {
+    snprintf(buf, sizeof(buf), "%s@%d %s@%d",
+           intoaV4(ntohl(get_cli_ipv4()), buf1, sizeof(buf1)),
+           get_cli_host()->get_vlan_id(),
+           intoaV4(ntohl(get_srv_ipv4()), buf2, sizeof(buf2)),
+           get_srv_host()->get_vlan_id());
+  }
 #endif
 
   lua_pushstring(vm, buf);
@@ -725,14 +734,16 @@ bool Flow::idle() {
 
 /* *************************************** */
 
-bool Flow::isFlowPeer(char *numIP) {
+bool Flow::isFlowPeer(char *numIP, u_int16_t vlanId) {
   char s_buf[32], *ret;
 
   ret = cli_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if(strcmp(ret, numIP) == 0) return(true);
+  if ((strcmp(ret, numIP) == 0) && 
+     (cli_host->get_vlan_id() == vlanId))return(true);
 
   ret = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if(strcmp(ret, numIP) == 0) return(true);
+  if ((strcmp(ret, numIP) == 0) && 
+     (cli_host->get_vlan_id() == vlanId))return(true);
 
   return(false);
 }

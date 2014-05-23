@@ -26,7 +26,7 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
-
+interface.find(ifname)
 local debug = false
 -- setTraceLevel(TRACE_DEBUG) -- Debug mode
 
@@ -41,6 +41,21 @@ flowtype      = _GET["flowtype"]
 -- For more information please read the scripts/lua/modules/lua_utils.lua file.
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+
+-- Test key 2 host and host 2 key
+-- hosts_stats = interface.getHostsInfo()
+-- for key, value in pairs(hosts_stats) do
+--   print ("key:"..key.."</br>")
+--   info = hostkey2hostinfo(key)
+--   print ("Host: "..info["host"].."@"..info["vlan"].."<br>")
+--   host = interface.getHostInfo(key)
+--   print ("key:"..key.."<br>")
+--   if(host == nil) then 
+--     print ("Null<br>") 
+--     else 
+--       print ("Found<br>")
+--     end
+-- end
 
 print('<html><head><title>ntopng API Lua example</title></head>')
 print('<body>')
@@ -113,20 +128,41 @@ if (hostinfotype == "minimal_one_host" ) or (hostinfotype == "minimal_all_host")
   if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
   
   for key, value in pairs(hosts) do
-  
-    print("<li> HostName: ".. key.." -- Vlan: "..hosts[key]["vlan"].."   -- Sent Byte + Received Byte: " .. hosts[key]["traffic"].."<br>")
+    if (hosts[key]["ip"] ~= nil) then
+    host_info = hosts[key]["ip"]
+  else 
+    host_info = hosts[key]["mac"]
+  end
+    print("<li> Key: ".. key)
+    print("<ul>")
+    print("<li> Ip: "..host_info)
+    print("<li> Vlan: "..hosts[key]["vlan"])
+    print("<li> Sent Byte + Received Byte: " .. hosts[key]["traffic"])
+    print("</ul>")
+    print("<br>")
+
     if (hostinfotype == "minimal_one_host" ) then break end
   end
 end
 
 if (hostinfotype == "more_one_host" ) or (hostinfotype == "more_all_host") then
-  print('<pre><code>hosts = interface.getHostsInfo()</code></pre>')
+  
+  if(hostinfotype == "more_all_host") then 
+    print('<pre><code>hosts = interface.getHostsInfo()</code></pre>')
+  end
+
   hosts = interface.getHostsInfo()
   if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
   for key, value in pairs(hosts) do
-    print("<li> HostName: ".. key.."<br>")
-    printTable(hosts[key],key)
-    if (hostinfotype == "more_one_host") then break end
+      random_host = key
+      if (hostinfotype == "more_one_host") then break end
+      print("<li> HostName: ".. key.."<br>")
+      printTable(hosts[key],key)
+  end
+  if (hostinfotype == "more_one_host") then 
+    print('<pre><code>hosts = interface.getHostInfo('..random_host..')</code></pre>')
+    print("<li> HostName: ".. random_host.."<br>")
+    printTable(interface.getHostInfo(random_host))
   end
 end
 print('</ul>')
@@ -143,7 +179,12 @@ for key, value in pairs(hosts_json) do
   random_host = key
   print('<li>'..key)
   print('<ul>')
-  print('<li><a href="/lua/host_get_json.lua?host=' .. key..'" target="_blank"> All information</a>')
+  if (hosts_json[key]["ip"] ~= nil) then
+    host_info = hosts_json[key]["ip"]
+  else 
+    host_info = hosts_json[key]["mac"]
+  end
+  print('<li><a href="/lua/host_get_json.lua?host=' .. host_info..'&vlan='..hosts_json[key]["vlan"]..'" target="_blank"> All information</a>')
   print('<li><a href="/lua/get_host_activitymap.lua?host=' .. key..'" target="_blank"> Only Activity Map </a>')
   print('</ul>')
 end

@@ -964,7 +964,7 @@ static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
 	char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
 	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf),
 					      false /* Dont resolve it if not known */);
-
+  
 	if(rc == 0 /* found */) host->setName(name_buf, false);
       }
 
@@ -1195,13 +1195,14 @@ void NetworkInterface::getActiveFlowsList(lua_State* vm) {
 struct flow_peers_info {
   lua_State *vm;
   char *numIP;
+  u_int16_t vlanId;
 };
 
 static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
   Flow *flow = (Flow*)h;
   struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
-  if((info->numIP == NULL) || flow->isFlowPeer(info->numIP))
+  if((info->numIP == NULL) || flow->isFlowPeer(info->numIP, info->vlanId))
     flow->print_peers(info->vm, (info->numIP == NULL) ? false : true);
 
   return(false); /* false = keep on walking */
@@ -1209,13 +1210,12 @@ static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
 
 /* **************************************************** */
 
-void NetworkInterface::getFlowPeersList(lua_State* vm, char *numIP) {
+void NetworkInterface::getFlowPeersList(lua_State* vm, char *numIP, u_int16_t vlanId) {
   struct flow_peers_info info;
 
   lua_newtable(vm);
 
-  info.vm = vm, info.numIP = numIP;
-
+  info.vm = vm, info.numIP = numIP, info.vlanId = vlanId;
   flows_hash->walk(flow_peers_walker, (void*)&info);
 }
 
@@ -1554,12 +1554,19 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
 static bool similarity_walker(GenericHashEntry *node, void *user_data) {
   Host *h = (Host*)node;
   struct correlator_host_info *info = (struct correlator_host_info*)user_data;
+  char buf[32], name[64];
 
   if(h
      // && h->isLocalHost() /* Consider only local hosts */
      && h->get_ip()
      && (h != info->h)) {
-    char buf[32], *name = h->get_ip()->print(buf, sizeof(buf));
+    
+    if (h->get_vlan_id() == 0) {
+      sprintf(name, "%s",h->get_ip()->print(buf, sizeof(buf)));
+    } else {
+      sprintf(name, "%s@%d",h->get_ip()->print(buf, sizeof(buf)),h->get_vlan_id());
+    }
+    
     u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
     double jaccard;
 
@@ -1602,6 +1609,7 @@ bool NetworkInterface::similarHostActivity(lua_State* vm,
   Host *h = getHost(host_ip, vlan_id);
 
   if(h) {
+    printf ("Find host\n");
     struct correlator_host_info info;
 
     memset(&info, 0, sizeof(info));

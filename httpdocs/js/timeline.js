@@ -208,7 +208,7 @@ function TimelineValue (p_update_url, p_url_params, p_url_id_name, p_timeInterva
   var timeInterval = p_timeInterval || 1;
   var annotator = p_annotator || null;
 
-  var use_old_value = p_use_old_value || 0;
+  var use_old_value = 0;
 
   var palette = new Rickshaw.Color.Palette( { scheme: 'cool' } );
   var timeBase = Math.floor(new Date().getTime() / 1000) - (p_init_period*timeInterval);
@@ -250,7 +250,7 @@ function TimelineValue (p_update_url, p_url_params, p_url_id_name, p_timeInterva
        data: p_g_data[i],
        name: flow.label
       });
-
+      
       p_h_data[i] = {
         name : flow.name,
         label : flow.label,
@@ -271,16 +271,20 @@ function TimelineValue (p_update_url, p_url_params, p_url_id_name, p_timeInterva
     // Using historical structure in order to use the process name to get the new values
     p_h_data.forEach( function (current_data,i) {
       var value = -1;
-      var l_url_param = url_params
-
-      l_url_param[url_id_name] = current_data.name;
-
+      var l_url_param = {};
+      l_url_param.mode = url_params.mode;
+      l_url_param.name = current_data.name;
+      // console.log(current_data.name);
+      // console.log(l_url_param);
+      
       var jsonData = getData(l_url_param,"updateData JSON error");
 
       if (jsonData[0] != null) {
         value = jsonData[0].value;
-  
+        // console.log(value);
         // Update historical value
+        // console.log(p_h_data[i].name);
+        // console.log(p_h_data[i].value);
         p_h_data[i].value = value;
         p_h_data[i].actual_memory = jsonData[0].actual_memory;
         p_h_data[i].average_cpu_load = jsonData[0].average_cpu_load;

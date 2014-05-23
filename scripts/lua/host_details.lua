@@ -8,11 +8,11 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "graph_utils"
 require "alert_utils"
-
+debug_hosts = false
 page        = _GET["page"]
 protocol_id = _GET["protocol"]
 host_info = urt2hostinfo(_GET)
-host_ip = host_info["host"]
+host_ip = hostinfo2hostkey(host_info)
 host_vlan = host_info["vlan"]
 active_page = "hosts"
 
@@ -41,7 +41,7 @@ if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info
 --if(ip_elems[2] == nil) then
    host = interface.getHostInfo(host_info["host"],host_vlan)
    restoreFailed = false
-
+   
    if((host == nil) and (_GET["mode"] == "restore")) then
       if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Restored Host Info\n") end
       interface.restoreHost(host_info["host"],host_vlan)
@@ -61,7 +61,7 @@ if(host == nil) then
       sendHTTPHeader('text/html')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_info["host"] .. " cannot be found.")
+      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. hostinfo2hostkey(host_info) .. " cannot be found.")
       if((json ~= nil) and (json ~= "")) then
 	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?'..hostinfo2url(host_info) ..'&mode=restore">here</A> to restore it from cache.\n')
       else
@@ -80,7 +80,7 @@ else
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
    if(host["ip"] ~= nil) then
-      host_ip = host["ip"]
+      host_ip = hostinfo2hostkey(host)
       host_info["host"] = host["ip"]
    end
 
@@ -98,7 +98,7 @@ print [[
               <div class="navbar-inner">
 <ul class="nav">
 ]]
-
+if ((debug_hosts) and (host["ip"] ~= nil)) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host["ip"] .. ", Vlan: "..host["vlan"].."\n") end
 url="/lua/host_details.lua?"..hostinfo2url(host_info)
 
 print("<li><a href=\"#\">Host: "..host_info["host"].." </a></li>\n")
@@ -322,7 +322,7 @@ print [[
       print('</form></td></tr>')
    end
 
-   if((host["vlan"] ~= nil) and (host["vlan"] > 0)) then
+   if (host["vlan"] ~= nil) then
       print("<tr><th>")
 
       ifstats = interface.getStats()
@@ -552,9 +552,7 @@ hostinfo2json(host_info)
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(_ifname) print [[" , host: ]]
-	print("\""..host_info["host"].."\"")
-	print [[ }, "", refresh);
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(_ifname) print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
 				}
 
 	    </script><p>
@@ -865,8 +863,7 @@ print [[
    when = os.date("%y%m%d", t)
    base_name = when.."|"..ifname.."|"..ntop.getHostId(host_info["host"])
    keyname = base_name.."|contacted_peers"
-   --io.write(keyname.."\n")
-   -- print(keyname.."\n")
+   
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
    v1 = ntop.getHashKeysCache(keyname)
@@ -978,7 +975,7 @@ print [[
 
 <script type="text/javascript">
 /* IP Address to zoom */
-  var zoomIP = "]] print(host_info["host"]) print [[ ";
+  var zoomIP = "]] print(hostinfo2url(host_info)) print [[ ";
 </script>
 
     <script type="text/javascript" src="/js/googleMapJson.js" ></script>
@@ -994,7 +991,7 @@ print [[
 </div>
 ]]
 
-jaccard = interface.similarHostActivity(host_info["host"])
+jaccard = interface.similarHostActivity(host_info["host"],host_info["vlan"])
 
 print [[
 <script type="text/javascript">
@@ -1017,20 +1014,22 @@ n = 0
 if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
 
 for v,k in pairsByKeys(vals, rev) do
+  
    if(v > 0) then
       if(n == 0) then
 	 print("<table class=\"table table-bordered\">\n")
-	 print("<tr><th>Local Hosts Similar to ".. host["name"] .."</th><th>Jaccard Coefficient</th><th>Activity Map</th>\n")
+	 print("<tr><th>Local Hosts Similar to ".. hostinfo2hostkey(host) .."</th><th>Jaccard Coefficient</th><th>Activity Map</th>\n")
       end
 
       correlated_host = interface.getHostInfo(k)
       if(correlated_host ~= nil) then
+
 	 if(correlated_host["name"] == nil) then correlated_host["name"] = ntop.getResolvedAddress(correlated_host["ip"]) end
 
          -- print the host row together with the Jaccard coefficient
 	 print("<tr>")
    -- print("<th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th>")
-	 print("<th align=left><A HREF=/lua/host_details.lua?"..hostinfo2url(correlated_host)..">"..correlated_host["name"].."</a></th>")
+	 print("<th align=left><A HREF=/lua/host_details.lua?"..hostinfo2url(correlated_host)..">"..hostinfo2hostkey(correlated_host).."</a></th>")
 	 print("<th>"..round(v,2).."</th>");
 
 	 -- print the activity map row
@@ -1089,7 +1088,7 @@ end
 if(n > 0) then
    print("</table>\n")
 else
-   print("There is no host correlated to ".. host["name"].."<p>\n")
+   print("There is no host correlated to ".. hostinfo2hostkey(host).."<p>\n")
 end
 
 print [[
@@ -1120,17 +1119,21 @@ if(num > 0) then
       print("<td><table class=\"table table-bordered table-striped\">\n")
       print("<tr><th width=75%>Server Address</th><th>Contacts</th></tr>\n")
 
+      -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
       -- Client
       sortTable = {}
-      for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=k end
+      for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=(k.."@"..host["vlan"]) end
 
       num = 0
       max_num = 64 -- Do not create huge maps
       for _v,k in pairsByKeys(sortTable, rev) do
+
 	 if(num >= max_num) then break end
 	 num = num + 1
-	 name = interface.getHostInfo(k)
-	 v = host["contacts"]["client"][k]
+   tmp = hostkey2hostinfo(k)
+	 name = interface.getHostInfo(tmp["host"],tmp["vlan"])
+   -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
+	 v = host["contacts"]["client"][tmp["host"]]
 	 if(name ~= nil) then
 	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
       url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(name).."\">"..n.."</A>"
@@ -1138,13 +1141,14 @@ if(num > 0) then
 	 else
 	    url = k
 	 end
-
-	 info = interface.getHostInfo(k)
+  
+	 info = interface.getHostInfo(tmp["host"],tmp["vlan"])
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
 	    end
 	 end
+   -- print(v.."<br>")
 	 print("<tr><th>"..url.."</th><td class=\"text-right\">" .. formatValue(v) .. "</td></tr>\n")
       end
       print("</table></td>\n")
@@ -1158,18 +1162,19 @@ if(num > 0) then
 
       -- Server
       sortTable = {}
-      for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
+      for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=(k.."@"..host["vlan"]) end
 
       for _v,k in pairsByKeys(sortTable, rev) do
-	 name = interface.getHostInfo(k)
-	 v = host["contacts"]["server"][k]
+        tmp = hostkey2hostinfo(k)
+	 name = interface.getHostInfo(tmp["host"],tmp["vlan"])
+	 v = host["contacts"]["server"][tmp["host"]]
 	 if(name ~= nil) then
 	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
 	    url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(name).."\">"..n.."</A>"
 	 else
 	    url = k
 	 end
-	 info = interface.getHostInfo(k)
+	 info = interface.getHostInfo(tmp["host"],tmp["vlan"])
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
@@ -1211,7 +1216,7 @@ alerts = ""
 to_save = false
 
 if((_GET["to_delete"] ~= nil) and (_GET["SaveAlerts"] == nil)) then
-   delete_host_alert_configuration(host_info["host"])
+   delete_host_alert_configuration(hostinfo2hostkey(host_info))
    alerts = nil
 else
    for k,_ in pairs(alert_functions_description) do
@@ -1232,12 +1237,12 @@ else
 
    if(to_save) then
       if(alerts == "") then
-	 ntop.delHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+	 ntop.delHashCache("ntopng.prefs.alerts_"..tab, hostinfo2hostkey(host))
       else
-	 ntop.setHashCache("ntopng.prefs.alerts_"..tab, host["ip"], alerts)
+	 ntop.setHashCache("ntopng.prefs.alerts_"..tab, hostinfo2hostkey(host), alerts)
       end
    else
-      alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, host["ip"])
+      alerts = ntop.getHashCache("ntopng.prefs.alerts_"..tab, hostinfo2hostkey(host))
    end
 end
 
@@ -1266,7 +1271,7 @@ print [[
  <input type=hidden name=page value=alerts>
 ]]
 
-print("<input type=hidden name=host value=\""..host_info["host"].."\">\n")
+print("<input type=hidden name=host value=\""..hostinfo2hostkey(host_info).."\">\n")
 print("<input type=hidden name=tab value="..tab..">\n")
 
 for k,v in pairsByKeys(alert_functions_description, asc) do
@@ -1301,7 +1306,7 @@ print [[
     <h3 id="myModalLabel">Confirm Action</h3>
   </div>
   <div class="modal-body">
-	 <p>Do you really want to delele all configured alerts for host ]] print(host_info["host"]) print [[?</p>
+	 <p>Do you really want to delele all configured alerts for host ]] print(hostinfo2hostkey(host_info)) print [[?</p>
   </div>
   <div class="modal-footer">
     <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=to_delete value="__all__">

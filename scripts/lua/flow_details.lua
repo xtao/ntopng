@@ -81,8 +81,16 @@ if(flow == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
    print("<table class=\"table table-bordered\">\n")
-   if(flow["vlan"] ~= 0) then
-      print("<tr><th width=30%>VLAN ID</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
+   if(flow["vlan"] ~= nil) then
+      ifstats = interface.getStats()
+      print("<tr><th width=30%>")
+      if(ifstats.iface_sprobe) then
+         print('Source Id')
+      else
+         print('VLAN ID')
+      end
+
+      print("</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
    end
    print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
    if(flow["cli.host"] ~= "") then print(flow["cli.host"]) else print(flow["cli.ip"]) end

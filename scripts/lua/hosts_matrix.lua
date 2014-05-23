@@ -21,12 +21,14 @@ function getTraffic(stats, host_a, host_b)
    --io.write(">>> "..host_a.." / "..host_b.."\n")
 
    for key, value in pairs(stats) do
+      client = hostinfo2hostkey(flows_stats[key],"cli")
+      server = hostinfo2hostkey(flows_stats[key],"srv")
       -- io.write(">>> "..flows_stats[key]["cli.ip"].." / "..flows_stats[key]["srv.ip"].."\n")
-      if((flows_stats[key]["cli.ip"] == host_a) and (flows_stats[key]["srv.ip"] == host_b)) then
+      if((client == host_a) and (server == host_b)) then
 	 sent_total = sent_total +  flows_stats[key]["cli2srv.bytes"]
 	 rcvd_total = rcvd_total + flows_stats[key]["srv2cli.bytes"]
       else
-	 if((flows_stats[key]["srv.ip"] == host_a) and (flows_stats[key]["cli.ip"] == host_b)) then
+	 if((server == host_a) and (client == host_b)) then
 	    sent_total = sent_total +  flows_stats[key]["srv2cli.bytes"]
 	    rcvd_total = rcvd_total + flows_stats[key]["cli2srv.bytes"]
 	 end   
@@ -49,9 +51,8 @@ for key, value in pairs(hosts_stats) do
    if((hosts_stats[key]["localhost"] == true) and (hosts_stats[key]["ip"] ~= nil)) then
       localhosts[key] = hosts_stats[key]
 
-      if(localhosts[key]["name"] == nil) then
-	 localhosts[key]["name"] = ntop.getResolvedAddress(localhosts[key]["ip"])
-      end
+      
+	 localhosts[key]["name"] = ntop.getResolvedAddress(localhosts[key]["ip"]).."@"..localhosts[key]["vlan"]
 
       found = true
    end
@@ -71,7 +72,7 @@ else
 
    for row_key, row_value in pairs(localhosts) do
       if(localhosts[row_key]["ip"] ~= nil) then
-	 print("<tr><th><A HREF=\"/lua/host_details.lua?host="..localhosts[row_key]["name"].."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
+	 print("<tr><th><A HREF=\"/lua/host_details.lua?host="..row_key.."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
 	 for column_key, column_value in pairs(localhosts) do	
 	    val = "&nbsp;"
 	    if(row_key ~= column_key) then

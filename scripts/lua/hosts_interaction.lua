@@ -13,6 +13,7 @@ require "lua_utils"
 if(host_ip == nil) then
    host_info = urt2hostinfo(_GET)
 else
+  -- print("host_ip:"..host_ip.."<br>")
   host_info = {}
   host_info["host"] = host_ip
   host_info["vlan"] = 0
@@ -341,58 +342,67 @@ links = 0
 local host
 
 for key, values in pairs(hosts_stats) do
-   host = interface.getHostInfo(key)
 
-   if(host ~= nil) then
-      if(hosts_id[key] == nil) then
-	 hosts_id[key] = { }
-	 hosts_id[key]['count'] = 0
-	 hosts_id[key]['id'] = num
-	 ids[num] = key
-	 key_id = num
-	 num = num + 1
-      else
-	 key_id = hosts_id[key]['id']
-      end
+  host = interface.getHostInfo(key)
 
-      if(host["contacts"]["client"] ~= nil) then
-	 for k,v in pairs(host["contacts"]["client"]) do 
-	    if(hosts_id[k] == nil) then
-	       hosts_id[k] = { }
-	       hosts_id[k]['count'] = 0
-	       hosts_id[k]['id'] = num
-	       ids[num] = k
-	       peer_id = num
-	       num = num + 1
-	    else
-	       peer_id = hosts_id[k]['id']
-	    end
-	    hosts_id[key]['count'] = hosts_id[key]['count'] + v
-	    if(links > 0) then print(",") end
-	    print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"client","linkName":""}')
-	    links = links + 1
-	 end
-      end
+  if(host ~= nil) then
+    
+    -- init host
+    if(hosts_id[key] == nil) then
+      hosts_id[key] = { }
+      hosts_id[key]['count'] = 0
+      hosts_id[key]['id'] = num
+      ids[num] = key
+      key_id = num
+      num = num + 1
+    else
+      key_id = hosts_id[key]['id']
+    end
 
-      if(host["contacts"]["server"] ~= nil) then
-	 for k,v in pairs(host["contacts"]["server"]) do 
-	    if(hosts_id[k] == nil) then
-	       hosts_id[k] = { }
-	       hosts_id[k]['count'] = 0
-	       hosts_id[k]['id'] = num
-	       ids[num] = k
-	       peer_id = num
-	       num = num + 1
-	    else
-	       peer_id = hosts_id[k]['id']
-	    end
-	    hosts_id[key]['count'] = hosts_id[key]['count'] + v
-	    if(links > 0) then print(",") end
-	    print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"server"}')
-	    links = links + 1
-	 end
+    -- client contacts
+    if(host["contacts"]["client"] ~= nil) then
+      for k,v in pairs(host["contacts"]["client"]) do 
+        k = k.."@"..host["vlan"]
+        if(hosts_id[k] == nil) then
+          hosts_id[k] = { }
+          hosts_id[k]['count'] = 0
+          hosts_id[k]['id'] = num
+          ids[num] = k
+          peer_id = num
+          num = num + 1
+        else
+          peer_id = hosts_id[k]['id']
+        end
+
+        hosts_id[key]['count'] = hosts_id[key]['count'] + v
+        if(links > 0) then print(",") end
+        print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"client","linkName":""}')
+        links = links + 1
       end
-   end
+    end
+
+    -- server contacts
+    if(host["contacts"]["server"] ~= nil) then
+      for k,v in pairs(host["contacts"]["server"]) do 
+        k = k.."@"..host["vlan"]
+        if(hosts_id[k] == nil) then
+          hosts_id[k] = { }
+          hosts_id[k]['count'] = 0
+          hosts_id[k]['id'] = num
+          ids[num] = k
+          peer_id = num
+          num = num + 1
+        else
+          peer_id = hosts_id[k]['id']
+        end
+
+        hosts_id[key]['count'] = hosts_id[key]['count'] + v
+        if(links > 0) then print(",") end
+        print('\n{"source":'..key_id..',"target":'..peer_id..',"depth":6,"count":'..v..',"styleColumn":"server"}')
+        links = links + 1
+      end
+    end
+  end
 end
 
 aggregation_ids = {}
@@ -430,70 +440,77 @@ print [[
 min_size = 5
 maxval = 0
 for k,v in pairs(hosts_id) do 
-   if(v['count'] > maxval) then maxval = v['count'] end
+  if(v['count'] > maxval) then maxval = v['count'] end
 end
 
 num = 0
 for i=0,tot_hosts-1 do
-   k = ids[i]
-   v = hosts_id[k]
+  k = ids[i]
+  v = hosts_id[k]
+  k_info = hostkey2hostinfo(k)
 
-   target_host = interface.getHostInfo(k)
-   if(target_host ~= nil) then 
-      name = target_host["name"] 
-      if(name ~= nil) then 
-	 name = name
-      else
-	 name = ntop.getResolvedAddress(k)
-      end
-      if(target_host['localhost'] ~= nil) then label = "local" else label = "remote" end      
-   else
-      name = k
-      if(aggregations[k] ~= nil) then
-	 label = "aggregation"
-      else
-	 label = "remote"
-      end
-   end
-   
-   if((host_info["host"] ~= nil) and (host_info["host"] == k)) then label = "sun" end
-   -- f(name == k) then name = ntop.getResolvedAddress(k) end
-   if(name == nil) then name = k end
-   if(maxval == 0) then 
-      tot = maxval
-   else
-      tot = math.floor(0.5+(v['count']*100)/maxval) 
-      if(tot < min_size) then tot = min_size end
-   end
+  
+  target_host = interface.getHostInfo(k)
 
-   if(num > 0) then print(",") end
-   print('\n{"name":"'.. k ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'"')
+  if(target_host ~= nil) then 
 
-   if(target_host ~= nil) then
-      -- Host still in memory      
-      if((host_info["host"] == nil) or (k ~= host_info["host"])) then
-	 print(', "link": "/lua/hosts_interaction.lua?host='.. k.. '&name='.. name .. '"}')
-      else
-	 print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
-      end
-   else
-      -- print('->>'..k..'<<-\n')
-      if(aggregations[k] ~= nil) then
-	 print(', "link": "/lua/aggregated_host_details.lua?host='.. k .. '"}')
-      else
-	 -- Host purged ?
-	 print(', "link": ""}')
-      end
-   end
+    name = target_host["name"] 
+    if(name ~= nil) then 
+      name = name
+    else
+      name = ntop.getResolvedAddress(k_info["host"])
+      target_host["name"] = name
+    end
 
-   num = num + 1
+    if(target_host['localhost'] ~= nil) then label = "local" else label = "remote" end      
+  
+  else
+
+    name = k  
+    if(aggregations[k] ~= nil) then label = "aggregation" else label = "remote" end
+
+  end
+
+  if ((host_info["host"] ~= nil) and (host_info["host"] == k_info["host"])) then label = "sun" end
+    -- f(name == k) then name = ntop.getResolvedAddress(k) end
+  if(name == nil) then name = k end
+  
+  if(maxval == 0) then 
+    tot = maxval
+  else
+    tot = math.floor(0.5+(v['count']*100)/maxval) 
+    if(tot < min_size) then tot = min_size end
+  end
+
+  if(num > 0) then print(",") end
+  print('\n{"name":"'.. k ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. k..'"')
+
+  if(target_host ~= nil) then
+    -- Host still in memory      
+    if((host_info["host"] == nil) or (k_info["host"] ~= host_info["host"])) then
+      print(', "link": "/lua/hosts_interaction.lua?"}')
+    else
+      print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
+    end
+  else
+    -- print('->>'..k..'<<-\n')
+    if(aggregations[k] ~= nil) then
+      print(', "link": "/lua/aggregated_host_details.lua?host='.. k .. '"}')
+    else
+    -- Host purged ?
+      print(', "link": ""}')
+    end
+
+  end
+
+  num = num + 1
 end
 
-if((num == 0) and (host_info["host"] ~= nil)) then
+if ((num == 0) and (host_info["host"] ~= nil)) then
    tot = 1
    label = ""
    name = host_info["host"]
-   print('\n{"name":"'.. host_info["host"] ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. host_info["host"].. '"}')
+   print('\n{"name":"'.. name ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. hostinfo2hostkey(host_info).. '"}')
 end
 
 print [[
@@ -511,7 +528,7 @@ print [[
 ]]
 
 if(host_info["host"] ~= nil) then
-   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. host_info["host"])
+   print('<li><small>This map is centered on host <font color="#fd8d3c">'.. hostinfo2hostkey(host_info))
    if(host_name ~= nil) then print('('.. host_name .. ')') end
    print('</font>. Clicking on this host you will visualize its details.</small></li>\n')
 else

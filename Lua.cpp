@@ -737,7 +737,7 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 
 /* ****************************************** */
 
-static void host_vlan(char* lua_ip, char** host_ip, 
+static void getHostVlanInfo(char* lua_ip, char** host_ip, 
 		      u_int16_t* vlan_id,
 		      char *buf, u_int buf_len) {
   char *where, *vlan;
@@ -767,7 +767,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -792,7 +792,7 @@ static int ntop_correalate_host_activity(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -817,7 +817,7 @@ static int ntop_similar_host_activity(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -846,7 +846,7 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
   aggregated = lua_toboolean(vm, 2) ? true : false;
@@ -893,7 +893,7 @@ static int ntop_restore_interface_host(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -922,7 +922,7 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -960,7 +960,7 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  host_vlan((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -978,18 +978,23 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
 static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
+  u_int16_t vlan_id = 0;
+  char buf[64];
   
   if(lua_type(vm, 1) == LUA_TSTRING)
-    host_name = (char*)lua_tostring(vm, 1);
+    getHostVlanInfo((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
   else
     host_name = NULL;
+
+  /* Optional VLAN id */
+  if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop_interface = handle_null_interface(vm);
   }
 
-  if(ntop_interface) ntop_interface->getFlowPeersList(vm, host_name);
+  if(ntop_interface) ntop_interface->getFlowPeersList(vm, host_name,vlan_id);
 
   return(CONST_LUA_OK);
 }

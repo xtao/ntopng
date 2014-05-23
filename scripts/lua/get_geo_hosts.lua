@@ -11,8 +11,8 @@ require "lua_utils"
 sendHTTPHeader('application/json')
 
 
-host = _GET["host"]
-
+host_info = urt2hostinfo(_GET)
+interface.find(ifname)
 
 print [[
 {"center":[0, 0],
@@ -23,7 +23,7 @@ print [[
     max_num = 100
     num = 0
 
-    if(host == nil) then
+    if (host_info["host"] == nil) then
        hosts_stats = interface.getHostsInfo()
 
        for key, value in pairs(hosts_stats) do
@@ -43,7 +43,7 @@ print [[
 	     end
 	     print('",\n')
 
-	     print('"name": "'..value["ip"]..'"\n')
+	     print('"name": "'..key..'"\n')
 	     print('} ] }\n')
 	     num = num + 1
 	     
@@ -52,14 +52,14 @@ print [[
        end
 
        print ("\n]\n}\n")
-       io.write("\n"..num.."\n")
+       
        return
     end
 
     -- Flows with trajectory
 
     interface.find(ifname)
-    peers = interface.getFlowPeers(host)
+    peers = interface.getFlowPeers(host_info["host"],host_info["vlan"])
 
     maxval = 0
     for key, values in pairs(peers) do
@@ -95,7 +95,7 @@ print [[
 	     end
 	     print('",\n')
 
-	     print('"name": "'..values["client"]..'"\n')
+	     print('"name": "'..values["client"].."@"..values["client.vlan"]..'"\n')
 	     print('},\n{\n')
 	     print('"lat": '..values["server.latitude"]..',\n')
 	     print('"lng": '..values["server.longitude"]..',\n')
@@ -109,7 +109,7 @@ print [[
 	     end
 	     print('",\n')
 
-	     print('"name": "'..values["server"]..'"\n')
+	     print('"name": "'..values["server"].."@"..values["client.vlan"]..'"\n')
 	     print('}\n],\n"flusso": '.. pctg..',"html":"Flow '.. key .. '"\n')
 	     print('}\n')
 	     num = num + 1

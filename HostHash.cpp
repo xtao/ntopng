@@ -41,8 +41,7 @@ Host* HostHash::get(u_int16_t vlanId, IpAddress *key) {
     head = (Host*)table[hash];
     
     while(head != NULL) {      
-      if((!head->idle())
-	 && ((vlanId == 0 /* any vlan */) || (head->get_vlan_id() == vlanId))	 
+      if((head->get_vlan_id() == vlanId)
 	 && (head->get_ip() != NULL)
 	 && (head->get_ip()->compare(key) == 0))
 	break;
@@ -70,16 +69,18 @@ Host* HostHash::get(u_int16_t vlanId, const u_int8_t mac[6]) {
 
     locks[hash]->lock(__FILE__, __LINE__);
     head = (Host*)table[hash];
-    
+
     while(head != NULL) {
       if((!head->idle())
-	 && (head->get_ip() == NULL /* This is not a L2 host */)
-	 && (vlanId == 0 /* any vlan */ || head->get_vlan_id() == vlanId)
-	 && (memcmp(mac, head->get_mac(), 6) == 0))
-	break;
+	       && (head->get_ip() == NULL /* This is not a L2 host */)
+         // && (vlanId == 0 /* any vlan */ || head->get_vlan_id() == vlanId)
+         && (head->get_vlan_id() == vlanId)
+         && (memcmp(mac, head->get_mac(), 6) == 0))
+          break;
       else
-	head = (Host*)head->next();
+        head = (Host*)head->next();
     }
+    
     locks[hash]->unlock(__FILE__, __LINE__);
 
     return(head);

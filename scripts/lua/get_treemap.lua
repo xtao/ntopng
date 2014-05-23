@@ -38,7 +38,7 @@ for key, value in pairs(hosts_stats) do
    if(val > threshold) then
 
    if(num > 0) then print(",\n") else print("\n") end
-   res = ntop.getResolvedAddress(hosts_stats[key]["ip"])
+   res = ntop.getResolvedAddress(hosts_stats[key]["ip"]).."@"..hosts_stats[key]["vlan"]
 
    --if(res == nil) then res = "AAA" end
    print("{ \"name\": \"" .. res .. "\", \"size\": " .. (hosts_stats[key]["bytes.sent"]+hosts_stats[key]["bytes.rcvd"]).. "} ")

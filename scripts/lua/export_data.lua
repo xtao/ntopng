@@ -36,6 +36,14 @@ print [[
     </div>
   </div>
 
+<div class="control-group">
+    <label class="control-label" for="hostVlan">Vlan:</label>
+    <div class="controls">
+      <input type="text" id="hostVlan" name="hostVlan" placeholder="Vlan">
+
+     <label><small>NOTE: If the field is empty vlan is set to 0.</small></label>
+    </div>
+  </div>
 
 <div class="control-group">
 <div class="controls">
@@ -44,13 +52,19 @@ print [[
 </div>
 
 <script type='text/javascript'>
-	 $('#hostIP').typeahead({
-	     source: function (query, process) {
-	             return $.get('/lua/find_host.lua', { query: query }, function (data) {
-		                 return process(data.results);
-		});
-	 }
-	});
+  function auto_ip_mac () {
+   $('#hostIP').typeahead({
+       source: function (query, process) {
+               return $.get('/lua/find_host.lua', { query: query }, function (data) {
+                     return process(data.results);
+      });
+      }
+    });
+  }
+
+  $(document).ready(function(){
+    auto_ip_mac();
+  });
 </script>
 
 

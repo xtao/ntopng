@@ -279,6 +279,7 @@ void Host::set_mac(char *m) {
 
 void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) {
   char buf[64];
+  char buf_id[64];
 
   if(host_details) {
     char *ipaddr = NULL;
@@ -374,17 +375,38 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     }
 
     if(!returnHost) {
-      lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
+      /*Use the ip@vlan_id as a key only in case of multi vlan_id, otherwise use only the ip as a key*/
+      if (vlan_id == 0) {
+        sprintf(buf_id, "%s",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
+      } else {
+        sprintf(buf_id, "%s@%d",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)),vlan_id );
+      }
+      
+      lua_pushstring(vm,buf_id);
       lua_insert(vm, -2);
       lua_settable(vm, -3);
     }
-  } else {
-    lua_newtable(vm);
 
-    lua_push_int_table_entry(vm, "traffic",  (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
+  } else {
+
+    lua_newtable(vm);
+     char *ipaddr = NULL;
+    if(ip)
+      lua_push_str_table_entry(vm, "ip", (ipaddr = ip->print(buf, sizeof(buf))));
+    else
+      lua_push_nil_table_entry(vm, "ip");
+    lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "vlan", vlan_id);
-    
-    lua_pushstring(vm, (ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
+    lua_push_int_table_entry(vm, "traffic",  (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
+
+    /*Use the ip@vlan_id as a key only in case of multi vlan_id, otherwise use only the ip as a key*/
+    if (vlan_id == 0) {
+      sprintf(buf_id, "%s",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
+    } else {
+      sprintf(buf_id, "%s@%d",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)),vlan_id );
+    }
+   
+    lua_pushstring(vm,buf_id);
     lua_insert(vm, -2);
     lua_settable(vm, -3);
   }

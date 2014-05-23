@@ -47,11 +47,12 @@ local host
 
 --[[Itero per tutti gli host]]--
 for key,_ in pairs(hosts_stats) do --[[key ritorna ip computer]]--
+   
    host = interface.getHostInfo(key)
    --dump(host)  
 
    if(host ~= nil) then
-	 --io.write(key.."\n")
+	 
 
 	 if(hosts_id[key] == nil) then --[[se host di indice key e vuoto lo inizializzo]]--
 	    hosts_id[key] = { }
@@ -67,31 +68,32 @@ for key,_ in pairs(hosts_stats) do --[[key ritorna ip computer]]--
 	 --[[Itero tutti i contatti di tipo client]]--
 	 if(host["contacts"]["client"] ~= nil) then 
 	    for k,v in pairs(host["contacts"]["client"]) do
+        k = k.."@"..host["vlan"]
+        if((host_ip ~= nil) or isLocal(k)) then
+          if(hosts_id[k] == nil) then
+            hosts_id[k] = { }
+            hosts_id[k]['count'] = 0
+            hosts_id[k]['id'] = num
+            ids[num] = k
+            peer_id = num
+            num = num + 1
+          else
+            peer_id = hosts_id[k]['id']
+          end
+          
+          hosts_id[key]['count'] = hosts_id[key]['count'] + v
 
-	    if((host_ip ~= nil) or isLocal(k)) then
-	       if(hosts_id[k] == nil) then
-		  hosts_id[k] = { }
-		  hosts_id[k]['count'] = 0
-		  hosts_id[k]['id'] = num
-		  ids[num] = k
-		  peer_id = num
-		  num = num + 1
-	       else
-		  peer_id = hosts_id[k]['id']
-	       end
-	       hosts_id[key]['count'] = hosts_id[key]['count'] + v
-
-	       if(links > 0) then print(",") end
-	       print('\n\t{ "source":'..key_id..', "source_ip":"'..host["ip"]..'", "target":'..peer_id..', "target_ip":"'..k..'", "value":'..v..' }')
-	       links = links + 1
-	    end
+          if(links > 0) then print(",") end
+          print('\n\t{ "source":'..key_id..', "source_ip":"'..key..'", "target":'..peer_id..', "target_ip":"'..k..'", "value":'..v..' }')
+          links = links + 1
+        end
 	    end
 	 end
 	 
 	 --[[Itero tutti i contatti di tipo server ]]--
 	 if(host["contacts"]["server"] ~= nil) then
 	    for k,v in pairs(host["contacts"]["server"]) do 
-
+        k = k.."@"..host["vlan"]
 	    if((host_ip ~= nil) or isLocal(k)) then
 	       if(hosts_id[k] == nil) then
 		  hosts_id[k] = { }
@@ -105,7 +107,7 @@ for key,_ in pairs(hosts_stats) do --[[key ritorna ip computer]]--
 	       end
 	       hosts_id[key]['count'] = hosts_id[key]['count'] + v
 	       if(links > 0) then print(",") end
-	       print('\n\t{ "source":'..key_id..', "source_ip":"'..host["ip"]..'", "target":'..peer_id..', "target_ip":"'..k..'", "value":'..v..' }')
+	       print('\n\t{ "source":'..key_id..', "source_ip":"'..key..'", "target":'..peer_id..', "target_ip":"'..k..'", "value":'..v..' }')
 	       links = links + 1
 	    end
 	 end
@@ -185,7 +187,7 @@ for i=0,tot_hosts-1 do
    end
    
    if(num > 0) then print(",") end
-   print('\n\t{"name":"'.. k ..'", "count":'..v['count']..', "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. name..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
+   print('\n\t{"name":"'.. k ..'", "count":'..v['count']..', "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. k..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
    
    num = num + 1
 end
@@ -193,7 +195,7 @@ end
 if((num == 0) and (host_ip ~= nil)) then
    tot = 1
    label = ""
-   name = host_ip
-   print('\n\t{"name":"'.. host_ip ..'", "count":'..v['count']..'", "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. name..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
+   
+   print('\n\t{"name":"'.. host_ip ..'", "count":'..v['count']..'", "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. host_ip..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
 end
 print ('\n]}}')

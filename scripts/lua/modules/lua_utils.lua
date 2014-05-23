@@ -927,12 +927,88 @@ end
 
 -- Url Util --
 
+
+-- function clean_hostkey(key)
+--   local rsp = ""
+--   local info = split(key,"@")
+--   if (info[1] ~= nil) then rsp = rsp..info[1] end
+--   if ((info[2] ~= nil) and (info[2] ~= '5')) then
+--     rsp = rsp.."@"..info[2]
+--   end
+--   return rsp
+-- end
+
+--
+-- Split the host key (ip@vlan) creating a new lua table.
+-- Example: 
+--    info = hostkey2hostinfo(key)
+--    ip = info["host"]
+--    vlan = info["vlan"]
+--
+function hostkey2hostinfo(key)
+  local host = {}
+  local info = split(key,"@")
+  if (info[1] ~= nil) then host["host"] = info[1]           end
+  if (info[2] ~= nil) then 
+    host["vlan"] = tonumber(info[2]) 
+  else
+    host["vlan"] = 0
+  end
+  return host
+end
+
+--
+-- Analyze the host_info table and return the host key.
+-- Example: 
+--    host_info = interface.getHostInfo("127.0.0.1",0)
+--    key = hostinfo2hostkey(host_info)
+--
+function hostinfo2hostkey(host_info,host_type)
+  local rsp = ""
+
+  if(host_type == "cli") then
+
+    if(host_info["cli.ip"] ~= nil) then
+      rsp = rsp..host_info["cli.ip"]
+    end
+
+  elseif (host_type == "srv") then
+    
+    if(host_info["srv.ip"] ~= nil) then
+      rsp = rsp..host_info["srv.ip"]
+    end
+  else
+
+    if(host_info["host"] ~= nil) then
+      rsp = rsp..host_info["host"]
+    elseif(host_info["name"] ~= nil) then
+      rsp = rsp..host_info["name"]
+    elseif(host_info["ip"] ~= nil) then
+      rsp = rsp..host_info["ip"]
+    elseif(host_info["mac"] ~= nil) then
+      rsp = rsp..host_info["mac"]
+    end
+  
+  end
+
+  if ((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
+    rsp = rsp..'@'..tostring(host_info["vlan"])
+  end
+
+  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
+  return rsp
+end
+
 --
 -- Analyze the get_info and return a new table containing the url information about an host.
 -- Example: url2host(_GET)
 --
 function urt2hostinfo(get_info)
-   local host = {}
+  local host = {}
+  -- Catch when the host key is using as host url parameter
+  if ((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then 
+    get_info = hostkey2hostinfo(get_info["host"])
+  end
 
   if(get_info["host"] ~= nil) then
     host["host"] = get_info["host"]
@@ -951,36 +1027,52 @@ end
 --
 -- Catch the main information about an host from the host_info table and return the corresponding url.
 -- Example:
+--          hostinfo2url(host_key), return an url based on the host_key
 --          hostinfo2url(host[key]), return an url based on the host value
 --          hostinfo2url(flow[key],"cli"), return an url based on the client host information in the flow table
 --          hostinfo2url(flow[key],"srv"), return an url based on the server host information in the flow table
 --
 
-function hostinfo2url(host_info,type)
+function hostinfo2url(host_info,host_type)
   local rsp = ''
+  -- local version = 0
+  local version = 1
 
-  if(type == "cli") then
+  if(host_type == "cli") then
+
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["cli.ip"]
     end
-  elseif (type == "srv") then
+
+  elseif (host_type == "srv") then
+    
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["srv.ip"]
     end
   else
+
+    if ((type(host_info) ~= "table")) then 
+      host_info = hostkey2hostinfo(host_info)
+    end
+
     if(host_info["host"] ~= nil) then
       rsp = rsp..'host='..host_info["host"]
+    elseif(host_info["ip"] ~= nil) then
+      rsp = rsp..'host='..host_info["ip"]
+    elseif(host_info["name"] ~= nil) then
+      rsp = rsp..'host='..host_info["name"]
+    elseif(host_info["mac"] ~= nil) then
+      rsp = rsp..'host='..host_info["mac"]
     end
 
-    if(host_info["ip"] ~= nil) then
-      rsp = rsp..'host='..host_info["ip"]
-      elseif(host_info["name"] ~= nil) then
-      rsp = rsp..'host='..host_info["name"]
-    end
   end
 
-  if(host_info["vlan"] ~= nil) then
-    rsp = rsp..'&vlan='..tostring(host_info["vlan"])
+  if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
+    if (version == 0) then
+      rsp = rsp..'&vlan='..tostring(host_info["vlan"])
+    elseif (version == 1) then
+      rsp = rsp..'@'..tostring(host_info["vlan"])
+    end
   end
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
@@ -996,20 +1088,26 @@ end
 --          hostinfo2json(flow[key],"cli"), return a json string based on the client host information in the flow table
 --          hostinfo2json(flow[key],"srv"), return a json string based on the server host information in the flow table
 --
-function hostinfo2json(host_info,type)
+function hostinfo2json(host_info,host_type)
   local rsp = ''
 
-  if(type == "cli") then
+  if(host_type == "cli") then
+    
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
 
-  elseif (type == "srv") then
+  elseif (host_type == "srv") then
 
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
+
   else
+
+    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then 
+      host_info = hostkey2hostinfo(host_info)
+    end
 
     if(host_info["host"] ~= nil) then
       rsp = rsp..'host: "'..host_info["host"]..'"'
@@ -1017,11 +1115,13 @@ function hostinfo2json(host_info,type)
       rsp = rsp..'host: "'..host_info["ip"]..'"'
     elseif(host_info["name"] ~= nil) then
       rsp = rsp..'host: "'..host_info["name"] ..'"'
+    elseif(host_info["mac"] ~= nil) then
+      rsp = rsp..'host: "'..host_info["mac"] ..'"'
     end
   end
 
 
-  if(host_info["vlan"] ~= nil) then
+  if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
     rsp = rsp..', vlan: "'..tostring(host_info["vlan"]) .. '"'
   end
 
@@ -1033,20 +1133,25 @@ end
 --
 -- Catch the main information about an host from the host_info table and return the corresponding jqueryid.
 -- Example: host 192.168.1.254, vlan0  ==> 1921681254_0
-function hostinfo2jqueryid(host_info,type)
+function hostinfo2jqueryid(host_info,host_type)
   local rsp = ''
 
-  if(type == "cli") then
+  if(host_type == "cli") then
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..''..host_info["cli.ip"]
     end
 
-  elseif (type == "srv") then
+  elseif (host_type == "srv") then
 
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..''..host_info["srv.ip"]
     end
+
   else
+
+    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then 
+      host_info = hostkey2hostinfo(host_info)
+    end
 
     if(host_info["host"] ~= nil) then
       rsp = rsp..''..host_info["host"]
@@ -1054,11 +1159,13 @@ function hostinfo2jqueryid(host_info,type)
       rsp = rsp..''..host_info["ip"]
     elseif(host_info["name"] ~= nil) then
       rsp = rsp..''..host_info["name"]
+    elseif(host_info["mac"] ~= nil) then
+      rsp = rsp..''..host_info["mac"]
     end
   end
 
 
-  if(host_info["vlan"] ~= nil) then
+  if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
     rsp = rsp..'_'..tostring(host_info["vlan"])
   end
 

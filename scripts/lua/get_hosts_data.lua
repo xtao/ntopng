@@ -209,7 +209,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation ~= nil) or (aggregated ~= nil)) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
 	    if((aggregation == nil) and (aggregated == nil)) then
-	       print(key)
+         if (value["ip"] ~= nil) then 
+          print(value["ip"]) 
+        else
+          print(value["mac"]) 
+        end 
 	    else
 	       print(mapOS2Icon(key))
 	    end

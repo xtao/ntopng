@@ -69,19 +69,15 @@ while(num == 0) do
 
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
-
+        
 		  if(num > 0) then
 		     print ",\n"
 		  end
-      node_info = interface.getHostInfo(word)
-      if (node_info ~= nil) then 
-        vlan_id = node_info["vlan"]
-      else
-        vlan_id = " " 
-      end
+
+      host_info = hostkey2hostinfo(word)
 
 		  -- 3. print nodes
-		  print ("\t{\"name\": \"" .. ntop.getResolvedAddress(word) .. "\", \"ip\": \"" .. word .. "\", \"vlan\": \"" .. vlan_id .. "\"}")
+		  print ("\t{\"name\": \"" ..word.. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
 		  num = num + 1
 	       end
 	    end
@@ -118,17 +114,22 @@ if ((num == 0) and (tracked_host == nil)) then
    if(top_host ~= nil) then
       -- We now have have to find this host and some peers
       hosts[top_host] = 0
-      print ("{\"name\": \"" .. top_host .. "\"}")
+
+      host_info = hostkey2hostinfo(top_host)
+
+      print ("{\"name\": \"" .. top_host .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
       num = num + 1
 
       for key, values in pairs(peers) do
-	 if(findString(key, top_host) or findString(values["client"], top_host) or findString(values["server"], top_host)) then
+	 if(findString(key, ip) or findString(values["client"], ip) or findString(values["server"], ip)) then
 	    for key,word in pairs(split(key, " ")) do
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
 
-		  -- 3. print nodes
-		  print (",\n{\"name\": \"" .. word .. "\"}")
+      host_info = hostkey2hostinfo(word)
+      
+      -- 3. print nodes
+      print ("{\"name\": \"" .. word .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
 		  num = num + 1
 
 		  if(num >= max_num_hosts) then

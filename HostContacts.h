@@ -26,6 +26,7 @@
 
 typedef struct {
   IpAddress host;
+  uint16_t vlanId;
   u_int32_t num_contacts;
 } IPContacts;
 

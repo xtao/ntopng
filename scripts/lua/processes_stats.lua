@@ -131,8 +131,9 @@ print [[
 
 
 <script>
-  do_timeline("/lua/get_processes_data.lua",{ mode: "timeline"},"name",2,300,2000);
+  do_timeline("/lua/get_processes_data.lua",{ mode: "timeline" }, "name" ,2,300,2000);
 </script>
+</div>
 </div>
 ]]
 

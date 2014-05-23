@@ -61,14 +61,15 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    _rcvd = {}
 
    for _key, value in pairs(hosts_stats) do
-      key = hosts_stats[_key]["cli.ip"]
+
+      key = hostinfo2hostkey(hosts_stats[_key],"cli")
       if(key ~= nil) then
 	 old = _sent[key]
 	 if(old == nil) then old = 0 end
 	 _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
       end
 
-      key = hosts_stats[_key]["srv.ip"]
+      key = hostinfo2hostkey(hosts_stats[_key],"srv")
       if(key ~= nil) then
 	 old = _rcvd[key]
 	 if(old == nil) then old = 0 end
@@ -77,13 +78,13 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
       -- ###########################
 
-      key = hosts_stats[_key]["srv.ip"]
+      key = hostinfo2hostkey(hosts_stats[_key],"srv")
       if(key ~= nil) then
 	 old = _sent[key]	
 	 if(old == nil) then old = 0 end
 	 _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
 
-	 key = hosts_stats[_key]["cli.ip"]
+    key = hostinfo2hostkey(hosts_stats[_key],"cli")
 	 if(key ~= nil) then
 	    old = _rcvd[key]
 	    if(old == nil) then old = 0 end
@@ -146,7 +147,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
 	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..key .. '", "url": "/lua/host_details.lua?host='..key..'", "value": '..value
 	 num = num + 1
 
 	 if(num == max_num_entries) then
@@ -206,7 +207,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
 	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..key.. '", "url": "/lua/host_details.lua?host='..key..'", "value": '..value
 	 num = num + 1
 
 	 if(num == max_num_entries) then

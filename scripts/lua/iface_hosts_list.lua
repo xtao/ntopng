@@ -18,10 +18,11 @@ top_key = nil
 top_value = 0
 num = 0
 for key, value in pairs(hosts_stats) do
+   host_info = hostkey2hostinfo(key);
    
    value = hosts_stats[key]["traffic"]
    
-   if(key == "255.255.255.255") then
+   if(host_info["host"] == "255.255.255.255") then
       key = "Broadcast"
    end
    _hosts_stats[value] = key -- ntop.getResolvedAddress(key)
@@ -49,8 +50,8 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
    if(num > 0) then
       print ",\n"
    end
-   hosts_stats[value]["ip"] = value
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(hosts_stats[value]).."\" }")
+   
+   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(value).."\" }")
    accumulate = accumulate + key
    num = num + 1
 
@@ -60,8 +61,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
 end
 
 if((num == 0) and (top_key ~= nil)) then
-   hosts_stats[top_key]["ip"] = top_key
-   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(hosts_stats[top_key]).."\" }")
+   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(top_key).."\" }")
    accumulate = accumulate + top_value
 end
 

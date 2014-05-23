@@ -31,7 +31,13 @@ hosts = _GET["hosts"]
 user = _GET["user"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
+process_sourceId = 0
 
+if (name ~= nil) then
+  info = split(name,"@")
+  if (info[1] ~= nil) then name = info[1]           end
+  if (info[2] ~= nil) then process_sourceId = tonumber(info[2])end
+end
 
 if(mode == nil) then
    mode = "table"
@@ -99,26 +105,34 @@ for _key, value in pairs(flows_stats) do
    
   ---------------- NAME ----------------
    if(name ~= nil) then
-    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Name:"..name.."\n")end
-    if (p["client_process"] ~= nil) then 
-      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Client name:"..p["client_process"]["name"].."\n") end
+    
+    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"url:"..process_sourceId.."vlan:"..p["vlan"].."\n") end
+    if (process_sourceId == p["vlan"]) then
 
-      if ((p["client_process"]["name"] ~= name)) then 
-        client_process = 0
-      end
-      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"ClientProcess -\t"..client_process.."\n")end
-  
-    end
-    if (p["server_process"] ~= nil) then 
-      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Server name:"..p["server_process"]["name"].."\n") end
+      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Name:"..name.."\n")end
+      if (p["client_process"] ~= nil) then 
+        if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Client name:"..p["client_process"]["name"].."\n") end
 
-      if ((p["server_process"]["name"] ~= name)) then 
-        server_process = 0
+        if ((p["client_process"]["name"] ~= name)) then 
+          client_process = 0
+        end
+        if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"ClientProcess -\t"..client_process.."\n")end
+    
       end
-      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"ServerProcess -\t"..server_process.."\n")end
-  
+      if (p["server_process"] ~= nil) then 
+        if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"Server name:"..p["server_process"]["name"].."\n") end
+
+        if ((p["server_process"]["name"] ~= name)) then 
+          server_process = 0
+        end
+        if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"ServerProcess -\t"..server_process.."\n")end
+    
+      end
+      if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"name -\t"..process.."\n")end
+    else
+      client_process = 0 
+      server_process = 0
     end
-    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"name -\t"..process.."\n")end
    end
    
 
@@ -133,7 +147,7 @@ for _key, value in pairs(flows_stats) do
 
     if((p["client_process"] ~= nil) and (client_process == 1) )then 
       k = p["client_process"]
-      key = k["name"]
+      key = k["name"].."@"..p["vlan"]
 
       if(processes[key] == nil) then
     processes[key] = { }
@@ -144,8 +158,10 @@ for _key, value in pairs(flows_stats) do
     processes[key]["duration"] = p["duration"]
     processes[key]["count"] = 1
     -- Process information
+    processes[key]["name"] = k["name"]
     processes[key]["actual_memory"] = p["client_process"]["actual_memory"]
     processes[key]["average_cpu_load"] = p["client_process"]["average_cpu_load"]
+    processes[key]["vlan"] = p["vlan"]
       else
     -- Flow information
     processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
@@ -161,7 +177,7 @@ for _key, value in pairs(flows_stats) do
 
     if((p["server_process"] ~= nil) and (server_process == 1) )then 
       k = p["server_process"]
-      key = k["name"]
+      key = k["name"].."@"..p["vlan"]
 
       if(processes[key] == nil) then
     if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"INIT: Server process: "..key.." initialize with value: "..(p["cli2srv.bytes"] + p["srv2cli.bytes"]).." \n")end
@@ -172,8 +188,10 @@ for _key, value in pairs(flows_stats) do
     processes[key]["duration"] = p["duration"]
     processes[key]["count"] = 1
     -- Process information
+    processes[key]["name"] = k["name"]
     processes[key]["actual_memory"] = p["server_process"]["actual_memory"]
     processes[key]["average_cpu_load"] = p["server_process"]["average_cpu_load"]
+    processes[key]["vlan"] = p["vlan"]
       else
     -- Flow information
     processes[key]["duration"] = math.max(processes[key]["duration"], p["duration"])
@@ -207,6 +225,8 @@ for key, value in pairs(processes) do
       postfix = string.format("0.%04u", num)
       if(sortColumn == "column_name") then
    vkey = key
+   elseif(sortColumn == "column_vlan") then
+   vkey = processes[key]["vlan"]+postfix
    elseif(sortColumn == "column_bytes_rcvd") then
    vkey = processes[key]["bytes_rcvd"]+postfix
    elseif(sortColumn == "column_bytes_sent") then
@@ -250,13 +270,13 @@ if (mode == "table") then
      cli_tooltip = ""
 
     
-     print ("{ \"column_name\" : \"".."<A HREF='/lua/get_process_info.lua?name=" .. key .. "'>".. key .. "</A>")
+     print ("{ \"column_name\" : \"".."<A HREF='/lua/get_process_info.lua?name=" .. key .. "'>".. value["name"] .. "</A>")
 
      print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
      print ("\", \"column_count\" : \"" .. value["count"])
      print ("\", \"column_bytes_sent\" : \"" .. bytesToSize(value["bytes_sent"]) .. "")
      print ("\", \"column_bytes_rcvd\" : \"" .. bytesToSize(value["bytes_rcvd"]) .. "")
-
+     print ("\", \"column_vlan\" : \"" .. value["vlan"] .. "")
      print ("\" }\n")
      num = num + 1
         end

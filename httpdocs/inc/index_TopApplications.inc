@@ -1,6 +1,6 @@
 <h4>Top Application Protocols</h4>
 <div class="pie-chart" id="topApplicationProtocols"></div>
-
+<span class="help-block" style="color: #dddddd;">Click on the application for more information.</span>
 <script type='text/javascript'>
 
 window.onload=function() {

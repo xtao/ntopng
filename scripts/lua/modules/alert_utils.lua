@@ -47,7 +47,7 @@ alert_functions_description = {
 
 -- #################################################################
 
-function delete_host_alert_configuration(hostname)
+function delete_host_alert_configuration(host_ip)
 for k,v in pairs(alerts_granularity) do
    key = "ntopng.prefs.alerts_"..v[1]
    -- print(key.."<br>\n")
