@@ -30,6 +30,7 @@ class GenericHost : public GenericHashEntry {
  protected:
   bool localHost, systemHost;
   u_int32_t host_serial;
+  u_int16_t vlan_id;
   NdpiStats *ndpiStats;
   TrafficStats sent, rcvd;
   ActivityStats activityStats;
@@ -63,6 +64,7 @@ class GenericHost : public GenericHashEntry {
   inline void setSystemHost()              { systemHost = true;  };
   inline NdpiStats* get_ndpi_stats()       { return(ndpiStats); };
   inline ActivityStats* getActivityStats() { return(&activityStats); };
+  inline u_int16_t get_vlan_id()           { return(vlan_id);        };
   void incFlowCount(time_t when, Flow *f);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);

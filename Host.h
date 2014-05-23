@@ -29,7 +29,7 @@ class Host : public GenericHost {
   u_int8_t mac_address[6];
   u_int32_t asn;
   char *symbolic_name, *alternate_name, *country, *city, *asname, category[8], os[16], httpbl[12];
-  u_int16_t num_uses, vlan_id;
+  u_int16_t num_uses;
   float latitude, longitude;
   IpAddress *ip;
   Mutex *m;
@@ -72,7 +72,6 @@ class Host : public GenericHost {
   void set_alternate_name(char *name);
   inline u_int8_t*  get_mac()                  { return(mac_address);   }
   inline char* get_os()                        { return(os);            }
-  inline u_int16_t get_vlan_id()               { return(vlan_id);       }
   inline char* get_name()                      { return(symbolic_name); }
   inline char* get_alternate_name()            { return(alternate_name);}
   inline char* get_country()                   { return(country);       }

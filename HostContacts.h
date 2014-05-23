@@ -33,6 +33,7 @@ class GenericHost;
 
 class HostContacts {
  protected:
+  GenericHost *host;
   IPContacts clientContacts[MAX_NUM_HOST_CONTACTS], serverContacts[MAX_NUM_HOST_CONTACTS];  
   void incrIPContacts(NetworkInterface *iface, u_int32_t me_serial, IpAddress *peer, 
 		      bool contacted_peer_as_client, IPContacts *contacts,
@@ -43,7 +44,7 @@ class HostContacts {
   u_int8_t get_queue_id(char *str);
 
  public:
-  HostContacts();
+  HostContacts(GenericHost *h);
 
   void dbDumpAllHosts(char *daybuf, NetworkInterface *iface, u_int32_t host_id, u_int16_t family_id);
   inline void incrContact(NetworkInterface *iface, u_int32_t me_serial, 

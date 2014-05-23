@@ -23,7 +23,8 @@
 
 /* *************************************** */
 
-HostContacts::HostContacts() {
+HostContacts::HostContacts(GenericHost *h) {
+  host = h;
   memset(clientContacts, 0, sizeof(clientContacts));
   memset(serverContacts, 0, sizeof(serverContacts));
 }
@@ -106,17 +107,20 @@ bool HostContacts::hasHostContacts(char *host) {
 /* *************************************** */
 
 void HostContacts::getContacts(lua_State* vm) {
-  char buf[64];
+  char buf[128];
 
   lua_newtable(vm);
 
   /* client */
   lua_newtable(vm);
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
-    if(clientContacts[i].num_contacts > 0)
-      lua_push_int_table_entry(vm,
-			       clientContacts[i].host.print(buf, sizeof(buf)),
-			       clientContacts[i].num_contacts);
+    if(clientContacts[i].num_contacts > 0) {
+      char *peer = clientContacts[i].host.print(buf, sizeof(buf));
+      int len = strlen(peer);
+
+      snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
+      lua_push_int_table_entry(vm, peer, clientContacts[i].num_contacts);
+    }
   }
   lua_pushstring(vm, "client");
   lua_insert(vm, -2);
@@ -125,10 +129,13 @@ void HostContacts::getContacts(lua_State* vm) {
   /* server */
   lua_newtable(vm);
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
-    if(serverContacts[i].num_contacts > 0)
-      lua_push_int_table_entry(vm,
-			       serverContacts[i].host.print(buf, sizeof(buf)),
-			       serverContacts[i].num_contacts);
+    if(serverContacts[i].num_contacts > 0) {
+      char *peer = serverContacts[i].host.print(buf, sizeof(buf));
+      int len = strlen(peer);
+
+      snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
+      lua_push_int_table_entry(vm, peer, serverContacts[i].num_contacts);
+    }
   }
   lua_pushstring(vm, "server");
   lua_insert(vm, -2);
