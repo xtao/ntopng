@@ -322,11 +322,11 @@ print [[
       print('</form></td></tr>')
    end
 
-   if (host["vlan"] ~= nil) then
+   if((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
       print("<tr><th>")
 
       ifstats = interface.getStats()
-
+      
       if(ifstats.iface_sprobe) then
 	 print('Source Id')
       else

@@ -38,6 +38,7 @@ class AddressResolution {
 
   void setLocalNetworks(char *rule);
   bool findAddress(int family, void *addr);
+  void addLocalNetwork(char *net);
 };
 
 extern void ptree_add_rule(patricia_tree_t *ptree, char *line);

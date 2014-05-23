@@ -204,7 +204,7 @@ bool Ntop::isLocalInterfaceAddress(int family, void *addr) {
 void Ntop::loadLocalInterfaceAddress() {
   struct ifaddrs *local_addresses, *ifa;
   /* buf must be big enough for an IPv6 address(e.g. 3ffe:2fa0:1010:ca22:020a:95ff:fe8a:1cf8) */
-  char buf[64];
+  char buf[128], buf2[128];
 
   if(getifaddrs(&local_addresses) != 0) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to read interface addresses");
@@ -224,7 +224,9 @@ void Ntop::loadLocalInterfaceAddress() {
 
 	snprintf(&buf[l], sizeof(buf)-l, "%s", "/32");
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv4 interface address", buf);
+	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
+	address->addLocalNetwork(buf2);
       }
     } else if(ifa->ifa_addr->sa_family == AF_INET6) {
       struct sockaddr_in6 *s6 =(struct sockaddr_in6 *)(ifa->ifa_addr);
@@ -234,7 +236,9 @@ void Ntop::loadLocalInterfaceAddress() {
 
 	snprintf(&buf[l], sizeof(buf)-l, "%s", "/128");
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv6 interface address", buf);
+	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
+	address->addLocalNetwork(buf2);
       }
     }
   }

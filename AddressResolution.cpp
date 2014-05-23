@@ -156,13 +156,16 @@ void ptree_add_rule(patricia_tree_t *ptree, char *line) {
 
 /* ******************************************* */
 
+void AddressResolution::addLocalNetwork(char *net) { ptree_add_rule(ptree, net); }
+
+/* ******************************************* */
+
 /* Format: 131.114.21.0/24,10.0.0.0/255.0.0.0 */
 void AddressResolution::setLocalNetworks(char *rule) {
   char *net = strtok(rule, ",");
 
   while(net != NULL) {
-    ptree_add_rule(ptree, net);
-
+    addLocalNetwork(net);
     net = strtok(NULL, ",");
   }
 }
