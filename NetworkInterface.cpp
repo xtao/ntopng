@@ -1609,7 +1609,6 @@ bool NetworkInterface::similarHostActivity(lua_State* vm,
   Host *h = getHost(host_ip, vlan_id);
 
   if(h) {
-    printf ("Find host\n");
     struct correlator_host_info info;
 
     memset(&info, 0, sizeof(info));
