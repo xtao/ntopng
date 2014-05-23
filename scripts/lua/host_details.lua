@@ -870,7 +870,6 @@ print [[
    if(v1 ~= nil) then
       for k,_ in pairs(v1) do
 	 v = ntop.getHashCache(keyname, k)
-	 --io.write(v.."\n")
 	 if(v ~= nil) then
 	    values = split(k, "@");
 	    protocol = tonumber(values[2])
@@ -1122,27 +1121,31 @@ if(num > 0) then
       -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
       -- Client
       sortTable = {}
-      for k,v in pairs(host["contacts"]["client"]) do sortTable[v]=(k.."@"..host["vlan"]) end
-
+      for k,v in pairs(host["contacts"]["client"]) do 
+      
+        sortTable[v]=k 
+      end
+      
       num = 0
       max_num = 64 -- Do not create huge maps
       for _v,k in pairsByKeys(sortTable, rev) do
 
 	 if(num >= max_num) then break end
 	 num = num + 1
-   tmp = hostkey2hostinfo(k)
-	 name = interface.getHostInfo(tmp["host"],tmp["vlan"])
-   -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
-	 v = host["contacts"]["client"][tmp["host"]]
-	 if(name ~= nil) then
-	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(name).."\">"..n.."</A>"
-	    -- url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..n.."</A>"
-	 else
-	    url = k
-	 end
+	 name = interface.getHostInfo(k)
   
-	 info = interface.getHostInfo(tmp["host"],tmp["vlan"])
+   -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
+	 v = host["contacts"]["client"][k]
+   info = interface.getHostInfo(k)
+	
+   if(info ~= nil) then
+      if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
+      url = "<A HREF=\"/lua/host_details.lua?host="..hostinfo2url(info).."\">"..n.."</A>"
+   else
+      url = k
+   end
+  
+	 
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
@@ -1162,19 +1165,18 @@ if(num > 0) then
 
       -- Server
       sortTable = {}
-      for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=(k.."@"..host["vlan"]) end
+      for k,v in pairs(host["contacts"]["server"]) do sortTable[v]=k end
 
       for _v,k in pairsByKeys(sortTable, rev) do
-        tmp = hostkey2hostinfo(k)
-	 name = interface.getHostInfo(tmp["host"],tmp["vlan"])
-	 v = host["contacts"]["server"][tmp["host"]]
-	 if(name ~= nil) then
-	    if(name["name"] ~= nil) then n = name["name"] else n = ntop.getResolvedAddress(name["ip"]) end
-	    url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(name).."\">"..n.."</A>"
+	 v = host["contacts"]["server"][k]
+   info = interface.getHostInfo(k)
+	 if(info ~= nil) then
+	    if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
+	    url = "<A HREF=\"/lua/host_details.lua?host="..hostinfo2url(info).."\">"..n.."</A>"
 	 else
 	    url = k
 	 end
-	 info = interface.getHostInfo(tmp["host"],tmp["vlan"])
+	 
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "

@@ -15,8 +15,7 @@ if(host_ip == nil) then
 else
   -- print("host_ip:"..host_ip.."<br>")
   host_info = {}
-  host_info["host"] = host_ip
-  host_info["vlan"] = 0
+  host_info = hostkey2hostinfo(host_ip)
 end
 
 if(mode == nil) then
@@ -342,11 +341,10 @@ links = 0
 local host
 
 for key, values in pairs(hosts_stats) do
-
+  
   host = interface.getHostInfo(key)
 
   if(host ~= nil) then
-    
     -- init host
     if(hosts_id[key] == nil) then
       hosts_id[key] = { }
@@ -362,7 +360,7 @@ for key, values in pairs(hosts_stats) do
     -- client contacts
     if(host["contacts"]["client"] ~= nil) then
       for k,v in pairs(host["contacts"]["client"]) do 
-        k = k.."@"..host["vlan"]
+        
         if(hosts_id[k] == nil) then
           hosts_id[k] = { }
           hosts_id[k]['count'] = 0
@@ -384,7 +382,7 @@ for key, values in pairs(hosts_stats) do
     -- server contacts
     if(host["contacts"]["server"] ~= nil) then
       for k,v in pairs(host["contacts"]["server"]) do 
-        k = k.."@"..host["vlan"]
+        
         if(hosts_id[k] == nil) then
           hosts_id[k] = { }
           hosts_id[k]['count'] = 0
@@ -448,7 +446,6 @@ for i=0,tot_hosts-1 do
   k = ids[i]
   v = hosts_id[k]
   k_info = hostkey2hostinfo(k)
-
   
   target_host = interface.getHostInfo(k)
 
@@ -483,7 +480,7 @@ for i=0,tot_hosts-1 do
   end
 
   if(num > 0) then print(",") end
-  print('\n{"name":"'.. k ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. k..'"')
+  print('\n{"name":"'.. name ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'"')
 
   if(target_host ~= nil) then
     -- Host still in memory      
