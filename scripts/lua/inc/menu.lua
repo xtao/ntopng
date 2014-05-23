@@ -105,7 +105,7 @@ print [[
 
 -- Protocols
 
-if(not(ifstats.iface_sprobe)) then
+if(ifstats.aggregations_enabled and (not(ifstats.iface_sprobe))) then
 if((ifstats["ndpi"]["EPP"] ~= nil) or (ifstats["ndpi"]["DNS"] ~= nil)) then
 
 if active_page == "protocols_stats" then

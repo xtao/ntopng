@@ -1306,6 +1306,8 @@ void NetworkInterface::lua(lua_State *vm) {
 
   lua_push_str_table_entry(vm, "type", (char*)get_type());
   lua_push_bool_table_entry(vm, "iface_sprobe", sprobe_interface);
+  lua_push_bool_table_entry(vm, "aggregations_enabled", 
+			    (ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) ? true : false);
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
