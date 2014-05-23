@@ -11,7 +11,7 @@ require "alert_utils"
 debug_hosts = false
 page        = _GET["page"]
 protocol_id = _GET["protocol"]
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 host_ip = hostinfo2hostkey(host_info)
 host_vlan = host_info["vlan"]
 active_page = "hosts"

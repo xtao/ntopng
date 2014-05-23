@@ -10,7 +10,7 @@ require "flow_utils"
 
 local json = require ("dkjson")
 
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 
 if(host_info["host"] ~= nil) then
    interface.find(ifname)

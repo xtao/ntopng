@@ -7,7 +7,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 
 if(host_info["host"] == nil) then
    sendHTTPHeader('text/html')

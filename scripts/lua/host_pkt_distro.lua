@@ -13,7 +13,7 @@ interface.find(ifname)
 
 mode = _GET["mode"]
 type = _GET["type"]
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 host = interface.getHostInfo(host_info["host"],host_info["vlan"])
 
 

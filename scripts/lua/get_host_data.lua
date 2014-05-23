@@ -11,7 +11,7 @@ sendHTTPHeader('text/html')
 interface.find(ifname)
 
 aggregated  = _GET["aggregated"]
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 
 interface.find(ifname)
 

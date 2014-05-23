@@ -16,7 +16,7 @@ currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 port        = _GET["port"]
 application = _GET["application"]
 

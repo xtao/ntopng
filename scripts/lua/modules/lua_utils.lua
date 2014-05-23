@@ -1003,7 +1003,7 @@ end
 -- Analyze the get_info and return a new table containing the url information about an host.
 -- Example: url2host(_GET)
 --
-function urt2hostinfo(get_info)
+function url2hostinfo(get_info)
   local host = {}
   -- Catch when the host key is using as host url parameter
   if ((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then 

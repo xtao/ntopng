@@ -10,7 +10,7 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 
 interface.find(ifname)
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 
 if(_GET["mode"] == "sinceStartup") then
    stats = interface.getStats()

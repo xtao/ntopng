@@ -11,7 +11,7 @@ require "lua_utils"
 sendHTTPHeader('application/json')
 
 
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 interface.find(ifname)
 
 print [[

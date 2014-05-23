@@ -49,7 +49,7 @@ local epp_cmd_description = {
 interface.find(ifname)
 
 
-host_info = urt2hostinfo(_GET)
+host_info = url2hostinfo(_GET)
 mode = _GET["mode"]
 
 if(mode == "sent") then

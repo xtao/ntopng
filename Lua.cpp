@@ -835,8 +835,6 @@ static int ntop_similar_host_activity(lua_State* vm) {
 
 /* ****************************************** */
 
-/* ****************************************** */
-
 static int ntop_get_interface_host_activitymap(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip;
@@ -852,7 +850,7 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
   aggregated = lua_toboolean(vm, 2) ? true : false;
 
   /* Optional VLAN id */
-  if(lua_type(vm, 3) != LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 3);
+  if(lua_type(vm, 3) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 3);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {

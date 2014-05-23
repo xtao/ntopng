@@ -7,11 +7,11 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
--- host_info = urt2hostinfo(_GET)
+-- host_info = url2hostinfo(_GET)
 
 
 if(host_ip == nil) then
-   host_info = urt2hostinfo(_GET)
+   host_info = url2hostinfo(_GET)
 else
   -- print("host_ip:"..host_ip.."<br>")
   host_info = {}
