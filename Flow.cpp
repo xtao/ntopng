@@ -526,6 +526,8 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
   bool updated = false;
 
+  refresh_process();
+
   sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
   prev_cli2srv_last_bytes = cli2srv_last_bytes;
@@ -912,8 +914,7 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
   FILE *f;
 
   snprintf(_port, sizeof(_port), "%u", port);
-  if(ntop->getRedis()->hashGet((char*)(as_client ? SPROBE_CLIENT_HASH_NAME : SPROBE_SERVER_HASH_NAME),
-			       _port, rsp, sizeof(rsp)) == -1)
+  if(ntop->getRedis()->hashGet((char*)SPROBE_HASH_NAME, _port, rsp, sizeof(rsp)) == -1)
     return;
 
   /* <PID>,<process name> */

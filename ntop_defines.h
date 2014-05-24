@@ -91,8 +91,7 @@
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
 
-#define SPROBE_CLIENT_HASH_NAME "sprobe.client"
-#define SPROBE_SERVER_HASH_NAME "sprobe.server"
+#define SPROBE_HASH_NAME        "sprobe"
 
 #ifndef TH_FIN
 #define	TH_FIN	0x01

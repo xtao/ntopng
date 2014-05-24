@@ -137,7 +137,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   last_pkt_rcvd = 0;
   next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
   cpu_affinity = -1;
-  running = false, sprobe_interface = false;
+  running = false, sprobe_interface = (strncmp(name, "eth", 3) == 0) ? true : false;
 
   db = new DB(this);
 }
