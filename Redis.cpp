@@ -131,10 +131,11 @@ int Redis::hashLen(char *key) {
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
 
-  if(reply && reply->str)
-    rc = atoi(reply->str);
+  if(reply && (reply->type == REDIS_REPLY_INTEGER))
+    rc = reply->integer;
   else
     rc = -1;
+
   if(reply) freeReplyObject(reply);
   l->unlock(__FILE__, __LINE__);
 

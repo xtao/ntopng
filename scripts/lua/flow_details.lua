@@ -14,31 +14,37 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 function displayProc(proc) 
-   print("<tr><th width=30%>Username</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&".. hostinfo2url(flow,"cli")..">".. proc.user_name .."</A></td></tr>\n")
+   print("<tr><th width=30%>User Name</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&".. hostinfo2url(flow,"cli")..">".. proc.user_name .."</A></td></tr>\n")
    print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&".. hostinfo2url(flow,"srv").. ">".. proc.pid .. "/" .. proc.name .. "</A>")
    print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
-   print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")
-   print("<tr><th width=30%>Average CPU Load</th><td colspan=2>")
 
-   if(proc.average_cpu_load < 33) then
-      if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
-      print("<font color=green>"..proc.average_cpu_load.." %</font>")
+   if(proc.actual_memory > 0) then
+      print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")
+      print("<tr><th width=30%>Average CPU Load</th><td colspan=2>")
+      
+      if(proc.average_cpu_load < 33) then
+	 if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
+	 print("<font color=green>"..proc.average_cpu_load.." %</font>")
       elseif(proc.average_cpu_load < 66) then
-      print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
-   else
-      print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+	 print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+      else
+	 print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+      end
+      print(" </td></tr>\n")
+      
+      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")
+      print("<tr><th width=30%>VM Page Faults</th><td colspan=2>")
+      if(proc.num_vm_page_faults > 0) then
+	 print("<font color=red><b>"..proc.num_vm_page_faults.."</b></font>")
+      else
+	 print("<font color=green>"..proc.num_vm_page_faults.."</font>")
+      end
+      print("</td></tr>\n")
    end
-   print(" </td></tr>\n")
 
-   print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")
-   print("<tr><th width=30%>VM Page Faults</th><td colspan=2>")
-   if(proc.num_vm_page_faults > 0) then
-      print("<font color=red><b>"..proc.num_vm_page_faults.."</b></font>")
-   else
-      print("<font color=green>"..proc.num_vm_page_faults.."</font>")
+   if(proc.actual_memory == 0) then
+      print('<tr><th colspan=2><i class="fa fa-warning fa-lg" style="color: #B94A48;"></i> Process information report is limited unless you use ntopng with <A HREF=http://www.ntop.org/products/nprobe/>nProbe</A> and the sprobe plugin</th></tr>\n')
    end
-
-   print("</td></tr>\n")
 end
 
 active_page = "flows"
@@ -129,6 +135,18 @@ else
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
+   if(flow["tcp_flags"] > 0) then
+      print("<tr><th width=30%>TCP Flags</th><td colspan=2>")
+
+      if(hasbit(flow["tcp_flags"],0x01)) then print('<span class="label label-info">FIN</span> ')  end
+      if(hasbit(flow["tcp_flags"],0x02)) then print('<span class="label label-info">SYN</span> ')  end
+      if(hasbit(flow["tcp_flags"],0x04)) then print('<span class="label label-info">RST</span> ')  end
+      if(hasbit(flow["tcp_flags"],0x08)) then print('<span class="label label-info">PUSH</span> ') end
+      if(hasbit(flow["tcp_flags"],0x10)) then print('<span class="label label-info">ACK</span> ')  end
+      if(hasbit(flow["tcp_flags"],0x20)) then print('<span class="label label-info">URG</span> ')  end
+
+      print("</td></tr>\n")
+   end
 
    if((flow.client_process == nil) and (flow.server_process == nil)) then
       print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
@@ -146,19 +164,6 @@ else
          print("<tr><th colspan=3 bgcolor=lightgray>Server Process Information</th></tr>\n")
          displayProc(flow.server_process)	 
       end
-   end
-
-   if(flow["tcp_flags"] > 0) then
-      print("<tr><th width=30%>TCP Flags</th><td colspan=2>")
-
-      if(hasbit(flow["tcp_flags"],0x01)) then print('<span class="label label-info">FIN</span> ')  end
-      if(hasbit(flow["tcp_flags"],0x02)) then print('<span class="label label-info">SYN</span> ')  end
-      if(hasbit(flow["tcp_flags"],0x04)) then print('<span class="label label-info">RST</span> ')  end
-      if(hasbit(flow["tcp_flags"],0x08)) then print('<span class="label label-info">PUSH</span> ') end
-      if(hasbit(flow["tcp_flags"],0x10)) then print('<span class="label label-info">ACK</span> ')  end
-      if(hasbit(flow["tcp_flags"],0x20)) then print('<span class="label label-info">URG</span> ')  end
-
-      print("</td></tr>\n")
    end
 
    local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)

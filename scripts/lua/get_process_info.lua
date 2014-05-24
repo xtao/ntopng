@@ -39,9 +39,17 @@ else
    err = "Name"
    err_val = name_key
   end
-   
-   if(flows == nil) then
-      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Unknown "..err.." "..err_val..": no traffic detected for this process, or process terminated.</div>")
+  
+  num = 0;
+
+  if(flows ~= nil) then
+     for key, value in pairs(flows) do
+	num = num + 1
+     end
+  end
+
+  if(num == 0) then
+     print("<div class=\"alert alert-error\"><img src=/img/warning.png> N`<o traffic detected for this process, or process terminated.</div>")
   else
    print [[
 	    <div class="bs-docs-example">
@@ -49,19 +57,19 @@ else
 	    <div class="navbar-inner">
 	    <ul class="nav"> ]]
 
-if(pid_key ~= nil)then
-   print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
-elseif (name_key ~= nil)then
-    print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
-end
-
-if(page == "Protocols") then active=' class="active"' else active = "" end
+   if(pid_key ~= nil)then
+      print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
+   elseif (name_key ~= nil)then
+      print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
+   end
+   
+   if(page == "Protocols") then active=' class="active"' else active = "" end
 
 if (pid_key ~= nil) then
-  print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
-  elseif (name_key ~= nil) then
+   print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
+elseif (name_key ~= nil) then
    print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
-  end
+end
 
 if (general_process == 1) then
   if(page == "Hosts") then active=' class="active"' else active = "" end
@@ -79,6 +87,7 @@ if (pid_key ~= nil) then
    print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
   end
 
+print [[ <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a> ]]
 
 -- End Tab Menu
 

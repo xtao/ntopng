@@ -11,22 +11,6 @@
 			        textAlign: 'center'
 			     }
 				 },
-  			     {
-			     title: "Client Process",
-				 field: "column_client_process",
-				 sortable: true,
-	 	             css: { 
-			        textAlign: 'center'
-			     }
-				 },
-			     {
-			     title: "Server Process",
-				 field: "column_server_process",
-				 sortable: true,
-	 	             css: { 
-			        textAlign: 'center'
-			     }
-				 },
 			     {
 			     title: "Application",
 				 field: "column_ndpi",
@@ -43,21 +27,29 @@
 			        textAlign: 'center'
 			     }
 				 },
-           {
-           title: "Source Id",
-         field: "column_vlan",
-         sortable: true,
-                 css: { 
-              textAlign: 'center'
-           }
-         },
+  			     {
+			     title: "Client Process",
+				 field: "column_client_process",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
 			     {
-			     title: "Client",
+			     title: "Client Peer",
 				 field: "column_client",
 				 sortable: true,
 				 },
 			     {
-			     title: "Server",
+			     title: "Server Process",
+				 field: "column_server_process",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'center'
+			     }
+				 },
+			     {
+			     title: "Server Peer",
 				 field: "column_server",
 				 sortable: true,
 				 },

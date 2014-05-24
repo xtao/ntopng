@@ -101,7 +101,7 @@ void CollectorInterface::collect_flows() {
   zmq_pollitem_t items[CONST_MAX_NUM_ZMQ_SUBSCRIBERS];
   int rc, size;
 
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Collecting flows...");
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Collecting flows on %s", ifname);
 
   while(isRunning()) {
     for(int i=0; i<num_subscribers; i++)

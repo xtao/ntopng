@@ -526,8 +526,6 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
   bool updated = false;
 
-  refresh_process();
-
   sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
   prev_cli2srv_last_bytes = cli2srv_last_bytes;
@@ -947,15 +945,35 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 	snprintf(p.name, sizeof(p.name), "%s", &buf[6]);
       } else if(strncmp(line, "PPid:", 5) == 0) {
         p.father_pid = atol(&line[6]);
-      } else if(strncmp(line, "VmPeak:", 7) == 0) {
-	p.peak_memory = atol(&line[8]);
-      } else if(strncmp(line, "VmSize:", 7) == 0) {
-	p.actual_memory = atol(&line[8]);
-	break;
+      } else if(strncmp(line, "Uid:", 4) == 0) {
+	struct passwd *pwd;
+        int uid = atoi(&buf[5]);
+	
+	if((uid >= 0) && ((pwd = getpwuid(uid)) != NULL))
+	  snprintf(p.user_name, sizeof(p.user_name), "%s", pwd->pw_name);
       }
     }
 
     fclose(f);
+
+    if(p.father_pid > 0) {
+      snprintf(path, sizeof(path), "/proc/%u/status", p.father_pid);
+
+      if((f = fopen(path, "r")) != NULL) {
+	char *line, buf[128];
+	
+	while((line = fgets(buf, sizeof(buf), f)) != NULL) {
+	  buf[strlen(buf)-1] = '\0';
+	  
+	  if(strncmp(line, "Name:", 5) == 0) {
+	    snprintf(p.father_name, sizeof(p.father_name), "%s", &buf[6]);
+	    break;
+	  }
+	}
+	
+	fclose(f);
+      }
+    }
 
     if(0) {
       char buf1[32], buf2[32];
@@ -975,6 +993,8 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 /* *************************************** */
 
 void Flow::refresh_process() {
+  if(!iface->is_sprobe_interface()) return;
+
   if(cli_host && cli_host->isSystemHost())
     refresh_process_peer(cli_host, ntohs(cli_port), true);  
 
