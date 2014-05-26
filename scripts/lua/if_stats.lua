@@ -179,36 +179,28 @@ elseif(page == "ndpi") then
 
      print("<thead><tr><th>Application Protocol</th><th>Total (Since Startup)</th><th>Percentage</th></tr></thead>\n")
 
-     total = ifstats["stats_bytes"]
-     
-     vals = {}
-     for k in pairs(ifstats["ndpi"]) do
-	vals[k] = k
-     end
-     table.sort(vals)
-     print ("<tbody>\n")
-     for _k in pairsByKeys(vals , desc) do
-	k = vals[_k]
-	print("<tr><th style=\"width: 33%;\">")
-	
-	fname = getRRDName(ifstats.id, nil, k..".rrd")
+  
+  print ('<tbody id="if_stats_ndpi_tbody">\n')
+  print ("</tbody>")
+  print("</table>\n")
+  print [[
+<script>
+function update_ndpi_table() {
+  $.ajax({
+    type: 'GET',
+    url: '/lua/if_stats_ndpi.lua',
+    data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
+    success: function(content) { 
+      $('#if_stats_ndpi_tbody').html(content);
+    }
+  });
+}
+update_ndpi_table();
+setInterval(update_ndpi_table, 5000);
+</script>
 
-	--print(fname.."<p>")
-	if(ntop.exists(fname)) then
-	   print("<A HREF=\"/lua/if_stats.lua?if_name=" .. _ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
-	else
-	   print(k)
-	end
+]]
 
-   t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
-   print("</th><td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
-         print("<td ><span style=\"width: 60%; float: left;\">")
-         percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], "") -- k
---         print("</td>\n")
-   print("</span><span style=\"width: 40%; margin-left: 15px;\" >" ..round((t * 100)/total, 2).. " %</span></td></tr>\n")
-      end
-      print ("</tbody>")
-      print("</table>\n")
 else
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
@@ -220,6 +212,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 print("<script>\n")
 print("var last_pkts  = " .. ifstats.stats_packets .. ";\n")
 print("var last_drops = " .. ifstats.stats_drops .. ";\n")
+
 
 print [[
 setInterval(function() {
