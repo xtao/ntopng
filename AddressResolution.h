@@ -28,6 +28,7 @@ class AddressResolution {
   u_int32_t num_resolved_addresses, num_resolved_fails;
   pthread_t resolveThreadLoop;
   patricia_tree_t *ptree;
+  Mutex m;
 
  public:
   AddressResolution();

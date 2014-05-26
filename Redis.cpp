@@ -387,9 +387,9 @@ int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
 
     if(reply && reply->str)
-      found = false;
-    else
       found = true;
+    else
+      found = false;
 
     if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
   }
@@ -642,10 +642,20 @@ int Redis::setHTTPBLAddress(char *numeric_ip, char *httpbl) {
 /* **************************************** */
 
 int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
-  char key[64];
+  char key[64], numeric[256], *w, *h;
+  int rc;
 
-  snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, numeric_ip);
-  return(set(key, symbolic_ip, DNS_CACHE_DURATION));
+  snprintf(numeric, sizeof(numeric), "%s", numeric_ip);
+
+  h = strtok_r(numeric, ";", &w);
+
+  while(h != NULL) {   
+    snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, h);
+    rc = set(key, symbolic_ip, DNS_CACHE_DURATION);
+    h = strtok_r(NULL, ";", &w);
+  }
+
+  return(rc);
 }
 
 /* **************************************** */

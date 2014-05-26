@@ -221,9 +221,13 @@ void AddressResolution::resolveHostName(char *numeric_ip, char *symbolic, u_int 
       ntop->getRedis()->setResolvedAddress(numeric_ip, hostname);
       if((symbolic != NULL) && (symbolic_len > 0)) snprintf(symbolic, symbolic_len, "%s", hostname);
       ntop->getTrace()->traceEvent(TRACE_INFO, "Resolved %s to %s", numeric_ip, hostname);
+      m.lock(__FILE__, __LINE__);
       num_resolved_addresses++;
+      m.unlock(__FILE__, __LINE__);
     } else {
+      m.lock(__FILE__, __LINE__);
       num_resolved_fails++;
+      m.unlock(__FILE__, __LINE__);
       ntop->getTrace()->traceEvent(TRACE_INFO, "Error resolution failure for %s [%d/%s/%s]",
 				   numeric_ip, rc, gai_strerror(rc), strerror(errno));
       ntop->getRedis()->setResolvedAddress(numeric_ip, numeric_ip); /* So we avoid to continuously resolver the same address */
@@ -255,6 +259,7 @@ static void* resolveLoop(void* ptr) {
 /* **************************************************** */
 
 void AddressResolution::startResolveAddressLoop() {
-  pthread_create(&resolveThreadLoop, NULL, resolveLoop, (void*)this);
+  for(int i=0; i<CONST_NUM_RESOLVERS; i++)
+    pthread_create(&resolveThreadLoop, NULL, resolveLoop, (void*)this);
 }
 

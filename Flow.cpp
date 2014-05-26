@@ -218,7 +218,8 @@ void Flow::processDetectedProtocol() {
 	    }
 	  }
 
-	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, to_track);
+	  aggregateInfo((char*)ndpi_flow->host_server_name, 
+			ndpi_detected_protocol, aggregation_domain_name, to_track);
 	}
       }
     }

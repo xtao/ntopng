@@ -1536,7 +1536,7 @@ print [[
        var refresh = 3000 /* ms */;
 ]]
 
--- Users graph javascritp
+-- Users graph javascript
 print [[
       users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
