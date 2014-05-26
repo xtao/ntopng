@@ -12,7 +12,6 @@ function flow_table_setID (row) {
   var index = 0;
   var flow_key = row.find("td").eq(0).text();
   var type = flow_rows_option["type"];
-  // console.log(type);
   
   // Set the row index to the flow key
   row.attr('id', flow_key);
@@ -40,15 +39,13 @@ function flow_table_setID (row) {
     // flows_stats_top
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_key");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_info");
-    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_cliproc");
-    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_srvproc");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_application");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_l4");
-    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_vlan");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_cliproc");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_client");
+    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_srvproc");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_server");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_duration");
-    //custom
     
     // flows_stats_bottom
     if (type == 'flow') row.find("td").eq(index++).attr('id', flow_key+"_breakdown");
@@ -63,7 +60,6 @@ function flow_table_setID (row) {
 
 
 function row_update(flow_key) {
-
    var url = "/lua/get_flow_data.lua?flow_key="+flow_key;
 
   $.ajax({
@@ -84,7 +80,6 @@ function row_update(flow_key) {
       console.log("error");
     }
   });
-
 }
 
 // Updating function
@@ -96,9 +91,7 @@ function flow_table_update () {
   var rows = $dt.rows;
 
   for (var row in rows){
-    
     var flow_key = rows[row][0].id;
-    // console.log(flow_key);
     row_update(flow_key);
   }
 }
