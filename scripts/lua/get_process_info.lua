@@ -49,7 +49,7 @@ else
   end
 
   if(num == 0) then
-     print("<div class=\"alert alert-error\"><img src=/img/warning.png> N`<o traffic detected for this process, or process terminated.</div>")
+     print("<div class=\"alert alert-error\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
   else
    print [[
 	    <div class="bs-docs-example">
