@@ -761,6 +761,8 @@ print (hostinfo2url(host_info)..'";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
 
+if ((host["vlan"] == nil) or (host["vlan"] == 0)) then print('flow_rows_option["vlan"] = false;\n') end
+
 print [[
     flow_rows_option["type"] = 'host';
 	 $("#table-flows").datatable({
@@ -796,14 +798,14 @@ print [[
 	 	             css: {
 			        textAlign: 'center'
 			     }
-				 },{]]
+				 },]]
 
 ifstats = interface.getStats()
-
+if ((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
 if(ifstats.iface_sprobe) then
-   print('title: "Source Id",\n')
+   print('{ title: "Source Id",\n')
 else
-   print('title: "VLAN",\n')
+   print('{ title: "VLAN",\n')
 end
 
 print [[
@@ -815,7 +817,7 @@ print [[
 
          },
 ]]
-
+end
 print [[
 			     {
 			     title: "Client",

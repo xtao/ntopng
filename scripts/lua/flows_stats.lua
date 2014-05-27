@@ -67,7 +67,7 @@ print ('";')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
 -- Set the flow table option
 if(prefs.is_categorization_enabled) then
-  print ('flow_rows_option["categorization"] = true;')
+  print ('flow_rows_option["categorization"] = true;\n')
 end
    print [[
 

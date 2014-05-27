@@ -7,15 +7,21 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "template"
 
+
+-- #######################
+
 function handleCustomFlowField(key, value)
-   if(key == 'TCP_FLAGS') then
+
+   if(key== 'TCP_FLAGS') then
       return(formatTcpFlags(value))
-      elseif((key == 'INPUT_SNMP') or (key == 'OUTPUT_SNMP')) then
+      elseif((key== 'INPUT_SNMP') or (key== 'OUTPUT_SNMP')) then
       return(formatInterfaceId(value))
    end
-
+   
    return value
+
 end
+
 
 -- #######################
 
@@ -244,7 +250,48 @@ local flow_fields_description = {
     ['PROC_PEAK_MEMORY'] = "Peak Memory (KB)",
     ['PROC_AVERAGE_CPU_LOAD'] = "Average Process CPU Load (%)",
     ['PROC_NUM_PAGE_FAULTS'] = "Number of page faults",
+    -- new
+    ['RTP_MOS'] = "Rtp Voice Quality",
+    ['RTP_R_FACTOR'] = "Rtp Voice Quality Metric (%)", --http://tools.ietf.org/html/rfc3611#section-4.7.5
+    ['RTP_RTT'] =  "Rtp Round Trip Time",
+    ['RTP_IN_TRANSIT'] = "RTP_IN_TRANSIT",
+    ['RTP_OUT_TRANSIT'] = "RTP_OUT_TRANSIT",
+    ['RTP_FIRST_SSRC'] = "RTP_FIRST_SSRC",
+    ['RTP_FIRST_TS'] = "RTP_FIRST_TS",
+    ['RTP_LAST_SSRC'] = "RTP_LAST_SSRC",
+    ['RTP_LAST_TS'] = "RTP_LAST_TS",
+    ['RTP_IN_JITTER'] = "Rtp Incoming Packet Delay Variation",
+    ['RTP_OUT_JITTER'] = "Rtp Out Coming Packet Delay Variation",
+    ['RTP_IN_PKT_LOST'] = "Rtp Incoming Packets Lost",
+    ['RTP_OUT_PKT_LOST'] = "Rtp Out Coming Packets Lost",
+    ['RTP_OUT_PAYLOAD_TYPE'] = "Rtp Out Coming Payload Type",
+    ['RTP_IN_MAX_DELTA'] = "RTP_IN_MAX_DELTA",
+    ['RTP_OUT_MAX_DELTA'] = "RTP_OUT_MAX_DELTA",
+    ['RTP_IN_PAYLOAD_TYPE'] = "Rtp Incoming Payload Type",
+    ['RTP_SIP_CALL_ID'] = "RTP_SIP_CALL_ID",
+    ['SIP_CALL_ID'] = "SIP_CALL_ID",
+    ['SIP_CALLING_PARTY'] = "SIP_CALLING_PARTY",
+    ['SIP_CALLED_PARTY'] = "SIP_CALLED_PARTY",
+    ['SIP_RTP_CODECS'] = "SIP_RTP_CODECS",
+    ['SIP_INVITE_TIME'] = "SIP_INVITE_TIME",
+    ['SIP_TRYING_TIME'] = "SIP_TRYING_TIME",
+    ['SIP_RINGING_TIME'] = "SIP_RINGING_TIME",
+    ['SIP_INVITE_OK_TIME'] = "SIP_INVITE_OK_TIME",
+    ['SIP_INVITE_FAILURE_TIME'] = "SIP_INVITE_FAILURE_TIME",
+    ['SIP_BYE_TIME'] = "SIP_BYE_TIME",
+    ['SIP_BYE_OK_TIME'] = "SIP_BYE_OK_TIME",
+    ['SIP_CANCEL_TIME'] = "SIP_CANCEL_TIME",
+    ['SIP_CANCEL_OK_TIME'] = "SIP_CANCEL_OK_TIME",
+    ['SIP_RTP_IPV4_SRC_ADDR'] = "SIP_RTP_IPV4_SRC_ADDR",
+    ['SIP_RTP_L4_SRC_PORT'] = "SIP_RTP_L4_SRC_PORT",
+    ['SIP_RTP_IPV4_DST_ADDR'] = "SIP_RTP_IPV4_DST_ADDR",
+    ['SIP_RTP_L4_DST_PORT'] = "SIP_RTP_L4_DST_PORT",
+    ['SIP_FAILURE_CODE'] = "SIP_FAILURE_CODE",
+    ['SIP_REASON_CAUSE'] = "SIP_REASON_CAUSE",
+    ['SIP_C_IP'] = "SIP_C_IP",
+    ['SIP_CALL_STATE'] = "Sip Call State",
  }
+
 
 -- #######################
 

@@ -5,6 +5,7 @@
 
 var flow_rows_option = {};
 flow_rows_option["type"] = "flow";
+flow_rows_option["vlan"] = true;
 flow_rows_option["categorization"] = false;
 flow_rows_option["sprobe"] = false;
 
@@ -23,7 +24,8 @@ function flow_table_setID (row) {
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_info");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_application");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_l4");
-    if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_vlan");
+    if (((type == 'flow') || (type == 'host')) 
+        && (flow_rows_option["vlan"])) row.find("td").eq(index++).attr('id', flow_key+"_vlan");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_client");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_server");
     if ((type == 'flow') || (type == 'host')) row.find("td").eq(index++).attr('id', flow_key+"_duration");

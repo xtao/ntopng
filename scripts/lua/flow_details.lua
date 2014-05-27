@@ -7,6 +7,8 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 require "flow_utils"
+require "voip_utils"
+
 local json = require ("dkjson")
 
 sendHTTPHeader('text/html')
@@ -87,7 +89,7 @@ if(flow == nil) then
    print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
    print("<table class=\"table table-bordered\">\n")
-   if(flow["vlan"] ~= nil) then
+   if ((flow["vlan"] ~= nil) and (flow["vlan"] ~= 0)) then
       ifstats = interface.getStats()
       print("<tr><th width=30%>")
       if(ifstats.iface_sprobe) then
@@ -172,7 +174,10 @@ else
       if(num == 0) then
 	 print("<tr><th colspan=3 bgcolor=lightgray>Additional Flow Elements</th></tr>\n")
       end
-      print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+      
+      if (isVoip(key,value) == 0) then
+         print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+      end
       num = num + 1
    end
 
