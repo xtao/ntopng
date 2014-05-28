@@ -124,37 +124,22 @@ function MosPercentageBar(value)
  value_type = ""
 
  pctg = round((value * 100) / total, 0)
- print('<div class="progress span7">')
 
  if ((value >= 4.0) and (value <= 5.0)) then 
-   print('<div class="bar bar-success" style="width: 25%;">'..value..' MOS - Desirable</div>')
- else 
-  print('<div class="bar bar-success" style="opacity: 0.2; width: 25%;">Desirable</div>')
-end
-
+  print('<span class="label label-success">'..value..' MOS - Desirable</span>')
+  end
 if ((value >= 3.6) and (value < 4.0)) then 
-  print('<div class="bar bar-info" style="width: 25%;">'..value..' MOS - Acceptable</div>')
-else 
-  print('<div class="bar bar-info" style="opacity: 0.2; width: 25%;">Acceptable</div>')
+  print('<span class="label label-info">'..value..' MOS - Acceptable</span>')
 end
 
 if ((value >= 2.6) and (value < 3.6)) then 
-  print('<div class="bar bar-warning" style="width: 25%;">'..value..' MOS - Reach Connection</div>')
-else 
-  print('<div class="bar bar-warning" style="opacity: 0.2; width: 25%;">Reach Connection</div>')
+  print('<span class="label label-warning">'..value..' MOS - Reach Connection</span>')
 end
 
 if ((value > 0) and (value < 2.6)) then
-  print('<div class="bar bar-danger" style="width: 25%;">'..value..' MOS - Not Recommended</div>')
-else 
-  print('<div class="bar bar-danger" style="opacity: 0.2; width: 25%;">Not Recommended</div>')
+  print('<span class="label label-danger">'..value..' MOS - Not Recommended</span>')
 end
 
-
-
-
-
-print('</div>')
 end
 
 -- ########################################################

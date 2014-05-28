@@ -43,7 +43,6 @@ print [[
 		tr { background-color: #333; }
 		</style>
 	]]
-	print ('</script>')
 	print("<section>")
 		print("<header><h3></h3></header>")
 		print('<div id="tooltip">')

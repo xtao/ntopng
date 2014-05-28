@@ -68,7 +68,6 @@ for key,_ in pairs(hosts_stats) do --[[key ritorna ip computer]]--
 	 --[[Itero tutti i contatti di tipo client]]--
 	 if(host["contacts"]["client"] ~= nil) then 
 	    for k,v in pairs(host["contacts"]["client"]) do
-        k = k.."@"..host["vlan"]
         if((host_ip ~= nil) or isLocal(k)) then
           if(hosts_id[k] == nil) then
             hosts_id[k] = { }
@@ -93,7 +92,6 @@ for key,_ in pairs(hosts_stats) do --[[key ritorna ip computer]]--
 	 --[[Itero tutti i contatti di tipo server ]]--
 	 if(host["contacts"]["server"] ~= nil) then
 	    for k,v in pairs(host["contacts"]["server"]) do 
-        k = k.."@"..host["vlan"]
 	    if((host_ip ~= nil) or isLocal(k)) then
 	       if(hosts_id[k] == nil) then
 		  hosts_id[k] = { }
@@ -187,7 +185,7 @@ for i=0,tot_hosts-1 do
    end
    
    if(num > 0) then print(",") end
-   print('\n\t{"name":"'.. k ..'", "count":'..v['count']..', "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. k..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
+   print('\n\t{"name":"'.. name ..'", "count":'..v['count']..', "count_perc":'.. tot ..', "group":"' .. label .. '", "label":"'.. name..'", "sent":'..v['sent']..', "rcvd":'..v['rcvd']..',"tot":'..v['sent']+v['rcvd']..' }')
    
    num = num + 1
 end
