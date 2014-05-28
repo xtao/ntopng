@@ -741,7 +741,7 @@ static void getHostVlanInfo(char* lua_ip, char** host_ip,
 		      u_int16_t* vlan_id,
 		      char *buf, u_int buf_len) {
   char *where, *vlan;
-
+  
   snprintf(buf, buf_len, "%s", lua_ip);
 
   (*host_ip) = strtok_r(buf, "@", &where);
@@ -1564,18 +1564,26 @@ static int ntop_get_info(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_resolved_address(lua_State* vm) {
-  char *key, *value, rsp[256];
+  char *key, *tmp,rsp[256],value[64];
   Redis *redis = ntop->getRedis();
+  u_int16_t vlan_id = 0;
+  char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
+  getHostVlanInfo((char*)lua_tostring(vm, 1),&key, &vlan_id, buf, sizeof(buf));
 
+  
   if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0) {
-    value = rsp;
+    tmp = rsp;
   } else {
-    value = key;
+    tmp = key;
   }
-
+  
+  if (vlan_id != 0)
+    snprintf(value, sizeof(value), "%s@%u", tmp, vlan_id);
+  else
+    snprintf(value, sizeof(value), "%s", tmp);
+  
   if(!strcmp(value, key)) {
     char rsp[64];
 
@@ -1586,7 +1594,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
       lua_pushfstring(vm, "%s", value);
   } else
     lua_pushfstring(vm, "%s", value);
-
+    
   return(CONST_LUA_OK);
 }
 
