@@ -65,15 +65,15 @@ end
 print [[
 
 <div class="bs-docs-example">
-            <div class="navbar">
-              <div class="navbar-inner">
-<ul class="nav">
+            <nav class="navbar navbar-default" role="navigation">
+              <div class="navbar-collapse collapse">
+<ul class="nav navbar-nav">
 	 <li><a href="#">Flow: ]] print(a) print [[ </a></li>
 <li class="active"><a href="#">Overview</a></li>
 <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </div>
 </div>
-</div>
+</nav>
 ]]
 
 
@@ -86,7 +86,7 @@ else
 end
 
 if(flow == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
    print("<table class=\"table table-bordered\">\n")
    if ((flow["vlan"] ~= nil) and (flow["vlan"] ~= 0)) then
@@ -131,7 +131,7 @@ else
    print("<tr><th width=30%>Client vs Server Traffic Breakdown</th><td colspan=2>")
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)
 
-   print('<div class="progress"><div class="bar bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["cli.ip"]..'</div><div class="bar bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["srv.ip"] .. '</div></div>')
+   print('<div class="progress"><div class="progress-bar progress-bar-warning" style="width: ' .. cli2srv.. '%;">'.. flow["cli.ip"]..'</div><div class="progress-bar progress-bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. flow["srv.ip"] .. '</div></div>')
    print("</td></tr>\n")
 
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")

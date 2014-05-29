@@ -2,8 +2,8 @@
 <html>
   <head>
     <title>Welcome to ntopng</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
     <script src="/js/jquery.js"></script>
     <script src="/bootstrap/js/bootstrap.js"></script>
     <script src="/js/bootstrap-datatable.js"></script>
@@ -22,53 +22,7 @@
 
 
 
- <style type="text/css">
-      body {
-        padding-top: 0px;
-        padding-bottom: 20px;
-      }
-
-      /* Custom container */
-      .container-narrow {
-        margin: 0 auto;
-        max-width: 1024px;
-      }
-
-      /* Smaller table row padding */
-      .table th, .table td {
-        padding: 6px;
-      }
-
-      /* Custom container */
-      .progress {
-        margin-bottom: 0px;
-      }
-      .container-narrow > hr {
-        margin: 30px 0;
-      }
-
-      /* Main marketing message and sign up button */
-      .jumbotron {
-        margin: 20px 0;
-        text-align: center;
-      }
-      .jumbotron h1 {
-        font-size: 22px;
-        line-height: 1;
-      }
-      .jumbotron .btn {
-        font-size: 21px;
-        padding: 14px 24px;
-      }
-
-      /* Supporting marketing content */
-      .marketing {
-        margin: 20px 0;
-      }
-      .marketing p + h4 {
-        margin-top: 28px;
-      }
-    </style>
+ 
   </head>
 <body>
 
@@ -84,8 +38,8 @@
    }
 
       .form-signin {
-        max-width: 300px;
-        padding: 19px 29px 29px;
+        max-width: 350px;
+        padding: 9px 29px 29px;
         margin: 0 auto 20px;
         background-color: #fff;
         border: 1px solid #e5e5e5;
@@ -112,23 +66,27 @@
 
 <div class="container">
 
-      <form class="form-signin" action="/authorize.html" method="POST">
-        <h2 class="form-signin-heading">Welcome to ntopng</h2>
-        <input type="text" class="input-block-level" name="user" placeholder="Username">
-        <input type="password" class="input-block-level" name="password" placeholder="Password">
-        <button class="btn btn-large btn-primary" type="submit">Login</button>
-	<div class="row"><div class="span6">&nbsp;</div>
-<div class="span4">
-<small>
-<p>If you find ntopng useful, please support us by making a small <A href=http://shop.ntop.org>donation</A>. Your funding will help to run and foster the development of this project. Thank you.
-</p>
+  <form class="form-signin" action="/authorize.html" method="POST">
+    <h2 class="form-signin-heading" style="font-weight: bold;">Welcome to ntopng</h2>
+    <input type="text" class="form-control" name="user" placeholder="Username">
+    <input type="password" class="form-control" name="password" placeholder="Password">
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+  	<div class="row">
+      <div >&nbsp;</div>
+      <div class="col-lg-12">
+        <small>
+          <p>If you find ntopng useful, please support us by making a small <A href=http://shop.ntop.org>donation</A>. Your funding will help to run and foster the development of this project. Thank you.
+          </p>
 
-<p>&copy; ntop.org - ntopng is released under <A HREF=http://www.gnu.org/copyleft/gpl.html>GPLv3</A>.</p>
+          <p>&copy; ntop.org - ntopng is released under <A HREF=http://www.gnu.org/copyleft/gpl.html>GPLv3</A>.</p>
 
-	      <p class="muted">Hint: the default user and password are admin</p></small></div></div>
-      </form>
+  	      <p class="text-muted">Hint: the default user and password are admin</p>
+        </small>
+      </div>
+    </div>
+  </form>
 
- </div> <!-- /container -->
+</div> <!-- /container -->
 
 </body>
 </html>

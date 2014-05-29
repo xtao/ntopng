@@ -53,9 +53,10 @@ class Flow : public GenericHashEntry {
 
   /* Counter values at last host update */
   struct timeval last_update_time;
-  float bytes_thpt;
-  ValueTrend bytes_thpt_trend;
-  u_int64_t cli2srv_last_packets, srv2cli_last_packets;
+  float bytes_thpt, pkts_thpt;
+  ValueTrend bytes_thpt_trend,pkts_thpt_trend;
+  u_int64_t cli2srv_last_packets, srv2cli_last_packets,
+    prev_cli2srv_last_packets, prev_srv2cli_last_packets;
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  
 
@@ -115,6 +116,8 @@ class Flow : public GenericHashEntry {
   inline char* get_json_info()			  { return(json_info);                       };
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
+  u_int64_t get_current_packets_cli2srv();
+  u_int64_t get_current_packets_srv2cli();
   void aggregateInfo(char *name, u_int16_t ndpi_proto_id,
 		     AggregationType mode, bool aggregation_to_track);
   void handle_process(ProcessInfo *pinfo, bool client_process);

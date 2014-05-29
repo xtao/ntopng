@@ -18,7 +18,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 if(host_ip == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
    return
 end
 
@@ -26,7 +26,7 @@ interface.find(ifname)
 host = interface.getAggregatedHostInfo(host_ip)
 
 if(host == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Unable to find "..host_ip.." (data expired ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Unable to find "..host_ip.." (data expired ?)</div>")
    return
 else
 print [[

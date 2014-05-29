@@ -51,15 +51,16 @@ for key, value in pairs(hosts_stats) do
    if((hosts_stats[key]["localhost"] == true) and (hosts_stats[key]["ip"] ~= nil)) then
       localhosts[key] = hosts_stats[key]
 
-      
-	 localhosts[key]["name"] = ntop.getResolvedAddress(localhosts[key]["ip"]).."@"..localhosts[key]["vlan"]
+      -- io.write(key..'\n')
+      -- io.write(ntop.getResolvedAddress(key)..'\n')
+	 localhosts[key]["name"] = ntop.getResolvedAddress(key)
 
       found = true
    end
 end
 
 if(found == false) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> No local hosts can be found</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No local hosts can be found</div>")
 else
    print("<hr><h2>Local Hosts Matrix</h2>\n<p>&nbsp;<p>\n<table class=\"table table-striped table-bordered\">\n")
 

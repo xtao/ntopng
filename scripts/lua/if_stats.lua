@@ -44,9 +44,9 @@ url= '/lua/if_stats.lua?if_name=' .. _ifname
 
 
 print [[
-            <div class="navbar">
-              <div class="navbar-inner">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+  <div class="navbar-collapse collapse">
+    <ul class="nav navbar-nav">
 ]]
 
 -- print("<li><a href=\"#\">Interface " .. ifname .."</a></li>\n")
@@ -82,13 +82,13 @@ end
 print [[
 </ul>
 </div>
-</div>
+</nav>
    ]]
 print ('<div id="alert_placeholder"></div>')
 if((page == "overview") or (page == nil)) then
     
    print("<table class=\"table table-bordered\">\n")
-   print("<tr><th width=250>Interface Id</th><td>" .. ifstats.id .. "</td></tr>\n")
+   print("<tr><th width=250>Interface Id</th><td colspan=2>" .. ifstats.id .. "</td></tr>\n")
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
   
   if(ifstats.name ~= nil) then
@@ -102,7 +102,7 @@ if((page == "overview") or (page == nil)) then
        <input type="text" name="custom_name" placeholder="Custom Name" value="]]
           if(alternate_name ~= nil) then print(alternate_name) end
     print [["></input>
-      <button type="submit" class="btn">Save Name</button>
+      <button type="submit" style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
     </form>
     </td></tr>
        ]]

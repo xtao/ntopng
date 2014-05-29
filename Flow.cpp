@@ -37,6 +37,7 @@ Flow::Flow(NetworkInterface *_iface,
   json_info = strdup("{}");
   tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
+  cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
   iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
   if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
@@ -430,6 +431,55 @@ u_int64_t Flow::get_current_bytes_srv2cli() {
 
 /* *************************************** */
 
+u_int64_t Flow::get_current_packets_cli2srv() {
+  if((cli2srv_last_packets == 0) && (prev_cli2srv_last_packets == 0))
+    return(cli2srv_packets);
+  else {
+    int64_t diff = cli2srv_packets - cli2srv_last_packets;
+
+    if(diff > 0)
+      return(diff);
+
+    /*
+       We need to do this as due to concurrency issues,
+       we might have a negative value
+    */
+    diff = cli2srv_packets - prev_cli2srv_last_packets;
+
+    if(diff > 0)
+      return(diff);
+    else
+      return(0);
+  }
+};
+
+/* *************************************** */
+
+u_int64_t Flow::get_current_packets_srv2cli() {
+  if((srv2cli_last_packets == 0) && (prev_srv2cli_last_packets == 0))
+    return(srv2cli_packets);
+  else {
+    int64_t diff = srv2cli_packets - srv2cli_last_packets;
+
+    if(diff > 0)
+      return(diff);
+
+    /*
+       We need to do this as due to concurrency issues,
+       we might have a negative value
+    */
+    diff = srv2cli_packets - prev_srv2cli_last_packets;
+
+    if(diff > 0)
+      return(diff);
+    else
+      return(0);
+  }
+};
+
+
+/* *************************************** */
+
 void Flow::print_peers(lua_State* vm, bool verbose) {
   char buf1[64], buf2[64], buf[256];
   Host *src = get_cli_host(), *dst = get_srv_host();
@@ -556,6 +606,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
     float tdiff_msec = ((float)(tv->tv_sec-last_update_time.tv_sec)*1000)+((tv->tv_usec-last_update_time.tv_usec)/(float)1000);
 
     if(tdiff_msec >= 1000 /* Do not updated when less than 1 second (1000 msec) */) {
+      // bps
       float bytes_msec = ((float)((cli2srv_last_bytes-prev_cli2srv_last_bytes)*1000))/tdiff_msec;
 
       if(bytes_msec < 0) bytes_msec = 0; /* Just to be safe */
@@ -570,6 +621,24 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 	(bytes_thpt*8)/((float)(1024*1024)));
       */
       bytes_thpt = bytes_msec;
+
+      // pps
+      
+      float pkts_msec = ((float)((cli2srv_last_packets-prev_cli2srv_last_packets)*1000))/tdiff_msec;
+
+      if(pkts_msec < 0) pkts_msec = 0; /* Just to be safe */
+
+      if(pkts_thpt < pkts_msec)      pkts_thpt_trend = trend_up;
+      else if(pkts_thpt > pkts_msec) pkts_thpt_trend = trend_down;
+      else                             pkts_thpt_trend = trend_stable;
+
+      
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][pkts: %u][pkts_thpt: %.2f pps]",
+  // pkts_msec, (cli2srv_last_packets-prev_cli2srv_last_packets),
+  // (pkts_thpt));
+      
+      pkts_thpt = pkts_msec;
+
       updated = true;
     }
   } else
@@ -678,12 +747,17 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
   lua_push_int_table_entry(vm, "bytes.last", get_current_bytes_cli2srv() + get_current_bytes_srv2cli());
+  lua_push_int_table_entry(vm, "packets", cli2srv_packets+srv2cli_packets);
+  lua_push_int_table_entry(vm, "packets.last", get_current_packets_cli2srv() + get_current_packets_srv2cli());
   lua_push_int_table_entry(vm, "seen.first", get_first_seen());
   lua_push_int_table_entry(vm, "seen.last", get_last_seen());
   lua_push_int_table_entry(vm, "duration", get_duration());
 
   lua_push_int_table_entry(vm, "cli2srv.bytes", cli2srv_bytes);
   lua_push_int_table_entry(vm, "srv2cli.bytes", srv2cli_bytes);
+
+  lua_push_int_table_entry(vm, "cli2srv.packets", cli2srv_packets);
+  lua_push_int_table_entry(vm, "srv2cli.packets", srv2cli_packets);
 
   if(detailed_dump) {
     lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
@@ -697,6 +771,11 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
   lua_push_float_table_entry(vm, "throughput", bytes_thpt);
   lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
+
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", pkts_thpt);
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%d", pkts_thpt_trend);
+  lua_push_float_table_entry(vm, "throughput_pps", pkts_thpt);
+  lua_push_int_table_entry(vm, "throughput_trend_pps", pkts_thpt_trend);
 
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index
@@ -801,6 +880,9 @@ char* Flow::serialize() {
 
   json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
   json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+
+  // json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
+  // json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
 
   inner = json_object_new_object();
   json_object_object_add(inner, "l4", json_object_new_int(protocol));

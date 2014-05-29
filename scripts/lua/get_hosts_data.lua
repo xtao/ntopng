@@ -310,11 +310,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 
 	       if(value["throughput_trend"] == 1) then
-		  print("<i class='fa fa-arrow-up fa-lg'></i>")
+		  print("<i class='fa fa-arrow-up'></i>")
 		  elseif(value["throughput_trend"] == 2) then
-		  print("<i class='fa fa-arrow-down fa-lg'></i>")
+		  print("<i class='fa fa-arrow-down'></i>")
 		  elseif(value["throughput_trend"] == 3) then
-		  print("<i class='fa fa-minus fa-lg'></i>")
+		  print("<i class='fa fa-minus'></i>")
 	       end
 	    else
 	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
@@ -328,12 +328,12 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 	    if(value["localhost"] ~= nil) then
 	       print ("\", \"column_location\" : \"")
-	       if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label'>Remote</span>") end
+	       if(value["localhost"] == true) then print("<span class='label label-success'>Local</span>") else print("<span class='label label-default'>Remote</span>") end
 	    end
 
 	    sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
-	    print ("\", \"column_breakdown\" : \"<div class='progress'><div class='bar bar-warning' style='width: "
-		   .. sent2rcvd .."%;'>Sent</div><div class='bar bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
+	    print ("\", \"column_breakdown\" : \"<div class='progress'><div class='progress-bar progress-bar-warning' style='width: "
+		   .. sent2rcvd .."%;'>Sent</div><div class='progress-bar progress-bar-info' style='width: " .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
 
 	    print("\" } ")
 	    num = num + 1

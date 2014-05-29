@@ -66,7 +66,7 @@ hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 
 if(hosts == nil) then
-  print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
+  print("<div class=\"alert alert-danger\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
 
   if(debug) then io.write("Host:"..hosts.."\n") end

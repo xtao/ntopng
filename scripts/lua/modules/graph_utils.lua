@@ -46,8 +46,8 @@ end
 function breakdownBar(sent, sentLabel, rcvd, rcvdLabel)
    if((sent+rcvd) > 0) then
       sent2rcvd = round((sent * 100) / (sent+rcvd), 0)
-      print('<div class="progress"><div class="bar bar-warning" style="width: ' .. sent2rcvd.. '%;">'..sentLabel)
-      print('</div><div class="bar bar-info" style="width: ' .. (100-sent2rcvd) .. '%;">' .. rcvdLabel .. '</div></div>')
+      print('<div class="progress"><div class="progress-bar progress-bar-warning" aria-valuenow="'.. sent2rcvd..'" aria-valuemin="0" aria-valuemax="100" style="width: ' .. sent2rcvd.. '%;">'..sentLabel)
+      print('</div><div class="progress-bar progress-bar-info" aria-valuenow="'.. (100 -sent2rcvd)..'" aria-valuemin="0" aria-valuemax="100" style="width: ' .. (100-sent2rcvd) .. '%;">' .. rcvdLabel .. '</div></div>')
    else
       print('&nbsp;')
    end
@@ -58,7 +58,7 @@ end
 function percentageBar(total, value, valueLabel)
    if(total > 0) then
       pctg = round((value * 100) / total, 0)
-      print('<div class="progress"><div class="bar bar-warning" style="width: ' .. pctg.. '%;">'..valueLabel)
+      print('<div class="progress"><div class="progress-bar progress-bar-warning" aria-valuenow="'.. pctg..'" aria-valuemin="0" aria-valuemax="100" style="width: ' .. pctg.. '%;">'..valueLabel)
       print('</div></div>')
    else
       print('&nbsp;')
@@ -369,7 +369,7 @@ font-family: Arial, Helvetica, sans-serif;
 if(show_timeseries == 1) then
    print [[
 <div class="btn-group">
-  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
+  <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Timeseries <span class="caret"></span></button>
   <ul class="dropdown-menu">
 ]]
 
@@ -669,7 +669,7 @@ print[['+hover.selected_epoch;
 
 ]]
 else
-  print("<div class=\"alert alert-error\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
+  print("<div class=\"alert alert-danger\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
 
 end
 end

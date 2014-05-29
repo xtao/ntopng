@@ -71,6 +71,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
 if(prefs.is_categorization_enabled) then
   print ('flow_rows_option["categorization"] = true;\n')
 end
+
    print [[
 
 	 var table = $("#table-flows").datatable({
@@ -79,7 +80,7 @@ print ('rowCallback: function ( row ) { return flow_table_setID(row); },')
 print [[ 
          showFilter: true,
 	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
+	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;">]]
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do

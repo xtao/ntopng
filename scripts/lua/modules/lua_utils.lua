@@ -208,7 +208,7 @@ end
 alert_level_keys = {
    { "<span class='label label-info'>Info</span>", 0 },
    { "<span class='label label-warning'>Warning</span>", 1 },
-   { "<span class='label label-important'>Error</span>", 2 }
+   { "<span class='label label-danger'>Error</span>", 2 }
 }
 
 alert_type_keys = {

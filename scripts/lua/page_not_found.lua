@@ -12,7 +12,7 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/menu.inc")
 
-print('<div class="alert alert-error"><img src=/img/warning.png> Page not found</div>')
+print('<div class="alert alert-danger"><img src=/img/warning.png> Page not found</div>')
 
 print ("<center><H4>Unable to find URL <i>")
 

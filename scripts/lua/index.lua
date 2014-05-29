@@ -41,7 +41,7 @@ if(page == nil) then page = "TopFlowTalkers" end
 if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 -- Print tabbed header
 
-   print('<div class="navbar">\n\t<div class="navbar-inner">\n\t<ul class="nav">\n')
+   print('<nav class="navbar navbar-default" role="navigation">\n\t<div class="navbar-collapse collapse">\n\t<ul class="nav navbar-nav">\n')
 
    print('<li><a href="#">Dashboard: </a></li>\n')
 
@@ -60,19 +60,19 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
 
-   print('</ul>\n\t</div>\n\t</div>\n')
+   print('</ul>\n\t</div>\n\t</nav>\n')
 
    if(page == "TopFlowTalkers") then
       print('<div style="text-align: center;">\n<h4>Top Flow Talkers</h4></div>\n') 
 
-      print('<div class="jumbotron">')
+      print('<div class="row" style="text-align: center;">')
       dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
-      print('\n</div><br/>\n')
+      print('\n</div><br/><br/><br/>\n')
 
 print [[
 <div class="control-group" style="text-align: center;">
 &nbsp;Refresh frequency: <div class="btn-group btn-small">
-  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown"> 
+  <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"> 
 ]] 
 if (refresh ~= '0') then
   if (refresh == '60000') then 
@@ -99,16 +99,16 @@ print [[
 
 if (refresh ~= '0') then
   print [[
-          &nbsp;Live update:  <div class="btn-group btn-small" data-toggle="buttons-radio" data-toggle-name="topflow_graph_state">
-            <button id="topflow_graph_state_play" value="1" type="button" class="btn btn-small active" data-toggle="button" ><i class="fa fa-play"></i></button>
-            <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-small" data-toggle="button" ><i class="fa fa-stop"></i></button>
+          &nbsp;Live update:  <div class="btn-group btn-group-xs" data-toggle="buttons-radio" data-toggle-name="topflow_graph_state">
+            <button id="topflow_graph_state_play" value="1" type="button" class="btn btn-default btn-xs active" data-toggle="button" ><i class="fa fa-play"></i></button>
+            <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-default btn-xs" data-toggle="button" ><i class="fa fa-stop"></i></button>
           </div>
   ]]
 else 
   print [[
          &nbsp;Refresh:  <div class="btn-group btn-small">
-          <button id="topflow_graph_refresh" class="btn btn-small">
-            <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="icon-refresh"></i></button>")
+          <button id="topflow_graph_refresh" class="btn btn-default btn-xs">
+            <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="glyphicon glyphicon-refresh"></i></button>
           </div>
   ]]
   end
@@ -133,12 +133,16 @@ print [[
                sankey();
                sankey_interval = window.setInterval(sankey, 5000);
                topflow_stop = false;
+               $("#topflow_graph_state_stop").removeClass("active");
+               $("#topflow_graph_state_play").addClass("active");
             }
          });
          $("#topflow_graph_state_stop").click(function() {
             if (!topflow_stop) {
                clearInterval(sankey_interval);
                topflow_stop = true;
+               $("#topflow_graph_state_play").removeClass("active");
+               $("#topflow_graph_state_stop").addClass("active");
             }
         }); 
         $("#topflow_graph_refresh").click(function() {

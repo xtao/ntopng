@@ -35,9 +35,9 @@ if(found) then
 
 print [[
 
-<hr>
+<div class="page-header">
 <h2>Top Hosts (Local)</H2>
-
+</div>
 <script src="/js/cubism.v1.js"></script>
 <div id="tophosts"></div>
 
@@ -137,7 +137,7 @@ context.on("focus", function(i) {
 
 ]]
 else 
-print("<div class=\"alert alert-error\"><img src=/img/warning.png> No results found</div>")
+print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No results found</div>")
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

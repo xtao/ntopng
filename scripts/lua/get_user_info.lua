@@ -21,7 +21,7 @@ host_key = _GET["host"]
 application = _GET["application"]
 
 if(user_key == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Missing user name</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Missing user name</div>")
 else
    print [[
 	    <div class="bs-docs-example">

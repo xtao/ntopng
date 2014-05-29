@@ -1,5 +1,5 @@
 /*!
- * Bootstrap Data Table Plugin v1.5.4
+ * Bootstrap Data Table Plugin v1.5.5
  *
  * Author: Jeff Dupont
  * ==========================================================
@@ -31,6 +31,7 @@
     this.rows = [];
     this.buttons = [];
 
+    // this needs to be handled better
     this.localStorageId = "datatable_" + (options.id || options.url.replace(/\W/ig, '_'));
 
     // set the defaults for the column options array
@@ -52,6 +53,12 @@
     if(localStorage) {
       localStorage[this.localStorageId] = 'false';
     }
+
+    if(this.options.tablePreRender && typeof this.options.tablePreRender === 'function')
+      this.options.tablePreRender.call(this)
+
+    // initialize the toolbar
+    _initToolbar.call(this)
 
     if(this.options.autoLoad === true) this.render();
   };
@@ -94,26 +101,18 @@
         if(o.url !== "") {
           $.ajax({
               url: o.url
-            , type: "GET"
+            , type: "POST"
             , dataType: "json"
-            , data: $.extend({}, o.get, {
+            , data: $.extend({}, o.post, {
                   currentPage: o.currentPage
                 , perPage: o.perPage
-                , sortColumn: o.sort[0][0]
-                , sortOrder: o.sort[0][1]
+                , sort: o.sort
                 , filter: o.filter
               })
             , success: function( res ) {
-                if(o.debug) console.log(res);
-
-                if(!res || res === undefined) {
-                  showError.call(that);
-                  return;
-                }
-
                 that.resultset = res;
 
-                if(!res.data || res.data.length === 0) {
+                if(!res || res === undefined || !res.data || res.data.length == 0) {
                   showError.call(that);
                   return;
                 }
@@ -129,11 +128,8 @@
                 // set the current page if we're forcing it from the server
                 if(res.currentPage) o.currentPage = parseInt(res.currentPage);
 
-                if(o.tablePreRender && typeof o.tablePreRender === 'function')
-                  o.tablePreRender.call(that);
-
-                // TODO FUTURE FEATURE: retrieve the saved columns
-                //_retrieveColumns.call(that, that.localStorageId);
+                // retrieve the saved columns
+                _retrieveColumns.call(that, localStorage[that.localStorageId])
 
                 // append the table
                 $e.append(that.table());
@@ -191,9 +187,12 @@
             .append(
               $("<div></div>")
                 .addClass("progress progress-striped active")
-                .append($('<div class="bar" style="width: 100%"></div>'))
+                .append(
+                  $("<div></div>")
+                    .addClass("bar")
+                )
             )
-            .appendTo($e.parent());
+            .appendTo(document.body)
         }
 
         if(show) {
@@ -241,10 +240,14 @@
           $e.before(this.$section_header);
         }
         else {
-          if(!this.$section_header) {
-            this.$section_header = $("<div></div>");
-          }
-          this.$section_header.append(this.$toolbar);
+            if(!this.$toolbar_container) {
+              this.$toolbar_container = $("<div></div>")
+                .addClass('dt-toolbar-container clearfix')
+            }
+            $e.prepend(
+              this.$toolbar_container
+                .append(this.$toolbar)
+            );
         }
 
         return this.$toolbar;
@@ -257,7 +260,9 @@
           , end = 0
           , that = this;
 
-        start = (o.currentPage * o.perPage) - o.perPage + 1;
+        start = (o.currentPage * o.perPage) - o.perPage + 1
+        if(start < 1) start = 1;
+
         end = (o.currentPage * o.perPage);
         if(end > o.totalRows) end = o.totalRows;
 
@@ -289,6 +294,7 @@
 
         if(!this.$header) {
           this.$header = $('<thead></thead>');
+          var row = $('<tr></tr>');
 
           // loop through the columns
           for(var column in o.columns) {
@@ -313,7 +319,8 @@
               }
             }
 
-            this.$header.append($cell);
+            row.append($cell);
+            this.$header.append(row);
             this.columns.push($cell);
           }
 
@@ -328,14 +335,26 @@
       }
 
     , footer: function () {
-        var res = this.resultset;
+        var o = this.options
+          , res = this.resultset
 
         if(!this.$footer) {
           this.$footer = $('<tfoot></tfoot>');
 
+          // loop through the columns
+          for(column in o.columns) {
+            var $cell = $('<td></td>')
+
+            $cell
+              .data("cell_properties", o.columns[column])
+              .addClass(o.columns[column].classname)
+
+            this.$footer.append($cell);
+          }
+
           // any final user adjustments to the footer
           if(o.footerCallback && typeof o.footerCallback === 'function')
-            o.footerCallback.call(this);
+            o.footerCallback.call(this, this.resultset.footer)
 
           this.$table
             .append(this.$footer);
@@ -422,12 +441,12 @@
 
         // preprocess on the cell data for a column
         if(o.columns[column].callback && typeof o.columns[column].callback === "function")
-          celldata = o.columns[column].callback( data, o.columns[column] );
+          celldata = o.columns[column].callback.call( $cell, data, o.columns[column] )
 
         $cell
           .data("cell_properties", o.columns[column])
           .addClass(o.columns[column].classname)
-          .html(celldata || "&nbsp;");
+          .append(celldata || "&nbsp;")
 
         if(o.columns[column].css) $cell.css(o.columns[column].css);
 
@@ -461,7 +480,7 @@
           , o = e.data.options
           , found = false;
 
-        colprop.sortOrder = colprop.sortOrder ? (colprop.sortOrder == "desc" ? "asc" : "") : "desc";
+        colprop.sortOrder = colprop.sortOrder ? (colprop.sortOrder == "asc" ? "desc" : "") : "asc";
 
         if(o.allowMultipleSort) {
           // does the sort already exist?
@@ -494,24 +513,21 @@
         if(o.perPage >= res.totalRows) return;
 
         if(!this.$pagination) {
-          this.$pagination = $("<div></div>")
-            .addClass("pagination pagination-right");
+          this.$pagination = $("<div></div>").addClass("pull-right");
 
           // how many pages?
           o.pageCount = Math.ceil(res.totalRows / o.perPage);
 
           // setup the pager container and the quick page buttons
-          var $pager = $("<ul></ul>")
+          var $pager = $("<ul></ul>").addClass("pagination")
             , $first = $("<li></li>").append(
                 $("<a></a>")
                   .attr("href", "#")
                   .data("page", 1)
-                  .html("&larr; First")
+                  .html("&laquo;")
                   .click(function() {
-                    if (o.currentPage > 1) {
-                      o.currentPage = 1;
-                      that.render();
-                    }
+                    o.currentPage = 1
+                    that.render();
                     return false;
                   })
               )
@@ -519,12 +535,11 @@
                 $("<a></a>")
                   .attr("href", "#")
                   .data("page", o.currentPage - 1)
-                  .text("Prev")
+                  .html("&lt;")
                   .click(function() {
-                    if (o.currentPage > 1) {
-                      o.currentPage -= 1;
-                      that.render();
-                    }
+                    o.currentPage -= 1
+                    o.currentPage = o.currentPage >= 1 ? o.currentPage : 1
+                    that.render();
                     return false;
                   })
               )
@@ -532,12 +547,11 @@
                 $("<a></a>")
                   .attr("href", "#")
                   .data("page", o.currentPage + 1)
-                  .text("Next")
+                  .html("&gt;")
                   .click(function() {
-                    if (o.currentPage < o.pageCount) {
-                      o.currentPage += 1;
-                      that.render();
-                    }
+                    o.currentPage += 1
+                    o.currentPage = o.currentPage <= o.pageCount? o.currentPage : o.pageCount
+                    that.render();
                     return false;
                   })
               )
@@ -545,12 +559,10 @@
                 $("<a></a>")
                   .attr("href", "#")
                   .data("page", o.pageCount)
-                  .html("Last &rarr;")
+                  .html("&raquo;")
                   .click(function() {
-                    if (o.currentPage < o.pageCount) {
-                      o.currentPage = o.pageCount;
-                      that.render();
-                    }
+                    o.currentPage = o.pageCount
+                    that.render();
                     return false;
                   })
               );
@@ -584,10 +596,8 @@
                   .data("page", i)
                   .text(i)
                   .click(function() {
-                    if (o.currentPage !== $(this).data('page')) {
-                      o.currentPage = $(this).data('page');
-                      that.render();
-                    }
+                    o.currentPage = $(this).data('page')
+                    that.render();
                     return false;
                   })
               );
@@ -612,6 +622,15 @@
           this.$pagination.append($pager);
         }
         return this.$pagination;
+      }
+
+    , remove: function() {
+        var $e = this.$element
+
+        if(this.$section_header) this.$section_header.remove();
+
+        $e.data("datatable", null);
+        $e.empty();
       }
 
   };
@@ -652,9 +671,14 @@
     var that = this;
 
     if(!this.$column_modal) {
+      var randId = Math.floor((Math.random()*100)+1);
       this.$column_modal = $('<div></div>')
-        .attr("id", "dt-column-modal_" + Math.floor((Math.random()*100)+1))
-        .addClass("modal")
+        .attr("id", "dt-column-modal_" + randId)
+        .attr("tabindex","-1")
+        .attr("role","dialog")
+        .attr("aria-labelledby", "dt-column-modal-label_" + randId)
+        .attr("aria-hidden","true")
+        .addClass("modal fade")
         .hide();
 
       // render the modal header
@@ -664,13 +688,16 @@
           $("<button></button>")
             .addClass("close")
             .data("dismiss", "modal")
-            .text('x')
-            .click(function() {
+            .attr("aria-hidden","true")
+            .html('&times;')
+            .click(function(){
               that.$column_modal.modal('hide');
             })
         )
         .append(
           $("<h3></h3>")
+            .addClass("modal-title")
+            .attr("id","dt-column-modal-label_" + randId)
             .text("Toggle Columns")
         );
 
@@ -678,12 +705,61 @@
       this.$column_modalfooter = $("<div></div>")
         .addClass("modal-footer")
         .append(
-          $("<a></a>")
-            .attr("href", "#")
-            .addClass("btn btn-primary")
-            .text("Save")
+            // show the check 'all / none' columns
+            $('<div class="pull-left"></div>')
+              .append(
+                $('<div class="btn-group"></div>')
+                  .append(
+                    $('<button></button>')
+                      .addClass("btn btn-info")
+                      .append(
+                        $("<span></span>")
+                          .addClass("glyphicon glyphicon-check")
+                          .text("All")
+                      )
+                      .click(function () {
+                        $(this).closest(".modal").find('button.on-off').each(function () {
+                          if($(this).data('column-hidden')){
+                              $(this).click();
+                          }
+                        })
+                        return false;
+                      }),
+                    $('<button></button>')
+                      .addClass("btn btn-warning")
+                      .append(
+                        $("<span></span>")
+                          .addClass("glyphicon glyphicon-unchecked")
+                          .text("None")
+                      )
+                      .click(function () {
+                        $(this).closest(".modal").find('button.on-off').each(function () {
+                          if(!$(this).data('column-hidden')){
+                            $(this).click();
+                          }
+                        })
+                        return false;
+                      })
+                  )
+              )
+
+          , o.allowSaveColumns ? $("<button></button>")
+              .addClass("btn btn-primary")
+              .text("Save")
+              .click(function() {
+                _saveColumns.call(that)
+                return false;
+              }) : ""
+
+          , $("<button></button>")
+            .addClass("btn btn-default")
+            .data('dismiss', 'modal')
+            .append(
+              $("<span></span>")
+            )
+            .text("Close")
             .click(function() {
-              _saveColumns.call(that);
+              that.$column_modal.modal('hide')
               return false;
             })
         );
@@ -692,31 +768,51 @@
       this.$column_modalbody = $("<div></div>")
         .addClass("modal-body");
 
+      this.$column_modaldialog = $("<div></div>")
+        .addClass("modal-dialog")
+        .append(
+          $("<div></div>")
+            .addClass("modal-content")
+            .append(
+              this.$column_modalheader
+              ,this.$column_modalbody
+              ,this.$column_modalfooter
+            )
+        );
+
       // render and add the modal to the container
       this.$column_modal
         .append(
-            this.$column_modalheader
-          , this.$column_modalbody
-          , this.$column_modalfooter
-        )
-        .appendTo(document.body);
+          this.$column_modaldialog
+        ).appendTo(document.body);
     }
-
     // render the display modal button
     $toggle
       .addClass("btn")
       .data("toggle", "modal")
+      .data("content", "Choose which columns you would like to display.")
+      .data("target","#" + this.$column_modal.attr("id"))
       .attr("href", "#" + this.$column_modal.attr("id"))
-      .html("<i class=\"icon-cog\"></i>")
+      .append(
+        $("<span></span>")
+          .addClass("glyphicon glyphicon-cog")
+      )
       .click(function(e) {
         that.$column_modal
-          .on('show', function () {
+          .on('show.bs.modal', function () {
+            if(o.debug) console.log(that);
             _updateColumnModalBody.call(that, that.$column_modalbody);
           })
           .modal();
         return false;
+      })
+      .popover({
+        "trigger": 'hover',
+        "placement":'top'
       });
     this.buttons.unshift($toggle);
+
+    if(o.debug) console.log($toggle);
 
     return this.$column_modal;
   }
@@ -726,18 +822,32 @@
       , $e = this.$element
       , $toggle = $("<a></a>");
 
-    o.filterModal.hide();
-
     // render the display modal button
     $toggle
       .addClass("btn")
       .data("toggle", "modal")
       .attr("href", "#")
-      .html("<i class=\"icon-filter\"></i>")
+      .data("content", "Open the filter dialog.")
+      .extend(
+        $("<span></span>")
+          .addClass("glyphicon glyphicon-filter")
+      )
       .click(function() {
-        $(o.filterModal)
-          .modal();
+        if($(o.filterModal).hasClass("modal"))
+          $(o.filterModal)
+            .modal();
+        else if($(o.filterModal).is(":visible"))
+          $(o.filterModal)
+            .hide();
+        else
+          $(o.filterModal)
+            .show();
+
         return false;
+      })
+      .popover({
+        "trigger": 'hover',
+        "placement":'top'
       });
     this.buttons.unshift($toggle);
   }
@@ -750,28 +860,33 @@
     // per page options and current filter/sorting
     var $perpage_select = $("<a></a>")
       .addClass("btn dropdown-toggle")
+      .data("content", "Change the number of rows per page.")
       .attr("data-toggle", "dropdown")
       .html(o.perPage + "&nbsp;")
       .css({ fontWeight: 'normal' })
       .append(
         $("<span></span>")
           .addClass("caret")
-      );
+      )
+      .popover({
+        "trigger": 'hover',
+        "placement":'top'
+      });
     this.buttons.push($perpage_select);
 
     var $perpage_values = $("<ul></ul>")
       .addClass("dropdown-menu")
       .css({ fontSize: 'initial', fontWeight: 'normal' })
       .append(
-          $('<li data-value="5"><a href="#">5</a></li>')
-            .click(function() { _updatePerPage.call(this, that); return false; })
-        , $('<li data-value="10"><a href="#">10</a></li>')
+          $('<li data-value="10"><a href="#">10</a></li>')
             .click(function() { _updatePerPage.call(this, that); return false; })
         , $('<li data-value="20"><a href="#">20</a></li>')
             .click(function() { _updatePerPage.call(this, that); return false; })
         , $('<li data-value="50"><a href="#">50</a></li>')
             .click(function() { _updatePerPage.call(this, that); return false; })
         , $('<li data-value="100"><a href="#">100</a></li>')
+            .click(function() { _updatePerPage.call(this, that); return false; })
+        , $('<li data-value="150"><a href="#">200</a></li>')
             .click(function() { _updatePerPage.call(this, that); return false; })
       );
     this.buttons.push($perpage_values);
@@ -786,7 +901,10 @@
     $info
       .addClass("btn")
       .attr("href", "#")
-      .html("<i class=\"icon-info-sign\"></i>")
+      .append(
+        $("<span></span>")
+          .addClass("glyphicon glyphicon-info-sign")
+      )
       .click(function() {
         return false;
       });
@@ -812,14 +930,16 @@
       }
       $page_filter.push( (heading || k) + " = '" + v + "'" );
     });
-
-    $($info).popover({
+    $($info)
+      .data("content",
+        $('<dl></dl>').append(
+          $page_sort.length > 0 ? '<dt><i class="icon-th-list"></i> Sort:</dt><dd>' + $page_sort.join(", ") + '</dd>' : ''
+          ,
+          $page_filter.length > 0 ? '<dt><i class="icon-filter"></i> Filter:</dt><dd>' + $page_filter.join(", ") + '</dd>' : ''
+        ))
+      .popover({
         placement: "bottom"
-      , content: $('<dl></dl>').append(
-            $page_sort.length > 0 ? '<dt><i class="icon-th-list"></i> Sort:</dt><dd>' + $page_sort.join(", ") + '</dd>' : ''
-          , $page_filter.length > 0 ? '<dt><i class="icon-filter"></i> Filter:</dt><dd>' + $page_filter.join(", ") + '</dd>' : ''
-        )
-    });
+      });
 
     this.buttons.unshift($info);
   }
@@ -831,20 +951,29 @@
 
     // create the button
     $overflow
-      .addClass("btn add-on")
+      .addClass("btn")
       .attr("href", "#")
-      .html("<i class=\"icon-resize-full\"></i>")
+      .attr("title", "Toggle the size of the table to fit the data or to fit the screen.")
+      .append(
+        $("<span></span>")
+          .addClass("glyphicon glyphicon-resize-full")
+      )
       .click(function() {
-        _toggleOverflow.call(this, $wrapper);
+        if($wrapper) _toggleOverflow.call(this, $wrapper);
         return false;
       });
+
+    if(!this.resultset || !this.resultset.data || this.resultset.data.length == 0)
+      $overflow
+        .addClass("disabled")
+
     this.buttons.push($overflow);
   }
 
   function _toggleOverflow(el) {
     if(el.css('overflow') == 'scroll') {
-      $(this).children("i")
-        .attr("class", "icon-resize-full");
+      $(this).children("span.glyphicon")
+        .attr("class", "glyphicon glyphicon-resize-full");
 
       el.css({
           overflow: 'visible'
@@ -852,8 +981,8 @@
       });
     }
     else {
-      $(this).children("i")
-        .attr("class", "icon-resize-small");
+      $(this).children("span.glyphicon")
+        .attr("class", "glyphicon glyphicon-resize-small");
 
       el.css({
           overflow: 'scroll'
@@ -874,8 +1003,7 @@
       o.currentPage--;
       offset = o.currentPage * o.perPage;
     }
-
-    if(o.currentPage === 0) o.currentPage = 1;
+    if(o.currentPage < 1) o.currentPage = 1;
 
     if($(this).popover) $(this).popover('hide');
 
@@ -889,6 +1017,8 @@
     var o = this.options
       , $e = this.$element;
 
+    $e.empty();
+
     // initialize the toolbar
     _initToolbar.call(this);
 
@@ -898,7 +1028,6 @@
 
     this.loading( false );
 
-    $e.empty();
     if(this.$default) $e.append(this.$default);
   }
 
@@ -913,26 +1042,37 @@
 
   function _updateColumnModalBody(body) {
     var o = this.options
-      , $container = $("<fieldset></fieldset>")
+      , $container = $("<form></form>").addClass("form-inline")
       , that = this;
 
     // loop through the columns
     for(var column in o.columns) {
       if(o.columns[column].title === "") continue;
-      var $item = $('<div class="control-group" style="float: left" data-column="' + column + '"><label class="control-label">' + o.columns[column].title + '</label><div class="controls"><div class="btn-group" data-toggle="buttons-radio"><a href="#" class="btn ' + (o.columns[column].hidden ? "" : "active") + '"><i class="icon-ok"></i></a><a href="#" class="btn ' + (o.columns[column].hidden ? "active" : "") + '"><i class="icon-remove"></i></a></div></div></div>')
-        .click(function() {
-          _toggleColumn.call(this, that);
-          return false;
-        });
+      var $item = $('<div></div>')
+        .addClass('form-group')
+        .append(
+          $("<label></label>")
+            .addClass("control-label")
+            .append(
+              o.columns[column].title,
 
+              $("<button></button>")
+                .addClass("on-off btn " + (o.columns[column].hidden ? 'btn-info' : 'btn-warning'))
+                .data("column", column)
+                .data("column-hidden",o.columns[column].hidden)
+                .text(o.columns[column].hidden ? "ON" : "OFF")
+                .click(function () {
+                  _toggleColumn.call(this, that);
+                  return false;
+                })
+            )
+        );
       $container.append($item);
     }
 
     body.empty();
     body.append(
-      $("<form></form>")
-        .addClass("form-horizontal")
-        .append($container)
+      $container
     );
   }
 
@@ -944,20 +1084,13 @@
     if($column.is(":visible")) {
       $column.hide();
       o.columns[column].hidden = true;
+      $(this).removeClass("btn-warning").addClass("btn-info").text("ON").data("column-hidden",true);
     }
     else {
       $column.show();
       o.columns[column].hidden = false;
+      $(this).removeClass("btn-info").addClass("btn-warning").text("OFF").data("column-hidden",false);
     }
-
-    $(this)
-      .find("a.active")
-      .removeClass("active");
-
-    o.columns[column].hidden ?
-      $(this).find(".icon-remove").parent().addClass("active") :
-      $(this).find(".icon-ok").parent().addClass("active");
-
     return false;
   }
 
@@ -993,8 +1126,11 @@
       , columns = data ? JSON.parse(data) : []
       , res = this.resultset;
 
-    for(var column in o.columns) {
-      o.columns[column] = $.extend({}, o.columns[column], (res.columns ? res.columns[column] : []), columns[column]);
+    // if the server doesn't pass the column property back
+    if(!res.columns) res.columns = [];
+
+    for(column in o.columns) {
+      o.columns[column] = $.extend({}, o.columns[column], res.columns[column], columns[column]);
     }
   }
 
@@ -1047,40 +1183,39 @@
   };
 
   $.fn.datatable.defaults = {
-      debug: false
-    , id: undefined
-    , title: 'Data Table Results'
-    , class: 'table table-striped table-bordered'
-    , perPage: 10
-    , pagePadding: 2
-    , sort: [[]]
-    , filter: {}
-    , post: {}
-    , buttons: []
-    , sectionHeader: undefined
-    , totalRows: 0
-    , currentPage: 1
-    , showPagination: false
-    , showTopPagination: false
-    , showHeader: true
-    , showFooter: false
-    , showFilterRow: false
-    , filterModal: undefined
-    , allowExport: false
-    , allowOverflow: true
-    , allowMultipleSort: false
-    , toggleColumns: true
-    , url: ''
-    , columns: []
-    , ascending: '<i class="icon-chevron-up"></i>'
-    , descending: '<i class="icon-chevron-down"></i>'
-    , rowCallback: undefined
-    , tableCallback: undefined
-    , headerCallback: undefined
-    , footerCallback: undefined
-    , tablePreRender: undefined
-    , autoLoad: true
+    debug: false,
+    id: undefined,
+    title: 'Data Table Results',
+    class: 'table table-striped table-bordered',
+    perPage: 10,
+    pagePadding: 2,
+    sort: [],
+    filter: {},
+    post: {},
+    buttons: [],
+    sectionHeader: undefined,
+    totalRows: 0,
+    currentPage: 1,
+    showPagination: true,
+    showTopPagination: false,
+    showHeader: true,
+    showFooter: false,
+    showFilterRow: false,
+    filterModal: undefined,
+    allowExport: false,
+    allowOverflow: true,
+    allowMultipleSort: false,
+    allowSaveColumns: true,
+    toggleColumns: true,
+    url: '',
+    columns: [],
+    ascending: $("<span></span>").addClass("glyphicon glyphicon-chevron-up"),
+    descending: $("<span></span>").addClass("glyphicon glyphicon-chevron-down"),
+    rowCallback: undefined,
+    tableCallback: undefined,
+    headerCallback: undefined,
+    footerCallback: undefined,
+    tablePreRender: undefined,
+    autoLoad: true
   };
-
-
 })(window.jQuery);

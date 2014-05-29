@@ -84,11 +84,13 @@ print [[
 if(ntop.getNumQueuedAlerts() > 0) then
    print [[
 
-<a href="#myModal" role="button" class="btn" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alerts</button></a>
+<a href="#myModal" role="button" class="btn btn-default" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Purge All Alerts</button></a>
  
 <!-- Modal -->
-<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
     <h3 id="myModalLabel">Confirm Action</h3>
   </div>
@@ -98,10 +100,12 @@ if(ntop.getNumQueuedAlerts() > 0) then
   <div class="modal-footer">
 
     <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=id_to_delete value="__all__">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
     <button class="btn btn-primary" type="submit">Purge All</button>
 </form>
   </div>
+  </div>
+</div>
 </div>
 
       ]]

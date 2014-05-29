@@ -13,7 +13,7 @@ if(host_info["host"] == nil) then
    sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
    return
 end
 
@@ -24,7 +24,7 @@ if(host == nil) then
    sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. host_info["host"] .. " Vlan" ..host_info["vlan"].." cannot be found (expired ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host ".. host_info["host"] .. " Vlan" ..host_info["vlan"].." cannot be found (expired ?)</div>")
    return
 else
    sendHTTPHeader('application/json')

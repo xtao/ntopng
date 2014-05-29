@@ -108,7 +108,7 @@ var treemap = d3.layout.treemap()
 
 ]]
 else 
-print("<div class=\"alert alert-error\"><img src=/img/warning.png> No results found</div>")
+print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No results found</div>")
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

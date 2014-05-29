@@ -18,7 +18,7 @@ host = interface.getHostInfo(host_info["host"],host_info["vlan"])
 
 
 if(host == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
 
 if((type == nil) or (type == "size")) then

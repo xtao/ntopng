@@ -44,9 +44,9 @@ else
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-  print("<div class=\"alert alert-error\"><img src=/img/warning.png> Error while switching interfaces</div>")
+  print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Error while switching interfaces</div>")
 if(_SESSION["session"] == nil) then
-  print("<div class=\"alert alert-error\"><img src=/img/warning.png> Empty session</div>")
+  print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Empty session</div>")
 end
 
 end

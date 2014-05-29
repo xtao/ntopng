@@ -20,7 +20,7 @@ if(host_ip == nil) then
    sendHTTPHeader('text/html')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
+   print("<div class=\"alert alert alert-danger\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
    return
 end
 
@@ -62,7 +62,7 @@ if(host == nil) then
       sendHTTPHeader('text/html')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-      print("<div class=\"alert alert-error\"><img src=/img/warning.png> Host ".. hostinfo2hostkey(host_info) .. " cannot be found.")
+      print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host ".. hostinfo2hostkey(host_info) .. " cannot be found.")
       if((json ~= nil) and (json ~= "")) then
 	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?'..hostinfo2url(host_info) ..'&mode=restore">here</A> to restore it from cache.\n')
       else
@@ -95,9 +95,9 @@ else
    --print(rrdname)
 print [[
 <div class="bs-docs-example">
-            <div class="navbar">
-              <div class="navbar-inner">
-<ul class="nav">
+            <nav class="navbar navbar-default" role="navigation">
+              <div class="navbar-collapse collapse">
+<ul class="nav navbar-nav">
 ]]
 if ((debug_hosts) and (host["ip"] ~= nil)) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host["ip"] .. ", Vlan: "..host["vlan"].."\n") end
 url="/lua/host_details.lua?"..hostinfo2url(host_info)
@@ -265,7 +265,7 @@ print [[
 </ul>
 </div>
 </div>
-</div>
+</nav>
    ]]
 
 if((page == "overview") or (page == nil)) then
@@ -354,7 +354,7 @@ print [[
 
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
       if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
-      if(host["privatehost"] == true) then print(' <span class="label label-warn">Private IP</span>') end
+      if(host["privatehost"] == true) then print(' <span class="label label-warning">Private IP</span>') end
       if(host["systemhost"] == true) then print(' <span class="label label-info">System <i class=\"fa fa-flag\"></i></span>') end
       print("</td>\n")
    end
@@ -369,7 +369,7 @@ print [[">
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
       if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
 print [["></input>
-  <button type="submit" class="btn">Save Name</button>
+  <button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
 </form>
 </td></tr>
    ]]
@@ -399,9 +399,9 @@ end
    print [[
 	    <tr><th>Activity Map</th><td colspan=2>
 	    <span id="sentHeatmap"></span>
-	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-left fa-lg""></i></button>
-	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-refresh fa-lg"></i></button>
-	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-right fa-lg"></i></button>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-angle-left fa-lg""></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-refresh fa-lg"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-angle-right fa-lg"></i></button>
 	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">
@@ -492,7 +492,7 @@ hostinfo2json(host_info)
      end
 
      if(total == 0) then
-	print("<div class=\"alert alert-error\"><img src=/img/warning.png> No traffic has been observed for the specified host</div>")
+	print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic has been observed for the specified host</div>")
      else
       print [[
 
@@ -943,8 +943,9 @@ print [[
 print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&"..hostinfo2url(host_info).."'>Download "..host_info["host"].." contacts as JSON<A>\n")
 elseif(page == "talkers") then
 print("<center>")
+print('<div class="row">')
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
-print("</center>")
+print("</div></center></br>")
 elseif(page == "geomap") then
 print("<center>")
 
@@ -1301,8 +1302,10 @@ print [[
 
 <a href="#myModal" role="button" class="btn" data-toggle="modal"><i type="submit" class="fa fa-trash-o"></i> Delete All Configured Alerts</button></a>
 <!-- Modal -->
-<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
     <h3 id="myModalLabel">Confirm Action</h3>
   </div>
@@ -1311,12 +1314,13 @@ print [[
   </div>
   <div class="modal-footer">
     <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=to_delete value="__all__">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
     <button class="btn btn-primary" type="submit">Delete All</button>
 
   </div>
 </form>
-
+</div>
+</div>
 
 </th> </tr>
 
@@ -1354,7 +1358,7 @@ print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row);
 
 print [[
       showPagination: true,
-      buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu"><li><a href="/lua/aggregated_hosts_stats.lua">All</a></li> ]]
+      buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;"><li><a href="/lua/aggregated_hosts_stats.lua">All</a></li> ]]
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do

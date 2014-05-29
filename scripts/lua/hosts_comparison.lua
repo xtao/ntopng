@@ -28,16 +28,15 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 
 if(hosts_ip == nil) then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Hosts parameter is missing (internal error ?)</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Hosts parameter is missing (internal error ?)</div>")
    return
 end
 
 
 print [[
-<div class="bs-docs-example">
-  <div class="navbar">
-    <div class="navbar-inner">
-<ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+  <div class="navbar-collapse collapse">
+    <ul class="nav navbar-nav">
 ]]
 
 url="/lua/hosts_comparison.lua?hosts="..hosts_ip
@@ -80,8 +79,7 @@ print [[
 <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </ul>
 </div>
-</div>
-</div>
+</nav>
    ]]
 
 -- =========================== Tab Menu =================
@@ -92,7 +90,7 @@ if (page == "overview") then
 if(show_aggregation) then
    print [[
 <div class="btn-group">
-  <button class="btn btn-small dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
+  <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
   <ul class="dropdown-menu">
 ]]
 
@@ -110,8 +108,8 @@ print [[
 
 print('&nbsp;Refresh:  <div class="btn-group">\n')
  print[[
- <button id="graph_refresh" class="btn btn-small">
-    <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="icon-refresh"></i></button>")
+ <button id="graph_refresh" class="btn btn-default btn-sm">
+    <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="glyphicon glyphicon-refresh"></i></button>
 ]]
 print [[
 </div>
@@ -137,7 +135,7 @@ end -- End if(show_aggregation)
 
 -- =========================== Aggregation Menu =================
 print("<center>")
-print('<div class="jumbotron">')
+print('<div class="row">')
 print("  <div>")
 dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
 print("  </div>")
@@ -151,7 +149,7 @@ elseif(page == "traffic") then
 if(show_aggregation) then
    print [[
 <div class="btn-group">
-  <button id="aggregation_bubble_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
+  <button id="aggregation_bubble_displayed" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Aggregation <span class="caret"></span></button>
   <ul class="dropdown-menu" id="aggregation_bubble">
     <li><a>Application</a></li>
     <li><a>L4 Protocol</a></li>
@@ -164,8 +162,8 @@ if(show_aggregation) then
 
 print('&nbsp;Refresh:  <div class="btn-group">\n')
  print[[
- <button id="graph_refresh" class="btn btn-small">
-    <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="icon-refresh"></i></button>")
+ <button id="graph_refresh" class="btn btn-default btn-sm">
+    <i rel="tooltip" data-toggle="tooltip" data-placement="top" data-original-title="Refresh graph" class="glyphicon glyphicon-refresh"></i></button>
 ]]
 print [[
 </div>

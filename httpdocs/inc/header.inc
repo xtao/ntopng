@@ -4,6 +4,7 @@
     <title>Welcome to ntopng</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
     <link href="/font-awesome/css/font-awesome.css" rel="stylesheet">
     <script src="/js/jquery.js"></script>
     <script src="/bootstrap/js/bootstrap.js"></script>
@@ -81,6 +82,10 @@
       .table td.text-right {
         text-align: right;
       }
+
+      .navbar-nav > li > a {padding-top:10px !important; padding-bottom:10px !important;}
+      .navbar {min-height:42px !important}
+      .nav-pills {min-height:42px !important}
 
 /* Fix for Google Maps and Twitter Bootstrap
       https://github.com/twbs/bootstrap/issues/1552

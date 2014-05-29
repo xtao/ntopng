@@ -24,7 +24,7 @@ application = _GET["application"]
 general_process = 0
 
 if((pid_key == nil) and (name_key == nil))then
-   print("<div class=\"alert alert-error\"><img src=/img/warning.png> Missing pid name</div>")
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Missing pid name</div>")
 else
   if ((name_key ~= nil) and (pid_key == nil) and (host_key == nil)) then
     general_process = 1
@@ -49,7 +49,7 @@ else
   end
 
   if(num == 0) then
-     print("<div class=\"alert alert-error\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
+     print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
   else
    print [[
 	    <div class="bs-docs-example">

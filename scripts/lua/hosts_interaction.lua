@@ -543,7 +543,7 @@ print [[
 
 ]]
 else
-print("<div class=\"alert alert-error\"><img src=/img/warning.png> No results found</div>")
+print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No results found</div>")
 end
 
 if(mode ~= "embed") then
