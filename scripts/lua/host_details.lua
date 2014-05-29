@@ -1140,7 +1140,7 @@ if(num > 0) then
 	
    if(info ~= nil) then
       if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?host="..hostinfo2url(info).."\">"..n.."</A>"
+      url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(info).."\">"..n.."</A>"
    else
       url = k
    end
@@ -1172,7 +1172,7 @@ if(num > 0) then
    info = interface.getHostInfo(k)
 	 if(info ~= nil) then
 	    if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-	    url = "<A HREF=\"/lua/host_details.lua?host="..hostinfo2url(info).."\">"..n.."</A>"
+	    url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(info).."\">"..n.."</A>"
 	 else
 	    url = k
 	 end
