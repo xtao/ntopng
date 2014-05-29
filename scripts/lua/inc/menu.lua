@@ -35,6 +35,7 @@ print [[
     <ul class="dropdown-menu">
       <li><a href="/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></li>
       <li><a href="http://blog.ntop.org/"><i class="fa fa-globe"></i> ntop Blog</a></li>
+      <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
       <li class="divider"></li>
       <li><a href="/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
       <li><a href="/lua/logout.lua"><i class="fa fa-off"></i> Logout</a></li>
@@ -233,7 +234,7 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
-      <!--li><a href="/lua/admin/settings.lua">Settings</a></li-->
+      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
       <li class="divider"></li>
       <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>

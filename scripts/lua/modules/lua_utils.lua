@@ -1214,3 +1214,30 @@ function tprint (tbl, indent)
   
   io.write("\n")
 end
+
+function toggleTableButton(label, comment, on_label, off_label, submit_field, redis_key)
+   if(_GET[submit_field] ~= nil) then
+      ntop.setCache(redis_key, _GET[submit_field])
+      value = _GET[submit_field]
+   else
+      value = ntop.getCache(redis_key)
+   end
+
+
+   -- Read it anyway to 
+   if(value == "0") then 
+      rev_value  = "1"
+      on_active  = ""
+      off_active = "active"
+   else
+      rev_value  = "0"
+      on_active  = "active"
+      off_active = ""
+   end
+
+   print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td width=100>\n<form>\n<div class="btn-group btn-toggle">')
+   print('<input type=hidden name='..submit_field..' value='..rev_value..'>\n')
+   print('<button type="submit" class="btn btn-sm btn-default '..on_active..'">'..on_label..'</button>')
+   print('<button class="btn btn-sm btn-primary '..off_active..'">'..off_label..'</button></div>\n')
+   print('</form>\n </td></tr>')
+end

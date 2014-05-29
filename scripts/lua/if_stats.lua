@@ -102,7 +102,7 @@ if((page == "overview") or (page == nil)) then
        <input type="text" name="custom_name" placeholder="Custom Name" value="]]
           if(alternate_name ~= nil) then print(alternate_name) end
     print [["></input>
-      <button type="submit" style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
+      &nbsp;<button type="submit" style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
     </form>
     </td></tr>
        ]]
