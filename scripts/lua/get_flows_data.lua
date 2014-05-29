@@ -10,6 +10,7 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 local debug = debug_flow_data
 
+-- printGETParameters(_GET)
 -- Table parameters
 all = _GET["all"]
 currentPage = _GET["currentPage"]

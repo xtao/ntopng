@@ -1,7 +1,7 @@
-
-<div id="password_dialog" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="password_dialog_label" aria-hidden="true">
-
-<div class="modal-header">
+<div id="password_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="password_dialog_label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
   <h3 id="password_dialog_label">Reset <span id="password_dialog_title"></span> Password</h3>
 </div>
@@ -12,7 +12,7 @@
 
 <script>
   password_alert = function() {}
-  password_alert.error =   function(message) { $('#password_alert_placeholder').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>');
+  password_alert.error =   function(message) { $('#password_alert_placeholder').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>');
  }
   password_alert.success = function(message) { $('#password_alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>'); }
 </script>
@@ -68,8 +68,8 @@
 </div> <!-- modal-body -->
 
 <div class="modal-footer">
-  <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-  <button id="password_reset_submit" class="btn btn-primary">Change Password</button>
+  <button class="btn btn-default btn-sm" data-dismiss="modal" aria-hidden="true">Close</button>
+  <button id="password_reset_submit" class="btn btn-primary btn-sm">Change Password</button>
 </div>
 
 <script>
@@ -77,6 +77,7 @@ $('#password_reset_submit').click(function() {
   $('#form_password_reset').submit();
 });
 </script>
-
+</div>
+</div>
 </div> <!-- password_dialog -->
 

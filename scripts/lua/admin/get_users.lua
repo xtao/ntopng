@@ -77,7 +77,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("  \"column_full_name\" : \"" .. value["full_name"] .. "\", ")
 	 print ("  \"column_group\"     : \"" .. value["group"] .. "\", ")
 	 print ("  \"column_edit\"      : \"<a href='#password_dialog' role='button' class='add-on' data-toggle='modal' id='password_btn_" .. key .. "'><span class='label label-info'>Set Password</span></a><script> $('#password_btn_" .. key .. "').on('mouseenter', function() { $('#password_dialog_title').text('" .. key .. "'); $('#password_dialog_username').val('" .. key .. "'); }); </script> ")
-	 print ("<a href='#delete_user_dialog' role='button' class='add-on' data-toggle='modal' id='delete_btn_" .. key .. "'><span class='label label-important'>Delete</span></a><script> $('#delete_btn_" .. key .. "').on('mouseenter', function() { delete_user_alert.warning('Are you sure you want to delete " .. key .. "?'); $('#delete_dialog_username').val('" .. key .. "'); }); </script>\"")
+	 print ("<a href='#delete_user_dialog' role='button' class='add-on' data-toggle='modal' id='delete_btn_" .. key .. "'><span class='label label-danger'>Delete</span></a><script> $('#delete_btn_" .. key .. "').on('mouseenter', function() { delete_user_alert.warning('Are you sure you want to delete " .. key .. "?'); $('#delete_dialog_username').val('" .. key .. "'); }); </script>\"")
 	 print ("}")
 	 num = num + 1
       end

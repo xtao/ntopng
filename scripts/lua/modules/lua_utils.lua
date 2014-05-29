@@ -50,6 +50,13 @@ function sendHTTPHeader(mime)
    sendHTTPHeaderIfName(mime, nil, 3600)
 end
 
+function printGETParameters(get)
+  for key, value in pairs(get) do 
+    io.write(key.."="..value.."\n")
+  end
+end
+
+
 function findString(str, tofind)
    if(str == nil) then return(nil) end
 

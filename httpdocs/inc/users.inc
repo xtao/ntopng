@@ -9,7 +9,7 @@
 	 	showPagination: true,
 	 	title: "Users",
 		buttons: [
-			"<a href='#add_user_dialog' role='button' class='add-on btn' data-toggle='modal' ><i class='icon-plus'></i></a>"
+			"<a href='#add_user_dialog' role='button' class='add-on btn' data-toggle='modal' ><i class='glyphicon glyphicon-plus'></i></a>"
 		],
 	 	columns: [
 			{

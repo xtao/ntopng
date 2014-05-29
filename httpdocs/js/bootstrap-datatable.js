@@ -44,7 +44,9 @@
     this.$default = this.$element.children().length ?
       this.$element.children() :
       $("<div></div>")
-        .addClass("alert alert-error")
+// ------------- Start ntop Patch ---------------
+        .addClass("alert alert-danger")
+// ------------- End ntop Patch ---------------        
         .html("No Results Found");
 
     this.$element.addClass("clearfix");
@@ -98,15 +100,24 @@
         var that = this;
 
         // pull in the data from the ajax call
+        if (o.debug) console.log($.extend({}, o.post, {
+                  currentPage: o.currentPage
+                , perPage: o.perPage
+                , sort: o.sort
+                , filter: o.filter
+              }) );
         if(o.url !== "") {
           $.ajax({
               url: o.url
-            , type: "POST"
+// ------------- Start ntop Patch ---------------
+            , type: "GET"
             , dataType: "json"
             , data: $.extend({}, o.post, {
                   currentPage: o.currentPage
                 , perPage: o.perPage
-                , sort: o.sort
+                , sortColumn: (o.sort.length > 0) ? o.sort[0][0] : null
+                , sortOrder: (o.sort.length > 0) ? o.sort[0][1] : null
+ // ------------- End ntop Patch -----------------
                 , filter: o.filter
               })
             , success: function( res ) {
@@ -186,10 +197,13 @@
             })
             .append(
               $("<div></div>")
-                .addClass("progress progress-striped active")
+// ------------- Start ntop Patch ---------------              
+                .addClass("progress progress-striped")
                 .append(
                   $("<div></div>")
-                    .addClass("bar")
+                    .addClass("progress-bar progress-bar-info")
+                    .attr('style', "width: 40%")
+// ------------- End ntop Patch -----------------                    
                 )
             )
             .appendTo(document.body)

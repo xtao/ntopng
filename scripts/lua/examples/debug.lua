@@ -86,6 +86,7 @@ print('<p>')
 for key, value in pairs(_GET) do 
    print(key.."="..value.."<br>")
 end
+printGETParameters(_GET)
 print('</p>')
 
 print('</body></html>\n')
