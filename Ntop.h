@@ -51,6 +51,7 @@ class Ntop {
   PeriodicActivities *pa; /**< Instance of periodical activities.*/
   AddressResolution *address;
   Prefs *prefs;
+  RuntimePrefs *runtimeprefs;
   Geolocation *geo;
   Categorization *categorization;
   HTTPBL* httpbl;

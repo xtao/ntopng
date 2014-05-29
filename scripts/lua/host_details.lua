@@ -30,6 +30,7 @@ _ifname = tostring(interface.name2id(ifname))
 interface.find(ifname)
 
 ifId = ifName2Id(ifname)
+ifstats = interface.getStats()
 
 --ip_elems = split(host_info["host"], " ");
 --host_info["host"] = ip_elems[1]
@@ -237,7 +238,6 @@ if(host.systemhost) then
 if(page == "sprobe") then
   print("<li class=\"active\"><a href=\"#\"><i class=\"fa fa-flag fa-lg\"></i></a></li>\n")
 else
-   ifstats = interface.getStats()
    if(ifstats.iface_sprobe) then
       print("<li><a href=\""..url.."&page=sprobe\"><i class=\"fa fa-flag fa-lg\"></i></a></li>")
    end
@@ -325,8 +325,6 @@ print [[
    if((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
       print("<tr><th>")
 
-      ifstats = interface.getStats()
-      
       if(ifstats.iface_sprobe) then
 	 print('Source Id')
       else
@@ -800,7 +798,6 @@ print [[
 			     }
 				 },]]
 
-ifstats = interface.getStats()
 if ((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
 if(ifstats.iface_sprobe) then
    print('{ title: "Source Id",\n')

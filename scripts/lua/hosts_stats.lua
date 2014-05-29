@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -19,11 +19,10 @@ if(mode == nil) then mode = "all" end
 active_page = "hosts"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-
 prefs = ntop.getPrefs()
-
 if(prefs.is_categorization_enabled) then print ()end 
 
+ifstats = interface.getStats()
 
 print [[
       <hr>
@@ -80,17 +79,21 @@ print [[
 			        textAlign: 'left'
 			     }
 				 },
-			     {
 			  ]]
 
-ifstats = interface.getStats()
-
 if(ifstats.iface_sprobe) then
-   print('title: "Source Id",\n')
+   print('{ title: "Source Id",\n')
+   show_vlan = true;
 else
-   print('title: "VLAN",\n')
+   if(ifstats.iface_vlan) then	
+     print('{ title: "VLAN",\n')
+     show_vlan = true;	
+   else
+     show_vlan = false;
+   end
 end
 
+if(show_vlan) then
 print [[
 				 field: "column_vlan",
 				 sortable: true,
@@ -100,6 +103,7 @@ print [[
 
 				 },
 ]]
+end
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_top.inc")
 

@@ -53,8 +53,9 @@ static void free_wrapper(void *freeable)
 NetworkInterface::NetworkInterface(u_int8_t _id) {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
-    purge_idle_flows_hosts = true, id = _id;
-
+    purge_idle_flows_hosts = true, id = _id,
+    sprobe_interface = false, has_vlan_packets = false;
+  
   db = new DB(this);
 }
 
@@ -136,7 +137,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
 
   last_pkt_rcvd = 0;
   next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
-  cpu_affinity = -1;
+  cpu_affinity = -1, has_vlan_packets = false;
   running = false, sprobe_interface = false;
 
   db = new DB(this);
@@ -206,6 +207,8 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 				time_t first_seen, time_t last_seen,
 				bool *new_flow) {
   Flow *ret;
+
+  if(vlan_id != 0) setSeenVlanTaggedPackets();
 
   ret = flows_hash->find(src_ip, dst_ip, src_port, dst_port,
 			 vlan_id, l4_proto, src2dst_direction);
@@ -1306,6 +1309,7 @@ void NetworkInterface::lua(lua_State *vm) {
 
   lua_push_str_table_entry(vm, "type", (char*)get_type());
   lua_push_bool_table_entry(vm, "iface_sprobe", sprobe_interface);
+  lua_push_bool_table_entry(vm, "iface_vlan", has_vlan_packets);
   lua_push_bool_table_entry(vm, "aggregations_enabled", 
 			    (ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) ? true : false);
 

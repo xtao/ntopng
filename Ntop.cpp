@@ -156,6 +156,7 @@ Ntop::~Ntop() {
   if(redis) delete redis;
   delete globals;
   delete prefs;
+  delete runtimeprefs;
 }
 
 /* ******************************************* */
@@ -177,6 +178,8 @@ void Ntop::start() {
   pa->startPeriodicActivitiesLoop();
   if(categorization) categorization->startCategorizeCategorizationLoop();
   if(httpbl) httpbl->startHTTPBLLoop();
+
+  runtimeprefs = new RuntimePrefs();
 
   loadLocalInterfaceAddress();
 

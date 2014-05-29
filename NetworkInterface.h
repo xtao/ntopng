@@ -97,7 +97,7 @@ class NetworkInterface {
   StringHash *strings_hash; /**< Hash used to memorize the aggregation information.*/
   bool purge_idle_flows_hosts, sprobe_interface;
   DB *db;
-
+  bool has_vlan_packets;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
   bool running;
@@ -141,6 +141,8 @@ class NetworkInterface {
   inline u_int get_flow_size()                 { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()                   { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline char* get_name()                      { return(ifname);                                       };
+  inline bool  hasSeenVlanTaggedPackets()      { return(has_vlan_packets); }
+  inline void  setSeenVlanTaggedPackets()      { has_vlan_packets = true; }
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
   void flushHostContacts();
   inline bool is_sprobe_interface()            { return(sprobe_interface); };

@@ -30,6 +30,11 @@ if(verbose) then
    sendHTTPHeader('text/plain')
 end
 
+host_rrd_creation = ntop.getCache("ntopng.prefs.host_rrd_creation")
+host_ndpi_rrd_creation = ntop.getCache("ntopng.prefs.host_ndpi_rrd_creation")
+
+print(host_rrd_creation)
+
 -- id = 0
 for iface_id,_ifname in pairs(ifnames) do
    if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..iface_id.."]") end
@@ -64,7 +69,7 @@ for iface_id,_ifname in pairs(ifnames) do
 
       interface.find(_ifname)
 
-      -- Save interaface stats. The second.lua file creates bytes.rrd/packets.rrd
+      -- Save interface stats. The second.lua file creates bytes.rrd/packets.rrd
       ifstats = interface.getStats()
 
       basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/rrd")	
@@ -78,6 +83,7 @@ for iface_id,_ifname in pairs(ifnames) do
       end
 
       -- Save hosts stats
+      if(host_rrd_creation ~= "0") then      
       hosts_stats = interface.getHostsInfo()
       for key, value in pairs(hosts_stats) do
 	 host = interface.getHostInfo(key)
@@ -122,20 +128,23 @@ for iface_id,_ifname in pairs(ifnames) do
 		  end
 	       end
 
-	       -- nDPI Protocols
-	       for k in pairs(host["ndpi"]) do
+       	       if(host_ndpi_rrd_creation ~= "0") then
+	         -- nDPI Protocols
+	         for k in pairs(host["ndpi"]) do
 		  name = fixPath(basedir .. "/".. k .. ".rrd")
 		  createRRDcounter(name, verbose)
 		  ntop.rrd_update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
 		  if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD "..name..'\n') end
-	       end
+	         end
 
-	       if(host["epp"]) then dumpSingleTreeCounters(basedir, "epp", host, verbose) end
-	       if(host["dns"]) then dumpSingleTreeCounters(basedir, "dns", host, verbose) end
+	         if(host["epp"]) then dumpSingleTreeCounters(basedir, "epp", host, verbose) end
+	         if(host["dns"]) then dumpSingleTreeCounters(basedir, "dns", host, verbose) end
+               end
 	    else
 	       if(verbose) then print("["..__FILE__()..":"..__LINE__().."] Skipping non local host "..key.."\n") end
 	    end
 	 end -- if
       end -- for
+     end -- if rrd
    end -- if(diff
 end -- for ifname,_ in pairs(ifnames) do

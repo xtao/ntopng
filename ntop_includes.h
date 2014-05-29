@@ -144,6 +144,7 @@ extern "C" {
 #include "Categorization.h"
 #include "HTTPBL.h"
 #include "HTTPserver.h"
+#include "RuntimePrefs.h"
 #include "Ntop.h"
 
 #ifdef WIN32

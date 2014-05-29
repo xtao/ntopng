@@ -19,6 +19,8 @@ aggregation = _GET["aggregation"]
 key = _GET["key"]
 
 prefs = ntop.getPrefs()
+ifstats = interface.getStats()
+
 stats = interface.getNdpiStats()
 num_param = 0
 print [[
@@ -93,6 +95,22 @@ print("</ul> </div>' ],\n")
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_top.inc")
+
+if(ifstats.iface_vlan) then
+print [[
+           {
+           title: "VLAN",
+         field: "column_vlan",
+         sortable: true,
+                 css: { 
+              textAlign: 'center'
+           }
+         },
+]]
+end
+
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_middle.inc")
 
 
 
