@@ -28,6 +28,42 @@
       <script src="/js/html5shiv.js"></script>
     <![endif]-->
 
+<style type="text/css">
+  // Media queries breakpoints
+  // --------------------------------------------------
+
+  // Extra small screen / phone
+  @screen-xsmall:              480px;
+  @screen-phone:               @screen-xsmall;
+
+  // Small screen / tablet
+  @screen-small:               768px;
+  @screen-tablet:              @screen-small;
+
+  // Medium screen / desktop
+  @screen-medium:              992px;
+  @screen-desktop:             @screen-medium;
+
+  // Large screen / wide desktop
+  @screen-large:               1200px;
+  @screen-large-desktop:       @screen-large;
+
+  // So media queries don't overlap when required, provide a maximum
+  @screen-small-max:           (@screen-medium - 1);
+  @screen-tablet-max:          (@screen-desktop - 1);
+  @screen-desktop-max:         (@screen-large-desktop - 1);
+
+  // Grid system
+  // --------------------------------------------------
+
+  // Number of columns in the grid system
+  @grid-columns:              12;
+  // Padding, to be divided by two and applied to the left and right of all columns
+  @grid-gutter-width:         30px;
+  // Point at which the navbar stops collapsing
+  @grid-float-breakpoint:     @screen-tablet;
+
+</style>
 
 
  <style type="text/css">
