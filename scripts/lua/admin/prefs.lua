@@ -14,7 +14,7 @@ active_page = "admin"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 print [[
-   <h2>About ntopng</h2>
+   <h2>Runtime Preferences</h2>
    <table class="table table-striped">
    ]]
 
