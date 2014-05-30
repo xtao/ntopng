@@ -54,8 +54,9 @@ NetworkInterface::NetworkInterface(u_int8_t _id) {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true, id = _id,
-    sprobe_interface = false, has_vlan_packets = false;
-  
+    sprobe_interface = false, has_vlan_packets = false,
+    idle = false;
+
   db = new DB(this);
 }
 
@@ -71,7 +72,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
-  id = _id;
+  id = _id, idle = false;
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
@@ -130,7 +131,6 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
 			  (char*)"Operating System", d_port, d_port);
 
-
   // enable all protocols
   NDPI_BITMASK_SET_ALL(all);
   ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
@@ -146,8 +146,8 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
 /* **************************************************** */
 
 void NetworkInterface::deleteDataStructures() {
-  if(flows_hash) { delete flows_hash; flows_hash = NULL; }
-  if(hosts_hash) { delete hosts_hash; hosts_hash = NULL; }
+  if(flows_hash)   { delete flows_hash; flows_hash = NULL;     }
+  if(hosts_hash)   { delete hosts_hash; hosts_hash = NULL;     }
   if(strings_hash) { delete strings_hash; strings_hash = NULL; }
 
   if(ndpi_struct) {
@@ -187,7 +187,7 @@ static bool node_proto_guess_walker(GenericHashEntry *node, void *user_data) {
   char buf[512];
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", flow->print(buf, sizeof(buf)));
-  
+
   return(false); /* false = keep on walking */
 }
 
@@ -276,7 +276,7 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
     bool next_break = false;
 
     domain = strtok_r(zflow->epp_cmd_args, "=", &pos);
-    
+
     while((domain != NULL) && strcmp(domain, "null")) {
       if((status = strtok_r(NULL, ",", &pos)) == NULL) {
 	status = (char*)"true";
@@ -285,7 +285,7 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
 
       // ntop->getTrace()->traceEvent(TRACE_INFO, "%s = %s", domain, status);
       flow->aggregateInfo(domain, NDPI_PROTOCOL_EPP, aggregation_domain_name,
-			  (strncasecmp(status, "true" /* true = AVAILABLE */, 
+			  (strncasecmp(status, "true" /* true = AVAILABLE */,
 				       4) == 0) ? false : true);
 
       if(next_break) break;
@@ -967,7 +967,7 @@ static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
 	char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
 	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf),
 					      false /* Dont resolve it if not known */);
-  
+
 	if(rc == 0 /* found */) host->setName(name_buf, false);
       }
 
@@ -1310,7 +1310,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_push_str_table_entry(vm, "type", (char*)get_type());
   lua_push_bool_table_entry(vm, "iface_sprobe", sprobe_interface);
   lua_push_bool_table_entry(vm, "iface_vlan", has_vlan_packets);
-  lua_push_bool_table_entry(vm, "aggregations_enabled", 
+  lua_push_bool_table_entry(vm, "aggregations_enabled",
 			    (ntop->getPrefs()->get_aggregation_mode() != aggregations_disabled) ? true : false);
 
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
@@ -1436,13 +1436,13 @@ bool NetworkInterface::validInterface(char *name) {
 
 /* **************************************************** */
 
-void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len) {
+u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len) {
   char ebuf[256];
   int i, numInterfaces = 0;
   pcap_if_t *devpointer;
 
   if(printHelp && help_printed)
-    return;
+    return(0);
 
   ebuf[0] = '\0';
 
@@ -1496,6 +1496,8 @@ void NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *i
   }
 
   help_printed = true;
+
+  return(numInterfaces);
 }
 
 /* **************************************************** */
@@ -1566,13 +1568,13 @@ static bool similarity_walker(GenericHashEntry *node, void *user_data) {
      // && h->isLocalHost() /* Consider only local hosts */
      && h->get_ip()
      && (h != info->h)) {
-    
+
     if (h->get_vlan_id() == 0) {
       sprintf(name, "%s",h->get_ip()->print(buf, sizeof(buf)));
     } else {
       sprintf(name, "%s@%d",h->get_ip()->print(buf, sizeof(buf)),h->get_vlan_id());
     }
-    
+
     u_int8_t y[CONST_MAX_ACTIVITY_DURATION] = { 0 };
     double jaccard;
 
@@ -1675,7 +1677,7 @@ static bool proc_name_finder_walker(GenericHashEntry *node, void *user_data) {
     name = f->get_proc_name(false);
 
     if(name && (strcmp(name, info->proc_name) == 0))
-      f->lua(info->vm, false /* Minimum details */);    
+      f->lua(info->vm, false /* Minimum details */);
   }
 
   return(false); /* false = keep on walking */
@@ -1706,6 +1708,8 @@ static bool pidfinder_walker(GenericHashEntry *node, void *pid_data) {
   return(false); /* false = keep on walking */
 }
 
+/* **************************************** */
+
 void NetworkInterface::findPidFlows(lua_State *vm, u_int32_t pid) {
   struct pid_flows u;
 
@@ -1713,6 +1717,8 @@ void NetworkInterface::findPidFlows(lua_State *vm, u_int32_t pid) {
   u.vm = vm, u.pid = pid;
   flows_hash->walk(pidfinder_walker, &u);
 }
+
+/* **************************************** */
 
 static bool father_pidfinder_walker(GenericHashEntry *node, void *father_pid_data) {
   Flow *f = (Flow*)node;
@@ -1724,10 +1730,48 @@ static bool father_pidfinder_walker(GenericHashEntry *node, void *father_pid_dat
   return(false); /* false = keep on walking */
 }
 
+/* **************************************** */
+
 void NetworkInterface::findFatherPidFlows(lua_State *vm, u_int32_t father_pid) {
   struct pid_flows u;
 
   lua_newtable(vm);
   u.vm = vm, u.pid = father_pid;
   flows_hash->walk(father_pidfinder_walker, &u);
+}
+
+/* **************************************** */
+
+bool NetworkInterface::isInterfaceUp(char *name) {
+  struct ifreq ifr;
+  int sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_IP);
+
+  memset(&ifr, 0, sizeof(ifr));
+  strcpy(ifr.ifr_name, name);
+  if(ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
+    close(sock);
+    return(false);
+  }
+  close(sock);
+  return(!!(ifr.ifr_flags & IFF_UP));
+}
+
+/* **************************************** */
+
+void NetworkInterface::addAllAvailableInterfaces() {
+  char ebuf[256] = { '\0' };
+  pcap_if_t *devpointer;
+
+  if(pcap_findalldevs(&devpointer, ebuf) < 0) {
+    ;
+  } else {
+    for(int i = 0; devpointer != 0; i++) {
+      if(validInterface(devpointer->description)
+	 && isInterfaceUp(devpointer->name)) {
+	ntop->getPrefs()->add_network_interface(devpointer->name);
+      }
+
+      devpointer = devpointer->next;
+    } /* for */
+  }
 }

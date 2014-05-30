@@ -737,11 +737,11 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
 
 /* ****************************************** */
 
-static void getHostVlanInfo(char* lua_ip, char** host_ip, 
+static void getHostVlanInfo(char* lua_ip, char** host_ip,
 		      u_int16_t* vlan_id,
 		      char *buf, u_int buf_len) {
   char *where, *vlan;
-  
+
   snprintf(buf, buf_len, "%s", lua_ip);
 
   (*host_ip) = strtok_r(buf, "@", &where);
@@ -978,7 +978,7 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
   char *host_name;
   u_int16_t vlan_id = 0;
   char buf[64];
-  
+
   if(lua_type(vm, 1) == LUA_TSTRING)
     getHostVlanInfo((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
   else
@@ -1162,6 +1162,41 @@ static int ntop_interface_is_running(lua_State* vm) {
   if(!ntop_interface) return(false);
 
   return(ntop_interface->isRunning());
+}
+
+/* ****************************************** */
+
+static int ntop_interface_is_idle(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(!ntop_interface) return(false);
+
+  return(ntop_interface->isIdle());
+}
+
+/* ****************************************** */
+
+static int ntop_interface_set_idle(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  bool state;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
+  state = lua_toboolean(vm, 1) ? true : false;
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(!ntop_interface) return(false);
+  ntop_interface->setIdleState(state);
+
+  return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
@@ -1572,18 +1607,18 @@ static int ntop_get_resolved_address(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   getHostVlanInfo((char*)lua_tostring(vm, 1),&key, &vlan_id, buf, sizeof(buf));
 
-  
+
   if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0) {
     tmp = rsp;
   } else {
     tmp = key;
   }
-  
+
   if (vlan_id != 0)
     snprintf(value, sizeof(value), "%s@%u", tmp, vlan_id);
   else
     snprintf(value, sizeof(value), "%s", tmp);
-  
+
   if(!strcmp(value, key)) {
     char rsp[64];
 
@@ -1594,7 +1629,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
       lua_pushfstring(vm, "%s", value);
   } else
     lua_pushfstring(vm, "%s", value);
-    
+
   return(CONST_LUA_OK);
 }
 
@@ -2007,6 +2042,8 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getEndpoint",            ntop_get_interface_endpoint },
   { "incrDrops",              ntop_increase_drops },
   { "isRunning",              ntop_interface_is_running },
+  { "isIdle",                 ntop_interface_is_idle },
+  { "setInterfaceIdleState",  ntop_interface_set_idle },
   { "name2id",                ntop_interface_name2id },
   { NULL,                     NULL }
 };
@@ -2370,7 +2407,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
     } else {
       goto set_default_if_name_in_session;
     }
-  }  
+  }
 
   lua_setglobal(L, "_SESSION"); /* Like in php */
 

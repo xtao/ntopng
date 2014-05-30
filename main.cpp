@@ -88,15 +88,15 @@ int main(int argc, char *argv[])
 
   ntop->registerPrefs(prefs);
 
-  if(prefs->get_num_interfaces() == 0) {
-    /* We need to add a default interface */
-    prefs->addDefaultInterface();
+  if(prefs->get_num_user_specified_interfaces() == 0) {
+    /* We add all interfaces avilable on this host */
+    prefs->add_default_interfaces();
   }
 
   if(prefs->daemonize_ntopng())
     ntop->daemonize();
 
-  for(int i=0; i<max_val(1, prefs->get_num_interfaces()); i++) {
+  for(int i=0; i<max_val(1, prefs->get_num_user_specified_interfaces()); i++) {
     NetworkInterface *iface;
 
     ifName = ntop->get_if_name(i);

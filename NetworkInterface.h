@@ -100,7 +100,7 @@ class NetworkInterface {
   bool has_vlan_packets;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
-  bool running;
+  bool running, idle;
 
   void deleteDataStructures();
   Flow* getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
@@ -113,6 +113,7 @@ class NetworkInterface {
   bool isNumber(const char *str);
   bool validInterface(char *name);
   void process_epp_flow(ZMQ_Flow *zflow, Flow *flow);
+  bool isInterfaceUp(char *name);
 
  public:
   /**
@@ -158,7 +159,7 @@ class NetworkInterface {
   inline int isRunning()	   { return running;             };
   inline void set_cpu_affinity(int core_id) { cpu_affinity = core_id; if (running) Utils::setThreadAffinity(pollLoop, cpu_affinity); };
   bool restoreHost(char *host_ip);
-  void printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
+  u_int printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 
 		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
@@ -212,7 +213,9 @@ class NetworkInterface {
   void findPidFlows(lua_State *vm, u_int32_t pid);
   void findFatherPidFlows(lua_State *vm, u_int32_t pid);
   void findProcNameFlows(lua_State *vm, char *proc_name);
-
+  void addAllAvailableInterfaces();  
+  inline bool isIdle() { return(idle); }
+  inline void setIdleState(bool new_state) { idle = new_state; }
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

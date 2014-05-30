@@ -81,7 +81,7 @@ class Prefs {
   inline bool do_change_user()                          { return(change_user);            };
   inline char* get_user()                               { return(user);                   };
   inline AggregationMode get_aggregation_mode()         { return(enable_aggregations);    };
-  inline u_int8_t get_num_interfaces()                  { return(num_interfaces);         };
+  inline u_int8_t get_num_user_specified_interfaces()   { return(num_interfaces);         };
   inline bool  do_dump_flows_on_db()                    { return(dump_flows_on_db);       };
   inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id] : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
@@ -106,7 +106,7 @@ class Prefs {
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
   inline bool daemonize_ntopng()                        { return(daemonize);                 };
-  inline void addDefaultInterface()                     { num_interfaces++;                  };
+  void add_default_interfaces();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);
   inline void set_dump_hosts_to_db_policy(LocationPolicy p)   { dump_hosts_to_db = p;        };
@@ -114,6 +114,7 @@ class Prefs {
   inline LocationPolicy get_dump_hosts_to_db_policy()   { return(dump_hosts_to_db);          };
   inline LocationPolicy get_dump_aggregations_to_db()   { return(dump_aggregations_to_db);   };
   int save();
+  void add_network_interface(char *name);
 };
 
 #endif /* _PREFS_H_ */

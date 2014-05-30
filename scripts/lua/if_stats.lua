@@ -87,8 +87,23 @@ print [[
 print ('<div id="alert_placeholder"></div>')
 if((page == "overview") or (page == nil)) then
     
-   print("<table class=\"table table-bordered\">\n")
-   print("<tr><th width=250>Interface Id</th><td colspan=2>" .. ifstats.id .. "</td></tr>\n")
+   print("<table class=\"table table-striped table-bordered\">\n")
+   print("<tr><th width=250>Id</th><td colspan=2>" .. ifstats.id .. " ")
+   print("</td></tr>\n")
+
+   print("<tr><th width=250>State</th><td colspan=2>")
+   state = toggleTableButton("", "", "Active", "1", "Paused", "0", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
+   
+   if(state == "0") then
+      on_state = true
+   else
+      on_state = false
+   end
+
+   interface.setInterfaceIdleState(on_state)
+
+   print("</td></tr>\n")
+
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
   
   if(ifstats.name ~= nil) then
@@ -128,7 +143,7 @@ end
 
    print("<tr><th>Dropped "..label.."</th><td colspan=2><span id=if_drops>")
    
-   if(ifstats.stats_drops > 0) then print('<span class="label label-important">') end
+   if(ifstats.stats_drops > 0) then print('<h4><span class="label label-danger">') end
    print(formatValue(ifstats.stats_drops).. " " .. label)
    
    if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
@@ -137,7 +152,7 @@ end
    end
    
    if(ifstats.stats_drops > 0) then print('</span>') end
-   print("</span>  <span id=drops_trend></span></td></tr>\n")
+   print("</span></h4>  <span id=drops_trend></span></td></tr>\n")
    
    print("</table>\n")
 elseif((page == "packets")) then
@@ -245,14 +260,14 @@ print [[
         last_drops == rsp.drops;
 
         if((rsp.packets+rsp.drops) > 0) { pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
-        if(rsp.drops > 0) { drops = '<span class="label label-important">'; }
+        if(rsp.drops > 0) { drops = '<h4><span class="label label-danger">'; }
         drops = drops + addCommas(rsp.drops)+" ]]
 
 if(ifstats.type == "zmq") then print("Flows") else print("Pkts") end
 print [[";
 
         if(pctg > 0)      { drops = drops + " [ "+pctg+" % ]"; }
-        if(rsp.drops > 0) { drops = drops + '</span>';         }
+        if(rsp.drops > 0) { drops = drops + '</span></h4>';         }
         $('#if_drops').html(drops);
            }
                });

@@ -97,6 +97,8 @@ static void* packetPollLoop(void* ptr) {
     const u_char *pkt;
     struct pcap_pkthdr hdr;
 
+    while(iface->isIdle()) { iface->purgeIdle(time(NULL)); sleep(1); }
+
     if((pkt = pcap_next(pd, &hdr)) != NULL) {
       if((hdr.caplen > 0) && (hdr.len > 0))
 	iface->packet_dissector(&hdr, pkt);

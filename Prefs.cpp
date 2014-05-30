@@ -268,7 +268,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'B':
     if((optarg[0] == '\"') && (strlen(optarg) > 2)) {
-      packet_filter = strdup(&optarg[1]);      
+      packet_filter = strdup(&optarg[1]);
       packet_filter[strlen(packet_filter)-1] = '\0';
     } else
       packet_filter = strdup(optarg);
@@ -366,10 +366,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'i':
-    if(num_interfaces < (MAX_NUM_INTERFACES-1))
-      ifNames[num_interfaces++] = strdup(optarg);
-    else
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many interfaces: discarded %s", optarg);
+    add_network_interface(optarg);
     break;
 
   case 'w':
@@ -612,3 +609,17 @@ int Prefs::save() {
 
 /* ******************************************* */
 
+void Prefs::add_network_interface(char *name) {
+  if(num_interfaces < (MAX_NUM_INTERFACES-1))
+    ifNames[num_interfaces++] = strdup(name);
+  else
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many interfaces: discarded %s", name);
+}
+
+/* ******************************************* */
+
+void Prefs::add_default_interfaces() {
+  NetworkInterface *dummy = new NetworkInterface(0);
+  dummy->addAllAvailableInterfaces();
+  delete dummy;
+};

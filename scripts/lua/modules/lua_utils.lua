@@ -1271,11 +1271,15 @@ function toggleTableButton(label, comment, on_label, on_value, off_label, off_va
       off_active = "btn-default"
    end
 
-   print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td with=250 align=right>\n<form>\n<div class="btn-group btn-toggle">')
+   if(label ~= "") then print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td with=250 align=right>\n') end
+   print('<form>\n<div class="btn-group btn-toggle">')
    print('<input type=hidden name='..submit_field..' value='..rev_value..'>\n')
    print('<button type="submit" class="btn btn-sm  '..on_active..'">'..on_label..'</button>')
    print('<button class="btn btn-sm  '..off_active..'">'..off_label..'</button></div>\n')
-   print('</form>\n </td></tr>')
+   print('</form>\n')
+   if(label ~= "") then print('</td></tr>') end
+
+   return(value)
 end
 
 function getThroughputType()

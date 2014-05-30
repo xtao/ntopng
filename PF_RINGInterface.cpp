@@ -70,6 +70,8 @@ static void* packetPollLoop(void* ptr) {
   pfring_enable_ring(pd);
 
   while(iface->isRunning()) {
+    while(iface->isIdle()) { iface->purgeIdle(time(NULL)); sleep(1); }
+
     if(pfring_is_pkt_available(pd)) {
       u_char *buffer; 
       struct pfring_pkthdr hdr;
