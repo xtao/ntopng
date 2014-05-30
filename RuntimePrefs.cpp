@@ -68,3 +68,23 @@ bool RuntimePrefs::are_hosts_ndpi_rrd_created() {
   } else
     return((strcmp(rsp, "1") == 0) ? true : false);
 }
+
+/* ******************************************* */
+
+void RuntimePrefs::set_throughput_unit(bool use_bps) {
+  ntop->getRedis()->set((char*)CONST_RUNTIME_PREFS_THPT_CONTENT, 
+			use_bps ? (char*)"bps" : (char*)"pps", 0);
+}
+
+/* ******************************************* */
+
+bool RuntimePrefs::use_bps_as_set_throughput_unit() {
+  char rsp[32];
+  
+  if(ntop->getRedis()->get((char*)CONST_RUNTIME_PREFS_THPT_CONTENT, 
+			   rsp, sizeof(rsp)) < 0) {
+    set_throughput_unit(true);
+    return(true);
+  } else
+    return((strcmp(rsp, "pps") == 0) ? true : false);
+}

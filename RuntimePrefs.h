@@ -33,6 +33,8 @@ class RuntimePrefs {
   bool are_local_hosts_rrd_created();
   void set_hosts_ndpi_rrd_creation(bool enable);
   bool are_hosts_ndpi_rrd_created();
+  void set_throughput_unit(bool use_bps);
+  bool use_bps_as_set_throughput_unit();
 };
 
 #endif /* _RUNTIME_PREFS_H_ */

@@ -1243,7 +1243,7 @@ end
 -- ############################################
 -- Runtime preference
 
-function toggleTableButton(label, comment, on_label, off_label, submit_field, redis_key)
+function toggleTableButton(label, comment, on_label, on_value, off_label, off_value, submit_field, redis_key)
    if(_GET[submit_field] ~= nil) then
       ntop.setCache(redis_key, _GET[submit_field])
       value = _GET[submit_field]
@@ -1251,22 +1251,30 @@ function toggleTableButton(label, comment, on_label, off_label, submit_field, re
       value = ntop.getCache(redis_key)
    end
 
-
    -- Read it anyway to 
-   if(value == "0") then 
-      rev_value  = "1"
+   if(value == off_value) then 
+      rev_value  = on_value
       on_active  = "btn-default"
-      off_active = "btn-danger active"
+      if(off_value == "0") then
+	 off_active = "btn-danger active" -- Red
+      else
+	 off_active = "btn-default active"   -- Cyano
+      end
    else
-      rev_value  = "0"
-      on_active  = "btn-success active"
+      rev_value  = off_value
+
+      if(on_value == "1") then
+	 on_active  = "btn-success active"
+      else
+	 on_active  = "btn-default active"
+      end
       off_active = "btn-default"
    end
 
-   print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td width=100>\n<form>\n<div class="btn-group btn-toggle">')
+   print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td with=250 align=right>\n<form>\n<div class="btn-group btn-toggle">')
    print('<input type=hidden name='..submit_field..' value='..rev_value..'>\n')
-   print('<button type="submit" class="btn btn-sm '..on_active..'">'..on_label..'</button>')
-   print('<button class="btn btn-sm '..off_active..'">'..off_label..'</button></div>\n')
+   print('<button type="submit" class="btn btn-sm  '..on_active..'">'..on_label..'</button>')
+   print('<button class="btn btn-sm  '..off_active..'">'..off_label..'</button></div>\n')
    print('</form>\n </td></tr>')
 end
 

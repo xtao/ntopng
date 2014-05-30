@@ -33,8 +33,6 @@ end
 host_rrd_creation = ntop.getCache("ntopng.prefs.host_rrd_creation")
 host_ndpi_rrd_creation = ntop.getCache("ntopng.prefs.host_ndpi_rrd_creation")
 
-print(host_rrd_creation)
-
 -- id = 0
 for iface_id,_ifname in pairs(ifnames) do
    if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..iface_id.."]") end
