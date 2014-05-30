@@ -312,6 +312,15 @@ function bitsToSize(bits)
    end
 end
 
+-- Convert packets to pps readable format
+function pktsToSize(pkts)
+  precision = 2
+  if     (pkts >= 1000000) then return round(pkts/1000000, precision)..' Mpps';
+  elseif (pkts >=    1000) then return round(pkts/   1000, precision)..' Kpps';
+  else                     return round(pkts        , precision)..' pps';
+  end
+end
+
 function formatValue(amount)
    local formatted = amount
 
@@ -1222,6 +1231,18 @@ function tprint (tbl, indent)
   io.write("\n")
 end
 
+function table.empty(table)
+  if (table == nil) then return true end
+  if next(table) == nil then
+    return true
+  end
+  return false
+end
+
+
+-- ############################################
+-- Runtime preference
+
 function toggleTableButton(label, comment, on_label, off_label, submit_field, redis_key)
    if(_GET[submit_field] ~= nil) then
       ntop.setCache(redis_key, _GET[submit_field])
@@ -1247,4 +1268,13 @@ function toggleTableButton(label, comment, on_label, off_label, submit_field, re
    print('<button type="submit" class="btn btn-sm btn-default '..on_active..'">'..on_label..'</button>')
    print('<button class="btn btn-sm btn-primary '..off_active..'">'..off_label..'</button></div>\n')
    print('</form>\n </td></tr>')
+end
+
+function getThroughputType()
+  throughput_type = ntop.getCache("ntopng.prefs.thpt_content")
+
+  if (throughput_type == "") then 
+    throughput_type = "bps"
+  end
+  return throughput_type
 end

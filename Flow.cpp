@@ -45,6 +45,7 @@ Flow::Flow(NetworkInterface *_iface,
   first_seen = _first_seen, last_seen = _last_seen;
   categorization.category = NULL, categorization.flow_categorized = false;
   bytes_thpt_trend = trend_unknown;
+  pkts_thpt_trend = trend_unknown;
   protocol_processed = false;
 
   aggregationInfo.name = NULL;
@@ -579,12 +580,12 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
   sent_packets = cli2srv_packets, sent_bytes = cli2srv_bytes;
   diff_sent_packets = sent_packets - cli2srv_last_packets, diff_sent_bytes = sent_bytes - cli2srv_last_bytes;
-  prev_cli2srv_last_bytes = cli2srv_last_bytes;
+  prev_cli2srv_last_bytes = cli2srv_last_bytes, prev_cli2srv_last_packets = cli2srv_last_packets;
   cli2srv_last_packets = sent_packets, cli2srv_last_bytes = sent_bytes;
 
   rcvd_packets = srv2cli_packets, rcvd_bytes = srv2cli_bytes;
   diff_rcvd_packets = rcvd_packets - srv2cli_last_packets, diff_rcvd_bytes = rcvd_bytes - srv2cli_last_bytes;
-  prev_srv2cli_last_bytes = srv2cli_last_bytes;
+  prev_srv2cli_last_bytes = srv2cli_last_bytes, prev_srv2cli_last_packets = srv2cli_last_packets;
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
 
   if(cli_host)
@@ -623,7 +624,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
       bytes_thpt = bytes_msec;
 
       // pps
-      
+
       float pkts_msec = ((float)((cli2srv_last_packets-prev_cli2srv_last_packets)*1000))/tdiff_msec;
 
       if(pkts_msec < 0) pkts_msec = 0; /* Just to be safe */
@@ -632,13 +633,12 @@ void Flow::update_hosts_stats(struct timeval *tv) {
       else if(pkts_thpt > pkts_msec) pkts_thpt_trend = trend_down;
       else                             pkts_thpt_trend = trend_stable;
 
-      
-  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][pkts: %u][pkts_thpt: %.2f pps]",
-  // pkts_msec, (cli2srv_last_packets-prev_cli2srv_last_packets),
-  // (pkts_thpt));
-      
       pkts_thpt = pkts_msec;
 
+  /* ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][tdiff: %f][pkts: %u][pkts_thpt: %.2f pps]",
+  pkts_msec,tdiff_msec, (cli2srv_last_packets-prev_cli2srv_last_packets),
+  (pkts_thpt)); */
+      
       updated = true;
     }
   } else
@@ -705,7 +705,7 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 }
 
 /* *************************************** */
-
+// 
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
@@ -768,14 +768,13 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   if(client_proc) processLua(vm, client_proc, true);
   if(server_proc) processLua(vm, server_proc, false);
 
-  //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", bytes_thpt);
-  lua_push_float_table_entry(vm, "throughput", bytes_thpt);
-  lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
-
-  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%.2f", pkts_thpt);
-  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%d", pkts_thpt_trend);
+  lua_push_float_table_entry(vm, "throughput_bps", bytes_thpt);
+  lua_push_int_table_entry(vm, "throughput_trend_bps", bytes_thpt_trend);
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[bytes_thpt: %.2f] [bytes_thpt_trend: %d]", bytes_thpt,bytes_thpt_trend);
+  
   lua_push_float_table_entry(vm, "throughput_pps", pkts_thpt);
   lua_push_int_table_entry(vm, "throughput_trend_pps", pkts_thpt_trend);
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[pkts_thpt: %.2f] [pkts_thpt_trend: %d]", pkts_thpt,pkts_thpt_trend);
 
   if(!detailed_dump) {
     lua_pushinteger(vm, key()); // Index
@@ -878,11 +877,11 @@ char* Flow::serialize() {
 
   if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
 
-  json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
-  json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+  json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
+  json_object_object_add(my_object, "throughput_trend_bps", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
-  // json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
-  // json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
+  json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
+  json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
 
   inner = json_object_new_object();
   json_object_object_add(inner, "l4", json_object_new_int(protocol));

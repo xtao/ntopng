@@ -32,6 +32,8 @@ else
 
  print('{')
  now = os.time()
+ -- Get from redis the throughput type bps or pps
+ throughput_type = getThroughputType()
 
  print("\"column_since\" : \"" .. secondsToTime(now-host["seen.first"]+1) .. "\", ")
  print("\"column_last\" : \"" .. secondsToTime(now-host["seen.last"]+1) .. "\", ")
@@ -40,19 +42,24 @@ else
 
   print("\"column_traffic\" : \"" .. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).. "\", ")
 
-  if(host["throughput_trend"] > 0) then 
-    print ("\"column_thpt\" : \"" .. bitsToSize(8*host["throughput"]).. " ")
+  if(host["throughput_trend_"..throughput_type] > 0) then 
 
-    if(host["throughput_trend"] == 1) then 
+    if (throughput_type == "pps") then
+      print ("\"column_thpt\" : \"" .. pktsToSize(host["throughput_bps"]).. " ")
+    else
+      print ("\"column_thpt\" : \"" .. bitsToSize(8*host["throughput_bps"]).. " ")
+    end
+
+    if(host["throughput_trend_"..throughput_type] == 1) then 
       print("<i class='fa fa-arrow-up'></i>")
-    elseif(host["throughput_trend"] == 2) then
+    elseif(host["throughput_trend_"..throughput_type] == 2) then
       print("<i class='fa fa-arrow-down'></i>")
-    elseif(host["throughput_trend"] == 3) then
+    elseif(host["throughput_trend_"..throughput_type] == 3) then
       print("<i class='fa fa-minus'></i>")
     end
     print("\",")
   else
-    print ("\"column_thpt\" : \"NaN\",")
+    print ("\"column_thpt\" : \"0 "..throughput_type.."\",")
   end
 
   sent2rcvd = round((host["bytes.sent"] * 100) / (host["bytes.sent"]+host["bytes.rcvd"]), 0)
@@ -62,14 +69,15 @@ else
   else
   -- Aggregated
 
-    if(host["throughput_trend"] > 0) then 
+
+    if(host["throughput_trend_bps"] > 0) then 
       print("\"column_queries\" : \"" .. formatValue(host["queries.rcvd"]).." ")
 
-      if(host["throughput_trend"] == 1) then
+      if(host["throughput_trend_bps"] == 1) then
         print("<i class='fa fa-arrow-up fa-lg'></i>")
-      elseif(host["throughput_trend"] == 2) then
+      elseif(host["throughput_trend_bps"] == 2) then
         print("<i class='fa fa-arrow-down fa-lg'></i>")
-      elseif(host["throughput_trend"] == 3) then
+      elseif(host["throughput_trend_bps"] == 3) then
         print("<i class='fa fa-minus fa-lg'></i>")
       end
       

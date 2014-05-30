@@ -758,8 +758,9 @@ print [[
 print (hostinfo2url(host_info)..'";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
-
-if ((host["vlan"] == nil) or (host["vlan"] == 0)) then print('flow_rows_option["vlan"] = false;\n') end
+if ((ifstats.iface_sprobe) or (ifstats.iface_vlan)) then show_vlan = true else show_vlan = false end
+-- Set the host table option 
+if(show_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 
 print [[
     flow_rows_option["type"] = 'host';
@@ -798,13 +799,15 @@ print [[
 			     }
 				 },]]
 
-if ((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
 if(ifstats.iface_sprobe) then
    print('{ title: "Source Id",\n')
 else
-   print('{ title: "VLAN",\n')
+   if(ifstats.iface_vlan) then  
+     print('{ title: "VLAN",\n')
+   end
 end
 
+if(show_vlan) then
 print [[
          field: "column_vlan",
          sortable: true,

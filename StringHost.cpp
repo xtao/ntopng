@@ -107,8 +107,8 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_push_int_table_entry(vm, "family", family_id);
   lua_push_bool_table_entry(vm, "tracked", tracked_host);
   lua_push_int_table_entry(vm, "aggregation", mode);
-  lua_push_float_table_entry(vm, "throughput", bytes_thpt);
-  lua_push_int_table_entry(vm, "throughput_trend", getThptTrend());
+  lua_push_float_table_entry(vm, "throughput_bps", bytes_thpt);
+  lua_push_int_table_entry(vm, "throughput_trend_bps", getThptTrend());
 
   if(ndpiStats) ndpiStats->lua(iface, vm);
   getHostContacts(vm);

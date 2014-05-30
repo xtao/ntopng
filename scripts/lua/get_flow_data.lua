@@ -12,6 +12,7 @@ require "flow_utils"
 sendHTTPHeader('text/html')
 local debug = debug_flow_data
 
+
 flow_key = _GET["flow_key"]
 if(flow_key == nil) then
    flow = nil
@@ -20,25 +21,33 @@ else
    flow = interface.findFlowByKey(tonumber(flow_key))
 end
 
+throughput_type = getThroughputType()
+
 if(flow == nil) then
    print('{}')
 else
   print ("{ \"column_duration\" : \"" .. secondsToTime(flow["duration"]))
   print ("\", \"column_bytes\" : \"" .. bytesToSize(flow["bytes"]) .. "")
 
-  if(flow["throughput_trend"] > 0) then 
-     print ("\", \"column_thpt\" : \"" .. bitsToSize(8*flow["throughput"]).. " ")
+ if(flow["throughput_trend_"..throughput_type] > 0) then 
 
-      if(flow["throughput_trend"] == 1) then 
-         print("<i class='fa fa-arrow-up'></i>")
-         elseif(flow["throughput_trend"] == 2) then
-         print("<i class='fa fa-arrow-down'></i>")
-         elseif(flow["throughput_trend"] == 3) then
-         print("<i class='fa fa-minus'></i>")
-      end
+    if (throughput_type == "pps") then
+      print ("\", \"column_thpt\" : \"" .. pktsToSize(flow["throughput_pps"]).. " ")
+    else
+      print ("\", \"column_thpt\" : \"" .. bitsToSize(8*flow["throughput_bps"]).. " ")
+    end
+
+    if(flow["throughput_trend_"..throughput_type] == 1) then 
+       print("<i class='fa fa-arrow-up'></i>")
+       elseif(flow["throughput_trend_"..throughput_type] == 2) then
+       print("<i class='fa fa-arrow-down'></i>")
+       elseif(flow["throughput_trend_"..throughput_type] == 3) then
+       print("<i class='fa fa-minus'></i>")
+    end
+
       print("\"")
    else
-      print ("\", \"column_thpt\" : \"NaN\"")
+      print ("\", \"column_thpt\" : \"0 "..throughput_type.." \"")
    end
 
    cli2srv = round((flow["cli2srv.bytes"] * 100) / flow["bytes"], 0)

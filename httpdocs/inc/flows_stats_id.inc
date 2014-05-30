@@ -5,7 +5,7 @@
 
 var flow_rows_option = {};
 flow_rows_option["type"] = "flow";
-flow_rows_option["vlan"] = true;
+flow_rows_option["vlan"] = false;
 flow_rows_option["categorization"] = false;
 flow_rows_option["sprobe"] = false;
 

@@ -31,6 +31,9 @@ user = _GET["user"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
 
+-- Get from redis the throughput type bps or pps
+throughput_type = getThroughputType()
+
 if(currentPage == nil) then
    currentPage = 1
 else
@@ -276,7 +279,7 @@ for key, value in pairs(flows_stats) do
 	 elseif(sortColumn == "column_duration") then
 	 vkey = flows_stats[key]["duration"]+postfix	  
 	 elseif(sortColumn == "column_thpt") then
-	 vkey = flows_stats[key]["throughput"]+postfix	  
+	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
       else
@@ -381,8 +384,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 
 	 print(dst_port)
-	 print ("\", \"column_vlan\" : \"" .. value["vlan"])
-
+	
 	 if((value["vlan"] ~= nil)) then 
 	    print("\", \"column_vlan\" : \""..value["vlan"].."\"") 
 	 else
@@ -405,19 +407,25 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
-	 if(value["throughput_trend"] > 0) then 
-	    print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
+	 if(value["throughput_trend_"..throughput_type] > 0) then 
 
-	    if(value["throughput_trend"] == 1) then 
-	       print("<i class='fa fa-arrow-up'></i>")
-	       elseif(value["throughput_trend"] == 2) then
-	       print("<i class='fa fa-arrow-down'></i>")
-	       elseif(value["throughput_trend"] == 3) then
-	       print("<i class='fa fa-minus'></i>")
-	    end
+    if (throughput_type == "pps") then
+      print ("\", \"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")
+    else
+      print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
+    end
+
+    if(value["throughput_trend_"..throughput_type] == 1) then 
+       print("<i class='fa fa-arrow-up'></i>")
+       elseif(value["throughput_trend_"..throughput_type] == 2) then
+       print("<i class='fa fa-arrow-down'></i>")
+       elseif(value["throughput_trend_"..throughput_type] == 3) then
+       print("<i class='fa fa-minus'></i>")
+    end
+
 	    print("\"")
 	 else
-	    print ("\", \"column_thpt\" : \"NaN\"")
+	    print ("\", \"column_thpt\" : \"0 "..throughput_type.." \"")
 	 end
 
 	 cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)

@@ -28,6 +28,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
 
   systemHost = false, localHost = false, last_activity_update = 0, host_serial = 0;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
+  last_packets = 0, pkts_thpt = 0, pkts_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   contacts = new HostContacts(this);
   num_alerts_detected = 0, source_id = 0;
@@ -137,15 +138,26 @@ void GenericHost::incStats(u_int8_t l4_proto, u_int ndpi_proto,
 void GenericHost::updateStats(struct timeval *tv) {
   if(last_update_time.tv_sec > 0) {
     float tdiff = (float)((tv->tv_sec-last_update_time.tv_sec)*1000+(tv->tv_usec-last_update_time.tv_usec)/1000);
+    // Calculate bps throughput
     u_int64_t new_bytes = sent.getNumBytes()+rcvd.getNumBytes();
 
-    tdiff = ((float)((new_bytes-last_bytes)*1000))/tdiff;
+    float bytes_msec = ((float)((new_bytes-last_bytes)*1000))/tdiff;
 
-    if(bytes_thpt < tdiff)      bytes_thpt_trend = trend_up;
-    else if(bytes_thpt > tdiff) bytes_thpt_trend = trend_down;
+    if(bytes_thpt < bytes_msec)      bytes_thpt_trend = trend_up;
+    else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
     else                        bytes_thpt_trend = trend_stable;
 
-    bytes_thpt = tdiff, last_bytes = new_bytes;
+    bytes_thpt = bytes_msec, last_bytes = new_bytes;
+    // Calculate pps throughput
+    u_int64_t new_packets = sent.getNumPkts()+ rcvd.getNumPkts();
+
+    float pkts_msec = ((float)((new_packets-last_packets)*1000))/tdiff;
+
+    if(pkts_thpt < pkts_msec)      pkts_thpt_trend = trend_up;
+    else if(pkts_thpt > pkts_msec) pkts_thpt_trend = trend_down;
+    else                        pkts_thpt_trend = trend_stable;
+
+    pkts_thpt = pkts_msec, last_packets = new_packets;
   }
 
   memcpy(&last_update_time, tv, sizeof(struct timeval));

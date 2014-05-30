@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Welcome to ntopng</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
     <link href="/font-awesome/css/font-awesome.css" rel="stylesheet">

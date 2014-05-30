@@ -76,6 +76,7 @@ print [[
 </nav>
 ]]
 
+throughput_type = getThroughputType()
 
 flow_key = _GET["flow_key"]
 if(flow_key == nil) then
@@ -152,8 +153,11 @@ else
 
    if((flow.client_process == nil) and (flow.server_process == nil)) then
       print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
-
-      print("<span id=throughput>" .. bitsToSize(8*flow["throughput"]) .. "</span> <span id=throughput_trend></span>")
+      if (throughput_type == "bps") then
+         print("<span id=throughput>" .. bitsToSize(8*flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
+      elseif (throughput_type == "pps") then
+         print("<span id=throughput>" .. pktsToSize(flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
+      end
       print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
 
       print("</td></tr>\n")
@@ -199,7 +203,7 @@ var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 if(flow ~= nil) then
    print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
    print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
-   print("var throughput = " .. flow["throughput"] .. ";")
+   print("var throughput = " .. flow["throughput_"..throughput_type] .. ";")
    print("var bytes = " .. flow["bytes"] .. ";")
 end
 

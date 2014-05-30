@@ -68,10 +68,8 @@ print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
 -- Set the flow table option
-if(prefs.is_categorization_enabled) then
-  print ('flow_rows_option["categorization"] = true;\n')
-end
-
+if(prefs.is_categorization_enabled) then print ('flow_rows_option["categorization"] = true;\n') end
+if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
    print [[
 
 	 var table = $("#table-flows").datatable({

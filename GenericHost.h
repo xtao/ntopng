@@ -42,9 +42,9 @@ class GenericHost : public GenericHashEntry {
   AlertCounter *flow_count_alert;
 
   /* Throughput */
-  float bytes_thpt;
-  ValueTrend bytes_thpt_trend;
-  u_int64_t last_bytes;
+  float bytes_thpt, pkts_thpt;
+  ValueTrend bytes_thpt_trend, pkts_thpt_trend;
+  u_int64_t last_bytes, last_packets;
   struct timeval last_update_time;
   time_t last_activity_update;
 

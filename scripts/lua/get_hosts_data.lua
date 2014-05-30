@@ -26,6 +26,9 @@ protocol    = _GET["protocol"]
 -- Only for aggregations
 client      = _GET["client"]
 
+-- Get from redis the throughput type bps or pps
+throughput_type = getThroughputType()
+
 if(sortColumn == nil) then
    sortColumn = "column_"
 end
@@ -168,7 +171,7 @@ for key, value in pairs(hosts_stats) do
 	 elseif(sortColumn == "column_vlan") then
 	 vals[hosts_stats[key]["vlan"]..postfix] = key
 	 elseif(sortColumn == "column_thpt") then
-	 vals[hosts_stats[key]["throughput"]+postfix] = key
+	 vals[hosts_stats[key]["throughput_"..throughput_type]+postfix] = key
 	 elseif(sortColumn == "column_queries") then
 	 vals[hosts_stats[key]["queries.rcvd"]+postfix] = key
       else
@@ -285,37 +288,44 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation ~= nil) or (aggregated ~= nil)) then 
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
+         throughput_type = "bps"
 	    end
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
-
-      if(value["throughput_trend"] > 0) then 
-       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput"]).. " ")
       
-      if(value["throughput_trend"] == 1) then 
-         print("<i class='fa fa-arrow-up'></i>")
-         elseif(value["throughput_trend"] == 2) then
-         print("<i class='fa fa-arrow-down'></i>")
-         elseif(value["throughput_trend"] == 3) then
-         print("<i class='fa fa-minus'></i>")
-      end
-      print("\",")
-   else
-      print ("\"column_thpt\" : \"NaN\",")
-   end
+      if(value["throughput_trend_"..throughput_type] > 0) then 
 
-	    if((aggregation ~= nil) or (aggregated ~= nil)) then
+        if (throughput_type == "pps") then
+          print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")
+        else
+          print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
+        end
+
+        if(value["throughput_trend_"..throughput_type] == 1) then 
+          print("<i class='fa fa-arrow-up'></i>")
+        elseif(value["throughput_trend_"..throughput_type] == 2) then
+          print("<i class='fa fa-arrow-down'></i>")
+        elseif(value["throughput_trend_"..throughput_type] == 3) then
+          print("<i class='fa fa-minus'></i>")
+        end
+        
+        print("\",")
+      else
+        print ("\"column_thpt\" : \"0 "..throughput_type.."\",")
+      end
+	    
+      if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 
-	       if(value["throughput_trend"] == 1) then
-		  print("<i class='fa fa-arrow-up'></i>")
-		  elseif(value["throughput_trend"] == 2) then
-		  print("<i class='fa fa-arrow-down'></i>")
-		  elseif(value["throughput_trend"] == 3) then
-		  print("<i class='fa fa-minus'></i>")
-	       end
+	       if(value["throughput_trend_"..throughput_type] == 1) then 
+          print("<i class='fa fa-arrow-up'></i>")
+        elseif(value["throughput_trend_"..throughput_type] == 2) then
+          print("<i class='fa fa-arrow-down'></i>")
+        elseif(value["throughput_trend_"..throughput_type] == 3) then
+          print("<i class='fa fa-minus'></i>")
+        end
 	    else
 	       print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
 	    end

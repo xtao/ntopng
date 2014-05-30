@@ -288,7 +288,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
     lua_push_bool_table_entry(vm, "privatehost", isPrivateHost());
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
-
+    
     if(ip)
       lua_push_str_table_entry(vm, "ip", (ipaddr = ip->print(buf, sizeof(buf))));
     else
@@ -350,8 +350,13 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_int_table_entry(vm, "seen.first", first_seen);
     lua_push_int_table_entry(vm, "seen.last", last_seen);
     lua_push_int_table_entry(vm, "duration", get_duration());
-    lua_push_float_table_entry(vm, "throughput", bytes_thpt);
-    lua_push_int_table_entry(vm, "throughput_trend", bytes_thpt_trend);
+
+    lua_push_float_table_entry(vm, "throughput_bps", bytes_thpt);
+    lua_push_int_table_entry(vm, "throughput_trend_bps", bytes_thpt_trend);
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[bytes_thpt: %.2f] [bytes_thpt_trend: %d]", bytes_thpt,bytes_thpt_trend);
+    lua_push_float_table_entry(vm, "throughput_pps", pkts_thpt);
+    lua_push_int_table_entry(vm, "throughput_trend_pps", pkts_thpt_trend);
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[pkts_thpt: %.2f] [pkts_thpt_trend: %d]", pkts_thpt,pkts_thpt_trend);
     lua_push_int_table_entry(vm, "num_alerts", getNumAlerts());
 
     if(ip) {
@@ -638,8 +643,10 @@ char* Host::serialize() {
   json_object_object_add(my_object, "other_ip_rcvd", other_ip_rcvd.getJSONObject());
   json_object_object_add(my_object, "pktStats.sent", sent_stats.getJSONObject());
   json_object_object_add(my_object, "pktStats.recv", recv_stats.getJSONObject());
-  json_object_object_add(my_object, "throughput", json_object_new_double(bytes_thpt));
-  json_object_object_add(my_object, "throughput_trend", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+  json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
+  json_object_object_add(my_object, "throughput_trend_bps", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+  json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
+  json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
   json_object_object_add(my_object, "flows.as_client", json_object_new_int(num_flows_as_client));
   json_object_object_add(my_object, "flows.as_server", json_object_new_int(num_flows_as_server));
 
@@ -747,9 +754,14 @@ bool Host::deserialize(char *json_str) {
   json_object_put(o);
 
   /* We need to update too the stats for traffic */
+  last_update_time.tv_sec = (long)time(NULL), last_update_time.tv_usec = 0;
+  // Update bps throughput
   bytes_thpt = 0, last_bytes = sent.getNumBytes()+rcvd.getNumBytes(),
-    bytes_thpt_trend = trend_unknown, last_update_time.tv_sec = (long)time(NULL),
-    last_update_time.tv_usec = 0;
+  bytes_thpt_trend = trend_unknown;
+
+  // Update pps throughput
+  pkts_thpt = 0, last_packets = sent.getNumPkts()+rcvd.getNumPkts(),
+  pkts_thpt_trend = trend_unknown;
 
   return(true);
 }

@@ -31,10 +31,11 @@ if(host == nil) then
 else
 print [[
 <div class="bs-docs-example">
-            <div class="navbar">
-            <div class="navbar-inner">
-<ul class="nav">
+            <nav class="navbar navbar-default" role="navigation">
+              <div class="navbar-collapse collapse">
+<ul class="nav navbar-nav">
 ]]
+
 
 url="/lua/aggregated_host_details.lua?host="..host_ip
 
@@ -66,7 +67,7 @@ print [[
 <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </ul>
 </div>
-</div>
+</nav>
 </div>
    ]]
 
@@ -97,9 +98,9 @@ if(page == "overview") then
    print [[
 	    <tr><th>Activity Map</th><td>
 	    <span id="sentHeatmap"></span>
-	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-left fa-lg"></i></button>
-	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn"><i class="fa fa-refresh fa-lg"></i></button>
-	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn"><i class="fa fa-angle-right fa-lg"></i></button>
+	    <button id="sent-heatmap-prev-selector" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-angle-left fa-lg"></i></button>
+	    <button id="heatmap-refresh" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-refresh fa-lg"></i></button>
+	    <button id="sent-heatmap-next-selector" style="margin-bottom: 10px;" class="btn btn-default btn-sm"><i class="fa fa-angle-right fa-lg"></i></button>
 	    <p><span id="heatmapInfo"></span>
 
 	    <script type="text/javascript">

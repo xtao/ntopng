@@ -7,6 +7,7 @@ var host_rows_option = {};
 host_rows_option["ip"] = false;
 host_rows_option["categorization"] = false;
 host_rows_option["httpbl"] = false;
+host_rows_option["vlan"] = false;
 
 
 function host_table_setID (row) {
@@ -19,7 +20,7 @@ function host_table_setID (row) {
   row.find("td").eq(index++).attr('id', host_key+"_key");
   //custom
   if (host_rows_option["ip"]) row.find("td").eq(index++).attr('id', host_key+"_ip");
-  row.find("td").eq(index++).attr('id', host_key+"_vlan");
+  if (host_rows_option["vlan"]) row.find("td").eq(index++).attr('id', host_key+"_vlan");
   // hosts_stats_top
   row.find("td").eq(index++).attr('id', host_key+"_location");
   row.find("td").eq(index++).attr('id', host_key+"_alerts");
