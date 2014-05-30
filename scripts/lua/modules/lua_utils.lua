@@ -1255,18 +1255,18 @@ function toggleTableButton(label, comment, on_label, off_label, submit_field, re
    -- Read it anyway to 
    if(value == "0") then 
       rev_value  = "1"
-      on_active  = ""
-      off_active = "active"
+      on_active  = "btn-default"
+      off_active = "btn-danger active"
    else
       rev_value  = "0"
-      on_active  = "active"
-      off_active = ""
+      on_active  = "btn-success active"
+      off_active = "btn-default"
    end
 
    print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td width=100>\n<form>\n<div class="btn-group btn-toggle">')
    print('<input type=hidden name='..submit_field..' value='..rev_value..'>\n')
-   print('<button type="submit" class="btn btn-sm btn-default '..on_active..'">'..on_label..'</button>')
-   print('<button class="btn btn-sm btn-primary '..off_active..'">'..off_label..'</button></div>\n')
+   print('<button type="submit" class="btn btn-sm '..on_active..'">'..on_label..'</button>')
+   print('<button class="btn btn-sm '..off_active..'">'..off_label..'</button></div>\n')
    print('</form>\n </td></tr>')
 end
 
