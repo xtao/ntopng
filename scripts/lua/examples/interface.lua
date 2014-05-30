@@ -4,7 +4,15 @@
 
 -- Ntop lua class example
 
+
+
+-- Set package.path information to be able to require lua module
+dirs = ntop.getDirs()
+package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+
+
 function printTable(table,key)
+  
   -- traceError(TRACE_DEBUG,TRACE_CONSOLE, "Extern\n")
   if (key ~= nil) then print(""..key..":<ul>") end
   for k, v in pairs(table) do
@@ -21,19 +29,19 @@ end
 print("</ul>")
 end
 
--- Set package.path information to be able to require lua module
-dirs = ntop.getDirs()
-package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
-
 require "lua_utils"
 interface.find(ifname)
-local debug = false
+local debug = true
 -- setTraceLevel(TRACE_DEBUG) -- Debug mode
 
 host_ip       = _GET["host"]
 hostinfotype  = _GET["hostinfotype"]
+aggregated  = _GET["aggregated"]
 interfacetype = _GET["interfacetype"]  
+showjson  = _GET["showjson"]
 flowtype      = _GET["flowtype"]  
+aggregated  = _GET["aggregated"]
+protocol  = _GET["protocol"]
 
 -- Here you can choose the type of your HTTP message {'text/html','application/json',...}. There are two main function that you can use:
 -- function sendHTTPHeaderIfName(mime, ifname, maxage)
@@ -62,7 +70,7 @@ print('<body>')
 print('<h1>Examples of interface lua class</h1>')
 print('<p>This class provides to hook to objects that describe flows and hosts and it allows you to access to live monitoring data.<br><b>For more information, please read the source code of this file and the doxygen of API Lua.</b></p>')
 
-print('<br><h2>Generic information of Network interface</h2>')
+print('<hr><h2>Generic information of Network interface</h2>')
 print('<p>By default ntopng set the \"ntop_inteface\"  global variable in lua stack, it is the network interface name where ntopng is running.<br>Every time when you want use the interface class, in order to refresh the \"ntop_interface\" global variable , please remember to call the method <b>interface.find(ifname))</b> before to use the interface class.</p>')
 print('<pre><code>print("Default ifname = " .. interface.getDefaultIfName())\nprint("Network interface name = " .. interface.find(ifname))\nprint("Network interface id = " .. interface.name2id(ifname))</code></pre>')
 print('<ul>')
@@ -76,10 +84,10 @@ else
 end
 print('</ul>')
 
-print('<br><h4>Switch network interface</h4>')
+print('<hr><h4>Switch network interface</h4>')
 print('<p>In order to switch the network interface where ntopng is running, you need to use the method <b>setActiveInterfaceId(id)</b>, for more information please read the documentation and if you are looking for a complete and correctly example how to switch interface and active a new session, please read the source code of the <b>set_active_interface.lua</b> script.</p>')
 
-print('<br><h2 id="interface_information">Interface information</h2>')
+print('<hr><h2 id="interface_information">Interface information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the active network interface.</p>')
 
 print('<h4>Get interface statistics information</h4>')
@@ -105,7 +113,7 @@ if (interfacetype == "show") then
 end --if
 print('</ul>')
 
-print('<br><h2 id="host_information">Host information</h2>')
+print('<hr><h2 id="host_information">Host information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the hosts.</p>')
 
 print('<h4>Get hosts information</h4>')
@@ -168,30 +176,33 @@ end
 print('</ul>')
 
 random_host = nil
-print('<br><h4>Export information in JSON format</h4>')
+print('<hr><h4 id="json_format">Export information in JSON format</h4>')
 print('<p>This is an example how to use the interface methods to export information in json format.</p>')
-print('<p>Available hosts:<ul>')
-print('<pre><code>hosts_json = interface.getHosts()</code></pre>')
-print('<li><a href="/lua/do_export_data.lua" target="_blank"> All hosts</a>')
+print('<a href="?showjson=1#json_format">Show host:</a>')
 
-hosts_json = interface.getHosts()
-for key, value in pairs(hosts_json) do
-  random_host = key
-  print('<li>'..key)
-  print('<ul>')
-  if (hosts_json[key]["ip"] ~= nil) then
-    host_info = hosts_json[key]["ip"]
-  else 
-    host_info = hosts_json[key]["mac"]
+if(showjson ~= nil) then
+  print('<br><p>Available hosts:<ul>')
+  print('<pre><code>hosts_json = interface.getHosts()</code></pre>')
+  print('<li><a href="/lua/do_export_data.lua" target="_blank"> All hosts</a>')
+
+  hosts_json = interface.getHosts()
+  for key, value in pairs(hosts_json) do
+    random_host = key
+    print('<li>'..key)
+    print('<ul>')
+    if (hosts_json[key]["ip"] ~= nil) then
+      host_info = hosts_json[key]["ip"]
+    else 
+      host_info = hosts_json[key]["mac"]
+    end
+    print('<li><a href="/lua/host_get_json.lua?host=' .. host_info..'&vlan='..hosts_json[key]["vlan"]..'" target="_blank"> All information</a>')
+    print('<li><a href="/lua/get_host_activitymap.lua?host=' .. key..'" target="_blank"> Only Activity Map </a>')
+    print('</ul>')
   end
-  print('<li><a href="/lua/host_get_json.lua?host=' .. host_info..'&vlan='..hosts_json[key]["vlan"]..'" target="_blank"> All information</a>')
-  print('<li><a href="/lua/get_host_activitymap.lua?host=' .. key..'" target="_blank"> Only Activity Map </a>')
-  print('</ul>')
+  print('</ul></p>')
 end
-print('</ul></p>')
 
-
-print('<br><h2 id="flow_information">Flow information</h2>')
+print('<hr><h2 id="flow_information">Flow information</h2>')
 print('<p>The interface lua class provide a few methods to get information about the flows.</p>')
 
 print('<h4>Get flows information</h4>')
@@ -220,19 +231,50 @@ if (flowtype == "peers" ) then
 end
 
 
-print('<br><h4>TDB</h4>')
+print('<hr><h2 id="aggregated_information">Aggregated Hosts information</h2>')
+
+print('<p>Available protocol:<ul>')
+print('<li><a href="?aggregated=1#aggregated_information">All</a>')
+print('<li><a href="?aggregated=1&protocol=5#aggregated_information">DNS</a>')
+print('<li><a href="?aggregated=1&protocol=7#aggregated_information">HTTP</a>')
+print('<li><a href="?aggregated=1&protocol=254#aggregated_information">Operation System</a>')
+print('<li><a href="?aggregated=1&protocol=38#aggregated_information">EPP</a>')
+print('</ul></p>')
+
+print('<p><b>Output:</b><p>')
+print('<ul>')
+
+if (aggregated ~= nil) then
+  if(protocol == nil) then 
+    print('<pre><code>aggregated = interface.getAggregatedHostsInfo()</code></pre>')
+    hosts_stats = interface.getAggregatedHostsInfo()
+  else
+    print('<pre><code>aggregated = interface.getAggregatedHostsInfo('..tonumber(protocol)..')</code></pre>')
+    hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol))
+  end
+  
+  if (table.empty(hosts_stats)) then 
+    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated null\n") end  
+    print('<div class="alert alert-warning">No aggregated hosts found.</div>')
+  end
+  
+  for key, value in pairs(hosts_stats) do
+      printTable(hosts_stats[key],key)
+  end
+end
+print('</ul>')
+
+print('<hr><h4>TDB</h4>')
 print('<p><ul>')
 print('<li>findFlowByKey')
 print('<li>findHost')
 print('<li>getEndpoint')
 print('<li>incrDrops')
 print('<li>getAggregationsForHost')
-print('<li>getAggregatedHostInfo')
 print('<li>getAggregationFamilies')
 print('<li>getNumAggregatedHosts')
 print('<li>getNdpiProtoName')
 print('<li>flushHostContacts')
-print('<li>getNdpiProtoName')
 print('<li>restoreHost')
 
 print('</ul></p>')
