@@ -21,6 +21,7 @@ ntopng:
 	@echo
 	@find . -name "*~" -exec /bin/rm {} ';'
 	dpkg-buildpackage -rfakeroot -d -us -uc
+	dpkg-sig --sign builder ../ntopng*deb
 	@\rm -f ../ntopng*dsc ../ntopng*.gz ../ntopng*changes
 	@/bin/mv ../ntopng*deb .
 	@echo
@@ -42,6 +43,7 @@ ntopng-data:
 	@echo
 	@find . -name "*~" -exec /bin/rm {} ';'
 	dpkg-buildpackage -rfakeroot -d -us -uc
+	dpkg-sig --sign builder ../ntopng*deb
 	@\rm -f ../ntopng*dsc ../ntopng*.gz ../ntopng*changes
 	@/bin/mv ../ntopng*deb .
 	@echo
