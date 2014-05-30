@@ -164,8 +164,9 @@
 #define CONST_ALERT_MSG_QUEUE         "ntopng.alert_queue"
 #define CONST_ALERT_PREFS             "ntopng.prefs.alerts"
 
-#define CONST_RUNTIME_PREFS_HOST_RRD_CREATION        "ntopng.prefs.host_rrd_creation"
-#define CONST_RUNTIME_PREFS_HOST_NDPI_RRD_CREATION   "ntopng.prefs.host_ndpi_rrd_creation"
+#define CONST_RUNTIME_PREFS_HOST_RRD_CREATION        "ntopng.prefs.host_rrd_creation" /* 0 / 1 */
+#define CONST_RUNTIME_PREFS_HOST_NDPI_RRD_CREATION   "ntopng.prefs.host_ndpi_rrd_creation" /* 0 / 1 */
+#define CONST_RUNTIME_PREFS_THPT_CONTENT             "ntopng.prefs.thpt_content"  /* bps / pps */
 
 #define CONST_MAX_ALERT_MSG_QUEUE_LEN 512
 #define CONST_MAX_NUM_READ_ALERTS     32
