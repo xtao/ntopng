@@ -143,7 +143,7 @@ end
 
    print("<tr><th>Dropped "..label.."</th><td colspan=2><span id=if_drops>")
    
-   if(ifstats.stats_drops > 0) then print('<h4><span class="label label-danger">') end
+   if(ifstats.stats_drops > 0) then print('<span class="label label-danger">') end
    print(formatValue(ifstats.stats_drops).. " " .. label)
    
    if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
@@ -152,7 +152,7 @@ end
    end
    
    if(ifstats.stats_drops > 0) then print('</span>') end
-   print("</span></h4>  <span id=drops_trend></span></td></tr>\n")
+   print("</span>  <span id=drops_trend></span></td></tr>\n")
    
    print("</table>\n")
 elseif((page == "packets")) then
@@ -260,14 +260,14 @@ print [[
         last_drops == rsp.drops;
 
         if((rsp.packets+rsp.drops) > 0) { pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
-        if(rsp.drops > 0) { drops = '<h4><span class="label label-danger">'; }
+        if(rsp.drops > 0) { drops = '<span class="label label-danger">'; }
         drops = drops + addCommas(rsp.drops)+" ]]
 
 if(ifstats.type == "zmq") then print("Flows") else print("Pkts") end
 print [[";
 
         if(pctg > 0)      { drops = drops + " [ "+pctg+" % ]"; }
-        if(rsp.drops > 0) { drops = drops + '</span></h4>';         }
+        if(rsp.drops > 0) { drops = drops + '</span>';         }
         $('#if_drops').html(drops);
            }
                });
