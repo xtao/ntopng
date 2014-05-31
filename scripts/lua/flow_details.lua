@@ -180,11 +180,11 @@ else
       print("</td></tr>\n")
    else
       if(flow.client_process ~= nil) then
-         print("<tr><th colspan=3 bgcolor=lightgray>Client Process Information</th></tr>\n")
+         print("<tr><th colspan=3 class=\"info\">Client Process Information</th></tr>\n")
          displayProc(flow.client_process)
       end
       if(flow.server_process ~= nil) then
-         print("<tr><th colspan=3 bgcolor=lightgray>Server Process Information</th></tr>\n")
+         print("<tr><th colspan=3 class=\"info\">Server Process Information</th></tr>\n")
          displayProc(flow.server_process)	 
       end
    end
@@ -193,7 +193,7 @@ else
    num = 0
    for key,value in pairs(info) do
       if(num == 0) then
-	 print("<tr><th colspan=3 bgcolor=lightgray>Additional Flow Elements</th></tr>\n")
+	 print("<tr><th colspan=3 class=\"info\">Additional Flow Elements</th></tr>\n")
       end
       
       if (isVoip(key,value) == 0) then

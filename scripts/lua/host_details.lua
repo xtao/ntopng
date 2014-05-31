@@ -268,8 +268,8 @@ print [[
 <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a></li>
 </ul>
 </div>
-</div>
 </nav>
+</div>
    ]]
 
 if((page == "overview") or (page == nil)) then
@@ -1426,14 +1426,17 @@ print [[
 print [[
       <div class="tab-pane active" id="Users">
       Show :
-          <div class="btn-group btn-small" id="show_users" data-toggle="buttons-radio">
-            <button type="button" class="btn btn-small active">All</button>
-            <button type="button" class="btn btn-small">Client</button>
-            <button type="button" class="btn btn-small">Server</button>
+          <div class="btn-group btn-toggle btn-sm" data-toggle="buttons" id="show_users">
+            <label class="btn btn-default btn-sm active">
+              <input type="radio" name="show_users" value="All">All</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_users" value="Client" checked="">Client</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_users" value="Server" checked="">Server</label>
           </div>
         Aggregated by :
           <div class="btn-group">
-            <button id="aggregation_users_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">
+            <button id="aggregation_users_displayed" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
             Traffic <span class="caret"></span></button>
             <ul class="dropdown-menu" id="aggregation_users">
             <li><a>Traffic</a></li>
@@ -1456,14 +1459,17 @@ print [[
 print [[
       <div class="tab-pane" id="Processes">
       Show :
-          <div class="btn-group btn-small" id="show_processes" data-toggle="buttons-radio">
-            <button type="button" class="btn btn-small active">All</button>
-            <button type="button" class="btn btn-small">Client</button>
-            <button type="button" class="btn btn-small">Server</button>
+          <div class="btn-group btn-toggle btn-sm" data-toggle="buttons" id="show_processes">
+            <label class="btn btn-default btn-sm active">
+              <input type="radio" name="show_processes" value="All">All</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_processes" value="Client" checked="">Client</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_processes" value="Server" checked="">Server</label>
           </div>
         Aggregated by :
           <div class="btn-group">
-            <button id="aggregation_processes_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
+            <button id="aggregation_processes_displayed" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
             <ul class="dropdown-menu" id="aggregation_processes">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
@@ -1486,14 +1492,17 @@ print [[
       <div class="tab-pane" id="Tree">
 
         Show :
-          <div class="btn-group btn-small" id="show_tree" data-toggle="buttons-radio">
-            <button type="button" class="btn btn-small active">All</button>
-            <button type="button" class="btn btn-small">Client</button>
-            <button type="button" class="btn btn-small">Server</button>
+          <div class="btn-group btn-toggle btn-sm" data-toggle="buttons" id="show_tree">
+            <label class="btn btn-default btn-sm active">
+              <input type="radio" name="show_tree" value="All">All</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_tree" value="Client" checked="">Client</label>
+            <label class="btn btn-default btn-sm">
+              <input type="radio" name="show_tree" value="Server" checked="">Server</label>
           </div>
         Aggregated by :
           <div class="btn-group">
-            <button id="aggregation_tree_displayed" class="btn btn-small dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
+            <button id="aggregation_tree_displayed" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Traffic <span class="caret"></span></button>
             <ul class="dropdown-menu" id="aggregation_tree">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
@@ -1502,7 +1511,6 @@ print [[
           </div><!-- /btn-group -->
          <br/>
          <br/>
-        </table>
         <table class="table table-bordered table-striped">
           <tr>
             <th class="text-center span3">Processes Traffic Tree
@@ -1523,6 +1531,7 @@ print [[
 print [[
     </div> <!-- End Tab content-->
   </div> <!-- End Left Tab -->
+
 ]]
 
  print [[
@@ -1567,10 +1576,10 @@ print [[
     }); ]]
 
 print [[
-  $('#show_users button').click(function() {
-    users_filter = this.innerHTML;
-    // Default
-     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
+$("#show_users input:radio").change(function() {
+    users_filter = this.value
+    if (sprobe_debug) { alert("users_type: "+users_type+"\n users_filter: "+users_filter); }
+    if (sprobe_debug) { alert("url: /lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
@@ -1597,10 +1606,9 @@ print [[
     }); ]]
 
 print [[
-  $('#show_processes button').click(function() {
-    processes_filter = this.innerHTML;
-    // Default
-    if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type+"-"+processes_filter); }
+$("#show_processes input:radio").change(function() {
+    processes_filter = this.value
+    if (sprobe_debug) { alert("processes_type: "+processes_type+"\n processes_filter: "+processes_filter); }
     processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
@@ -1627,10 +1635,10 @@ print [[
     }); ]]
 
 print [[
-  $('#show_tree button').click(function() {
-    tree_filter = this.innerHTML;
-    // Default
-    if (sprobe_debug) { alert(this.innerHTML+"=>"+tree_type+"-"+tree_filter); }
+
+  $("#show_tree input:radio").change(function() {
+    tree_filter = this.value
+    if (sprobe_debug) { alert("tree_type: "+tree_type+"\ntree_filter: "+tree_filter); }
     tree[0].setUrlParams({type: tree_type , filter: tree_filter]] print (','.. hostinfo2json(host_info).." }") print [[ );
 });]]
 
@@ -1645,12 +1653,6 @@ end
 
 print [[
 <script>
-/*
-      $(document).ready(function() {
-	      $('.progress .bar').progressbar({ use_percentage: true, display_text: 1 });
-   });
-*/
-
 
 //var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 

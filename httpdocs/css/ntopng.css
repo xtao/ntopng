@@ -101,3 +101,7 @@ img {
 .tooltip-inner {
   max-width: 350px;
 }
+/*Flow dropdown resize*/
+#flow_dropdown {
+  min-width: 110px;
+}

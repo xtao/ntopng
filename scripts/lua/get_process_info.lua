@@ -52,10 +52,10 @@ else
      print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
   else
    print [[
-	    <div class="bs-docs-example">
-            <div class="navbar">
-	    <div class="navbar-inner">
-	    <ul class="nav"> ]]
+	   <div class="container-fluid">
+            <nav class="navbar navbar-default" role="navigation">
+              <div class="navbar-collapse collapse">
+<ul class="nav navbar-nav"> ]]
 
    if(pid_key ~= nil)then
       print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
@@ -91,7 +91,7 @@ print [[ <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a>
 
 -- End Tab Menu
 
-print('</ul>\n\t</div>\n\t</div>\n')
+print('</ul>\n\t</div>\n\t</nav>\n\t</div>\n')
 
 
 if(page == "Protocols") then
@@ -99,9 +99,9 @@ if(page == "Protocols") then
 print [[
   <br>
   <!-- Left Tab -->
-  <div class="tabbable tabs-left">
+  <div class="container-fluid">
 
-    <ul class="nav nav-tabs">
+   <ul class="nav nav-tabs">
 ]]
 
 print [[<li class="active"><a href="#l7" data-toggle="tab">L7 Protocols</a></li> ]]
@@ -184,8 +184,9 @@ stats = interface.getNdpiStats()
 num_param = 0
 
 print [[
-      <hr>
+      <div class="container-fluid">
       <div id="table-hosts"></div>
+      </div>
    <script>
    $("#table-hosts").datatable({
       url: "/lua/get_flows_data.lua]] 
@@ -228,7 +229,7 @@ end
 
 print [[",
          showPagination: true,
-         buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
+         buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
 if (pid_key ~= nil) then
   print('<li><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
