@@ -24,16 +24,69 @@
 
 #include "ntop_includes.h"
 
+/** @defgroup Preferences Preferences
+ * Ntopng preferences
+ */
 
+
+/** @class RuntimePrefs
+ *  @brief Implement the user runtime preference for ntopng.
+ *
+ *  @ingroup Preferences
+ *
+ */
 class RuntimePrefs {
  public:
+  /**
+   * @brief A Constructor.
+   * @details Creating a new Runtime preference instance.
+   *
+   * @return A new instance of RuntimePrefs.
+   */
   RuntimePrefs();
 
+  /**
+   * @brief Set the local hosts rrd creation preference.
+   * @details Enable or disable the preference and save it in Redis.
+   * 
+   * @param enable Preference boolean value.
+   */
   void set_local_hosts_rrd_creation(bool enable);
+  /**
+   * @brief Get the local hosts rrd creation preference.
+   * @details Read for Redis the preference, if it doesn't exist 
+   * the preference will be set to default value (true).
+   * @return The preference boolean value 
+   */
   bool are_local_hosts_rrd_created();
+  /**
+   * @brief Set the hosts ndpi rrd creation preference.
+   * @details Enable or disable the preference and save it in Redis.
+   * 
+   * @param enable Preference boolean value.
+   */
   void set_hosts_ndpi_rrd_creation(bool enable);
+  /**
+   * @brief Get the hosts ndpi rrd creation preference.
+   * @details Read for Redis the preference, if it doesn't exist 
+   * the preference will be set to default value (true).
+   * @return The preference boolean value 
+   */
   bool are_hosts_ndpi_rrd_created();
+  /**
+   * @brief Set the throughput unit preference.
+   * @details Save the unit preference in Redis. The preference will be 
+   * set to "bps" if @ref use_bps is true otherwise to "pps".
+   * 
+   * @param use_bps Preference boolean value.
+   */
   void set_throughput_unit(bool use_bps);
+  /**
+   * @brief Test if the throughput preference is set to "bps".
+   * @details Read for Redis the preference, if it doesn't exist 
+   * the preference will be set to default value (bps).
+   * @return True if the preference is "pps", false if it is "bps" 
+   */
   bool use_bps_as_set_throughput_unit();
 };
 
