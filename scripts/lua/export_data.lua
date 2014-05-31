@@ -19,7 +19,7 @@ print [[
      <style type="text/css">
      #map-canvas { width: 640px; height: 480px; }
    </style>
-
+<div class="container-fluid">
 <hr>
 <h2>Export Data</H2>
 <p>&nbsp;<p>
@@ -44,10 +44,11 @@ print [[
      <label><small>NOTE: If the field is empty vlan is set to 0.</small></label>
     </div>
   </div>
-
+</br>
 <div class="control-group">
 <div class="controls">
-<button type="submit" class="btn btn-primary">Export JSON Data</button> <button class="btn" type="reset">Reset Form</button>
+  <button type="submit" class="btn btn-primary">Export JSON Data</button> 
+  <button class="btn btn-default" type="reset">Reset Form</button>
 </div>
 </div>
 
@@ -69,6 +70,7 @@ print [[
 
 
 </form>
+</div>
 
 ]]
 

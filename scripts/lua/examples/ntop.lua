@@ -29,6 +29,7 @@ require "lua_utils"
 -- For more information please read the scripts/lua/modules/lua_utils.lua file.
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 print('<html><head><title>ntopng API Lua example</title></head>')
 print('<body>')
@@ -212,7 +213,7 @@ print('<li>getIdToHost')
 print('<li>ZMQ')
 print('</ul></p>')
 
-print('</body></html>\n')
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 
 
 

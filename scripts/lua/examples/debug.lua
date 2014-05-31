@@ -15,6 +15,7 @@ require "lua_utils"
 -- For more information please read the scripts/lua/modules/lua_utils.lua file.
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 print('<html><head><title>debug Lua example</title></head>')
 print('<body>')
@@ -86,10 +87,10 @@ print('<p>')
 for key, value in pairs(_GET) do 
    print(key.."="..value.."<br>")
 end
-printGETParameters(_GET)
+-- printGETParameters(_GET)
 print('</p>')
 
-print('</body></html>\n')
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 
 
 

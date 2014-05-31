@@ -30,6 +30,12 @@ print("</ul>")
 end
 
 require "lua_utils"
+
+sendHTTPHeader('text/html')
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
+
 interface.find(ifname)
 local debug = true
 -- setTraceLevel(TRACE_DEBUG) -- Debug mode
@@ -47,8 +53,6 @@ protocol  = _GET["protocol"]
 -- function sendHTTPHeaderIfName(mime, ifname, maxage)
 -- function sendHTTPHeader(mime)
 -- For more information please read the scripts/lua/modules/lua_utils.lua file.
-sendHTTPHeader('text/html')
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 -- Test key 2 host and host 2 key
 -- hosts_stats = interface.getHostsInfo()
@@ -65,8 +69,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 --     end
 -- end
 
-print('<html><head><title>ntopng API Lua example</title></head>')
-print('<body>')
+
 print('<h1>Examples of interface lua class</h1>')
 print('<p>This class provides to hook to objects that describe flows and hosts and it allows you to access to live monitoring data.<br><b>For more information, please read the source code of this file and the doxygen of API Lua.</b></p>')
 
@@ -279,6 +282,6 @@ print('<li>restoreHost')
 
 print('</ul></p>')
 
-print('</body></html>\n')
+dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 
 
