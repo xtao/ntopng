@@ -990,11 +990,11 @@ void Flow::handle_process(ProcessInfo *pinfo, bool client_process) {
 
 void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
   ProcessInfo p;
-  char _port[8], rsp[128], *pid, *process_name, *w, path[MAX_PATH];
+  char _port[32], rsp[128], *pid, *process_name, *w, path[MAX_PATH];
   FILE *f;
 
-  snprintf(_port, sizeof(_port), "%u", port);
-  if(ntop->getRedis()->hashGet((char*)SPROBE_HASH_NAME, _port, rsp, sizeof(rsp)) == -1)
+  snprintf(_port, sizeof(_port), "%s.%u", SPROBE_HASH_NAME, port);
+  if(ntop->getRedis()->get(_port, rsp, sizeof(rsp)) == -1)
     return;  
 
   /* <PID>,<process name> */
