@@ -1661,6 +1661,73 @@ static int ntop_syslog(lua_State* vm) {
 
 /* ****************************************** */
 
+struct ntopng_sqlite_state {
+  lua_State* vm;
+  u_int num_rows;
+};
+
+static int sqlite_callback(void *data, int argc,
+			   char **argv, char **azColName) {
+  struct ntopng_sqlite_state *s = (struct ntopng_sqlite_state*)data;
+
+  lua_newtable(s->vm);
+
+  for(int i=0; i<argc; i++)
+    lua_push_str_table_entry(s->vm, (const char*)azColName[i],
+			     (char*)(argv[i] ? argv[i] : "NULL"));
+  
+  lua_pushinteger(s->vm, ++s->num_rows);
+  lua_insert(s->vm, -2);
+  lua_settable(s->vm, -3);
+
+  return(0);
+}
+
+/**
+ * @brief Exec SQL query
+ * @details Execute the specified query and return the results
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_ERROR in case of error, CONST_LUA_OK otherwise.
+ */
+static int ntop_sqlite_exec_query(lua_State* vm) {
+  char *db_path, *db_query;
+  sqlite3 *db;
+  char *zErrMsg = 0;
+  struct ntopng_sqlite_state state;
+  struct stat buf;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING))  return(CONST_LUA_ERROR);
+  db_path = (char*)lua_tostring(vm, 1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING))  return(CONST_LUA_ERROR);
+  db_query = (char*)lua_tostring(vm, 2);
+
+  if(stat(db_path, &buf) != 0) {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Not found database %s",
+				 db_path);
+    return(CONST_LUA_ERROR);
+  }
+
+  if(sqlite3_open(db_path, &db)) {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "Unable to open %s: %s",
+				 db_path, sqlite3_errmsg(db));
+    return(CONST_LUA_ERROR);
+  }
+
+  state.vm = vm, state.num_rows = 0;
+  lua_newtable(vm);
+  if(sqlite3_exec(db, db_query, sqlite_callback, (void*)&state, &zErrMsg)) {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "SQL Error: %s", zErrMsg);
+    sqlite3_free(zErrMsg);
+  }
+
+  sqlite3_close(db);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_mkdir_tree(lua_State* vm) {
   char *dir;
 
@@ -2114,6 +2181,9 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Logging */
   { "syslog",         ntop_syslog },
+
+  /* SQLite */
+  { "execQuery",      ntop_sqlite_exec_query },
 
   { "isWindows",      ntop_is_windows },
   { NULL,          NULL}

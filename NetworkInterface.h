@@ -143,6 +143,7 @@ class NetworkInterface {
   inline u_int get_flow_size()                 { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()                   { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline char* get_name()                      { return(ifname);                                       };
+  inline u_int8_t get_id()                     { return(id);                                           };
   inline bool  hasSeenVlanTaggedPackets()      { return(has_vlan_packets); }
   inline void  setSeenVlanTaggedPackets()      { has_vlan_packets = true; }
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
