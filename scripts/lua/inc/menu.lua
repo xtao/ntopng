@@ -184,9 +184,11 @@ for k,v in pairs(names) do
     custom_name = ntop.getCache(key)
 
     print(">")
-    print("<a href=\"/lua/if_stats.lua?if_name="..v.."\"> ")
+    print("<a href=\"/lua/if_stats.lua?if_name="..v.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"Current ")
+    if (isPausedInterface(v)) then  print('and paused ') end
+    print("interface\"> ")
     if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
-    
+    if (isPausedInterface(v)) then  print('<i class="fa fa-eye-slash"></i> ') end
     if((custom_name ~= nil) and (custom_name ~= "")) then
        print(custom_name)
     else
@@ -202,7 +204,10 @@ end
 for k,v in pairs(names) do
     if(v ~= ifname) then
     print("<li")
-    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\"> ")
+    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"")
+    if (isPausedInterface(v)) then  print('Paused interface') end
+    print("\"> ")
+    if (isPausedInterface(v)) then  print('<i class="fa fa-eye-slash"></i> ') end
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
 

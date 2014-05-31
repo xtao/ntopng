@@ -1273,6 +1273,11 @@ function toggleTableButton(label, comment, on_label, on_value, on_color , off_la
    return(value)
 end
 
+function isPausedInterface(current_ifname)
+  state = ntop.getCache("ntopng.prefs."..current_ifname.."_not_idle")
+  if (state == "0") then return true else return false end
+end
+
 function getThroughputType()
   throughput_type = ntop.getCache("ntopng.prefs.thpt_content")
 

@@ -314,9 +314,10 @@ setInterval(function() {
 	}
       });
   }, 1000)
-
-$(document).ready(function () { $("a").tooltip({ 'selector': '', 'placement': 'bottom'  });});
-
+  //Enable tooltip without a fixer placement
+  $(document).ready(function () { $("[rel='tooltip']").tooltip(); });
+  $(document).ready(function () { $("a").tooltip({ 'selector': ''});});
+  $(document).ready(function () { $("i").tooltip({ 'selector': ''});});
 </script>
 
     </div> <!-- /container -->

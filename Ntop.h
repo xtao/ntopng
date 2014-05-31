@@ -31,7 +31,6 @@
 
 /** @class Ntop
  *  @brief Main class of ntopng.
- *  @details .......
  *
  *  @ingroup Ntop
  *

@@ -92,7 +92,7 @@ if((page == "overview") or (page == nil)) then
    print("</td></tr>\n")
 
    print("<tr><th width=250>State</th><td colspan=2>")
-   state = toggleTableButton("", "", "Active", "1", "Paused", "0", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
+   state = toggleTableButton("", "", "Active", "1","primary", "Paused", "0","primary", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
    
    if(state == "0") then
       on_state = true
