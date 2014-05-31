@@ -54,10 +54,11 @@ NetworkInterface::NetworkInterface(u_int8_t _id) {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true, id = _id,
-    sprobe_interface = false, has_vlan_packets = false,
-    idle = false;
+    sprobe_interface = false, has_vlan_packets = false;
 
   db = new DB(this);
+
+  checkIdle();
 }
 
 /* **************************************************** */
@@ -72,7 +73,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
-  id = _id, idle = false;
+  id = _id;
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
@@ -141,6 +142,26 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   running = false, sprobe_interface = false;
 
   db = new DB(this);
+  checkIdle();
+}
+
+/* **************************************************** */
+
+bool NetworkInterface::checkIdle() {
+  idle = false;
+
+  if(ifname != NULL) {
+    char rkey[128], rsp[16];
+
+    snprintf(rkey, sizeof(rkey), "ntopng.prefs.%s_not_idle", ifname);
+    if(ntop->getRedis()->get(rkey, rsp, sizeof(rsp)) == 0) {
+      int val = atoi(rsp);
+      
+      if(val == 0) idle = true;
+    }
+  }
+
+  return(idle);
 }
 
 /* **************************************************** */

@@ -134,6 +134,8 @@ void Ntop::registerPrefs(Prefs *_prefs) {
   }
 
   memset(iface, 0, sizeof(iface));
+
+  redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
 }
 
 /* ******************************************* */
@@ -169,8 +171,6 @@ void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL,
 			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-14 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
-
-  redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);
