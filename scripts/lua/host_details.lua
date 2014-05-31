@@ -168,12 +168,16 @@ else
    end
 end
 
-if(page == "geomap") then
-  print("<li class=\"active\"><a href=\"#\">Geomap</a></li>\n")
-else
-   if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
-      print("<li><a href=\""..url.."&page=geomap\">Geomap</a></li>")
+if(not(isLoopback(ifname))) then
+   if(page == "geomap") then
+      print("<li class=\"active\"><a href=\"#\">Geomap</a></li>\n")
+   else
+      if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
+	 print("<li><a href=\""..url.."&page=geomap\">Geomap</a></li>")
+      end
    end
+else
+
 end
 
 if(page == "jaccard") then

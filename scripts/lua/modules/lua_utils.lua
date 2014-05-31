@@ -1290,3 +1290,11 @@ function getThroughputType()
   end
   return throughput_type
 end
+
+function isLoopback(name) 
+   if((name == "lo") or (name == "lo0")) then
+      return(true)
+   else
+      return(false)
+   end
+end

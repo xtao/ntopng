@@ -257,7 +257,7 @@ print [[
            $('#drops_trend').html("<i class=\"fa fa-arrow-up\"></i>");
         }
         last_pkts = rsp.packets;
-        last_drops == rsp.drops;
+        last_drops = rsp.drops;
 
         if((rsp.packets+rsp.drops) > 0) { pctg = ((rsp.drops*100)/(rsp.packets+rsp.drops)).toFixed(2); }
         if(rsp.drops > 0) { drops = '<span class="label label-danger">'; }

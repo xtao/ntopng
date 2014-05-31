@@ -11,6 +11,7 @@ sendHTTPHeader('text/html')
 
 interface.find(ifname)
 ifstats = interface.getStats()
+is_loopback = isLoopback(ifname)
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
@@ -36,7 +37,13 @@ if (refresh == '') then refresh = 5000 end
 -- 
 
 page = _GET["page"]
-if(page == nil) then page = "TopFlowTalkers" end
+if(page == nil) then 
+   if(not(is_loopback)) then
+      page = "TopFlowTalkers" 
+   else
+      page = "TopHosts"
+   end
+end
 
 if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 -- Print tabbed header
@@ -45,8 +52,10 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 
    print('<li><a href="#">Dashboard: </a></li>\n')
 
-   if(page == "TopFlowTalkers") then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopFlowTalkers">Talkers</a></li>\n')
+   if(not(is_loopback)) then
+      if(page == "TopFlowTalkers") then active=' class="active"' else active = "" end
+      print('<li'..active..'><a href="/?page=TopFlowTalkers">Talkers</a></li>\n')
+   end
 
    if((page == "TopHosts")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopHosts">Hosts</a></li>\n')
@@ -54,11 +63,13 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if((page == "TopApplications")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopApplications">Applications</a></li>\n')
 
-   if((page == "TopASNs")) then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopASNs">ASNs</a></li>\n')
+   if(not(is_loopback)) then
+      if((page == "TopASNs")) then active=' class="active"' else active = "" end
+      print('<li'..active..'><a href="/?page=TopASNs">ASNs</a></li>\n')
 
-   if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
+      if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
+      print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
+   end
 
    print('</ul>\n\t</div>\n\t</nav>\n')
 
