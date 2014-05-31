@@ -47,7 +47,7 @@ print [[
 		print("<header><h3></h3></header>")
 		print('<div id="tooltip">')
 		print [[
-			<table class="table table-bordered">
+			<table class="table table-bordered table-striped">
 				<thead>
 					<th style="text-align: center;">Host</th>
 					<th style="text-align: center;">Sent</th>

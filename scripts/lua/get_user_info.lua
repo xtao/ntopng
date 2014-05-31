@@ -47,7 +47,7 @@ print('</ul>\n\t</div>\n\t</div>\n')
 
 if(page == "UserApps") then
 print [[
-    <table class="table table-bordered">
+    <table class="table table-bordered table-striped">
       <tr><th class="text-center">
       <h4>Top Applications</h4>
         <td><div class="pie-chart" id="topApps"></div></td>
@@ -84,7 +84,7 @@ print [[
       <div class="tab-content">
 
         <div class="tab-pane active" id="l7">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-striped">
             <tr>
               <th class="text-center">Top L7 Protocols</th>
               <td><div class="pie-chart" id="topL7"></div></td>
@@ -94,7 +94,7 @@ print [[
 
 
         <div class="tab-pane" id="l4">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-striped">
             <tr>
               <th class="text-center">Top L4 Protocols</th>
               <td><div class="pie-chart" id="topL4"></div></td>

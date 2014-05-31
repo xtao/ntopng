@@ -95,7 +95,7 @@ print [[
 
 <div class="tab-pane" id="Timeline">
   <h2>Processes Timeline</h2><br/> 
-  <table class="table table-bordered">
+  <table class="table table-bordered table-striped">
     <tr>
       
       <th class="text-center span3">

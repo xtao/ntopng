@@ -117,7 +117,7 @@ print [[
 
 print [[
         <div class="tab-pane active" id="l7">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-striped">
             <tr>
               <th class="text-center">Top L7 Protocols</th>
               <td><div class="pie-chart" id="topL7"></div></td>
@@ -129,7 +129,7 @@ print [[
 print [[
 
         <div class="tab-pane" id="l4">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-striped">
             <tr>
               <th class="text-center">Top L4 Protocols</th>
               <td><div class="pie-chart" id="topL4"></div></td>
@@ -287,7 +287,7 @@ print [[
 
 print [[
         <div class="tab-pane active" id="topHost">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-striped">
             <tr>
               <th class="text-center span3">Top Hosts Traffic</th>
               <td><div class="pie-chart" id="topHosts"></div></td>

@@ -89,7 +89,7 @@ end
 if(flow == nil) then
    print("<div class=\"alert alert-danger\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
-   print("<table class=\"table table-bordered\">\n")
+   print("<table class=\"table table-bordered table-striped\">\n")
    if ((flow["vlan"] ~= nil) and (flow["vlan"] ~= 0)) then
       ifstats = interface.getStats()
       print("<tr><th width=30%>")

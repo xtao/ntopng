@@ -273,7 +273,7 @@ print [[
    ]]
 
 if((page == "overview") or (page == nil)) then
-   print("<table class=\"table table-bordered\">\n")
+   print("<table class=\"table table-bordered table-striped\">\n")
 
    if(host["ip"] ~= nil) then
       -- print("<tr><th>(Router) MAC Address</th><td><A HREF=\"host_details.lua?host=" .. host["mac"].. "\">" .. host["mac"].."</A></td></tr>\n")
@@ -1023,7 +1023,7 @@ for v,k in pairsByKeys(vals, rev) do
   
    if(v > 0) then
       if(n == 0) then
-	 print("<table class=\"table table-bordered\">\n")
+	 print("<table class=\"table table-bordered table-striped\">\n")
 	 print("<tr><th>Local Hosts Similar to ".. hostinfo2hostkey(host) .."</th><th>Jaccard Coefficient</th><th>Activity Map</th>\n")
       end
 
@@ -1443,7 +1443,7 @@ print [[
           </div><!-- /btn-group -->
          <br/>
          <br/>
-        <table class="table table-bordered">
+        <table class="table table-bordered table-striped">
           <tr>
             <th class="text-center span3">Top Users</th>
             <td class="span3"><div class="pie-chart" id="topUsers"></div></td>
@@ -1472,7 +1472,7 @@ print [[
           </div><!-- /btn-group -->
          <br/>
          <br/>
-        <table class="table table-bordered">
+        <table class="table table-bordered table-striped">
           <tr>
             <th class="text-center span3">Top Processes</th>
              <td class="span3"><div class="pie-chart" id="topProcess"></div></td>
@@ -1503,7 +1503,7 @@ print [[
          <br/>
          <br/>
         </table>
-        <table class="table table-bordered">
+        <table class="table table-bordered table-striped">
           <tr>
             <th class="text-center span3">Processes Traffic Tree
             </th>

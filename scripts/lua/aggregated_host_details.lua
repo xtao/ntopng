@@ -73,7 +73,7 @@ print [[
 
 --print("<b>".._GET["page"].."</b>")
 if(page == "overview") then
-   print("<table class=\"table table-bordered\">\n")
+   print("<table class=\"table table-bordered table-striped\">\n")
    print("<tr><th>Name</th><td>")
    host["family_name"] = interface.getNdpiProtoName(host["family"])
 
