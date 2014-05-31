@@ -995,20 +995,20 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 
   snprintf(_port, sizeof(_port), "%u", port);
   if(ntop->getRedis()->hashGet((char*)SPROBE_HASH_NAME, _port, rsp, sizeof(rsp)) == -1)
-    return;
+    return;  
 
   /* <PID>,<process name> */
   if((pid = strtok_r(rsp, ",", &w)) == NULL) return;
   if((process_name = strtok_r(NULL, ",", &w)) == NULL) return;
     
   snprintf(path, sizeof(path), "/proc/%s/status", pid);
-
+  
+  memset(&p, 0, sizeof(p));
+  snprintf(p.name, sizeof(p.name), "%s", process_name);
+  p.pid = atol(pid);
+  
   if((f = fopen(path, "r")) != NULL) {
     char *line, buf[128];
-
-    memset(&p, 0, sizeof(p));
-    snprintf(p.name, sizeof(p.name), "%s", process_name);
-    p.pid = atol(pid);
 
     /*
       typedef struct {
@@ -1066,10 +1066,9 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 				   srv_host->get_ip()->print(buf2, sizeof(buf2)), ntohs(srv_port),
 				   p.name);
     }
-
-
-    handle_process(&p, as_client);
   }
+
+  handle_process(&p, as_client);
 }
 
 /* *************************************** */
@@ -1077,11 +1076,13 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 void Flow::refresh_process() {
   if(!iface->is_sprobe_interface()) return;
 
-  if(cli_host && cli_host->isSystemHost())
-    refresh_process_peer(cli_host, ntohs(cli_port), true);  
-
-  if(srv_host && srv_host->isSystemHost())
-    refresh_process_peer(srv_host, ntohs(srv_port), false);  
+  if(srv_port && cli_port) {
+    if(cli_host && cli_host->isSystemHost())
+      refresh_process_peer(cli_host, ntohs(cli_port), true);  
+    
+    if(srv_host && srv_host->isSystemHost())
+      refresh_process_peer(srv_host, ntohs(srv_port), false);  
+  }
 }
 
 /* *************************************** */

@@ -29,8 +29,9 @@ function get_icon_url(name)
   if (file_exists(httpdocs..icon_url)) then return icon_url else return '' end
 end
 
+is_loopback = isLoopback(ifname)
+
 for key, value in pairs(flows_stats) do
-  
   -- Find client and server name
   srv_name = flows_stats[key]["srv.host"]
   if((srv_name == "") or (srv_name == nil)) then
@@ -46,7 +47,11 @@ for key, value in pairs(flows_stats) do
 
   -- Get client and server information
   if (flows_stats[key]["client_process"] ~= nil) then 
-    client_id = flows_stats[key]["cli.source_id"]..'-'..flows_stats[key]["cli.ip"]..'-'..flows_stats[key]["client_process"]["pid"]
+     if(is_loopback) then
+	client_id = flows_stats[key]["cli.source_id"]..'-localhost-'..flows_stats[key]["client_process"]["pid"]
+     else
+	client_id = flows_stats[key]["cli.source_id"]..'-'..flows_stats[key]["cli.ip"]..'-'..flows_stats[key]["client_process"]["pid"]
+     end
     client_name = flows_stats[key]["client_process"]["name"]
     client_type = "syshost"
   else
@@ -56,7 +61,11 @@ for key, value in pairs(flows_stats) do
   end
 
   if (flows_stats[key]["server_process"] ~= nil) then 
-    server_id = flows_stats[key]["srv.source_id"]..'-'..flows_stats[key]["srv.ip"]..'-'..flows_stats[key]["server_process"]["pid"]
+     if(is_loopback) then
+	server_id = flows_stats[key]["srv.source_id"]..'-localhost-'..flows_stats[key]["server_process"]["pid"]
+     else
+	server_id = flows_stats[key]["srv.source_id"]..'-'..flows_stats[key]["srv.ip"]..'-'..flows_stats[key]["server_process"]["pid"]
+     end
     server_name = flows_stats[key]["server_process"]["name"]
     server_type = "syshost"
   else
