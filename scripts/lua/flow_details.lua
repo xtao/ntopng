@@ -145,13 +145,25 @@ else
 
    if(flow["tcp_flags"] > 0) then
       print("<tr><th width=30%>TCP Flags</th><td colspan=2>")
-
-      if(hasbit(flow["tcp_flags"],0x01)) then print('<span class="label label-info">FIN</span> ')  end
+      
+      flow_completed = false
+      flow_reset = false
+      if(hasbit(flow["tcp_flags"],0x01)) then print('<span class="label label-info">FIN</span> ')  flow_completed = true end
       if(hasbit(flow["tcp_flags"],0x02)) then print('<span class="label label-info">SYN</span> ')  end
-      if(hasbit(flow["tcp_flags"],0x04)) then print('<span class="label label-info">RST</span> ')  end
+      if(hasbit(flow["tcp_flags"],0x04)) then print('<span class="label label-danger">RST</span> ') flow_completed = true flow_reset = true end
       if(hasbit(flow["tcp_flags"],0x08)) then print('<span class="label label-info">PUSH</span> ') end
       if(hasbit(flow["tcp_flags"],0x10)) then print('<span class="label label-info">ACK</span> ')  end
       if(hasbit(flow["tcp_flags"],0x20)) then print('<span class="label label-info">URG</span> ')  end
+
+      if(flow_reset) then
+	 print(" <small>This flow has been reset and probably the server application is down.</small>")
+      else
+	 if(flow_completed) then
+	    print(" <small>This flow is completed and will soon expire.</small>")
+	 else
+	    print(" <small>This flow is active.</small>")
+	 end
+      end
 
       print("</td></tr>\n")
    end
