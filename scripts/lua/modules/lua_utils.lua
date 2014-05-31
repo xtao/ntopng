@@ -1243,7 +1243,7 @@ end
 -- ############################################
 -- Runtime preference
 
-function toggleTableButton(label, comment, on_label, on_value, off_label, off_value, submit_field, redis_key)
+function toggleTableButton(label, comment, on_label, on_value, on_color , off_label, off_value, off_color, submit_field, redis_key)
    if(_GET[submit_field] ~= nil) then
       ntop.setCache(redis_key, _GET[submit_field])
       value = _GET[submit_field]
@@ -1255,19 +1255,10 @@ function toggleTableButton(label, comment, on_label, on_value, off_label, off_va
    if(value == off_value) then 
       rev_value  = on_value
       on_active  = "btn-default"
-      if(off_value == "0") then
-	 off_active = "btn-danger active" -- Red
-      else
-	 off_active = "btn-default active"   -- Cyano
-      end
+      off_active = "btn-"..off_color.." active"
    else
       rev_value  = off_value
-
-      if(on_value == "1") then
-	 on_active  = "btn-success active"
-      else
-	 on_active  = "btn-default active"
-      end
+      on_active  = "btn-"..on_color.." active"
       off_active = "btn-default"
    end
 
