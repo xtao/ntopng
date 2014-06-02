@@ -13,7 +13,7 @@ active_page = "if_stats"
 ifname = interface.setActiveInterfaceId(tonumber(_GET["id"]))
 
 if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
-   key = "sessions." .. _SESSION["session"] .. ".ifname"
+   key = "ntopng.prefs." .. _SESSION["user"] .. ".ifname"
    ntop.setCache(key, ifname)	
 
    sendHTTPHeaderIfName('text/html', ifname, 3600)

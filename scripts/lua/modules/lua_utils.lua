@@ -5,8 +5,8 @@ require "lua_trace"
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
-
    ifname = _GET["ifname"]
+
    if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"]) end
 
    if((ifname == nil) and (_SESSION ~= nil)) then

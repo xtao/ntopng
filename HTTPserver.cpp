@@ -212,12 +212,6 @@ static void authorize(struct mg_connection *conn,
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     ntop->getRedis()->set(key, user, HTTP_SESSION_DURATION);
     ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Set session sessions.%s", session_id);
-
-    snprintf(key, sizeof(key), "sessions.%s.ifname", session_id);
-    ntop->getRedis()->del(key);
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Set sessions.%s.ifname", session_id);
-
-    // ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Sending session %s", session_id);
   } else {
     // Authentication failure, redirect to login.
     redirect_to_login(conn, request_info);

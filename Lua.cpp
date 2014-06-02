@@ -2457,7 +2457,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
   lua_push_str_table_entry(L, "session", buf);
 
   if(user[0] != '\0') {
-    snprintf(key, sizeof(key), "ntopng.prefs.%s.iface", user);
+    snprintf(key, sizeof(key), "ntopng.prefs.%s.ifname", user);
     if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
     set_default_if_name_in_session:
       snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
@@ -2473,7 +2473,6 @@ int Lua::handle_script_request(struct mg_connection *conn,
     if((iface = ntop->getInterface(val)) != NULL) {
       /* The specified interface still exists */
       lua_push_str_table_entry(L, "ifname", iface->get_name());
-      ntop->getRedis()->expire(key, 3600); /* Extend session */
     } else {
       goto set_default_if_name_in_session;
     }
