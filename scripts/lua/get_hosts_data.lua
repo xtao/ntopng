@@ -294,7 +294,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
       
-      if(value["throughput_trend_"..throughput_type] > 0) then 
+      if (  (value["throughput_trend_"..throughput_type] ~= nil) and 
+            (value["throughput_trend_"..throughput_type] > 0) 
+      ) then
 
         if (throughput_type == "pps") then
           print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")

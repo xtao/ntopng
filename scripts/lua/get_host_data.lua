@@ -42,7 +42,9 @@ else
 
   print("\"column_traffic\" : \"" .. bytesToSize(host["bytes.sent"]+host["bytes.rcvd"]).. "\", ")
 
-  if(host["throughput_trend_"..throughput_type] > 0) then 
+  if (  (host["throughput_trend_"..throughput_type] ~= nil) and 
+        (host["throughput_trend_"..throughput_type] > 0) 
+  ) then
 
     if (throughput_type == "pps") then
       print ("\"column_thpt\" : \"" .. pktsToSize(host["throughput_bps"]).. " ")

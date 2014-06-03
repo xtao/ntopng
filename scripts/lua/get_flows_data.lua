@@ -407,7 +407,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
-	 if(value["throughput_trend_"..throughput_type] > 0) then 
+   if (debug) then io.write ("throughput_type: "..throughput_type.."\n") end
+	 if ( (value["throughput_trend_"..throughput_type] ~= nil) and 
+        (value["throughput_trend_"..throughput_type] > 0) 
+    ) then 
 
     if (throughput_type == "pps") then
       print ("\", \"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")

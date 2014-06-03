@@ -29,7 +29,9 @@ else
   print ("{ \"column_duration\" : \"" .. secondsToTime(flow["duration"]))
   print ("\", \"column_bytes\" : \"" .. bytesToSize(flow["bytes"]) .. "")
 
- if(flow["throughput_trend_"..throughput_type] > 0) then 
+ if ( (flow["throughput_trend_"..throughput_type] ~= nil) and 
+      (flow["throughput_trend_"..throughput_type] > 0) 
+  ) then
 
     if (throughput_type == "pps") then
       print ("\", \"column_thpt\" : \"" .. pktsToSize(flow["throughput_pps"]).. " ")
