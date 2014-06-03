@@ -147,7 +147,7 @@ for _key, value in pairs(flows_stats) do
 
     if((p["client_process"] ~= nil) and (client_process == 1) )then 
       k = p["client_process"]
-      key = k["name"].."@"..p["vlan"]
+      key = k["name"] -- .."@"..p["vlan"]
 
       if(processes[key] == nil) then
     processes[key] = { }
@@ -177,7 +177,7 @@ for _key, value in pairs(flows_stats) do
 
     if((p["server_process"] ~= nil) and (server_process == 1) )then 
       k = p["server_process"]
-      key = k["name"].."@"..p["vlan"]
+      key = k["name"] -- .."@"..p["vlan"]
 
       if(processes[key] == nil) then
     if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"INIT: Server process: "..key.." initialize with value: "..(p["cli2srv.bytes"] + p["srv2cli.bytes"]).." \n")end
