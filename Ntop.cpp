@@ -150,7 +150,7 @@ Ntop::~Ntop() {
   if(httpd)  delete httpd;
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
-  delete local_interface_addresses;
+  Destroy_Patricia(local_interface_addresses, NULL);
   delete rrd_lock;
   delete address;
   delete pa;
