@@ -105,3 +105,7 @@ img {
 #flow_dropdown {
   min-width: 110px;
 }
+/*Host dropdown resize*/
+#host_dropdown {
+  min-width: 100px;
+}

@@ -895,7 +895,7 @@ print [[
 				  ]]
 				  print("url: \"/lua/get_host_contacts.lua?"..hostinfo2url(host_info).."&protocol="..protocol_id.."\",\n")
 print [[
-	       buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu">]]
+	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu" rule="menu" id="host_dropdown">]]
 url = "/lua/host_details.lua?"..hostinfo2url(host_info).."&page=todays_contacts"
 print('<li><a href="'.. url ..'">All</a></li>')
 
