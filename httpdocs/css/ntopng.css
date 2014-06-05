@@ -97,15 +97,23 @@ https://github.com/twbs/bootstrap/issues/1552
 img {
   max-width: none;
 }
+
 /*Custom tooltip dimention*/
 .tooltip-inner {
   max-width: 350px;
 }
+
 /*Flow dropdown resize*/
 #flow_dropdown {
   min-width: 110px;
 }
+
 /*Host dropdown resize*/
 #host_dropdown {
-  min-width: 100px;
+min-width: 100px;
+}
+
+/*Automatically open dropdown-menu*/
+.dropdown:hover .dropdown-menu {
+  display: block;
 }
