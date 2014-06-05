@@ -59,6 +59,7 @@ end
 
 function findString(str, tofind)
    if(str == nil) then return(nil) end
+   if(tofind == nil) then return(nil) end
 
    str1    = string.gsub(str, "-", "_")
    tofind1 = string.gsub(tofind, "-", "_")
