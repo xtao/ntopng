@@ -110,5 +110,10 @@ typedef enum {
   aggregations_enabled_with_bitmap_dump
 } AggregationMode;
 
+struct zmq_msg_hdr {
+  char url[32];
+  u_int32_t version;
+  u_int32_t size;
+};
 
 #endif /* _NTOP_TYPEDEFS_H_ */

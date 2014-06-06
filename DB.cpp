@@ -137,14 +137,13 @@ void DB::initDB(time_t when, const char *create_sql_string) {
 
 /* ******************************************* */
 
-bool DB::dumpFlow(time_t when, Flow *f) {
+bool DB::dumpFlow(time_t when, Flow *f, char *json) {
   const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, "
     "srv_ip string KEY, srv_port number, proto number, bytes number, duration number, json string);";
-  char sql[4096], cli_str[64], srv_str[64], *json;
+  char sql[4096], cli_str[64], srv_str[64];
 
   initDB(when, create_flows_db);
 
-  json = f->serialize();
   ntop->getTrace()->traceEvent(TRACE_DEBUG, "Dump Flow: %s", json);
   snprintf(sql, sizeof(sql),
 	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
@@ -156,7 +155,6 @@ bool DB::dumpFlow(time_t when, Flow *f) {
 	   (unsigned long)f->get_bytes(), f->get_duration(),
 	   f->get_protocol(), json ? json : "");
 
-  if(json) free(json);
   execSQL(db, sql);
   return(true);
 }

@@ -21,18 +21,6 @@
 
 #include "ntop_includes.h"
 
-#ifdef __APPLE__
-#include <uuid/uuid.h>
-#endif
-
-#define MSG_VERSION 0
-
-struct zmq_msg_hdr {
-  char url[32];
-  u_int32_t version;
-  u_int32_t size;
-};
-
 /* **************************************************** */
 
 CollectorInterface::CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic)

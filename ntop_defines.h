@@ -57,13 +57,14 @@
 /* ***************************************************** */
 
 #ifdef WIN32
-#define PACKAGE_OSNAME          "Win32"
+#define PACKAGE_OSNAME            "Win32"
 #endif
 
-#define LOGIN_URL               "/login.html"
-#define AUTHORIZE_URL           "/authorize.html"
-#define HTTP_SESSION_DURATION   3600
-#define CONST_HTTPS_CERT_NAME   "ntopng-cert.pem"
+#define MSG_VERSION               0
+#define LOGIN_URL                 "/login.html"
+#define AUTHORIZE_URL             "/authorize.html"
+#define HTTP_SESSION_DURATION     3600
+#define CONST_HTTPS_CERT_NAME     "ntopng-cert.pem"
 
 #define NO_NDPI_PROTOCOL          ((u_int)-1)
 #define NDPI_MIN_NUM_PACKETS      10

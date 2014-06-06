@@ -29,15 +29,6 @@
 #define LIB_VERSION "1.4.7"
 #endif
 
-
-#define MSG_VERSION 0
-
-struct zmq_msg_hdr {
-  char url[32];
-  u_int32_t version;
-  u_int32_t size;
-};
-
 extern "C" {
 #include "rrd.h"
 #ifdef HAVE_GEOIP

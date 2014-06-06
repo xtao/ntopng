@@ -82,6 +82,10 @@
 #include <sys/stat.h>
 #include <zmq.h>
 
+#ifdef __APPLE__
+#include <uuid/uuid.h>
+#endif
+
 extern "C" {
 #include "pcap.h"
 #include "ndpi_main.h"
@@ -127,6 +131,7 @@ extern "C" {
 #include "StringHash.h"
 #include "NetworkInterface.h"
 #include "CollectorInterface.h"
+#include "ExportInterface.h"
 #include "PcapInterface.h"
 #ifdef HAVE_PF_RING
 #include "PF_RINGInterface.h"

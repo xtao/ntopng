@@ -41,6 +41,7 @@ Ntop::Ntop(char *appName) {
   prefs = NULL, redis = NULL;
   num_defined_interfaces = 0;
   local_interface_addresses = New_Patricia(128);
+  export_interface = NULL;
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
@@ -136,6 +137,11 @@ void Ntop::registerPrefs(Prefs *_prefs) {
   memset(iface, 0, sizeof(iface));
 
   redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
+
+  if(prefs->get_export_endpoint()) 
+    export_interface = new ExportInterface(prefs->get_export_endpoint());
+  else
+    export_interface = NULL;
 }
 
 /* ******************************************* */

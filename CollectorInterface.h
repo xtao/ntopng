@@ -40,7 +40,7 @@ class CollectorInterface : public NetworkInterface {
   zmq_subscriber subscriber[CONST_MAX_NUM_ZMQ_SUBSCRIBERS];
 
  public:
-  CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_script_name);
+  CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic);
   ~CollectorInterface();
 
   inline const char* get_type()         { return("zmq");      };

@@ -54,6 +54,7 @@ class Ntop {
   Geolocation *geo;
   Categorization *categorization;
   HTTPBL* httpbl;
+  ExportInterface *export_interface;
   Mutex *rrd_lock;
   long time_offset;
 
@@ -271,6 +272,7 @@ class Ntop {
   
   inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
   inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
+  inline ExportInterface* get_export_interface()              { return(export_interface);         };
 
   void getUsers(lua_State* vm);
   int  checkUserPassword(const char *user, const char *password);

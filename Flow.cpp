@@ -97,8 +97,19 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
-  if(ntop->getPrefs()->do_dump_flows_on_db())
-    cli_host->getInterface()->dumpFlow(last_seen, this);
+  if(ntop->getPrefs()->do_dump_flows_on_db() 
+     || ntop->get_export_interface()) {
+    char *json;
+
+    json = serialize();
+    cli_host->getInterface()->dumpFlow(last_seen, this, json);  
+    
+    if(ntop->get_export_interface())
+      ntop->get_export_interface()->export_data(json);
+
+    if(json) free(json);
+  }
+
   if(cli_host) cli_host->decUses();
   if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
@@ -220,7 +231,7 @@ void Flow::processDetectedProtocol() {
 	    }
 	  }
 
-	  aggregateInfo((char*)ndpi_flow->host_server_name, 
+	  aggregateInfo((char*)ndpi_flow->host_server_name,
 			ndpi_detected_protocol, aggregation_domain_name, to_track);
 	}
       }
@@ -638,12 +649,12 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   /* ntop->getTrace()->traceEvent(TRACE_NORMAL, "[msec: %.1f][tdiff: %f][pkts: %u][pkts_thpt: %.2f pps]",
   pkts_msec,tdiff_msec, (cli2srv_last_packets-prev_cli2srv_last_packets),
   (pkts_thpt)); */
-      
+
       updated = true;
     }
   } else
     updated = true;
-  
+
   if(updated)
     memcpy(&last_update_time, tv, sizeof(struct timeval));
 }
@@ -671,7 +682,7 @@ bool Flow::equal(IpAddress *_cli_ip, IpAddress *_srv_ip, u_int16_t _cli_port,
 
 json_object* Flow::processJson(ProcessInfo *proc) {
   json_object *inner;
-  
+
   inner = json_object_new_object();
   json_object_object_add(inner, "cpu_id", json_object_new_int64(proc->cpu_id));
   json_object_object_add(inner, "pid", json_object_new_int64(proc->pid));
@@ -679,7 +690,7 @@ json_object* Flow::processJson(ProcessInfo *proc) {
   json_object_object_add(inner, "name", json_object_new_string(proc->name));
   json_object_object_add(inner, "father_name", json_object_new_string(proc->father_name));
   json_object_object_add(inner, "user_name", json_object_new_string(proc->user_name));
-  
+
   return(inner);
 }
 
@@ -705,7 +716,7 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 }
 
 /* *************************************** */
-// 
+//
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
@@ -771,7 +782,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   lua_push_float_table_entry(vm, "throughput_bps", bytes_thpt);
   lua_push_int_table_entry(vm, "throughput_trend_bps", bytes_thpt_trend);
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[bytes_thpt: %.2f] [bytes_thpt_trend: %d]", bytes_thpt,bytes_thpt_trend);
-  
+
   lua_push_float_table_entry(vm, "throughput_pps", pkts_thpt);
   lua_push_int_table_entry(vm, "throughput_trend_pps", pkts_thpt_trend);
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[pkts_thpt: %.2f] [pkts_thpt_trend: %d]", pkts_thpt,pkts_thpt_trend);
@@ -817,11 +828,11 @@ bool Flow::isFlowPeer(char *numIP, u_int16_t vlanId) {
   char s_buf[32], *ret;
 
   ret = cli_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if ((strcmp(ret, numIP) == 0) && 
+  if ((strcmp(ret, numIP) == 0) &&
      (cli_host->get_vlan_id() == vlanId))return(true);
 
   ret = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if ((strcmp(ret, numIP) == 0) && 
+  if ((strcmp(ret, numIP) == 0) &&
      (cli_host->get_vlan_id() == vlanId))return(true);
 
   return(false);
@@ -859,35 +870,45 @@ char* Flow::serialize() {
   char *rsp, buf[64], jsonbuf[64];
 
   my_object = json_object_new_object();
+  json_object_object_add(my_object, Utils::jsonLabel(IPV4_SRC_ADDR,"IPV4_SRC_ADDR", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(my_object, Utils::jsonLabel(L4_SRC_PORT,"L4_SRC_PORT", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int(get_cli_port()));
 
-  json_object_object_add(my_object, Utils::jsonLabel(IPV4_SRC_ADDR,"IPV4_SRC_ADDR",jsonbuf,sizeof(jsonbuf)),json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(my_object, Utils::jsonLabel(L4_SRC_PORT,"L4_SRC_PORT",jsonbuf,sizeof(jsonbuf)),json_object_new_int(get_cli_port()));
- 
+  json_object_object_add(my_object, Utils::jsonLabel(IPV4_DST_ADDR,"IPV4_DST_ADDR", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(my_object, Utils::jsonLabel(L4_DST_PORT,"L4_DST_PORT", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int(get_srv_port()));
 
-  json_object_object_add(my_object, Utils::jsonLabel(IPV4_DST_ADDR,"IPV4_DST_ADDR",jsonbuf,sizeof(jsonbuf)),json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(my_object, Utils::jsonLabel(L4_DST_PORT,"L4_DST_PORT",jsonbuf,sizeof(jsonbuf)),json_object_new_int(get_srv_port()));
+  json_object_object_add(my_object, Utils::jsonLabel(PROTOCOL,"PROTOCOL", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int(protocol));
 
-
-  json_object_object_add(my_object, Utils::jsonLabel(PROTOCOL,"PROTOCOL",jsonbuf,sizeof(jsonbuf)), json_object_new_int(protocol));
-
-  json_object_object_add(my_object, Utils::jsonLabel(SRC_VLAN,"SRC_VLAN",jsonbuf,sizeof(jsonbuf)),json_object_new_int(cli_host->get_vlan_id()));
-  json_object_object_add(my_object, Utils::jsonLabel(DST_VLAN,"DST_VLAN",jsonbuf,sizeof(jsonbuf)),json_object_new_int(srv_host->get_vlan_id()));
+  json_object_object_add(my_object, Utils::jsonLabel(SRC_VLAN,"SRC_VLAN", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int(cli_host->get_vlan_id()));
+  json_object_object_add(my_object, Utils::jsonLabel(DST_VLAN,"DST_VLAN", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int(srv_host->get_vlan_id()));
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN))
-    json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO_NAME,"L7_PROTO_NAME",jsonbuf,sizeof(jsonbuf)), json_object_new_string(get_detected_protocol_name()));
+    json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO_NAME,"L7_PROTO_NAME", jsonbuf, sizeof(jsonbuf)),
+			   json_object_new_string(get_detected_protocol_name()));
 
   if(protocol == IPPROTO_TCP)
-    json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS,"TCP_FLAGS",jsonbuf,sizeof(jsonbuf)), json_object_new_int(tcp_flags));
+    json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS,"TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
+			   json_object_new_int(tcp_flags));
 
-  json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS,"OUT_PKTS",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(cli2srv_packets));
-  json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES,"OUT_BYTES",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(cli2srv_bytes));
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS,"OUT_PKTS", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int64(cli2srv_packets));
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES,"OUT_BYTES", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int64(cli2srv_bytes));
 
-  json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS,"IN_PKTS",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(srv2cli_packets));
-  json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES,"IN_BYTES",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(srv2cli_bytes));
+  json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS,"IN_PKTS", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int64(srv2cli_packets));
+  json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES,"IN_BYTES", jsonbuf, sizeof(jsonbuf)),
+			 json_object_new_int64(srv2cli_bytes));
 
   if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
-  
+
 
   if (0) {
     inner = json_object_new_object();
@@ -905,14 +926,13 @@ char* Flow::serialize() {
 
     if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
 
-    if(client_proc != NULL)    
-    json_object_object_add(my_object, "process_client", processJson(client_proc));
+    if(client_proc != NULL)
+      json_object_object_add(my_object, "process_client", processJson(client_proc));
 
-    if(server_proc != NULL)    
-    json_object_object_add(my_object, "process_server", processJson(server_proc));
+    if(server_proc != NULL)
+      json_object_object_add(my_object, "process_server", processJson(server_proc));
   }
 
-  
   /* JSON string */
   rsp = strdup(json_object_to_json_string(my_object));
   ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
@@ -999,18 +1019,18 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 
   snprintf(_port, sizeof(_port), "%s.%u", SPROBE_HASH_NAME, port);
   if(ntop->getRedis()->get(_port, rsp, sizeof(rsp)) == -1)
-    return;  
+    return;
 
   /* <PID>,<process name> */
   if((pid = strtok_r(rsp, ",", &w)) == NULL) return;
   if((process_name = strtok_r(NULL, ",", &w)) == NULL) return;
-    
+
   snprintf(path, sizeof(path), "/proc/%s/status", pid);
-  
+
   memset(&p, 0, sizeof(p));
   snprintf(p.name, sizeof(p.name), "%s", process_name);
   p.pid = atol(pid);
-  
+
   if((f = fopen(path, "r")) != NULL) {
     char *line, buf[128];
 
@@ -1034,7 +1054,7 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
       } else if(strncmp(line, "Uid:", 4) == 0) {
 	struct passwd *pwd;
         int uid = atoi(&buf[5]);
-	
+
 	if((uid >= 0) && ((pwd = getpwuid(uid)) != NULL))
 	  snprintf(p.user_name, sizeof(p.user_name), "%s", pwd->pw_name);
       }
@@ -1047,16 +1067,16 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
 
       if((f = fopen(path, "r")) != NULL) {
 	char *line, buf[128];
-	
+
 	while((line = fgets(buf, sizeof(buf), f)) != NULL) {
 	  buf[strlen(buf)-1] = '\0';
-	  
+
 	  if(strncmp(line, "Name:", 5) == 0) {
 	    snprintf(p.father_name, sizeof(p.father_name), "%s", &buf[6]);
 	    break;
 	  }
 	}
-	
+
 	fclose(f);
       }
     }
@@ -1082,10 +1102,10 @@ void Flow::refresh_process() {
 
   if(srv_port && cli_port) {
     if(cli_host && cli_host->isSystemHost())
-      refresh_process_peer(cli_host, ntohs(cli_port), true);  
-    
+      refresh_process_peer(cli_host, ntohs(cli_port), true);
+
     if(srv_host && srv_host->isSystemHost())
-      refresh_process_peer(srv_host, ntohs(srv_port), false);  
+      refresh_process_peer(srv_host, ntohs(srv_port), false);
   }
 }
 
@@ -1094,7 +1114,7 @@ void Flow::refresh_process() {
 u_int32_t Flow::getPid(bool client) {
   ProcessInfo *proc = client ? client_proc : server_proc;
 
-  return((proc == NULL) ? 0 : proc->pid); 
+  return((proc == NULL) ? 0 : proc->pid);
 };
 
 /* *************************************** */
@@ -1102,7 +1122,7 @@ u_int32_t Flow::getPid(bool client) {
 u_int32_t Flow::getFatherPid(bool client) {
   ProcessInfo *proc = client ? client_proc : server_proc;
 
-  return((proc == NULL) ? 0 : proc->father_pid); 
+  return((proc == NULL) ? 0 : proc->father_pid);
 };
 
 /* *************************************** */
@@ -1110,7 +1130,7 @@ u_int32_t Flow::getFatherPid(bool client) {
 char* Flow::get_username(bool client) {
   ProcessInfo *proc = client ? client_proc : server_proc;
 
-  return((proc == NULL) ? NULL : proc->user_name); 
+  return((proc == NULL) ? NULL : proc->user_name);
 };
 
 /* *************************************** */
@@ -1118,5 +1138,5 @@ char* Flow::get_username(bool client) {
 char* Flow::get_proc_name(bool client) {
   ProcessInfo *proc = client ? client_proc : server_proc;
 
-  return((proc == NULL) ? NULL : proc->name); 
+  return((proc == NULL) ? NULL : proc->name);
 };

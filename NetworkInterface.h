@@ -150,7 +150,7 @@ class NetworkInterface {
   void flushHostContacts();
   inline bool is_sprobe_interface()            { return(sprobe_interface); };
   inline void enable_sprobe()                  { sprobe_interface = true; };
-  bool dumpFlow(time_t when, Flow *f);
+  bool dumpFlow(time_t when, Flow *f, char *json);
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
     ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
     ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 

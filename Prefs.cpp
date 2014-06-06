@@ -166,6 +166,7 @@ void usage() {
 	 "                                    | 2 - Enable aggregations, with timeline\n"
 	 "                                    |     dump (see -C)\n"
 	 "[--dump-flows|-F]                   | Dump expired flows.\n"
+	 "[--export-flows|-I] <endpoint>      | Export flows using the specified endpoint.\n"
 	 "[--dump-hosts|-D] <mode>            | Dump hosts policy (default: none).\n"
 	 "                                    | Values:\n"
 	 "                                    | all    - Dump all hosts\n"
@@ -234,6 +235,7 @@ static const struct option long_options[] = {
   { "pid",                               required_argument, NULL, 'G' },
 #endif
   { "disable-alerts",                    no_argument,       NULL, 'H' },
+  { "export-flows",                      required_argument, NULL, 'I' },
   { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
@@ -442,6 +444,10 @@ int Prefs::setOption(int optkey, char *optarg) {
     disable_alerts = true;
     break;
 
+  case 'I':
+    export_endpoint = strdup(optarg);
+    break;
+
   case 'U':
     free(user);
     user = strdup(optarg);
@@ -503,7 +509,8 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HS:U:X:W:",
+  while((c = getopt_long(argc, argv, 
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HI:S:U:X:W:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

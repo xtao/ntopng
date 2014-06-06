@@ -43,7 +43,7 @@ class Prefs {
   bool dump_flows_on_db;
   AggregationMode enable_aggregations;
   char *ifNames[MAX_NUM_INTERFACES], *local_networks;
-  char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir;
+  char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir, *export_endpoint;
   char *categorization_key;
   char *httpbl_key;
   char *config_file_path, *ndpi_proto_path;
@@ -89,6 +89,7 @@ class Prefs {
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
+  inline char* get_export_endpoint()                    { return(export_endpoint);};
   inline char* get_categorization_key()                 { return(categorization_key); };
   inline char* get_httpbl_key()                         { return(httpbl_key); };
   inline bool  are_alerts_disabled()                    { return(disable_alerts);     };

@@ -55,7 +55,7 @@ class DB {
   ~DB();
 
   inline u_int8_t get_db_id()       { return(db_id); };
-  bool dumpFlow(time_t when, Flow *f);
+  bool dumpFlow(time_t when, Flow *f, char *json);
   void dumpContacts(HostContacts *c, char *path);
   bool execContactsSQLStatement(char* _sql);
 };

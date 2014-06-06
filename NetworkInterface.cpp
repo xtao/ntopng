@@ -197,8 +197,8 @@ NetworkInterface::~NetworkInterface() {
 
 /* **************************************************** */
 
-bool NetworkInterface::dumpFlow(time_t when, Flow *f) {
-  return(db->dumpFlow(when, f));
+bool NetworkInterface::dumpFlow(time_t when, Flow *f, char *json) {
+  return(db->dumpFlow(when, f, json));
 }
 
 /* **************************************************** */
