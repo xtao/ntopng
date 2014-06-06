@@ -145,6 +145,7 @@ bool DB::dumpFlow(time_t when, Flow *f) {
   initDB(when, create_flows_db);
 
   json = f->serialize();
+  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Dump Flow: %s", json);
   snprintf(sql, sizeof(sql),
 	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
 	   f->get_vlan_id(),

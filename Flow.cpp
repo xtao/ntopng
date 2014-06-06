@@ -856,62 +856,66 @@ void Flow::sumStats(NdpiStats *stats) {
 
 char* Flow::serialize() {
   json_object *my_object, *inner;
-  char *rsp, buf[64];
+  char *rsp, buf[64], jsonbuf[64];
 
   my_object = json_object_new_object();
 
-  inner = json_object_new_object();
-  json_object_object_add(inner, "ip",   json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(inner, "port", json_object_new_int(get_cli_port()));
-  json_object_object_add(my_object, "client", inner);
+  json_object_object_add(my_object, Utils::jsonLabel(IPV4_SRC_ADDR,"IPV4_SRC_ADDR",jsonbuf,sizeof(jsonbuf)),json_object_new_string(cli_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(my_object, Utils::jsonLabel(L4_SRC_PORT,"L4_SRC_PORT",jsonbuf,sizeof(jsonbuf)),json_object_new_int(get_cli_port()));
+ 
 
-  inner = json_object_new_object();
-  json_object_object_add(inner, "ip",   json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
-  json_object_object_add(inner, "port", json_object_new_int(get_srv_port()));
-  json_object_object_add(my_object, "server", inner);
+  json_object_object_add(my_object, Utils::jsonLabel(IPV4_DST_ADDR,"IPV4_DST_ADDR",jsonbuf,sizeof(jsonbuf)),json_object_new_string(srv_host->get_string_key(buf, sizeof(buf))));
+  json_object_object_add(my_object, Utils::jsonLabel(L4_DST_PORT,"L4_DST_PORT",jsonbuf,sizeof(jsonbuf)),json_object_new_int(get_srv_port()));
 
-  inner = json_object_new_object();
-  json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen));
-  json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
-  json_object_object_add(my_object, "seen", inner);
 
-  if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
+  json_object_object_add(my_object, Utils::jsonLabel(PROTOCOL,"PROTOCOL",jsonbuf,sizeof(jsonbuf)), json_object_new_int(protocol));
 
-  json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
-  json_object_object_add(my_object, "throughput_trend_bps", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+  json_object_object_add(my_object, Utils::jsonLabel(SRC_VLAN,"SRC_VLAN",jsonbuf,sizeof(jsonbuf)),json_object_new_int(cli_host->get_vlan_id()));
+  json_object_object_add(my_object, Utils::jsonLabel(DST_VLAN,"DST_VLAN",jsonbuf,sizeof(jsonbuf)),json_object_new_int(srv_host->get_vlan_id()));
 
-  json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
-  json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
-
-  inner = json_object_new_object();
-  json_object_object_add(inner, "l4", json_object_new_int(protocol));
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN))
-    json_object_object_add(inner, "ndpi", json_object_new_string(get_detected_protocol_name()));
-  json_object_object_add(my_object, "proto", inner);
+    json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO_NAME,"L7_PROTO_NAME",jsonbuf,sizeof(jsonbuf)), json_object_new_string(get_detected_protocol_name()));
 
-  if(protocol == IPPROTO_TCP) {
-    inner = json_object_new_object();
-    json_object_object_add(inner, "flags", json_object_new_int(tcp_flags));
-    json_object_object_add(my_object, "tcp", inner);
-  }
+  if(protocol == IPPROTO_TCP)
+    json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS,"TCP_FLAGS",jsonbuf,sizeof(jsonbuf)), json_object_new_int(tcp_flags));
+
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS,"OUT_PKTS",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(cli2srv_packets));
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES,"OUT_BYTES",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(cli2srv_bytes));
+
+  json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS,"IN_PKTS",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(srv2cli_packets));
+  json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES,"IN_BYTES",jsonbuf,sizeof(jsonbuf)),json_object_new_int64(srv2cli_bytes));
 
   if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
-  if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
+  
 
-  inner = json_object_new_object();
-  json_object_object_add(inner, "packets", json_object_new_int64(cli2srv_packets));
-  json_object_object_add(inner, "bytes", json_object_new_int64(cli2srv_bytes));
-  json_object_object_add(my_object, "cli2srv", inner);
+  if (0) {
+    inner = json_object_new_object();
+    json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen));
+    json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
+    json_object_object_add(my_object, "seen", inner);
 
-  if(client_proc != NULL)    
+    if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
+
+    json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
+    json_object_object_add(my_object, "throughput_trend_bps", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
+
+    json_object_object_add(my_object, "throughput_pps", json_object_new_double(pkts_thpt));
+    json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
+
+    if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
+
+    if(client_proc != NULL)    
     json_object_object_add(my_object, "process_client", processJson(client_proc));
 
-  if(server_proc != NULL)    
+    if(server_proc != NULL)    
     json_object_object_add(my_object, "process_server", processJson(server_proc));
+  }
 
+  
   /* JSON string */
   rsp = strdup(json_object_to_json_string(my_object));
+  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
 
   /* Free memory */
   json_object_put(my_object);

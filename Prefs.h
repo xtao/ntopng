@@ -54,6 +54,7 @@ class Prefs {
   int redis_port;
   int cpu_affinity;
   int dns_mode;
+  int json_symbolic_labels;
   FILE *logFd;
 
   inline void help() { usage(); };
@@ -115,6 +116,7 @@ class Prefs {
   inline LocationPolicy get_dump_aggregations_to_db()   { return(dump_aggregations_to_db);   };
   int save();
   void add_network_interface(char *name);
+  inline u_int32_t get_json_symbolic_labels()                  { return(json_symbolic_labels);  };
 };
 
 #endif /* _PREFS_H_ */

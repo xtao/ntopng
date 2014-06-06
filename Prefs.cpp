@@ -56,6 +56,7 @@ Prefs::Prefs(Ntop *_ntop) {
   memset(ifNames, 0, sizeof(ifNames));
   dump_hosts_to_db = location_none, dump_aggregations_to_db = location_none;
   shorten_aggregation_names = true; // TODO: make it configurable
+  json_symbolic_labels = 0;
 #ifdef WIN32
   daemonize = true;
 #endif
@@ -181,6 +182,8 @@ void usage() {
 	 "                                    | local  - Keep only local hosts\n"
 	 "                                    | remote - Keep only remote hosts\n"
 	 "                                    | none   - Flush hosts when idle\n"
+   "--json-labels                       | In case JSON label is used (e.g. with ZMQ/Sqlite)\n"
+   "                                    | labels instead of numbers are used as keys.\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE,
@@ -239,6 +242,7 @@ static const struct option long_options[] = {
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
+  { "json-labels",                       no_argument,       NULL, 211 },
 
   /* End of options */
   { NULL,                                no_argument,       NULL,  0 }
@@ -445,6 +449,10 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'X':
     max_num_flows = max_val(atoi(optarg), 1024);
+    break;
+
+  case 211:
+    json_symbolic_labels = 1;
     break;
 
   default:

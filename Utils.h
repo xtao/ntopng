@@ -30,6 +30,7 @@ class Utils {
  private:
 
  public:
+  static char* jsonLabel(int label,const char *label_str, char *buf, u_int buf_len);
   static char* formatTraffic(float numBits, bool bits, char *buf, u_int buf_len);
   static char* formatPackets(float numPkts, char *buf, u_int buf_len);
   static char* l4proto2name(u_int8_t proto);
