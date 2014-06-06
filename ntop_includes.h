@@ -146,6 +146,7 @@ extern "C" {
 #include "HTTPserver.h"
 #include "RuntimePrefs.h"
 #include "Ntop.h"
+#include "template.h"
 
 #ifdef WIN32
 extern const char *strcasestr(const char *haystack, const char *needle);
