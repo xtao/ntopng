@@ -131,7 +131,7 @@ void usage() {
 	 "                                    | services (default: disabled). \n"
 	 "                                    | Please read README.httpbl for\n"
 	 "                                    | more info.\n"
-	 "[--http-port|-w] <http port>        | HTTP port. Default: %u\n"
+	 "[--http-port|-w] <http port>        | HTTP port. Set to 0 to disable http server. Default: %u\n"
 	 "[--https-port|-W] <http port>       | HTTPS port. Default: %u\n"
 	 "[--local-networks|-m] <local nets>  | Local nets list (default: 192.168.1.0/24)\n"
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"

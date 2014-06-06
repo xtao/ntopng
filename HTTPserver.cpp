@@ -324,19 +324,26 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   static char ports[32], ssl_cert_path[MAX_PATH] = { 0 };
   char *_a = NULL, *_b = NULL;
   bool use_ssl = false;
+  bool use_http = true;
   struct stat buf;
 
   port = _port, docs_dir = strdup(_docs_dir), scripts_dir = strdup(_scripts_dir);
   httpserver = this;
+  if (port == 0) use_http = false;
 
-  snprintf(ports, sizeof(ports), "%d", port);
+  if (use_http)
+    snprintf(ports, sizeof(ports), "%d", port);
 
   snprintf(ssl_cert_path, sizeof(ssl_cert_path), "%s/ssl/%s",
 	   docs_dir, CONST_HTTPS_CERT_NAME);
 	   
   if(stat(ssl_cert_path, &buf) == 0) {
     use_ssl = true;
-    snprintf(ports, sizeof(ports), "%d,%ds", port, ntop->getPrefs()->get_https_port());
+    if (use_http)
+      snprintf(ports, sizeof(ports), "%d,%ds", port, ntop->getPrefs()->get_https_port());
+    else
+      snprintf(ports, sizeof(ports), "%ds", ntop->getPrefs()->get_https_port());
+
     ntop->getTrace()->traceEvent(TRACE_INFO, "Found SSL certificate %s", ssl_cert_path);
     _a = (char*)"ssl_certificate", _b = ssl_cert_path;
     ssl_enabled = true;
@@ -345,7 +352,13 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read README.SSL if you want to enable SSL");
     ssl_enabled = false;
   }
-
+  if ((!use_http) && (!use_ssl & !ssl_enabled)) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Impossible disable HTTP server: missing SSL certificate.");
+    port = CONST_DEFAULT_NTOP_PORT;
+    snprintf(ports, sizeof(ports), "%d", port);
+    use_http = true;
+  }
+  
   static char *http_options[] = { 
     (char*)"listening_ports", ports, 
     (char*)"enable_directory_listing", (char*)"no",
@@ -373,10 +386,15 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   /* ***************************** */
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Web server dirs [%s][%s]", docs_dir, scripts_dir);
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
 
-  if(use_ssl & ssl_enabled)
+  if (use_http)
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
+  else if(use_ssl & ssl_enabled)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", ntop->getPrefs()->get_https_port());
+  else 
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disable and missing SSL certificate.");
+
+
 };
 
 /* ****************************************** */
