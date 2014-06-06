@@ -28,13 +28,16 @@ class PcapInterface : public NetworkInterface {
  private:
   pcap_t *pcap_handle;
   bool read_pkts_from_pcap_dump;
+  FILE *pcap_list;
 
  public:
   PcapInterface(u_int8_t _id, const char *name);
   ~PcapInterface();
 
-  inline const char* get_type()    { return("pcap");      };
-  inline pcap_t* get_pcap_handle() { return(pcap_handle); };
+  inline const char* get_type()    { return("pcap");        };
+  inline pcap_t* get_pcap_handle() { return(pcap_handle);   };
+  inline void set_pcap_handle(pcap_t *p) { pcap_handle = p; };
+  inline FILE*   get_pcap_list()   { return(pcap_list);     };
   void startPacketPolling();
   void shutdown();
   u_int getNumDroppedPackets();
