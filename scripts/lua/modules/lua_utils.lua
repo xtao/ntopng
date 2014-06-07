@@ -393,6 +393,7 @@ function formatEpoch(epoch)
 end
 
 function secondsToTime(seconds)
+   if(seconds == nil) then return "" end
    if(seconds < 1) then
       return("< 1 sec")
    end

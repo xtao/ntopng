@@ -10,7 +10,6 @@ require "lua_utils"
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
-active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 application = _GET["application"]
@@ -26,7 +25,7 @@ num_param = 0
 print [[
       <hr>
       <div id="table-flows"></div>
-	 <script>
+   <script>
    var url_update = "/lua/get_flows_data.lua]]
 
    if(application ~= nil) then
@@ -64,21 +63,27 @@ if(key ~= nil) then
   num_param = num_param + 1
 end
 
+-- ACTIVE SQLITE 
+if (num_param > 0) then
+  print("&")
+else
+  print("?")
+end
+print("sqlite=/0/flows/2014/06/07/18/30.sqlite")
+
 print ('";')
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
 -- Set the flow table option
-if(prefs.is_categorization_enabled) then print ('flow_rows_option["categorization"] = true;\n') end
 if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
    print [[
 
-	 var table = $("#table-flows").datatable({
-			url: url_update , ]]
-print ('rowCallback: function ( row ) { return flow_table_setID(row); },')
-print [[ title: "Active Flows",
+   var table = $("#table-flows").datatable({
+      url: url_update , ]]
+
+print [[ title: "Historical Flows",
          showFilter: true,
-	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
+         showPagination: true,
+         buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
@@ -89,9 +94,7 @@ for key, value in pairsByKeys(stats["ndpi"], asc) do
    print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key..'">'..key..'</a></li>')
 end
 
-
 print("</ul> </div>' ],\n")
-
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_top.inc")
 
@@ -108,25 +111,8 @@ print [[
 ]]
 end
 
-
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_middle.inc")
 
-
-
-if(prefs.is_categorization_enabled) then
-print [[
-
-			     {
-			     title: "Category",
-				 field: "column_category",
-				 sortable: true,
-	 	             css: { 
-			        textAlign: 'center'
-			       }
-			       },
-
-		       ]]
-end
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_bottom.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

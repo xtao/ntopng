@@ -6,11 +6,14 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "sqlite_utils"
 
 sendHTTPHeader('text/html')
 local debug = debug_flow_data
 
 -- printGETParameters(_GET)
+
+sqlite = _GET["sqlite"]
 -- Table parameters
 all = _GET["all"]
 currentPage = _GET["currentPage"]
@@ -56,7 +59,12 @@ if (all ~= nil) then
 end
 
 interface.find(ifname)
-flows_stats = interface.getFlowsInfo()
+
+if (sqlite == nil) then
+  flows_stats = interface.getFlowsInfo()
+else
+  flows_stats = formatFlows(sqlite)
+end
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 total = 0
@@ -384,7 +392,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 
 	 print(dst_port)
-	
+	 
 	 if((value["vlan"] ~= nil)) then 
 	    print("\", \"column_vlan\" : \""..value["vlan"].."\"") 
 	 else

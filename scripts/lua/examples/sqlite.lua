@@ -17,10 +17,15 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 
 dirs = ntop.getDirs()
-rsp = ntop.execQuery(dirs.workingdir .. "/0/flows/14/05/31/12/45.sqlite", "SELECT * from flows LIMIT 10")
+
+query = _GET["query"]
+
+if (query == nil) then query = "/0/flows/14/05/31/12/45.sqlite" end
+
+rsp = ntop.execQuery(dirs.workingdir .. query, "SELECT * from flows LIMIT 10")
 
 if(rsp == nil) then
-   print("Query error")
+   print("<br>Query error")
 else
    print("<table class=\"table table-bordered table-striped\">\n")
    

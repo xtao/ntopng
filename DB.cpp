@@ -144,16 +144,19 @@ bool DB::dumpFlow(time_t when, Flow *f, char *json) {
 
   initDB(when, create_flows_db);
 
-  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Dump Flow: %s", json);
+  
   snprintf(sql, sizeof(sql),
-	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %lu, %u, %u, '%s');",
+	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %u, %lu, %u, '%s');",
 	   f->get_vlan_id(),
 	   f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)),
 	   f->get_cli_port(),
 	   f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)),
 	   f->get_srv_port(),
-	   (unsigned long)f->get_bytes(), f->get_duration(),
-	   f->get_protocol(), json ? json : "");
+     f->get_protocol(),
+	   (unsigned long)f->get_bytes(), 
+     f->get_duration(), json ? json : "");
+
+  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Dump Flow: %s", json);
 
   execSQL(db, sql);
   return(true);
