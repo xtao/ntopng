@@ -46,11 +46,10 @@ typedef struct ether80211q {
 } Ether80211q;
 
 typedef struct {
-  u_int8_t cpu_id;
   u_int32_t pid, father_pid;
   char name[48], father_name[48], user_name[48];
   u_int32_t actual_memory, peak_memory;
-  u_int8_t average_cpu_load;
+  float average_cpu_load;
   u_int32_t num_vm_page_faults;
 } ProcessInfo;
 
@@ -70,7 +69,7 @@ typedef struct zmq_flow {
   int epp_rsp_code;
 
   /* Process Extensions */
-  ProcessInfo process;
+  ProcessInfo src_process, dst_process;
 } ZMQ_Flow;
 
 /** @class NetworkInterface

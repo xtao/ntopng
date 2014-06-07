@@ -225,36 +225,65 @@ void CollectorInterface::collect_flows() {
 		case EPP_SERVER_NAME:
 		  snprintf(flow.epp_server_name, sizeof(flow.epp_server_name), "%s", value);
 		  break;
-		case PROC_CPU_ID:
-		  flow.process.cpu_id = atoi(value);
-		  break;
-		case PROC_ID:
+
+		case SRC_PROC_PID:
 		  sprobe_interface = true; /* We're collecting system flows */
-		  flow.process.pid = atoi(value);
+		  flow.src_process.pid = atoi(value);
 		  break;
-		case PROC_NAME:
-		  snprintf(flow.process.name, sizeof(flow.process.name), "%s", value);
+		case SRC_PROC_NAME:
+		  sprobe_interface = true; /* We're collecting system flows */
+		  snprintf(flow.src_process.name, sizeof(flow.src_process.name), "%s", value);
 		  break;
-		case PROC_FATHER_ID:
-		  flow.process.father_pid = atoi(value);
+		case SRC_PROC_USER_NAME:
+		  snprintf(flow.src_process.user_name, sizeof(flow.src_process.user_name), "%s", value);
 		  break;
-		case PROC_FATHER_NAME:
-		  snprintf(flow.process.father_name, sizeof(flow.process.father_name), "%s", value);
+		case SRC_FATHER_PROC_PID:
+		  flow.src_process.father_pid = atoi(value);
 		  break;
-		case PROC_USER_NAME:
-		  snprintf(flow.process.user_name, sizeof(flow.process.user_name), "%s", value);
+		case SRC_FATHER_PROC_NAME:
+		  snprintf(flow.src_process.father_name, sizeof(flow.src_process.father_name), "%s", value);
 		  break;
-		case PROC_ACTUAL_MEMORY:
-		  flow.process.actual_memory = atoi(value);
+		case SRC_PROC_ACTUAL_MEMORY:
+		  flow.src_process.actual_memory = atoi(value);
 		  break;
-		case PROC_PEAK_MEMORY:
-		  flow.process.peak_memory = atoi(value);
+		case SRC_PROC_PEAK_MEMORY:
+		  flow.src_process.peak_memory = atoi(value);
 		  break;
-		case PROC_AVERAGE_CPU_LOAD:
-		  flow.process.average_cpu_load = (u_int8_t)atoi(value);
+		case SRC_PROC_AVERAGE_CPU_LOAD:
+		  flow.src_process.average_cpu_load = (u_int8_t)atoi(value);
 		  break;
-		case PROC_NUM_PAGE_FAULTS:
-		  flow.process.num_vm_page_faults = atoi(value);
+		case SRC_PROC_NUM_PAGE_FAULTS:
+		  flow.src_process.num_vm_page_faults = atoi(value);
+		  break;
+
+		case DST_PROC_PID:
+		  sprobe_interface = true; /* We're collecting system flows */
+		  flow.dst_process.pid = atoi(value);
+		  break;
+		case DST_PROC_NAME:
+		  sprobe_interface = true; /* We're collecting system flows */
+		  snprintf(flow.dst_process.name, sizeof(flow.dst_process.name), "%s", value);
+		  break;
+		case DST_PROC_USER_NAME:
+		  snprintf(flow.dst_process.user_name, sizeof(flow.dst_process.user_name), "%s", value);
+		  break;
+		case DST_FATHER_PROC_PID:
+		  flow.dst_process.father_pid = atoi(value);
+		  break;
+		case DST_FATHER_PROC_NAME:
+		  snprintf(flow.dst_process.father_name, sizeof(flow.dst_process.father_name), "%s", value);
+		  break;
+		case DST_PROC_ACTUAL_MEMORY:
+		  flow.dst_process.actual_memory = atoi(value);
+		  break;
+		case DST_PROC_PEAK_MEMORY:
+		  flow.dst_process.peak_memory = atoi(value);
+		  break;
+		case DST_PROC_AVERAGE_CPU_LOAD:
+		  flow.dst_process.average_cpu_load = (u_int8_t)atoi(value);
+		  break;
+		case DST_PROC_NUM_PAGE_FAULTS:
+		  flow.dst_process.num_vm_page_faults = atoi(value);
 		  break;
 		default:
 		  ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);

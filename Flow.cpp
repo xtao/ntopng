@@ -684,12 +684,15 @@ json_object* Flow::processJson(ProcessInfo *proc) {
   json_object *inner;
 
   inner = json_object_new_object();
-  json_object_object_add(inner, "cpu_id", json_object_new_int64(proc->cpu_id));
   json_object_object_add(inner, "pid", json_object_new_int64(proc->pid));
   json_object_object_add(inner, "father_pid", json_object_new_int64(proc->father_pid));
   json_object_object_add(inner, "name", json_object_new_string(proc->name));
   json_object_object_add(inner, "father_name", json_object_new_string(proc->father_name));
   json_object_object_add(inner, "user_name", json_object_new_string(proc->user_name));
+  json_object_object_add(inner, "actual_memory", json_object_new_int(proc->actual_memory));
+  json_object_object_add(inner, "peak_memory", json_object_new_int(proc->peak_memory));
+  json_object_object_add(inner, "average_cpu_load", json_object_new_double(proc->average_cpu_load));
+  json_object_object_add(inner, "num_vm_page_faults", json_object_new_int(proc->num_vm_page_faults));
 
   return(inner);
 }
@@ -699,7 +702,6 @@ json_object* Flow::processJson(ProcessInfo *proc) {
 void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
   lua_newtable(vm);
 
-  lua_push_int_table_entry(vm, "cpu_id", proc->cpu_id);
   lua_push_int_table_entry(vm, "pid", proc->pid);
   lua_push_int_table_entry(vm, "father_pid", proc->father_pid);
   lua_push_str_table_entry(vm, "name", proc->name);
@@ -707,7 +709,7 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
   lua_push_str_table_entry(vm, "user_name", proc->user_name);
   lua_push_int_table_entry(vm, "actual_memory", proc->actual_memory);
   lua_push_int_table_entry(vm, "peak_memory", proc->peak_memory);
-  lua_push_int_table_entry(vm, "average_cpu_load", proc->average_cpu_load);
+  lua_push_float_table_entry(vm, "average_cpu_load", proc->average_cpu_load);
   lua_push_int_table_entry(vm, "num_vm_page_faults", proc->num_vm_page_faults);
 
   lua_pushstring(vm, client ? "client_process" : "server_process");
@@ -716,7 +718,7 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 }
 
 /* *************************************** */
-//
+
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
 
