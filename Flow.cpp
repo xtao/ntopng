@@ -58,7 +58,7 @@ Flow::Flow(NetworkInterface *_iface,
    */
   /* if(iface->is_ndpi_enabled()) */ allocFlowMemory();
 
-  refresh_process();
+  // refresh_process();
 }
 
 /* *************************************** */
@@ -1000,16 +1000,25 @@ void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
 /* *************************************** */
 
 void Flow::handle_process(ProcessInfo *pinfo, bool client_process) {
-  ProcessInfo *proc = new ProcessInfo;
+  ProcessInfo *proc;
 
-  if(!proc) return; /* Out of memory */
-
-  memcpy(proc, pinfo, sizeof(ProcessInfo));
-
-  if(client_process)
-    client_proc = proc, cli_host->setSystemHost(); /* Outgoing */
-  else
-    server_proc = proc, srv_host->setSystemHost();  /* Incoming */
+  if(client_process) {
+    if(client_proc)
+      memcpy(client_proc, pinfo, sizeof(ProcessInfo));
+    else {
+      if((proc = new ProcessInfo) == NULL) return;
+      memcpy(proc, pinfo, sizeof(ProcessInfo));
+      client_proc = proc, cli_host->setSystemHost(); /* Outgoing */
+    }
+  } else {
+    if(server_proc)
+      memcpy(server_proc, pinfo, sizeof(ProcessInfo));
+    else {
+      if((proc = new ProcessInfo) == NULL) return;
+      memcpy(proc, pinfo, sizeof(ProcessInfo));      
+      server_proc = proc, srv_host->setSystemHost();  /* Incoming */
+    }
+  }
 }
 
 /* *************************************** */
@@ -1094,7 +1103,7 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
     }
   }
 
-  handle_process(&p, as_client);
+  // !handle_process(&p, as_client);
 }
 
 /* *************************************** */
