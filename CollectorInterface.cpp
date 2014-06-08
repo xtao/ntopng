@@ -120,7 +120,7 @@ void CollectorInterface::collect_flows() {
 	  ZMQ_Flow flow;
 
 	  payload[size] = '\0';
-	  o = json_tokener_parse(payload);
+	  o = json_tokener_parse(payload);	  
 
 	  if(o != NULL) {
 	    struct json_object_iterator it = json_object_iter_begin(o);

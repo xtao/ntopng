@@ -357,8 +357,8 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
     process_epp_flow(zflow, flow);
 
   if(zflow->src_process.pid || zflow->dst_process.pid) {
-    if(zflow->src_process.pid) flow->handle_process(&zflow->src_process, true);
-    if(zflow->dst_process.pid) flow->handle_process(&zflow->dst_process, false);
+    if(zflow->src_process.pid) flow->handle_process(&zflow->src_process, src2dst_direction ? true : false);
+    if(zflow->dst_process.pid) flow->handle_process(&zflow->dst_process, src2dst_direction ? false : true);
     
     if(zflow->l7_proto == NDPI_PROTOCOL_UNKNOWN)
       flow->guessProtocol();
