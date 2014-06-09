@@ -62,6 +62,9 @@ ntopng processes on the edge of a network and a central collector) as follows:
 - Central ntopng
   ntopng -i "tcp://1.2.3.4:3456" -i "tcp://1.2.3.5:3457" -i "tcp://1.2.3.6:3458" 
 
+Note that on the central ntopng you can add "-i ethX" if you want the central ntopng
+monitor a local interface as well.
+
 
 Accessing ntopng URLs from command line tools (no web browser)
 --------------------------------------------------------------
