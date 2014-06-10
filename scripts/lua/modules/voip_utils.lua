@@ -12,7 +12,6 @@ local payload_type = 0
 function isVoip(key,value)
   key_label = getFlowKey(key)
   
-
   if (key_label == "Total number of exported flows") then return 1 end
 
   if (key_label =='Rtp Voice Quality') then

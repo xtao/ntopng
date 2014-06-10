@@ -23,7 +23,6 @@ function displayProc(proc)
    print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
 
    if(proc.actual_memory > 0) then
-      print("<tr><th width=30%>CPU ID</th><td colspan=2>".. proc.cpu_id .. "</td></tr>\n")
       print("<tr><th width=30%>Average CPU Load</th><td colspan=2>")
       
       if(proc.average_cpu_load < 33) then
@@ -191,14 +190,14 @@ else
 
    local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
    num = 0
+
    for key,value in pairs(info) do
       if(num == 0) then
 	 print("<tr><th colspan=3 class=\"info\">Additional Flow Elements</th></tr>\n")
       end
       
-      if (isVoip(key,value) == 0) then
-         print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
-      end
+      print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+
       num = num + 1
    end
 
