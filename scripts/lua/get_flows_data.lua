@@ -63,7 +63,10 @@ interface.find(ifname)
 if (sqlite == nil) then
   flows_stats = interface.getFlowsInfo()
 else
-  flows_stats = formatFlows(sqlite)
+  -- io.write(sqlite..'\n')
+  -- Sqlite:execQuery(sqlite, "SELECT * FROM flows")
+  -- flows_stats = Sqlite:getFlows()
+  if (flows_stats == nil) then flows_stats = {} end
 end
 
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")

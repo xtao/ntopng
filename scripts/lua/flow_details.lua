@@ -23,26 +23,26 @@ function displayProc(proc)
    print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
 
    if(proc.actual_memory > 0) then
-      print("<tr><th width=30%>Average CPU Load</th><td colspan=2>")
+      print("<tr><th width=30%>Average CPU Load</th><td colspan=2><span id=average_cpu_load_"..proc.pid..">")
       
       if(proc.average_cpu_load < 33) then
-	 if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
-	 print("<font color=green>"..proc.average_cpu_load.." %</font>")
-      elseif(proc.average_cpu_load < 66) then
-	 print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
-      else
-	 print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
-      end
-      print(" </td></tr>\n")
+	     if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
+	        print("<font color=green>"..proc.average_cpu_load.." %</font>")
+         elseif(proc.average_cpu_load < 66) then
+	        print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+         else
+	        print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+         end
+      print(" </span></td></tr>\n")
       
-      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2>".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</td></tr>\n")
-      print("<tr><th width=30%>VM Page Faults</th><td colspan=2>")
+      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2><span id=memory_"..proc.pid..">".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</span></td></tr>\n")
+      print("<tr><th width=30%>VM Page Faults</th><td colspan=2><span id=page_faults_"..proc.pid..">")
       if(proc.num_vm_page_faults > 0) then
 	 print("<font color=red><b>"..proc.num_vm_page_faults.."</b></font>")
       else
 	 print("<font color=green>"..proc.num_vm_page_faults.."</font>")
       end
-      print("</td></tr>\n")
+      print("</span></td></tr>\n")
    end
 
    if(proc.actual_memory == 0) then
@@ -270,6 +270,18 @@ setInterval(function() {
 			srv2cli_packets = rsp["srv2cli.packets"];
 			throughput = rsp["throughput"];
 			bytes = rsp["bytes"];
+
+         /* **************************************** */
+         // Processes information update, based on the pid
+         
+         for (var pid in rsp["processes"]) {
+            var proc = rsp["processes"][pid]
+            // console.log(pid);
+            // console.log(proc);
+            if (proc["memory"])           $('#memory_'+pid).html(proc["memory"]);
+            if (proc["average_cpu_load"]) $('#average_cpu_load_'+pid).html(proc["average_cpu_load"]);
+            if (proc["page_faults"])      $('#page_faults_'+pid).html(proc["page_faults"]);
+         }
 
 			/* **************************************** */
 

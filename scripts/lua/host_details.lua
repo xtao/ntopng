@@ -762,12 +762,34 @@ print [[
 print (hostinfo2url(host_info)..'";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
-if ((ifstats.iface_sprobe) or (ifstats.iface_vlan)) then show_vlan = true else show_vlan = false end
+if (ifstats.iface_sprobe) then show_sprobe = true else show_sprobe = false end
+if (ifstats.iface_vlan)   then show_vlan = true else show_vlan = false end
 -- Set the host table option 
+if(show_sprobe) then print ('flow_rows_option["sprobe"] = true;\n') end
 if(show_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 
+if (show_sprobe) then
 print [[
-    flow_rows_option["type"] = 'host';
+  //console.log(url_update);
+   flow_rows_option["sprobe"] = true;
+   flow_rows_option["type"] = 'host';
+   $("#table-flows").datatable({
+      url: url_update ,
+      rowCallback: function ( row ) { return flow_table_setID(row); },
+         showPagination: true,
+         title: "Active Flows",]]
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_top.inc")
+
+prefs = ntop.getPrefs()
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_bottom.inc")
+
+
+else
+
+print [[
+  flow_rows_option["type"] = 'host';
 	 $("#table-flows").datatable({
          url: url_update,
          rowCallback: function ( row ) { return flow_table_setID(row); },
@@ -803,6 +825,8 @@ print [[
 			     }
 				 },]]
 
+if(show_vlan) then
+
 if(ifstats.iface_sprobe) then
    print('{ title: "Source Id",\n')
 else
@@ -811,7 +835,7 @@ else
    end
 end
 
-if(show_vlan) then
+
 print [[
          field: "column_vlan",
          sortable: true,
@@ -863,6 +887,8 @@ print [[
        </script>
 
    ]]
+
+end
    elseif(page == "todays_contacts") then
 
    t = os.time()

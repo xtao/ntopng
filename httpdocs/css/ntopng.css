@@ -117,3 +117,7 @@ min-width: 100px;
 .dropdown:hover .dropdown-menu {
   display: block;
 }
+
+.dropdown:menu .caret {
+  display: block;
+}

@@ -30,6 +30,10 @@
     <![endif]-->
 
     <link href="/css/ntopng.css" rel="stylesheet">
+
+    <script type="text/javascript" src="/js/moment.js"></script>
+    <script type="text/javascript" src="/js/bootstrap-datetimepicker.js"></script> 
+    <link rel="stylesheet" href="/css/bootstrap-datetimepicker.css" />  
   </head>
 <body>
 
