@@ -58,18 +58,31 @@ end
 
 
 function findString(str, tofind)
-   if(str == nil) then return(nil) end
-   if(tofind == nil) then return(nil) end
+  if(str == nil) then return(nil) end
+  if(tofind == nil) then return(nil) end
 
-   str1    = string.gsub(str, "-", "_")
-   tofind1 = string.gsub(tofind, "-", "_")
-   rsp = string.find(str1, tofind1, 1)
+  str1    = string.gsub(str, "-", "_")
+  tofind1 = string.gsub(tofind, "-", "_")
+  rsp = string.find(str1, tofind1, 1)
 
-   --print(str1 .. "/" .. tofind1.."\n")
-   --print(rsp)
-   --print("\n")
+  if (rsp == nil) then
+    -- Lowercase
+    str1 = string.lower(str1)
+    tofind1 = string.lower(tofind1)
+    rsp = string.find(str1, tofind1, 1)
+  end
 
-   return(rsp)
+  if (rsp == nil) then
+    -- Uppercase
+    str1 = string.upper(str1)
+    tofind1 = string.upper(tofind1)
+    rsp = string.find(str1, tofind1, 1)
+  end
+  --print(str1 .. "/" .. tofind1.."\n")
+  --print(rsp)
+  --print("\n")
+
+  return(rsp)
 end
 
 function findStringArray(str, tofind)
@@ -906,10 +919,13 @@ function getApplicationLabel(name)
       elseif(findString(name, "Spotify")) then icon = '<i class=\'fa fa-headphones fa-lg\'></i>'
       elseif(findString(name, "DropBox")) then icon = '<i class=\'fa fa-dropbox fa-lg\'></i>'
       elseif(findString(name, "Apple")) then icon = '<i class=\'fa fa-apple fa-lg\'></i>'
-      elseif(findString(name, "Google")) then icon = '<i class=\'fa fa-google-plus fa-lg\'></i>'
+      elseif(findString(name, "Google") or 
+             findString(name, "Chrome")) then icon = '<i class=\'fa fa-google-plus fa-lg\'></i>'
       elseif(findString(name, "FaceBook")) then icon = '<i class=\'fa fa-facebook-square fa-lg\'></i>'
+      elseif(findString(name, "Youtube")) then icon = '<i class=\'fa fa-youtube-square fa-lg\'></i>'
+      elseif(findString(name, "thunderbird")) then icon = '<i class=\'fa fa-paper-plane fa-lg\'></i>'
    end
-
+   name = name:gsub("^%l", string.upper)
    return(icon.." "..name)
 end
 

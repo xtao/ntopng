@@ -51,39 +51,45 @@ else
   if(num == 0) then
      print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
   else
+    if(host_key ~= nil) then
+      name = ntop.getResolvedAddress(host_key)
+      if (name == nil) then
+        name = host_key
+      end
+    end
    print [[
             <nav class="navbar navbar-default" role="navigation">
               <div class="navbar-collapse collapse">
 <ul class="nav navbar-nav"> ]]
 
    if(pid_key ~= nil)then
-      print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
+      print [[ <li><a href="#">Pid: ]] print(pid_key) if(host_key ~= nil) then print(" - IP: "..name) end print [[ </a></li>]]
    elseif (name_key ~= nil)then
-      print [[ <li><a href="#">Name: ]] print(name_key) if(host_key ~= nill) then print(" - IP: "..host_key) end print [[ </a></li>]]
+      print [[ <li><a href="#">]] print (getApplicationLabel(name_key)) if(host_key ~= nil) then print(" - IP: "..host_key) end print [[ </a></li>]]
    end
    
    if(page == "Protocols") then active=' class="active"' else active = "" end
 
 if (pid_key ~= nil) then
-   print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
+   print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nil) then print("&host="..name) end print('&page=Protocols">Protocols</a></li>\n')
 elseif (name_key ~= nil) then
-   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
+   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Protocols">Protocols</a></li>\n')
 end
 
 if (general_process == 1) then
   if(page == "Hosts") then active=' class="active"' else active = "" end
   if (pid_key ~= nil) then
-    print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Hosts">Hosts</a></li>\n')
+    print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Hosts">Hosts</a></li>\n')
   elseif (name_key ~= nil) then
-   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Hosts">Hosts</a></li>\n')
+   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Hosts">Hosts</a></li>\n')
   end
 end
 
 if(page == "Flows") then active=' class="active"' else active = "" end
 if (pid_key ~= nil) then
- print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
+ print('<li'..active..'><a href="?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
   elseif (name_key ~= nil) then
-   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
+   print('<li'..active..'><a href="?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">Flows</a></li>\n')
   end
 
 print [[ <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a> ]]
@@ -229,10 +235,10 @@ print [[",
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
 if (pid_key ~= nil) then
-  print('<li><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+  print('<li><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 end
 if (name_key ~= nil) then
-  print('<li><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+  print('<li><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 end
 
 for key, value in pairsByKeys(stats["ndpi"], asc) do
@@ -243,11 +249,11 @@ for key, value in pairsByKeys(stats["ndpi"], asc) do
 
 
    if (pid_key ~= nil) then
-    print('<li '..class_active..'><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    print('<li '..class_active..'><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
     end
 
     if (name_key ~= nil) then
-    print('<li '..class_active..'><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    print('<li '..class_active..'><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
     end
 
 

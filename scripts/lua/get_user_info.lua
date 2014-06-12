@@ -23,22 +23,28 @@ application = _GET["application"]
 if(user_key == nil) then
    print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Missing user name</div>")
 else
+  if(host_key ~= nil) then
+    name = ntop.getResolvedAddress(host_key)
+    if (name == nil) then
+      name = host_key
+    end
+  end
   print [[
             <nav class="navbar navbar-default" role="navigation">
               <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-	    <li><a href="#">User: ]] print(user_key) if(host_key ~= nill) then print(" - Ip Address:"..host_key) end print [[  </a></li>
+	    <li><a href="#"><i class="fa fa-user fa-lg"></i> ]] print(user_key) if(host_key ~= nil) then print(' - <i class="fa fa-building fa-lg"></i> '..name) end print [[  </a></li>
    ]]
 
 
 if(page == "UserApps") then active=' class="active"' else active = "" end
-print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=UserApps">Applications</a></li>\n')
+print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=UserApps">Applications</a></li>\n')
 
 if(page == "UserProtocols") then active=' class="active"' else active = "" end
-print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=UserProtocols">Protocols</a></li>\n')
+print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=UserProtocols">Protocols</a></li>\n')
 
 if(page == "Flows") then active=' class="active"' else active = "" end
-print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flow</a></li>\n')
+print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">Flow</a></li>\n')
 
 
 print('</ul>\n\t</div>\n\t\t</nav>\n')
@@ -162,13 +168,13 @@ print [[",
          showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
-print('<li><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+print('<li><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+   print('<li '..class_active..'><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
 end
 
 
