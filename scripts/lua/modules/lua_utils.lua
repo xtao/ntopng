@@ -1319,7 +1319,7 @@ function processColor(proc)
    elseif(proc["average_cpu_load"] < 33) then
       return("<font color=green>"..proc["name"].."</font>")
    elseif(proc["average_cpu_load"] < 66) then
-      return("<font color=yellow>"..proc["name"].."</font>")
+      return("<font color=orange>"..proc["name"].."</font>")
    else
       return("<font color=red>"..proc["name"].."</font>")
    end
