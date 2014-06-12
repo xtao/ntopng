@@ -407,11 +407,13 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
 	 print ("\", \"column_ndpi\" : \"" .. getApplicationLabel(value["proto.ndpi"]))
 	 if(value["client_process"] ~= nil) then
-	    print ("\", \"column_client_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. value["client_process"]["name"].."</A>")
+	    print ("\", \"column_client_process\" : \"")
+	    print("<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. processColor(value["client_process"]).."</A>")
 	    print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["user_name"].."</A>")
 	 end
 	 if(value["server_process"] ~= nil) then
-	    print ("\", \"column_server_process\" : \"<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&name="..value["server_process"]["name"].."&host="..value["srv.ip"]..">" .. value["server_process"]["name"].."</A>")
+	    print ("\", \"column_server_process\" : \"")
+	    print("<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&name="..value["server_process"]["name"].."&host="..value["srv.ip"]..">" .. processColor(value["server_process"]).."</A>")
 	    print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["user_name"].."</A>")
 	 end
 

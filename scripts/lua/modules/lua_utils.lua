@@ -1296,3 +1296,15 @@ function isLoopback(name)
       return(false)
    end
 end
+
+function processColor(proc) 
+   if(proc == nil) then
+      return("")
+   elseif(proc["average_cpu_load"] < 33) then
+      return("<font color=green>"..proc["name"].."</font>")
+   elseif(proc["average_cpu_load"] < 66) then
+      return("<font color=yellow>"..proc["name"].."</font>")
+   else
+      return("<font color=red>"..proc["name"].."</font>")
+   end
+end
