@@ -52,7 +52,6 @@ else
      print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
   else
    print [[
-	   <div class="container-fluid">
             <nav class="navbar navbar-default" role="navigation">
               <div class="navbar-collapse collapse">
 <ul class="nav navbar-nav"> ]]
@@ -91,7 +90,7 @@ print [[ <li><a href="javascript:history.go(-1)"><i class='fa fa-reply'></i></a>
 
 -- End Tab Menu
 
-print('</ul>\n\t</div>\n\t</nav>\n\t</div>\n')
+print('</ul>\n\t</div>\n\t</nav>\n')
 
 
 if(page == "Protocols") then
@@ -99,7 +98,6 @@ if(page == "Protocols") then
 print [[
   <br>
   <!-- Left Tab -->
-  <div class="container-fluid">
 
    <ul class="nav nav-tabs">
 ]]
@@ -140,7 +138,7 @@ print [[
 
 print [[
       </div> <!-- End Tab content-->
-    </div> <!-- End Left Tab -->
+   
      </table>
 ]]
 
@@ -184,9 +182,8 @@ stats = interface.getNdpiStats()
 num_param = 0
 
 print [[
-      <div class="container-fluid">
       <div id="table-hosts"></div>
-      </div>
+
    <script>
    $("#table-hosts").datatable({
       url: "/lua/get_flows_data.lua]] 

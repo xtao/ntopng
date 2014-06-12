@@ -5,18 +5,7 @@
 require "os"
 
 print [[ 
-  <style>
-  #footer {
-  position: absolute;
-  bottom: 100px;
-  width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 60px;
-  backgroud-color: write;
-  }
-  </style>
-
-      <div id="footer-todo">
+      <div id="footer">
       <hr>
    ]]
 
@@ -320,7 +309,7 @@ setInterval(function() {
   $(document).ready(function () { $("i").tooltip({ 'selector': ''});});
 </script>
 
-    </div> <!-- /container -->
+    </div> <!-- / header main container -->
 
   </body>
 	 </html> ]]

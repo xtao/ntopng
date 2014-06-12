@@ -23,11 +23,10 @@ application = _GET["application"]
 if(user_key == nil) then
    print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Missing user name</div>")
 else
-   print [[
-	    <div class="bs-docs-example">
-            <div class="navbar">
-	    <div class="navbar-inner">
-	    <ul class="nav">
+  print [[
+            <nav class="navbar navbar-default" role="navigation">
+              <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
 	    <li><a href="#">User: ]] print(user_key) if(host_key ~= nill) then print(" - Ip Address:"..host_key) end print [[  </a></li>
    ]]
 
@@ -42,7 +41,7 @@ if(page == "Flows") then active=' class="active"' else active = "" end
 print('<li'..active..'><a href="?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">Flow</a></li>\n')
 
 
-print('</ul>\n\t</div>\n\t</div>\n')
+print('</ul>\n\t</div>\n\t\t</nav>\n')
 
 
 if(page == "UserApps") then
@@ -130,7 +129,6 @@ stats = interface.getNdpiStats()
 num_param = 0
 
 print [[
-      <hr>
       <div id="table-hosts"></div>
    <script>
    $("#table-hosts").datatable({
@@ -162,7 +160,7 @@ end
 
 print [[",
          showPagination: true,
-         buttons: [ '<div class="btn-group"><button class="btn dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu">]]
+         buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
 print('<li><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nill) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do

@@ -121,3 +121,13 @@ min-width: 100px;
 .dropdown:menu .caret {
   display: block;
 }
+
+/*Footer sticky*/
+#footer {
+  /*position: absolute;*/
+  /*bottom: 10px;*/
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 120px;
+  /*background-color: #f5f5f5;*/
+}
