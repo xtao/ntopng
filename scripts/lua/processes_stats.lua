@@ -21,9 +21,7 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 print [[
   <br>
   <br>
-  <!-- Left Tab -->
-  <div class="tabbable tabs-left">
-
+  
     <ul class="nav nav-tabs">
       <li class="active"><a href="#Overview" data-toggle="tab">Overview</a></li>
       <li ><a href="#Timeline" data-toggle="tab">Timeline</a></li>
@@ -36,14 +34,36 @@ print [[
 print [[
       <div class="tab-pane active" id="Overview">
 
-      <div id="table-hosts"></div>
-   <script>
-   $("#table-hosts").datatable({
+      <div id="table-processes"></div>
+   <script> ]]
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats_id.inc") 
+
+if(ifstats.iface_vlan) then print ('processes_rows_option["source_id"] = true;\n') end
+
+print [[
+   $("#table-processes").datatable({
           title: "Active Processes",
           url: "/lua/get_processes_data.lua",
           ]]
+print ('rowCallback: function ( row ) { return processes_table_setID(row); },')
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats_top.inc")
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats.inc")
+if(ifstats.iface_vlan) then
+print [[
+           {
+           title: "Source Id",
+         field: "column_vlan",
+         sortable: true,
+                 css: { 
+              textAlign: 'center'
+           }
+         },
+]]
+end
+
+
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats_bottom.inc")
+
 print 
 [[     </div> <!-- Tab Overview-->
 ]]
@@ -95,7 +115,7 @@ print [[
 
 <div class="tab-pane" id="Timeline">
   <h2>Processes Timeline</h2><br/> 
-  <table class="table table-bordered table-striped">
+  <table class="table table-bordered">
     <tr>
       
       <th class="text-center span3">
@@ -133,7 +153,7 @@ print [[
 <script>
   do_timeline("/lua/get_processes_data.lua",{ mode: "timeline" }, "name" ,2,300,2000);
 </script>
-</div>
+
 </div>
 ]]
 

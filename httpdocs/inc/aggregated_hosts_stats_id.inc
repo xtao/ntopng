@@ -67,7 +67,7 @@ function aggregated_host_table_update () {
   }
 }
 
-// Refresh Interval (5 sec)
+// Refresh Interval (10 sec)
 var aggregated_host_table_interval = window.setInterval(aggregated_host_table_update, 10000);
 // ---------------- End automatic table update code ------------------------
 

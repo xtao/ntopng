@@ -58,6 +58,7 @@ end
 
 
 function findString(str, tofind)
+  local upper_lower = false
   if(str == nil) then return(nil) end
   if(tofind == nil) then return(nil) end
 
@@ -65,20 +66,22 @@ function findString(str, tofind)
   tofind1 = string.gsub(tofind, "-", "_")
   rsp = string.find(str1, tofind1, 1)
 
-  if (rsp == nil) then
-    -- Lowercase
-    str1 = string.lower(str1)
-    tofind1 = string.lower(tofind1)
-    rsp = string.find(str1, tofind1, 1)
-  end
+  if (upper_lower) then
+    if (rsp == nil) then
+      -- Lowercase
+      str1 = string.lower(str1)
+      tofind1 = string.lower(tofind1)
+      rsp = string.find(str1, tofind1, 1)
+    end
 
-  if (rsp == nil) then
-    -- Uppercase
-    str1 = string.upper(str1)
-    tofind1 = string.upper(tofind1)
-    rsp = string.find(str1, tofind1, 1)
+    if (rsp == nil) then
+      -- Uppercase
+      str1 = string.upper(str1)
+      tofind1 = string.upper(tofind1)
+      rsp = string.find(str1, tofind1, 1)
+    end
   end
-  --print(str1 .. "/" .. tofind1.."\n")
+    --print(str1 .. "/" .. tofind1.."\n")
   --print(rsp)
   --print("\n")
 
@@ -925,6 +928,7 @@ function getApplicationLabel(name)
       elseif(findString(name, "Youtube")) then icon = '<i class=\'fa fa-youtube-square fa-lg\'></i>'
       elseif(findString(name, "thunderbird")) then icon = '<i class=\'fa fa-paper-plane fa-lg\'></i>'
    end
+
    name = name:gsub("^%l", string.upper)
    return(icon.." "..name)
 end

@@ -269,8 +269,8 @@ if (mode == "table") then
      srv_tooltip = ""
      cli_tooltip = ""
 
-    
-     print ("{ \"column_name\" : \"".."<A HREF='/lua/get_process_info.lua?name=" .. key .. "'>".. value["name"] .. "</A>")
+     print ("{ \"key\" : \"" .. key..'\"')
+     print (", \"column_name\" : \"".."<A HREF='/lua/get_process_info.lua?name=" .. key .. "'>".. value["name"] .. "</A>")
 
      print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
      print ("\", \"column_count\" : \"" .. value["count"])

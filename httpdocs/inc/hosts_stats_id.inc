@@ -87,7 +87,7 @@ function host_table_update () {
   }
 }
 
-// Refresh Interval (5 sec)
+// Refresh Interval (10 sec)
 var host_table_interval = window.setInterval(host_table_update, 10000);
 // ---------------- End automatic table update code ------------------------
 

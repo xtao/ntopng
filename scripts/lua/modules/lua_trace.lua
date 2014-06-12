@@ -3,7 +3,7 @@
 --
 
 -- Trace Level
-TRACE_LEVEL = 4
+TRACE_LEVEL = 2
 
 
 -- Login & session
