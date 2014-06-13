@@ -60,6 +60,7 @@ Prefs::Prefs(Ntop *_ntop) {
 #ifdef WIN32
   daemonize = true;
 #endif
+  export_endpoint = NULL;
 }
 
 /* ******************************************* */
