@@ -40,11 +40,12 @@ function row_update(process_key) {
       var data = response.data[0]
       // console.log(url);
       // console.log(data);
-
-      $("#"+process_key+'_duration').html(data.column_duration);
-      $("#"+process_key+'_count').html(data.column_count);
-      $("#"+process_key+'_bytes_sent').html(data.column_bytes_sent);
-      $("#"+process_key+'_bytes_rcvd').html(data.column_bytes_rcvd);
+      if (data) {
+        if (data.column_duration) $("#"+process_key+'_duration').html(data.column_duration);
+        if (data.column_count) $("#"+process_key+'_count').html(data.column_count);
+        if (data.column_bytes_sent) $("#"+process_key+'_bytes_sent').html(data.column_bytes_sent);
+        if (data.column_bytes_rcvd) $("#"+process_key+'_bytes_rcvd').html(data.column_bytes_rcvd);
+      }
 
     },
     error: function(content) {
