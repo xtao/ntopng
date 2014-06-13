@@ -277,6 +277,8 @@ if (mode == "table") then
      print ("\", \"column_bytes_sent\" : \"" .. bytesToSize(value["bytes_sent"]) .. "")
      print ("\", \"column_bytes_rcvd\" : \"" .. bytesToSize(value["bytes_rcvd"]) .. "")
      print ("\", \"column_vlan\" : \"" .. value["vlan"] .. "")
+     print ("\", \"bytes_sent\" : \"" .. value["bytes_sent"] .. "")
+     print ("\", \"bytes_rcvd\" : \"" .. value["bytes_rcvd"] .. "")
      print ("\" }\n")
      num = num + 1
         end

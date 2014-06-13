@@ -63,7 +63,14 @@ end
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats_bottom.inc")
-
+print [[
+  <script>
+  $( window ).load(function() {
+    processes_table_update();
+  });
+    
+  </script>
+]]
 print 
 [[     </div> <!-- Tab Overview-->
 ]]
