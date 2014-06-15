@@ -247,13 +247,13 @@ void IpAddress::dump(struct sockaddr *sa) {
 
 /* ******************************************* */
 
-bool IpAddress::isLocalHost() {
+bool IpAddress::isLocalHost(int16_t *network_id) {
   if(addr.ipVersion == 4) {
     u_int32_t v = /* htonl */(addr.ipType.ipv4);
 
-    return(ntop->isLocalAddress(AF_INET, (void*)&v));
+    return(ntop->isLocalAddress(AF_INET, (void*)&v, network_id));
   } else {
-    return(ntop->isLocalAddress(AF_INET6, (void*)&addr.ipType.ipv6));
+    return(ntop->isLocalAddress(AF_INET6, (void*)&addr.ipType.ipv6, network_id));
   }
 }
 

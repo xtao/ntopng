@@ -26,7 +26,7 @@
 /* **************************************** */
 
 AddressResolution::AddressResolution() {
-  num_resolved_addresses = num_resolved_fails = 0;
+  num_resolved_addresses = num_resolved_fails = 0, num_local_networks = 0;
   ptree = New_Patricia(128);
 }
 
@@ -116,10 +116,11 @@ patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *addr, int 
 
 /* ******************************************* */
 
-void ptree_add_rule(patricia_tree_t *ptree, char *line) {
+patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line) {
   char *ip, *bits;
   struct in_addr addr4;
   struct in6_addr addr6;
+  patricia_node_t *node = NULL;
 
   ip = line;
   bits  = strchr(line, '/');
@@ -132,7 +133,7 @@ void ptree_add_rule(patricia_tree_t *ptree, char *line) {
 
   if(strchr(ip, ':') != NULL) { /* IPv6 */
     if(inet_pton(AF_INET6, ip, &addr6) == 1)
-      add_to_ptree(ptree, AF_INET6, &addr6, atoi(bits));
+      node = add_to_ptree(ptree, AF_INET6, &addr6, atoi(bits));
     else
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Error parsing IPv6 %s\n", ip);
   } else { /* IPv4 */
@@ -147,16 +148,35 @@ void ptree_add_rule(patricia_tree_t *ptree, char *line) {
 	ntop->getTrace()->traceEvent(TRACE_WARNING, "Found ip smaller than netmask\n");
 
       //addr4.s_addr = ntohl(addr4.s_addr);
-      add_to_ptree(ptree, AF_INET, &addr4, atoi(bits));
+      node = add_to_ptree(ptree, AF_INET, &addr4, atoi(bits));
     } else {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Error parsing IPv4 %s\n", ip);
     }
   }
+
+  return(node);
 }
 
 /* ******************************************* */
 
-void AddressResolution::addLocalNetwork(char *net) { ptree_add_rule(ptree, net); }
+void AddressResolution::addLocalNetwork(char *_net) { 
+  patricia_node_t *node;
+  char *net = strdup(_net);
+
+  if(num_local_networks >= CONST_MAX_NUM_NETWORKS) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many networks defined: ignored %s", _net);
+    free(net);
+    return;
+  }
+
+  node = ptree_add_rule(ptree, _net);
+
+  if(node) {
+    local_networks[num_local_networks] = net;
+    node->user_data = num_local_networks;
+    num_local_networks++;
+  }
+}
 
 /* ******************************************* */
 
@@ -172,8 +192,13 @@ void AddressResolution::setLocalNetworks(char *rule) {
 
 /* ******************************************* */
 
-bool AddressResolution::findAddress(int family, void *addr) {
-  return((ptree_match(ptree, family, addr, (family == AF_INET) ? 32 : 128) != NULL) ? true /* found */ : false /* not found */);
+int16_t AddressResolution::findAddress(int family, void *addr) {
+  patricia_node_t *node = ptree_match(ptree, family, addr, (family == AF_INET) ? 32 : 128);
+  
+  if(node == NULL)
+    return(-1);
+  else
+    return(node->user_data);
 }
 
 /* **************************************** */
@@ -191,6 +216,9 @@ AddressResolution::~AddressResolution() {
 			       num_resolved_addresses, num_resolved_fails);
 
   if(ptree) Destroy_Patricia(ptree, free_ptree_data);
+
+  for(int i=0; i<num_local_networks; i++)
+    free(local_networks[i]);
 }
 
 /* ***************************************** */

@@ -105,15 +105,15 @@ else
 
       print("</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
    end
-   print("<tr><th width=30%>Client</th><td colspan=2><A HREF=\"/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
+     print("<tr><th width=30%>Flow Peers</th><td colspan=2><A HREF=\"/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
    if(flow["cli.host"] ~= "") then print(flow["cli.host"]) else print(flow["cli.ip"]) end
    if(flow["cli.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["cli.port"] > 0) then
       print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"])
    end
-   print("</A></td></tr>\n")
-   print("<tr><th width=30%>Server</th><td colspan=2><A HREF=\"/lua/host_details.lua?" .. hostinfo2url(flow,"srv") .. "\">")
+   print("</A> <i class=\"fa fa-exchange fa-lg\"></i> \n")
+   print("<A HREF=\"/lua/host_details.lua?" .. hostinfo2url(flow,"srv") .. "\">")
    if(flow["srv.host"] ~= "") then print(flow["srv.host"]) else print(flow["srv.ip"]) end
    if(flow["srv.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
@@ -125,11 +125,11 @@ else
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end
 
-   print("<tr><th width=30%>Application Protocol</th><td colspan=2><A HREF=\"/lua/")
+   print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/lua/")
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
-   print("<tr><th width=30%>First Seen</th><td colspan=2><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td></tr>\n")
-   print("<tr><th width=30%>Last Seen</th><td colspan=2><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
+   print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
+   print("<td nowrap><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 
    print("<tr><th width=30%>Total Traffic Volume</th><td colspan=2><span id=volume>" .. bytesToSize(flow["bytes"]) .. "</span> <span id=volume_trend></span></td></tr>\n")
 

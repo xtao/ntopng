@@ -240,7 +240,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 /* *************************************** */
 
 void Host::updateLocal() {
-  localHost = ip->isLocalHost();
+  localHost = ip->isLocalHost(&local_network_id);
 
   if(0) {
     char buf[64];
@@ -282,7 +282,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
   char buf_id[64];
 
   if(host_details) {
-    char *ipaddr = NULL;
+    char *ipaddr = NULL, *local_net;
 
     lua_newtable(vm);
 
@@ -306,6 +306,13 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
 
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_bool_table_entry(vm, "localhost", localHost);
+    lua_push_int32_table_entry(vm, "local_network_id", local_network_id);
+
+    local_net = ntop->getLocalNetworkName(local_network_id);
+    if(local_net == NULL)
+      lua_push_nil_table_entry(vm, "local_network_name");
+    else
+      lua_push_str_table_entry(vm, "local_network_name", local_net);
     lua_push_bool_table_entry(vm, "systemhost", systemHost);
     lua_push_int_table_entry(vm, "source_id", source_id);
     lua_push_int_table_entry(vm, "asn", ip ? asn : 0);

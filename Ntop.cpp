@@ -209,6 +209,13 @@ void Ntop::start() {
 
 /* ******************************************* */
 
+bool Ntop::isLocalAddress(int family, void *addr, int16_t *network_id) { 
+  *network_id = address->findAddress(family, addr);
+  return(((*network_id) == -1) ? false : true);
+};
+
+/* ******************************************* */
+
 bool Ntop::isLocalInterfaceAddress(int family, void *addr) {
   return((ptree_match(local_interface_addresses, family, addr, 
 		      (family == AF_INET) ? 32 : 128) != NULL) ? true /* found */ : false /* not found */);

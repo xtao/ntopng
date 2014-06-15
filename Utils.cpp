@@ -362,13 +362,14 @@ std::string Utils::base64_decode(std::string const& encoded_string) {
 
 bool Utils::dumpHostToDB(IpAddress *host, LocationPolicy policy) {
   bool do_dump = false;
+  int16_t network_id;
 
   switch(policy) {
   case location_local_only:
-    if(host->isLocalHost()) do_dump = true;
+    if(host->isLocalHost(&network_id)) do_dump = true;
     break;
   case location_remote_only:
-    if(!host->isLocalHost()) do_dump = true;
+    if(!host->isLocalHost(&network_id)) do_dump = true;
     break;
   case location_all:
     do_dump = true;

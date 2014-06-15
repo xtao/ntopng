@@ -20,9 +20,10 @@ currentPage = _GET["currentPage"]
 perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
-host_info = url2hostinfo(_GET)
+host_info   = url2hostinfo(_GET)
 port        = _GET["port"]
 application = _GET["application"]
+network_id  = _GET["network_id"]
 
 -- Host comparison parameters
 aggregation = _GET["aggregation"]
@@ -36,6 +37,10 @@ name = _GET["name"]
 
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
+
+if(network_id ~= nil) then
+   network_id = tonumber(network_id)
+end
 
 if(currentPage == nil) then
    currentPage = 1
@@ -108,6 +113,13 @@ for key, value in pairs(flows_stats) do
 
   if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
   if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
+
+
+  if(network_id ~= nil) then
+      if((flows_stats[key]["cli.network_id"] ~= network_id) and (flows_stats[key]["srv.network_id"] ~= network_id)) then
+      	    process = 0
+      end
+  end
 
 
    ---------------- L4 PROTO ----------------

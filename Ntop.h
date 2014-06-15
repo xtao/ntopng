@@ -136,9 +136,11 @@ class Ntop {
    *
    * @param family Internetwork: UDP, TCP, etc.
    * @param addr Internet Address.
+   * @param network_id It returns the networkId to which the host belongs to
    * @return True if the address is in the local networks, false otherwise.
    */
-  inline bool isLocalAddress(int family, void *addr) { return(address->findAddress(family, addr)); };
+  bool isLocalAddress(int family, void *addr, int16_t *network_id);
+
   /**
    * @brief Star ntopng instance.
    */
@@ -286,6 +288,7 @@ class Ntop {
   void shutdown();
   void runHousekeepingTasks();
   bool isLocalInterfaceAddress(int family, void *addr);
+  inline char* getLocalNetworkName(int16_t local_network_id) { return(address->get_local_network(local_network_id)); };
 };
 
 extern Ntop *ntop;

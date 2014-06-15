@@ -100,6 +100,17 @@ extern void lua_push_nil_table_entry(lua_State *L, const char *key);
  * @param value The value of hash table.
  */
 extern void lua_push_int_table_entry(lua_State *L, const char *key, u_int64_t value);
+
+
+/**
+ * @brief Push int32 value to table entry specify the key.
+ * 
+ * @param L The lua state.
+ * @param key The key of hash table.
+ * @param value The value of hash table.
+ */
+void lua_push_int32_table_entry(lua_State *L, const char *key, int32_t value);
+
 /**
  * @brief Push bool value to table entry specify the key.
  * @details Using LUA_NUMBER (double: 64 bit) in place of LUA_INTEGER (ptrdiff_t: 32 or 64 bit
@@ -118,6 +129,7 @@ extern void lua_push_bool_table_entry(lua_State *L, const char *key, bool value)
  * @param value The value of hash table.
  */
 extern void lua_push_float_table_entry(lua_State *L, const char *key, float value);
+
 
 
 #endif /* _LUA_H_ */

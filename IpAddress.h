@@ -73,7 +73,7 @@ class IpAddress {
   void dump(struct sockaddr *sa);
   inline bool isPrivateAddress()                       { return(addr.privateIP); };
   char* print(char *str, u_int str_len);
-  bool isLocalHost();
+  bool isLocalHost(int16_t *network_id);
   bool isLocalInterfaceAddress();
   void deserialize(json_object *o);
   char* serialize();

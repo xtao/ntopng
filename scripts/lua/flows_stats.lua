@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -17,6 +17,8 @@ application = _GET["application"]
 hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 key = _GET["key"]
+
+network_id=_GET["network_id"]
 
 prefs = ntop.getPrefs()
 ifstats = interface.getStats()
@@ -64,6 +66,17 @@ if(key ~= nil) then
   num_param = num_param + 1
 end
 
+if(network_id ~= nil) then
+  if (num_param > 0) then
+    print("&")
+  else
+    print("?")
+  end
+  print("network_id="..network_id)
+  num_param = num_param + 1
+end
+
+
 print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
@@ -75,7 +88,13 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 	 var table = $("#table-flows").datatable({
 			url: url_update , ]]
 print ('rowCallback: function ( row ) { return flow_table_setID(row); },')
-print [[ title: "Active Flows",
+
+print(" title: \"Active Flows")
+if(_GET["network_name"] ~= nil) then
+  print(" [".._GET["network_name"].."]")
+end
+
+print [[",
          showFilter: true,
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]

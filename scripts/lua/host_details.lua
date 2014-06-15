@@ -282,6 +282,10 @@ if((page == "overview") or (page == nil)) then
 	 print("<tr><th width=35%>(Router) MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
       end
       print("<tr><th>IP Address</th><td colspan=1>" .. host["ip"])
+
+      if(host["local_network_name"] ~= nil) then
+      print(" [ <A HREF=/lua/flows_stats.lua?network_id="..host["local_network_id"].."&network_name=".. host["local_network_name"]..">".. host["local_network_name"].."</A> ]")
+      end
    else
       if(host["mac"] ~= nil) then
 	 print("<tr><th>MAC Address</th><td colspan=1>" .. host["mac"].. "</td></tr>\n")
@@ -384,8 +388,8 @@ if(host["num_alerts"] > 0) then
    print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF=/lua/show_alerts.lua>Alerts</A></th><td colspan=2></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
 end
 
-   print("<tr><th>First / Last Seen</th><td><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td>\n")
-   print("<td><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
+   print("<tr><th>First / Last Seen</th><td nowrap><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td>\n")
+   print("<td nowrap><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
 
 
    if((host["bytes.sent"]+host["bytes.rcvd"]) > 0) then
