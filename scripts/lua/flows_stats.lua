@@ -87,7 +87,9 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 
 	 var table = $("#table-flows").datatable({
 			url: url_update , ]]
-print ('rowCallback: function ( row ) { return flow_table_setID(row); },')
+print ('rowCallback: function ( row ) { return flow_table_setID(row); },\n')
+-- preference = getTablePreference("flows")
+-- if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print(" title: \"Active Flows")
 if(_GET["network_name"] ~= nil) then

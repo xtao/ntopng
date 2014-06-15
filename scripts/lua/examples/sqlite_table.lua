@@ -6,6 +6,7 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "sqlite_utils"
 
 sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
@@ -17,13 +18,118 @@ hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 key = _GET["key"]
 
+from = _GET["from"]
+file = _GET["file"]
+
+
+
+interface.find(ifname)
 prefs = ntop.getPrefs()
 ifstats = interface.getStats()
 
 stats = interface.getNdpiStats()
 num_param = 0
+
+if (from ~= nil) then
+  datetime_tbl = getParameters(from,file)
+end
+
 print [[
-      <hr>
+<div class="page-header">
+        <h1>Historical Flows</h1>
+      </div>
+<div class="row well">
+<form class="form-inline" role="form" method="get" onsubmit="return check_date()" action="/lua/examples/sqlite_table.lua">
+  <div class='col-md-3 col-md-offset-1'>
+    <div id='datetime_form' class="form-group">
+      <label for="exampleInputEmail2">Date and Time</label>
+      <div class='input-group date' id='datetime'>
+          <input name="from" id='datetime_text' type='text' class="form-control" />
+          <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+          </span>
+      </div>
+    </div>
+  </div>
+  <div class='col-md-2 col-md-offset-1'>
+    <br>
+    <button type="submit" class="btn btn-default">Search</button>
+    <button type="reset" class="btn btn-default">Reset</button>
+  </div>
+  <div class='col-md-3'>
+    <ul class="pager">
+      <li ><a id="older">&larr; Older</a></li>
+      <li ><a id="newer">Newer &rarr;</a></li>
+    </ul>
+  </div>
+  </div>
+</form>
+
+<form id="form_older" class="form-horizontal" method="get" action="/lua/examples/sqlite_table.lua">
+  <input type="hidden" name="from" value="" id="file_from">
+  <input type="hidden" name="file" value="" id="file_type">
+</form>
+
+<form id="form_newer" class="form-horizontal" method="get" action="/lua/examples/sqlite_table.lua">
+  <input type="hidden" name="from" value="" id="file_from">
+  <input type="hidden" name="file" value="" id="file_type">
+</form>
+
+
+        <script type="text/javascript">
+
+         $("#older").click(function(){
+            $("#file_from").val($('#datetime_text').val());
+            $("#file_type").val("older");
+            $("#form_older").submit();
+        }); 
+
+        $("#newer").click(function(){
+            $("#file_from").val($('#datetime_text').val());
+            $("#file_type").val("newer");
+            $("#form_older").submit();
+        }); 
+
+
+        function addMinutes(date, minutes) {
+          return new Date(date.getTime() + minutes*60000);
+        }
+
+        function removeMinutes(date, minutes) {
+          return new Date(date.getTime() - minutes*60000);
+        }
+
+        $('#datetime').datetimepicker({ 
+          minuteStepping:5,               //set the minute stepping
+          language:'us', 
+          pick12HourFormat: true]]
+
+if ((from ~= nil) and (datetime_tbl ~= nil)) then
+  print (',\ndefaultDate: "' .. datetime_tbl["displayed"].. '"')
+end
+
+print [[
+        });
+
+        function check_date () {
+
+          var submit = true;
+
+          console.log($('#datetime_text').val());
+
+          var from = moment($('#datetime_text').val());
+         
+          console.log(from);
+         
+          if ((from > moment()) || (from.isValid() == false) ){
+            $('#datetime_form').addClass("has-error has-feedback");
+            submit = false;
+          } else
+            $('#datetime_form').addClass("has-success has-feedback");
+
+
+          return submit;
+        }
+        </script>
       <div id="table-flows"></div>
    <script>
    var url_update = "/lua/get_flows_data.lua]]
@@ -69,7 +175,13 @@ if (num_param > 0) then
 else
   print("?")
 end
-print("sqlite=/0/flows/2014/06/07/18/30.sqlite")
+print("sqlite=")
+ifname_id = interface.name2id(ifname)
+if (datetime_tbl ~= nil) then
+  query = "/" .. ifname_id .. "/flows"..datetime_tbl["query"] .. ".sqlite"
+  print (query)
+  -- io.write(query.."\n")
+end
 
 print ('";')
 
@@ -80,7 +192,7 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
    var table = $("#table-flows").datatable({
       url: url_update , ]]
 
-print [[ title: "Historical Flows",
+print [[ title: "",
          showFilter: true,
          showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]

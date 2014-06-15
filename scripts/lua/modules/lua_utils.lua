@@ -1234,24 +1234,28 @@ function version2int(v)
 end
 
 
+
 -- Print contents of `tbl`, with indentation.
 -- `indent` sets the initial level of indentation.
 function tprint (tbl, indent)
   if not indent then indent = 0 end
-  for k, v in pairs(tbl) do
+  
+  if (tbl ~= nil) then
+    for k, v in pairs(tbl) do
      formatting = string.rep("  ", indent) .. k .. ": "
      if type(v) == "table" then
-	io.write(formatting)
-	tprint(v, indent+1)
-     elseif type(v) == 'boolean' then
-	io.write(formatting .. tostring(v))      
-    else
-       io.write(formatting .. v)
-    end
+       io.write(formatting)
+       tprint(v, indent+1)
+       elseif type(v) == 'boolean' then
+         io.write(formatting .. tostring(v))      
+       else
+         io.write(formatting .. v)
+       end
+     end
+
+     io.write("\n")
   end
-  
-  io.write("\n")
-end
+ end
 
 function table.empty(table)
   if (table == nil) then return true end

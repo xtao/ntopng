@@ -1062,7 +1062,7 @@
     // loop through the columns
     for(var column in o.columns) {
       if(o.columns[column].title === "") continue;
-      var $item = $('<div></div>')
+      var $item = $('<div></div></br>')
         .addClass('form-group')
         .append(
           $("<label></label>")

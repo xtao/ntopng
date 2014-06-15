@@ -9,7 +9,7 @@ require "lua_utils"
 require "sqlite_utils"
 
 sendHTTPHeader('text/html')
-local debug = debug_flow_data
+local debug = false
 
 -- printGETParameters(_GET)
 
@@ -35,6 +35,8 @@ user = _GET["user"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
 
+table_id = _GET["table"]
+
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
@@ -52,6 +54,7 @@ if(perPage == nil) then
    perPage = 10
 else
    perPage = tonumber(perPage)
+   setTablePreference(table_id,perPage)
 end
 
 if(port ~= nil) then port = tonumber(port) end
@@ -68,9 +71,14 @@ interface.find(ifname)
 if (sqlite == nil) then
   flows_stats = interface.getFlowsInfo()
 else
-  -- io.write(sqlite..'\n')
-  -- Sqlite:execQuery(sqlite, "SELECT * FROM flows")
-  -- flows_stats = Sqlite:getFlows()
+  to_skip = 0
+  query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*currentPage)
+  -- io.write(query..'\n')
+  Sqlite:execQuery(sqlite, query)
+  flows_stats = Sqlite:getFlows()
+  -- tprint(flows_stats)
+  rows_number = Sqlite:getRowsNumber()
+  -- io.write(rows_number..'\n')
   if (flows_stats == nil) then flows_stats = {} end
 end
 
@@ -328,7 +336,8 @@ end
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]   
    value = flows_stats[key]
-
+   
+   
    --   print(key.."="..flows_stats[key]["duration"].."\n");
    --   print(key.."=".."\n");
    -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
@@ -478,4 +487,8 @@ if(sortOrder == nil) then
 end
 
 print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
-print ("\"totalRows\" : " .. total .. " \n}")
+if (sqlite == nil) then
+  print ("\"totalRows\" : " .. total .. " \n}")
+else
+  print ("\"totalRows\" : " .. (Sqlite:getRowsNumber()) .. " \n}")
+end

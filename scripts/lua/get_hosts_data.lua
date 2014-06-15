@@ -26,6 +26,8 @@ protocol    = _GET["protocol"]
 -- Only for aggregations
 client      = _GET["client"]
 
+-- table_id = _GET["table"]
+
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
@@ -43,6 +45,7 @@ if(perPage == nil) then
    perPage = 5
 else
    perPage = tonumber(perPage)
+   -- setTablePreference(table_id,perPage)
 end
 
 if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end 
