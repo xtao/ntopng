@@ -208,7 +208,7 @@ else
       end
    end
 
-   if ( flow["moreinfo.json"] ~= nil) then
+   if (flow["moreinfo.json"] ~= nil) then
       local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
    
       num = 0
@@ -218,7 +218,9 @@ else
    	 print("<tr><th colspan=3 class=\"info\">Additional Flow Elements</th></tr>\n")
          end
          
-         print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+       	 if(value ~= "") then	
+	      print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+	 end
 
          num = num + 1
       end

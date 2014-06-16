@@ -126,13 +126,11 @@ for key, value in pairs(flows_stats) do
   if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
   if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
 
-
   if(network_id ~= nil) then
       if((flows_stats[key]["cli.network_id"] ~= network_id) and (flows_stats[key]["srv.network_id"] ~= network_id)) then
       	    process = 0
       end
   end
-
 
    ---------------- L4 PROTO ----------------
    if(l4proto ~= nil) then
@@ -377,6 +375,14 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	 src_key="<A HREF='/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
 	 if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
+
+	 -- Flow username
+	 i, j = string.find(flows_stats[key]["moreinfo.json"], '"57593":')
+	 if(i ~= nil) then
+	 	 has_user = string.sub(flows_stats[key]["moreinfo.json"], j+2, j+3)
+		 if(has_user == '""') then has_user = nil end
+	 end
+	 if(has_user ~= nil) then src_key = src_key .. " <i class='fa fa-user'></i>" end
 	 src_key = src_key .. "</A>"
 
 	 if(value["cli.port"] > 0) then

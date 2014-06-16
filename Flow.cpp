@@ -777,8 +777,9 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   if(detailed_dump) {
     lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
     lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
-    lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
   }
+
+  lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
 
   if(client_proc) processLua(vm, client_proc, true);
   if(server_proc) processLua(vm, server_proc, false);

@@ -313,7 +313,7 @@ void CollectorInterface::collect_flows() {
 	    json_object_put(flow.additional_fields);
 	  } else {
 	    ntop->getTrace()->traceEvent(TRACE_WARNING,
-					 "Invalid message received: your nProbe sender is outdated?");
+					 "Invalid message received: your nProbe sender is outdated or invalid JSON?");
 	    ntop->getTrace()->traceEvent(TRACE_WARNING, "[%u] %s", h.size, payload);
 	  }
 
