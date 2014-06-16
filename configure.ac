@@ -165,6 +165,8 @@ AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
 GEOIP_DEP=""
 fi
 
+AC_CHECK_LIB([nl], [nl_handle_alloc], [NL_LIB="-lnl"])
+
 AC_CHECK_LIB([sqlite3], [sqlite3_open], sqlite=true)
 if test x$sqlite = xtrue
 then
@@ -224,6 +226,7 @@ AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(DL_LIB)
 AC_SUBST(NUMA_LIB)
+AC_SUBST(NL_LIB)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(NTOPNG_VERSION)
