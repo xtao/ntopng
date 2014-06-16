@@ -49,6 +49,7 @@ else
     if (show_processes)then print (', "processes": {') end
 
     if(flow.client_process ~= nil) then
+
       proc = flow.client_process
       print ('"'..proc.pid..'": {')
      
@@ -82,7 +83,7 @@ else
       if (flow.client_process ~= nil) then print (',') end
 
       proc = flow.server_process
-      print ('"'..proc.pid'": {')
+      print ('"'..proc.pid..'": {')
 
       if(proc.actual_memory > 0) then
         -- average_cpu_load

@@ -59,7 +59,7 @@ end
 
 
 function findString(str, tofind)
-  local upper_lower = false
+  local upper_lower = true
   if(str == nil) then return(nil) end
   if(tofind == nil) then return(nil) end
 

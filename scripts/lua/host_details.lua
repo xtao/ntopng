@@ -1471,7 +1471,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_users">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <li><a>Latency</a></li>
+            <!-- <li><a>Latency</a></li> -->
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1503,7 +1503,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_processes">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <li><a>Latency</a></li>
+            <!-- <li><a>Latency</a></li> -->
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1536,7 +1536,7 @@ print [[
             <ul class="dropdown-menu" id="aggregation_tree">
             <li><a>Traffic</a></li>
             <li><a>Active memory</a></li>
-            <li><a>Latency</a></li>
+            <!-- <li><a>Latency</a></li> -->
             </ul>
           </div><!-- /btn-group -->
          <br/>
@@ -1561,6 +1561,7 @@ print [[
 print [[
     </div> <!-- End Tab content-->
   </div> <!-- End Left Tab -->
+
 
 ]]
 

@@ -332,7 +332,7 @@ function SequenceSunburst(circle_name,sequence_name,refresh,update_url,url_param
 
     // LABEL
     totalLabel = arc_group.append("svg:text")
-      .attr("class", "label")
+      .attr("class", "label_sunburst")
       .attr("dy", -25)
       .attr("text-anchor", "middle")
       .attr('font-family', 'FontAwesome')
