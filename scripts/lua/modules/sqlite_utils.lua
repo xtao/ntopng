@@ -5,8 +5,6 @@
 -- This file contains the description of all functions
 -- used to interact with sqlite
 
-local verbose = false
-
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
@@ -113,9 +111,10 @@ function SqliteClass.getFlows(self)
   num = 0
 
   for _k,_v in pairs(self.response) do
-
+      
        -- init table of table
        self.flows[num] = {}
+       self.flows[num]["ID"] = tonumber(self.response[_k]["ID"])
        self.flows[num]["vlan"] = tonumber(self.response[_k]["vlan_id"])
        self.flows[num]["bytes"] = tonumber(self.response[_k]["bytes"])
        self.flows[num]["duration"] = tonumber(self.response[_k]["duration"])

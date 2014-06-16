@@ -13,7 +13,7 @@ local debug = false
 
 -- printGETParameters(_GET)
 
-sqlite = _GET["sqlite"]
+
 -- Table parameters
 all = _GET["all"]
 currentPage = _GET["currentPage"]
@@ -36,6 +36,7 @@ pid = tonumber(_GET["pid"])
 name = _GET["name"]
 
 table_id = _GET["table"]
+sqlite = _GET["sqlite"]
 
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
@@ -71,14 +72,17 @@ interface.find(ifname)
 if (sqlite == nil) then
   flows_stats = interface.getFlowsInfo()
 else
+  
   to_skip = 0
-  query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*currentPage)
-  -- io.write(query..'\n')
+  offsetPage = currentPage - 1
+  sortOrder = "asc"
+  sortColumn = "ID"
+
+  query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*offsetPage)
   Sqlite:execQuery(sqlite, query)
   flows_stats = Sqlite:getFlows()
   -- tprint(flows_stats)
   rows_number = Sqlite:getRowsNumber()
-  -- io.write(rows_number..'\n')
   if (flows_stats == nil) then flows_stats = {} end
 end
 
@@ -313,6 +317,8 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
+   elseif(sortColumn == "ID") then
+   vkey = flows_stats[key]["ID"]..postfix
       else
 	 -- By default sort by bytes
 	 vkey = flows_stats[key]["bytes"]+postfix
@@ -392,7 +398,11 @@ for _key, _value in pairsByKeys(vals, funct) do
   print ("{ \"key\" : \"" .. key..'\"')
 
 	 descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
-	 print (", \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr.."'><span class='label label-info'>Info</span></A>")
+	 print (", \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr)
+   if (sqlite ~= nil) then
+    print ("&sqlite="..sqlite.."&ID="..value["ID"])
+   end
+   print ("'><span class='label label-info'>Info</span></A>")
 	 print ("\", \"column_client\" : \"" .. src_key)
 
 

@@ -20,9 +20,9 @@ dirs = ntop.getDirs()
 
 query = _GET["query"]
 
-if (query == nil) then query = "/0/flows/14/05/31/12/45.sqlite" end
+if (query == nil) then query = "/0/flows/2014/06/15/22/25.sqlite" end
 
-rsp = ntop.execQuery(dirs.workingdir .. query, "SELECT * from flows LIMIT 10")
+rsp = ntop.execQuery(dirs.workingdir .. query, "SELECT * from flows LIMIT 10 OFFSET 0")
 
 if(rsp == nil) then
    print("<br>Query error")
@@ -33,7 +33,7 @@ else
    for _k,_v in pairs(rsp) do
       
       if(num == 0) then
-	 print("<tr><th>Id</th>")
+	 -- print("<tr><th>Id</th>")
 	 for k,v in pairs(_v) do
 	    print("<th>".. k .."</th>")
 	 end
@@ -41,7 +41,7 @@ else
       end
       
       print("<tr>")
-      print("<th>".. num .."</th>")
+      -- print("<th>".. num .."</th>")
       
       for k,v in pairs(_v) do
 	 print("<td>".. v .."</td>")

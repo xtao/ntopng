@@ -138,7 +138,7 @@ void DB::initDB(time_t when, const char *create_sql_string) {
 /* ******************************************* */
 
 bool DB::dumpFlow(time_t when, Flow *f, char *json) {
-  const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (vlan_id number, cli_ip string KEY, cli_port number, "
+  const char *create_flows_db = "BEGIN; CREATE TABLE IF NOT EXISTS flows (ID INTEGER PRIMARY KEY   AUTOINCREMENT, vlan_id number, cli_ip string KEY, cli_port number, "
     "srv_ip string KEY, srv_port number, proto number, bytes number, duration number, json string);";
   char sql[4096], cli_str[64], srv_str[64];
 
@@ -146,7 +146,7 @@ bool DB::dumpFlow(time_t when, Flow *f, char *json) {
 
   
   snprintf(sql, sizeof(sql),
-	   "INSERT INTO flows VALUES (%u, '%s', %u, '%s', %u, %u, %lu, %u, '%s');",
+	   "INSERT INTO flows VALUES (NULL, %u, '%s', %u, '%s', %u, %u, %lu, %u, '%s');",
 	   f->get_vlan_id(),
 	   f->get_cli_host()->get_ip()->print(cli_str, sizeof(cli_str)),
 	   f->get_cli_port(),

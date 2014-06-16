@@ -8,6 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "flow_utils"
 require "voip_utils"
+require "sqlite_utils"
 
 local json = require ("dkjson")
 
@@ -83,11 +84,26 @@ print [[
 throughput_type = getThroughputType()
 
 flow_key = _GET["flow_key"]
+sqlite = _GET["sqlite"]
+sqlite_ID = _GET["ID"]
+
 if(flow_key == nil) then
    flow = nil
 else
    interface.find(ifname)
-   flow = interface.findFlowByKey(tonumber(flow_key))
+   if (sqlite == nil) then
+      flow = interface.findFlowByKey(tonumber(flow_key))
+   else
+      flow = nil
+      if (sqlite_ID ~= nil) then
+         query = "SELECT * FROM flows WHERE ID = "..sqlite_ID
+         Sqlite:execQuery(sqlite, query)
+         flows = Sqlite:getFlows()
+         if (flows ~= nil) then
+            flow = flows[0]
+         end
+      end
+   end
 end
 
 if(flow == nil) then
@@ -121,15 +137,19 @@ else
       print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A>")
    end
    print("</td></tr>\n")
-   if(flow["category"] ~= "") then
+   if ((flow["category"] ~= "") and (flow["category"] ~= nil))then
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end
 
    print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/lua/")
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
-   print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
+   if (sqlite == nil) then
+      print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
+
    print("<td nowrap><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
+   
+   end
 
    print("<tr><th width=30%>Total Traffic Volume</th><td colspan=2><span id=volume>" .. bytesToSize(flow["bytes"]) .. "</span> <span id=volume_trend></span></td></tr>\n")
 
@@ -142,7 +162,7 @@ else
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
-   if(flow["tcp_flags"] > 0) then
+   if( (flow["tcp_flags"] ~= nil) and (flow["tcp_flags"] > 0) ) then
       print("<tr><th width=30%>TCP Flags</th><td colspan=2>")
       
       flow_completed = false
@@ -167,7 +187,7 @@ else
       print("</td></tr>\n")
    end
 
-   if((flow.client_process == nil) and (flow.server_process == nil)) then
+   if((flow.client_process == nil) and (flow.server_process == nil) and (sqlite == nil)) then
       print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
       if (throughput_type == "bps") then
          print("<span id=throughput>" .. bitsToSize(8*flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
@@ -188,19 +208,21 @@ else
       end
    end
 
-   local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
-   num = 0
+   if ( flow["moreinfo.json"] ~= nil) then
+      local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
+   
+      num = 0
 
-   for key,value in pairs(info) do
-      if(num == 0) then
-	 print("<tr><th colspan=3 class=\"info\">Additional Flow Elements</th></tr>\n")
+      for key,value in pairs(info) do
+         if(num == 0) then
+   	 print("<tr><th colspan=3 class=\"info\">Additional Flow Elements</th></tr>\n")
+         end
+         
+         print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
+
+         num = num + 1
       end
-      
-      print("<tr><th width=30%>" .. getFlowKey(key) .. "</th><td colspan=2>" .. handleCustomFlowField(key, value) .. "</td></tr>\n")
-
-      num = num + 1
    end
-
    print("</table>\n")
 end
 
@@ -217,14 +239,21 @@ var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 ]]
 
 if(flow ~= nil) then
-   print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
-   print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
-   print("var throughput = " .. flow["throughput_"..throughput_type] .. ";")
+   if (flow["cli2srv.packets"] ~= nil ) then 
+      print("var cli2srv_packets = " .. flow["cli2srv.packets"] .. ";")
+   end
+   if (flow["srv2cli.packets"] ~= nil) then 
+      print("var srv2cli_packets = " .. flow["srv2cli.packets"] .. ";")
+   end
+   if (flow["throughput_"..throughput_type] ~= nil) then
+      print("var throughput = " .. flow["throughput_"..throughput_type] .. ";")
+   end
    print("var bytes = " .. flow["bytes"] .. ";")
 end
 
 print [[
-setInterval(function() {
+
+function update () {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/flow_stats.lua',
@@ -291,8 +320,15 @@ setInterval(function() {
 			thptChart.text(values.join(",")).change();
 		     }
 	           });
-		 }, 3000);
+		 }
 
+]]
+
+if (sqlite == nil) then
+   print ("setInterval(update,3000);\n")
+end
+
+print [[
 </script>
  ]]
 
