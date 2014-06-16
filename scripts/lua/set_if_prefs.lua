@@ -13,7 +13,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 
-print('<hr><h2>'..ifname..' Preferences</H2>\n')
+print('<hr><h2>'..ifname..' Preferences</H2></br>\n')
 
 key = 'ntopng.prefs.'..ifname..'.name'
 if(_GET["ifName"] ~= nil) then
@@ -48,31 +48,32 @@ ifSpeed = math.floor(ifSpeed+0.5)
 
 print [[
 
-<form class="form-horizontal" method="GET">
+<form class="form-horizontal" method="GET" >
 
-
-<div class="control-group">
+<div class="container"> 
+<div class="form-group">
     <label class="control-label" for="ifSpeed">Interface Speed (Mbit):</label>
-    <div class="controls">
+    
  <input type="number" min="1" max="10000" step="1" name="ifSpeed" id="IfSpeed" value="]] print(ifSpeed) print [["/>
-    </div>
+    
 </div>
 
-<div class="control-group">
+<div class="form-group">
     <label class="control-label" for="ifName">Custom Name:</label>
-    <div class="controls">
+   
  <input type="text" name="ifName" id="IfName" value="]] print(custom_name) print [["/>
-    </div>
+   
 </div>
 
 
-<div class="control-group">
-<div class="controls">
-<button type="submit" class="btn btn-primary">Save</button> <button class="btn" type="reset">Reset Form</button>
-</div>
-</div>
+<div class="form-group">
 
+<button type="submit" class="btn btn-primary">Save</button> <button class="btn btn-default" type="reset">Reset Form</button>
+
+</div>
+</div>
 </form>
+
 ]]
 
 
