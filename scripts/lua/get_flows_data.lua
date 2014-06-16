@@ -54,7 +54,7 @@ if(perPage == nil) then
    perPage = 10
 else
    perPage = tonumber(perPage)
-   setTablePreference(table_id,perPage)
+   -- setTablePreference(table_id,perPage)
 end
 
 if(port ~= nil) then port = tonumber(port) end
