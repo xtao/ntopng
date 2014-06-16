@@ -396,18 +396,25 @@ end
 print('&nbsp;Timeframe:  <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
 
 for k,v in ipairs(zoom_vals) do
-   print('<a class="btn btn-small ')
+
+   print('<label class="btn btn-link ')
    
    if(zoom_vals[k][1] == zoomLevel) then
       print("active")
    end
-
-   print('" href="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. zoom_vals[k][1] .. '&epoch=' .. (selectedEpoch or '') ..'">'.. zoom_vals[k][1] ..'</a>\n')
+   print('">')
+   print('<input type="radio" name="options" id="zoom_level_'..k..'" value="'..baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. zoom_vals[k][1] .. '&epoch=' .. (selectedEpoch or '') ..'">'.. zoom_vals[k][1] ..'</input></label>\n')
 end
 
 print [[
 </div>
 </div>
+
+<script>
+   $('input:radio[id^=zoom_level_]').change( function() {
+   window.open(this.value,'_self',false);
+});
+</script>
 
 <br />
 <p>
