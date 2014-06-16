@@ -393,7 +393,7 @@ if(show_timeseries == 1) then
 ]]
 end
 
-print('&nbsp;Timeframe:  <div class="btn-group" data-toggle="buttons-radio" id="graph_zoom">\n')
+print('&nbsp;Timeframe:  <div class="btn-group" data-toggle="buttons" id="graph_zoom">\n')
 
 for k,v in ipairs(zoom_vals) do
 
