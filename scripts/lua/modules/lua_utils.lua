@@ -2,6 +2,7 @@
 -- (C) 2014 - ntop.org
 --
 require "lua_trace"
+require "preferences_utils"
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then

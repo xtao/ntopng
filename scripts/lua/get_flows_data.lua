@@ -35,7 +35,6 @@ user = _GET["user"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
 
-table_id = _GET["table"]
 sqlite = _GET["sqlite"]
 
 -- Get from redis the throughput type bps or pps
@@ -55,7 +54,7 @@ if(perPage == nil) then
    perPage = 10
 else
    perPage = tonumber(perPage)
-   -- setTablePreference(table_id,perPage)
+   tablePreferences(flow_table_key,perPage)
 end
 
 if(port ~= nil) then port = tonumber(port) end
@@ -75,12 +74,14 @@ else
   -- Init some parameters
   to_skip = 0
   offsetPage = currentPage - 1
+  
   -- Create and exe query
   query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*offsetPage)
   Sqlite:execQuery(sqlite, query)
+  
   -- Get flows in a correct format
   flows_stats = Sqlite:getFlows()
-  -- tprint(flows_stats)
+  
   rows_number = Sqlite:getRowsNumber()
   -- Set default values if the query is empty
   if (flows_stats == nil) then flows_stats = {} end

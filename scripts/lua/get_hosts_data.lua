@@ -6,6 +6,7 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
+
 sendHTTPHeader('text/html')
 
 -- Table parameters
@@ -31,6 +32,7 @@ client      = _GET["client"]
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
+
 if(sortColumn == nil) then
    sortColumn = "column_"
 end
@@ -45,7 +47,7 @@ if(perPage == nil) then
    perPage = 5
 else
    perPage = tonumber(perPage)
-   -- setTablePreference(table_id,perPage)
+   tablePreferences(host_table_key,perPage)
 end
 
 if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end 

@@ -6,6 +6,8 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
+require "preferences_utils"
+
 
 sendHTTPHeader('text/html')
 
@@ -63,6 +65,14 @@ else
    print('title: "Remote '..protocol..' Hosts",\n')
 end
 print ('rowCallback: function ( row ) { return host_table_setID(row); },')
+
+-- Set the preference table
+preference = tablePreferences(host_table_key,perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+-- Automatic default sorted. NB: the column must be exists.
+print ('sort: [ ["column_traffic","desc"] ],\n');
+
 print [[ 
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 90px;"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],

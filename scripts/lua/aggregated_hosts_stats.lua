@@ -34,7 +34,13 @@ print [[
       showPagination: true,
       ]]
 
+-- Parse and set a unique id for all rows and enable the automatic update of the table
 print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
+
+-- Set the preference table
+preference = tablePreferences(host_table_key,perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
 print [[
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;">]]
 

@@ -207,25 +207,23 @@ end
 
 function getParameters(datetime,action)
 
-datetime_tbl = cleanDateTime2(datetime, action)
+  datetime_tbl = cleanDateTime(datetime, action)
 
-datetime_tbl["displayed"] = os.date("%m/%d/%Y %I:%M %p",datetime_tbl["epoch"])
-traceError(TRACE_DEBUG,TRACE_CONSOLE,'Displayed: ['..datetime_tbl["displayed"] .. ']')
-datetime_tbl["query"] = os.date("/%Y/%m/%d/%H/%M",datetime_tbl["epoch"])
-traceError(TRACE_DEBUG,TRACE_CONSOLE,'query: ['..datetime_tbl["query"] .. ']')
+  datetime_tbl["displayed"] = os.date("%m/%d/%Y %I:%M %p",datetime_tbl["epoch"])
+  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Displayed: ['..datetime_tbl["displayed"] .. ']')
+  datetime_tbl["query"] = os.date("/%Y/%m/%d/%H/%M",datetime_tbl["epoch"])
+  traceError(TRACE_DEBUG,TRACE_CONSOLE,'query: ['..datetime_tbl["query"] .. ']')
 
-return datetime_tbl
+  return datetime_tbl
 end
 
 
 
-function cleanDateTime2(datetime,action) 
+function cleanDateTime(datetime,action) 
 
   if (datetime == nil) then return {} end
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Initial date and time: '..datetime)
   
-
-
   tbl = split(datetime," ")
   q_date = tbl[1]
   q_time = tbl[2]
@@ -275,161 +273,6 @@ function cleanDateTime2(datetime,action)
   ret_tbl["epoch"] = q_epoch
 
   return ret_tbl
-
-end
-
-
-function cleanDateTime(datetime,action)
-
-  if (datetime == nil) then return {} end
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Initial date and time: '..datetime)
-  
-  tbl = split(datetime," ")
-  default_date = tbl[1]
-  default_time = tbl[2]
-  defualt_type = tbl[3]
-
-  time_type = defualt_type
-
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Default value: ['..default_date..']['..default_time .. '][' .. defualt_type..']')
-
-  date_tbl = split(default_date,"/")
-  default_month   = tonumber(date_tbl[1])  
-  default_day     = tonumber(date_tbl[2])
-  default_year    = tonumber(date_tbl[3])
-
-  year = default_year
-  month = default_month
-  day = default_day
-
-
-  -- Clean time
-  time_tbl = split(default_time,":")
-  default_hours   = tonumber(time_tbl[1])  
-  default_minute  = tonumber(time_tbl[2])
-
-  hour = default_hours
-  minute = default_minute
-
-  -- Clean minute
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Cleaning time: ['..default_hours..']['..default_minute .. '][' .. defualt_type..']')
- 
-  mod = default_minute % 10
-
-  if (mod < 5) then
-    minute = default_minute - mod
-    traceError(TRACE_DEBUG,TRACE_CONSOLE,'Minute: ['..default_minute..']['..minute .. '][' .. defualt_type..']')
-  else
-    minute = default_minute - (mod - 5)
-    traceError(TRACE_DEBUG,TRACE_CONSOLE,'Minute: ['..default_minute..']['..minute .. '][' .. defualt_type..']')
-  end
-
-  if (action ~= nil) then
-    if (action == "newer") then
-      minute = minute + 5
-      traceError(TRACE_DEBUG,TRACE_CONSOLE,'Newer: ['..minute..']')
-    else
-      minute = minute - 5
-      traceError(TRACE_DEBUG,TRACE_CONSOLE,'Older: ['..minute..']')
-      if (minute < 0) then 
-        minute = 60 + minute 
-        traceError(TRACE_DEBUG,TRACE_CONSOLE,'Check older if minute < 0: ['..minute..']')
-        traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust hours: ['..hour..']')
-        if (hour == 0) then 
-          hour = 12 
-          traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust hours: ['..hour..']')
-        end
-        hour = hour - 1
-        if (time_type == "PM") then time_type = "AM" end
-        if (time_type == "AM") then time_type = "PM" end
-        traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust hours: ['..hour..']')
-      end
-    end
-  end
-
-  if (tonumber(minute) < 10) then
-    minute = "0"..minute
-  end
-
-  if (tonumber(minute) >= 60) then 
-    hour = hour + 1 
-    minute = "00"
-  end
-
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Final minute: ['..minute..']')
-
-  -- Clean hours
-
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Cleaning hours: ['..default_hours..','..hour.. ']['..default_minute ..',' .. minute.. '][' .. defualt_type..']')
-
-
-  if (defualt_type == "PM") then
-    if (hour ~= 0) then
-      hour = hour + 12
-    end
-    traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust PM: ['..hour..']')
-  end
-
-  if (defualt_type == "AM") then
-    if (hour == 12) then
-      hour = 0
-    end
-    traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust AM: ['..hour..']')
-  end
-
-  if (hour >= 24) then
-    hour = 0
-    day = default_day + 1
-    time_type = "AM"
-    traceError(TRACE_DEBUG,TRACE_CONSOLE,'Adjust day: ['..default_day..','..day..']')
-  end
-
-  if (tonumber(hour) < 10) then
-    hour = "0"..hour
-  end
-
-   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Final hours: ['..hour..']')
-
-
-  -- Clean date
-
-  if (tonumber(month) < 10) then
-    month = "0"..month
-  end
-
-
-  if (tonumber(day) < 10) then
-    day = "0"..day
-  end
-
-  final_date = year.."/"..month.."/"..day
-  default_date = month.."/"..day.."/"..year
-
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'Final date: ['..final_date..']')
-
-  ret = {}
-  ret["date"] = final_date
-  ret["year"] = year
-  ret["month"] = month
-  ret["day"] = day
-  ret["hour"] = hour
-  ret["minute"] = minute
-  ret["time_type"] = time_type
-  ret["default_type"] = defualt_type
-  ret["default_date"] = default_date
-  ret["default_time"] = defualt_time
-
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'date: ['..final_date..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'year: ['..year..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'month: ['..month..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'day: ['..day..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'hour: ['..hour..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'minute: ['..minute..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'time_type: ['..time_type..']')
-  -- traceError(TRACE_DEBUG,TRACE_CONSOLE,'default_type: ['..default_type..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'default_date: ['..default_date..']')
-  traceError(TRACE_DEBUG,TRACE_CONSOLE,'default_time: ['..default_time..']')
-  return ret
 
 end
 

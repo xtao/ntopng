@@ -22,7 +22,6 @@ from = _GET["from"]
 file = _GET["file"]
 
 
-
 interface.find(ifname)
 prefs = ntop.getPrefs()
 ifstats = interface.getStats()
