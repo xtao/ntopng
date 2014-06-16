@@ -119,6 +119,12 @@ function SqliteClass.getFlows(self)
        self.flows[num]["bytes"] = tonumber(self.response[_k]["bytes"])
        self.flows[num]["duration"] = tonumber(self.response[_k]["duration"])
 
+       -- Throughput
+       -- io.write((self.flows[num]["bytes"] / self.flows[num]["duration"])..'\n')
+       self.flows[num]["throughput_bps"] = (self.flows[num]["bytes"] / 8 ) / (self.flows[num]["duration"]) 
+       self.flows[num]["throughput_trend_bps"] = 3
+
+
        local info, pos, err = j.decode(self.response[_k]["json"], 1, nil)
 
        if (info == nil) then 

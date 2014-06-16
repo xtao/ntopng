@@ -81,7 +81,7 @@ else
   
   -- Get flows in a correct format
   flows_stats = Sqlite:getFlows()
-  
+  -- tprint(flows_stats)
   rows_number = Sqlite:getRowsNumber()
   -- Set default values if the query is empty
   if (flows_stats == nil) then flows_stats = {} end

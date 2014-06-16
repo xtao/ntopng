@@ -361,7 +361,7 @@ print [[
       end
 
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
-      if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label">Remote</span>') end
+      if(host["localhost"] == true) then print('<span class="label label-success">Local</span>') else print('<span class="label label-default">Remote</span>') end
       if(host["privatehost"] == true) then print(' <span class="label label-warning">Private IP</span>') end
       if(host["systemhost"] == true) then print(' <span class="label label-info">System <i class=\"fa fa-flag\"></i></span>') end
       print("</td>\n")
