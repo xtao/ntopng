@@ -99,6 +99,12 @@ end
 print [[",
          showFilter: true,
 	       showPagination: true,
+]]
+
+-- Automatic default sorted. NB: the column must be exists.
+print ('sort: [ ["column_bytes","desc"] ],');
+
+print [[
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')

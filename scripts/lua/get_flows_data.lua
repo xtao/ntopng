@@ -72,17 +72,17 @@ interface.find(ifname)
 if (sqlite == nil) then
   flows_stats = interface.getFlowsInfo()
 else
-  
+  -- Init some parameters
   to_skip = 0
   offsetPage = currentPage - 1
-  sortOrder = "asc"
-  sortColumn = "ID"
-
+  -- Create and exe query
   query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*offsetPage)
   Sqlite:execQuery(sqlite, query)
+  -- Get flows in a correct format
   flows_stats = Sqlite:getFlows()
   -- tprint(flows_stats)
   rows_number = Sqlite:getRowsNumber()
+  -- Set default values if the query is empty
   if (flows_stats == nil) then flows_stats = {} end
 end
 
@@ -315,7 +315,7 @@ for key, value in pairs(flows_stats) do
 	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix	  
 	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
-   elseif(sortColumn == "ID") then
+   elseif(sortColumn == "column_ID") then
    vkey = flows_stats[key]["ID"]..postfix
       else
 	 -- By default sort by bytes
@@ -377,7 +377,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
 
 	 -- Flow username
-	 i, j = string.find(flows_stats[key]["moreinfo.json"], '"57593":')
+   i, j = nil
+   if (flows_stats[key]["moreinfo.json"] ~= nil) then
+	   i, j = string.find(flows_stats[key]["moreinfo.json"], '"57593":')
+   end
 	 if(i ~= nil) then
 	 	 has_user = string.sub(flows_stats[key]["moreinfo.json"], j+2, j+3)
 		 if(has_user == '""') then has_user = nil end

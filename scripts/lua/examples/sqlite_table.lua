@@ -195,6 +195,12 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 print [[ title: "",
          showFilter: true,
          showPagination: true,
+]]
+
+-- Automatic default sorted. NB: the column must be exists.
+print ('sort: [ ["column_ID","asc"] ],');
+
+print [[
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
