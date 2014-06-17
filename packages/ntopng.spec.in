@@ -36,11 +36,9 @@ fi
 #
 mkdir -p $RPM_BUILD_ROOT/etc/ntopng
 cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.conf.sample <<_EOT_
--G=/var/tmp/ntopng.gid
+-G=/var/tmp/ntopng.pid
 _EOT_
 cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.start <<_EOT_
---local-networks “192.168.1.0”
---interface 0
 _EOT_
 
 mkdir -p $RPM_BUILD_ROOT/usr/local/bin $RPM_BUILD_ROOT/usr/local/share/ntopng $RPM_BUILD_ROOT/usr/local/man/man8 
