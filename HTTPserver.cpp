@@ -353,7 +353,8 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     ssl_enabled = false;
   }
   if ((!use_http) && (!use_ssl & !ssl_enabled)) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disable and missing SSL certificate. Will be use the default HTTP server.");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disabled and the SSL certificate is missing.");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Starting the HTTP server on the default port");
     port = CONST_DEFAULT_NTOP_PORT;
     snprintf(ports, sizeof(ports), "%d", port);
     use_http = true;
@@ -387,15 +388,11 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Web server dirs [%s][%s]", docs_dir, scripts_dir);
 
-  if (use_http)
+  if(use_http)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
   
   if(use_ssl & ssl_enabled)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", ntop->getPrefs()->get_https_port());
-  else 
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disable and missing SSL certificate.");
-
-
 };
 
 /* ****************************************** */
