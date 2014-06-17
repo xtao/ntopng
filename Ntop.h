@@ -289,6 +289,7 @@ class Ntop {
   void runHousekeepingTasks();
   bool isLocalInterfaceAddress(int family, void *addr);
   inline char* getLocalNetworkName(int16_t local_network_id) { return(address->get_local_network(local_network_id)); };
+  void createExportInterface();
 };
 
 extern Ntop *ntop;

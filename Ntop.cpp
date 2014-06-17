@@ -100,6 +100,29 @@ void Ntop::initTimezone() {
 
 /* ******************************************* */
 
+Ntop::~Ntop() {
+  for(int i=0; i<num_defined_interfaces; i++) {
+    iface[i]->shutdown();
+    delete(iface[i]);
+  }
+
+  if(httpbl) delete httpbl;
+  if(httpd)  delete httpd;
+  if(custom_ndpi_protos) delete(custom_ndpi_protos);
+
+  Destroy_Patricia(local_interface_addresses, NULL);
+  delete rrd_lock;
+  delete address;
+  delete pa;
+  if(geo)   delete geo;
+  if(redis) delete redis;
+  delete globals;
+  delete prefs;
+  delete runtimeprefs;
+}
+
+/* ******************************************* */
+
 void Ntop::registerPrefs(Prefs *_prefs) {
   struct stat statbuf;
   char *local_nets, buf[512];
@@ -137,34 +160,15 @@ void Ntop::registerPrefs(Prefs *_prefs) {
   memset(iface, 0, sizeof(iface));
 
   redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
-
-  if(prefs->get_export_endpoint()) 
-    export_interface = new ExportInterface(prefs->get_export_endpoint());
-  else
-    export_interface = NULL;
 }
 
 /* ******************************************* */
 
-Ntop::~Ntop() {
-  for(int i=0; i<num_defined_interfaces; i++) {
-    iface[i]->shutdown();
-    delete(iface[i]);
-  }
-
-  if(httpbl) delete httpbl;
-  if(httpd)  delete httpd;
-  if(custom_ndpi_protos) delete(custom_ndpi_protos);
-
-  Destroy_Patricia(local_interface_addresses, NULL);
-  delete rrd_lock;
-  delete address;
-  delete pa;
-  if(geo)   delete geo;
-  if(redis) delete redis;
-  delete globals;
-  delete prefs;
-  delete runtimeprefs;
+void Ntop::createExportInterface() {
+  if(prefs->get_export_endpoint()) 
+    export_interface = new ExportInterface(prefs->get_export_endpoint());
+  else
+    export_interface = NULL;
 }
 
 /* ******************************************* */

@@ -135,6 +135,8 @@ int main(int argc, char *argv[])
     ntop->registerInterface(iface);
   }
 
+  ntop->createExportInterface();
+
   if(prefs->do_change_user())
     Utils::dropPrivileges();
 
