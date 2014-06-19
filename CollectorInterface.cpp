@@ -250,7 +250,7 @@ void CollectorInterface::collect_flows() {
 		  flow.src_process.peak_memory = atoi(value);
 		  break;
 		case SRC_PROC_AVERAGE_CPU_LOAD:
-		  flow.src_process.average_cpu_load = (u_int8_t)atoi(value);
+		  flow.src_process.average_cpu_load = ((float)atoi(value))/100;
 		  break;
 		case SRC_PROC_NUM_PAGE_FAULTS:
 		  flow.src_process.num_vm_page_faults = atoi(value);
