@@ -187,6 +187,7 @@ void usage() {
    "--json-labels                       | In case JSON label is used (e.g. with ZMQ/Sqlite)\n"
    "                                    | labels instead of numbers are used as keys.\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
+	 "[--version|-V]                      | Print version and quit\n"
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE,
 #ifndef WIN32
@@ -240,6 +241,7 @@ static const struct option long_options[] = {
   { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
+  { "version",                           no_argument,       NULL, 'V' },
   { "max-num-flows",                     required_argument, NULL, 'X' },
   { "https-port",                        required_argument, NULL, 'W' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
@@ -454,6 +456,11 @@ int Prefs::setOption(int optkey, char *optarg) {
     user = strdup(optarg);
     break;
 
+  case 'V':
+    printf("v.%s (%s)\n", PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
+    exit(0);
+    break;
+
   case 'X':
     max_num_flows = max_val(atoi(optarg), 1024);
     break;
@@ -511,7 +518,7 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
   while((c = getopt_long(argc, argv, 
-			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HI:S:U:X:W:",
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HI:S:U:X:W:V",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
