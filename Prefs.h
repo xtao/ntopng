@@ -118,6 +118,7 @@ class Prefs {
   int save();
   void add_network_interface(char *name);
   inline u_int32_t get_json_symbolic_labels()                  { return(json_symbolic_labels);  };
+  void lua(lua_State* vm);
 };
 
 #endif /* _PREFS_H_ */

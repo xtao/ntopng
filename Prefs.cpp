@@ -646,3 +646,24 @@ void Prefs::add_default_interfaces() {
   dummy->addAllAvailableInterfaces();
   delete dummy;
 };
+/* *************************************** */
+
+void Prefs::lua(lua_State* vm) {
+  
+  lua_newtable(vm);
+  lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", resolve_all_host_ip);
+  lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", enable_dns_resolution);
+  lua_push_bool_table_entry(vm, "is_categorization_enabled", categorization_enabled);
+  lua_push_bool_table_entry(vm, "is_httpbl_enabled", httpbl_enabled);
+  lua_push_int_table_entry(vm, "local_host_max_idle", local_host_max_idle);
+  lua_push_int_table_entry(vm, "non_local_host_max_idle", non_local_host_max_idle);
+  lua_push_int_table_entry(vm, "flow_max_idle", flow_max_idle);
+  lua_push_int_table_entry(vm, "max_num_hosts", max_num_hosts);
+  lua_push_int_table_entry(vm, "max_num_flows", max_num_flows);
+  lua_push_bool_table_entry(vm, "is_dump_flows_enabled", dump_flows_on_db);
+  lua_push_int_table_entry(vm, "dump_hosts", dump_hosts_to_db);
+  lua_push_int_table_entry(vm, "dump_aggregation", dump_aggregations_to_db);
+  
+}
+
+/* *************************************** */
