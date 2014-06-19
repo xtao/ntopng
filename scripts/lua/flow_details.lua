@@ -27,6 +27,7 @@ function displayProc(proc)
       print("<tr><th width=30%>Average CPU Load</th><td colspan=2><span id=average_cpu_load_"..proc.pid..">")
       
       if(proc.average_cpu_load < 33) then
+             proc.average_cpu_load = round(proc.average_cpu_load, 2)
 	     if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
 	        print("<font color=green>"..proc.average_cpu_load.." %</font>")
          elseif(proc.average_cpu_load < 66) then
@@ -310,7 +311,7 @@ function update () {
             // console.log(pid);
             // console.log(proc);
             if (proc["memory"])           $('#memory_'+pid).html(proc["memory"]);
-            if (proc["average_cpu_load"]) $('#average_cpu_load_'+pid).html(proc["average_cpu_load"]);
+            if (proc["average_cpu_load"]) $('#average_cpu_load_'+pid).html(proc["average_cpu_load"].toFixed(2));
             if (proc["page_faults"])      $('#page_faults_'+pid).html(proc["page_faults"]);
          }
 
