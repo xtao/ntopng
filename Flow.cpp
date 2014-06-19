@@ -1048,16 +1048,6 @@ void Flow::refresh_process_peer(Host *host, u_int16_t port, bool as_client) {
   if((f = fopen(path, "r")) != NULL) {
     char *line, buf[128];
 
-    /*
-      typedef struct {
-      u_int8_t cpu_id;
-
-      char father_name[48], user_name[48];
-      u_int8_t average_cpu_load;
-      u_int32_t num_vm_page_faults;
-      } ProcessInfo;
-    */
-
     while((line = fgets(buf, sizeof(buf), f)) != NULL) {
       buf[strlen(buf)-1] = '\0';
 

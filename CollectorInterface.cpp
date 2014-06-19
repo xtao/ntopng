@@ -280,7 +280,7 @@ void CollectorInterface::collect_flows() {
 		  flow.dst_process.peak_memory = atoi(value);
 		  break;
 		case DST_PROC_AVERAGE_CPU_LOAD:
-		  flow.dst_process.average_cpu_load = (u_int8_t)atoi(value);
+		  flow.dst_process.average_cpu_load = ((float)atoi(value))/100;
 		  break;
 		case DST_PROC_NUM_PAGE_FAULTS:
 		  flow.dst_process.num_vm_page_faults = atoi(value);
