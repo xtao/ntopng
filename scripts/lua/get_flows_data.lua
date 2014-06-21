@@ -74,11 +74,11 @@ else
   -- Init some parameters
   to_skip = 0
   offsetPage = currentPage - 1
-  
+
   -- Create and exe query
   query = "SELECT * FROM flows LIMIT "..perPage.." OFFSET "..(perPage*offsetPage)
   Sqlite:execQuery(sqlite, query)
-  
+
   -- Get flows in a correct format
   flows_stats = Sqlite:getFlows()
   -- tprint(flows_stats)
@@ -119,7 +119,7 @@ num = 0
 for key, value in pairs(flows_stats) do
    --   print(key.."\n")
    if (debug) then io.write("==================\n")end
-   
+
    process = 1
    client_process = 0
    server_process = 0
@@ -140,20 +140,20 @@ for key, value in pairs(flows_stats) do
       end
    end
    if (debug) then io.write("L4 -\t"..process.."\n")end
-   
+
    ---------------- USER ----------------
    if(user ~= nil) then
     if (debug) then io.write("User:"..user.."\n")end
-    if (flows_stats[key]["client_process"] ~= nil) then 
+    if (flows_stats[key]["client_process"] ~= nil) then
       if (debug) then io.write("Client user:"..flows_stats[key]["client_process"]["user_name"].."\n") end
-      if ((flows_stats[key]["client_process"]["user_name"] == user)) then 
+      if ((flows_stats[key]["client_process"]["user_name"] == user)) then
         client_process = 1
       end
       if (debug) then io.write("USER: => ClientProcess -\t"..client_process.."\n")end
     end
-      if (flows_stats[key]["server_process"] ~= nil) then 
+      if (flows_stats[key]["server_process"] ~= nil) then
       if (debug) then io.write("Server user:"..flows_stats[key]["server_process"]["user_name"].."\n") end
-      if ((flows_stats[key]["server_process"]["user_name"] == user)) then 
+      if ((flows_stats[key]["server_process"]["user_name"] == user)) then
         server_process = 1
         if (debug) then io.write("USER: => 1ServerProcess -\t"..server_process.."\n")end
       end
@@ -170,16 +170,16 @@ for key, value in pairs(flows_stats) do
    ---------------- PID ----------------
    if(pid ~= nil) then
     if (debug) then io.write("Pid:"..pid.."\n")end
-    if (flows_stats[key]["client_process"] ~= nil) then 
+    if (flows_stats[key]["client_process"] ~= nil) then
       if (debug) then io.write("Client pid:"..flows_stats[key]["client_process"]["pid"].."\n") end
-      if ((flows_stats[key]["client_process"]["pid"] == pid)) then 
+      if ((flows_stats[key]["client_process"]["pid"] == pid)) then
         client_process = 1
       end
       if (debug) then io.write("PID: => ClientProcess -\t"..client_process.."\n")end
     end
-    if (flows_stats[key]["server_process"] ~= nil) then 
+    if (flows_stats[key]["server_process"] ~= nil) then
       if (debug) then io.write("Server pid:"..flows_stats[key]["server_process"]["pid"].."\n") end
-      if ((flows_stats[key]["server_process"]["pid"] == pid)) then 
+      if ((flows_stats[key]["server_process"]["pid"] == pid)) then
         server_process = 1
       end
       if (debug) then io.write("PID: => ServerProcess -\t"..server_process.."\n")end
@@ -191,21 +191,21 @@ for key, value in pairs(flows_stats) do
     end
    end
    if (debug) then io.write("pid -\t"..process.."\n")end
-   
+
 
   ---------------- NAME ----------------
    if(name ~= nil) then
     if (debug) then io.write("Name:"..name.."\n")end
-    if (flows_stats[key]["client_process"] ~= nil) then 
+    if (flows_stats[key]["client_process"] ~= nil) then
       if (debug) then io.write("Client name:"..flows_stats[key]["client_process"]["name"].."\n") end
-      if ((flows_stats[key]["client_process"]["name"] == name)) then 
+      if ((flows_stats[key]["client_process"]["name"] == name)) then
         client_process = 1
       end
       if (debug) then io.write("ClientProcess -\t"..client_process.."\n")end
     end
-    if (flows_stats[key]["server_process"] ~= nil) then 
+    if (flows_stats[key]["server_process"] ~= nil) then
       if (debug) then io.write("Server name:"..flows_stats[key]["server_process"]["name"].."\n") end
-      if ((flows_stats[key]["server_process"]["name"] == name)) then 
+      if ((flows_stats[key]["server_process"]["name"] == name)) then
         server_process = 1
       end
       if (debug) then io.write("ServerProcess -\t"..server_process.."\n")end
@@ -217,7 +217,7 @@ for key, value in pairs(flows_stats) do
     end
    end
    if (debug) then io.write("name -\t"..process.."\n")end
-   
+
 
    ---------------- APP ----------------
    if(application ~= nil) then
@@ -237,18 +237,18 @@ for key, value in pairs(flows_stats) do
    process = 0
       end
    end
-   if (debug) then io.write("port -\t"..process.."\n")end   
+   if (debug) then io.write("port -\t"..process.."\n")end
 
    ---------------- HOST ----------------
   if(num_host_list > 0) then
     if(single_host == 1) then
-      if (debug) then io.write("Host:"..host_info["host"].."\n")end 
+      if (debug) then io.write("Host:"..host_info["host"].."\n")end
       if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"].."\n")end
        if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
-       if (debug) then io.write("vlan:"..flows_stats[key]["vlan"].."  ".. host_info["vlan"].."\n")end 
-      if(((flows_stats[key]["cli.ip"] ~= host_info["host"]) and (flows_stats[key]["srv.ip"] ~= host_info["host"])) 
+       if (debug) then io.write("vlan:"..flows_stats[key]["vlan"].."  ".. host_info["vlan"].."\n")end
+      if(((flows_stats[key]["cli.ip"] ~= host_info["host"]) and (flows_stats[key]["srv.ip"] ~= host_info["host"]))
         or (flows_stats[key]["vlan"] ~= host_info["vlan"])) then
-       
+
         process = 0
       end
     else
@@ -261,7 +261,7 @@ for key, value in pairs(flows_stats) do
       end -- findStringArray
 
       if ( ((cli_num ~= nil) and (cli_num < 1)) or
-          ((srv_num ~= nil) and (srv_num < 1)) 
+          ((srv_num ~= nil) and (srv_num < 1))
       ) then
        if (flows_stats[key]["cli.ip"] == flows_stats[key]["srv.ip"]) then process = 0 end
       end
@@ -276,9 +276,9 @@ for key, value in pairs(flows_stats) do
    if (debug) then io.write("Host -\t"..process.."\n")end
 
   ---------------- TABLE SORTING ----------------
-   if(process == 1) then 
+   if(process == 1) then
     if (debug) then io.write("Flow Processing\n")end
-    
+
       -- postfix is used to create a unique key otherwise entries with the same key will disappear
       num = num + 1
       postfix = string.format("0.%04u", num)
@@ -311,9 +311,9 @@ for key, value in pairs(flows_stats) do
 	 if(c == nil) then c = "" end
    	 vkey = c..postfix
 	 elseif(sortColumn == "column_duration") then
-	 vkey = flows_stats[key]["duration"]+postfix	  
+	 vkey = flows_stats[key]["duration"]+postfix
 	 elseif(sortColumn == "column_thpt") then
-	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix	  
+	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix
 	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
    elseif(sortColumn == "column_ID") then
@@ -322,7 +322,7 @@ for key, value in pairs(flows_stats) do
 	 -- By default sort by bytes
 	 vkey = flows_stats[key]["bytes"]+postfix
       end
-      
+
       --      print("-->"..num.."="..vkey.."\n")
       vals[vkey] = key
    end
@@ -339,13 +339,13 @@ end
 
 
 for _key, _value in pairsByKeys(vals, funct) do
-   key = vals[_key]   
+   key = vals[_key]
    value = flows_stats[key]
-   
-   
+
+
    --   print(key.."="..flows_stats[key]["duration"].."\n");
    --   print(key.."=".."\n");
-   -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")	 
+   -- print(key.."/num="..num.."/perPage="..perPage.."/toSkip="..to_skip.."\n")
    if (to_skip > 0) then
       to_skip = to_skip-1
    else
@@ -436,11 +436,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 
 	 print(dst_port)
-	 
-	 if((value["vlan"] ~= nil)) then 
-	    print("\", \"column_vlan\" : \""..value["vlan"].."\"") 
+
+	 if((value["vlan"] ~= nil)) then
+	    print("\", \"column_vlan\" : \""..value["vlan"].."\"")
 	 else
-	    print("\", \"column_vlan\" : \"\"") 
+	    print("\", \"column_vlan\" : \"\"")
 	 end
 
 	 if(value["category"] ~= nil) then print (", \"column_category\" : \"" .. getCategory(value["category"])) else print (",") end
@@ -462,9 +462,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
    if (debug) then io.write ("throughput_type: "..throughput_type.."\n") end
-	 if ( (value["throughput_trend_"..throughput_type] ~= nil) and 
-        (value["throughput_trend_"..throughput_type] > 0) 
-    ) then 
+	 if ( (value["throughput_trend_"..throughput_type] ~= nil) and
+        (value["throughput_trend_"..throughput_type] > 0)
+    ) then
 
     if (throughput_type == "pps") then
       print ("\", \"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")
@@ -472,7 +472,7 @@ for _key, _value in pairsByKeys(vals, funct) do
       print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
     end
 
-    if(value["throughput_trend_"..throughput_type] == 1) then 
+    if(value["throughput_trend_"..throughput_type] == 1) then
        print("<i class='fa fa-arrow-up'></i>")
        elseif(value["throughput_trend_"..throughput_type] == 2) then
        print("<i class='fa fa-arrow-down'></i>")

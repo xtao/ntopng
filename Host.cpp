@@ -398,9 +398,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       lua_insert(vm, -2);
       lua_settable(vm, -3);
     }
-
   } else {
-
     lua_newtable(vm);
      char *ipaddr = NULL;
     if(ip)
@@ -410,6 +408,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "traffic",  (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));
+    lua_push_bool_table_entry(vm, "localHost", localHost);
 
     /*Use the ip@vlan_id as a key only in case of multi vlan_id, otherwise use only the ip as a key*/
     if (vlan_id == 0) {

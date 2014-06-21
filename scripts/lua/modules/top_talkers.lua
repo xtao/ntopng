@@ -61,7 +61,6 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    _rcvd = {}
 
    for _key, value in pairs(hosts_stats) do
-
       key = hostinfo2hostkey(hosts_stats[_key],"cli")
       if(key ~= nil) then
 	 old = _sent[key]
@@ -100,7 +99,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
       rsp = rsp .. "[\n"
    end
 
-   -- io.write("Hello\n")
+   --print("Hello\n")
    if((mode == nil) or (mode == "senders")) then
       talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
       if(not(ntop.exists(talkers_dir))) then   

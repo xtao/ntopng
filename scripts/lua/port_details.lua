@@ -28,12 +28,20 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/lua/get_flows_data.lua?port=" .. _GET["port"].."\",\n")
+				  print("url: \"/lua/get_flows_data.lua?port=" .. _GET["port"])
+				  if(_GET["host"] ~= nil) then print("&host=".._GET["host"]) end
+				  print("\",\n")
 
 
 print [[
 	       showPagination: true,
-	       title: "Active Flows on Port ]] print(_GET["port"]) print [[",
+	       title: "Active Flows ]]
+	       if(_GET["host"] ~= nil) then 
+	         print("for ".._GET["host"]..":".._GET["port"])
+	       else
+	        print("on Port ".._GET["port"])
+		end
+		print [[",
 	        columns: [
 			     {
 			     title: "Info",

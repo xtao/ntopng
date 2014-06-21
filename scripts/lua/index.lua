@@ -60,6 +60,9 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if((page == "TopHosts")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopHosts">Hosts</a></li>\n')
 
+   if((page == "TopPorts")) then active=' class="active"' else active = "" end
+   print('<li'..active..'><a href="/?page=TopPorts">Ports</a></li>\n')
+
    if((page == "TopApplications")) then active=' class="active"' else active = "" end
    print('<li'..active..'><a href="/?page=TopApplications">Applications</a></li>\n')
 

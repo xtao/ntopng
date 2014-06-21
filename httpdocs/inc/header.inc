@@ -15,6 +15,9 @@
     <script src="/js/rickshaw.js"></script>
     <script src="/js/pie-chart.js"></script>
     <script src="/js/gauge.js"></script>
+    <script src="/js/crossfilter.js"></script>
+    <script src="/js/dc.js"></script>
+    <link href="/css/dc.css" rel="stylesheet">
     <link href="/css/flags.css" rel="stylesheet">
     <link href="/css/pie-chart.css" rel="stylesheet">
     <link href="/css/rickshaw.css" rel="stylesheet">

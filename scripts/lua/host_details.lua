@@ -121,8 +121,20 @@ end
 if(page == "packets") then
    print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
 else
-   if(host["ip"] ~= nil) then
+   if((host["ip"] ~= nil) and (
+   	(host["udp.pkts.sent"] > 0) 
+	or (host["udp.pkts.rcvd"] > 0) 
+   	or (host["tcp.pkts.sent"] > 0) 
+	or (host["tcp.pkts.rcvd"] > 0))) then
       print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+   end
+end
+
+if(page == "ports") then
+   print("<li class=\"active\"><a href=\"#\">Ports</a></li>\n")
+else
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=ports\">Ports</a></li>")
    end
 end
 
@@ -469,12 +481,12 @@ end
 	 ]]
 
       if(host["bytes.sent"] > 0) then
-	 print('<tr><th class="text-center">Send Distribution</th><td colspan=5><div class="pie-chart" id="sizeSentDistro"></div></td></tr>')
+	 print('<tr><th class="text-left">Sent Distribution</th><td colspan=5><div class="pie-chart" id="sizeSentDistro"></div></td></tr>')
       end
       if(host["bytes.rcvd"] > 0) then
-	 print('<tr><th class="text-center">Receive Distribution</th><td colspan=5><div class="pie-chart" id="sizeRecvDistro"></div></td></tr>')
+	 print('<tr><th class="text-left">Received Distribution</th><td colspan=5><div class="pie-chart" id="sizeRecvDistro"></div></td></tr>')
       end
-hostinfo2json(host_info)
+      hostinfo2json(host_info)
       print [[
       </table>
 
@@ -484,6 +496,35 @@ hostinfo2json(host_info)
 		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+	print [[
+
+		}
+
+	    </script><p>
+	]]
+
+   elseif((page == "ports")) then
+      print [[
+
+      <table class="table table-bordered table-striped">
+	 ]]
+
+      if(host["bytes.sent"] > 0) then
+	 print('<tr><th class="text-left">Client Ports</th><td colspan=5><div class="pie-chart" id="clientPortsDistro"></div></td></tr>')
+      end
+      if(host["bytes.rcvd"] > 0) then
+	 print('<tr><th class="text-left">Server Ports</th><td colspan=5><div class="pie-chart" id="serverPortsDistro"></div></td></tr>')
+      end
+      hostinfo2json(host_info)
+      print [[
+      </table>
+
+        <script type='text/javascript'>
+	       window.onload=function() {
+		   var refresh = 3000 /* ms */;
+		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+	print [[
+		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -505,7 +546,7 @@ hostinfo2json(host_info)
       print [[
 
       <table class="table table-bordered table-striped">
-      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      	<tr><th class="text-left">L4 Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
 
         <script type='text/javascript'>
@@ -552,7 +593,7 @@ hostinfo2json(host_info)
       print [[
 
       <table class="table table-bordered table-striped">
-      	<tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      	<tr><th class="text-left">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
 	</div>
 
         <script type='text/javascript'>
