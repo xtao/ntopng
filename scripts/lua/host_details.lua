@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -42,7 +42,7 @@ if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info
 --if(ip_elems[2] == nil) then
    host = interface.getHostInfo(host_info["host"],host_vlan)
    restoreFailed = false
-   
+
    if((host == nil) and (_GET["mode"] == "restore")) then
       if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Restored Host Info\n") end
       interface.restoreHost(host_info["host"],host_vlan)
@@ -122,9 +122,9 @@ if(page == "packets") then
    print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
 else
    if((host["ip"] ~= nil) and (
-   	(host["udp.pkts.sent"] > 0) 
-	or (host["udp.pkts.rcvd"] > 0) 
-   	or (host["tcp.pkts.sent"] > 0) 
+   	(host["udp.pkts.sent"] > 0)
+	or (host["udp.pkts.rcvd"] > 0)
+   	or (host["tcp.pkts.sent"] > 0)
 	or (host["tcp.pkts.rcvd"] > 0))) then
       print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
    end
@@ -135,6 +135,14 @@ if(page == "ports") then
 else
    if(host["ip"] ~= nil) then
       print("<li><a href=\""..url.."&page=ports\">Ports</a></li>")
+   end
+end
+
+if(page == "peers") then
+   print("<li class=\"active\"><a href=\"#\">Peers</a></li>\n")
+else
+   if(host["ip"] ~= nil) then
+      print("<li><a href=\""..url.."&page=peers\">Peers</a></li>")
    end
 end
 
@@ -532,6 +540,79 @@ end
 	    </script><p>
 	]]
 
+   elseif((page == "peers")) then
+
+   print [[
+
+   <table border=0>
+   <tr><td>
+   <div id="chart-row-hosts">
+       <strong>Top ]] print(host_info["host"]) print [[ Peers</strong>
+       <div class="clearfix"></div>
+   </div>
+
+   <div id="chart-ring-protocol">
+       <strong>Top Peer Protocols</strong>
+       <div class="clearfix"></div>
+   </div>
+   </td></tr></table>
+
+<script>
+var protocolChart = dc.pieChart("#chart-ring-protocol");
+var hostChart     = dc.rowChart("#chart-row-hosts");
+
+$.ajax({
+      type: 'GET',]]
+      print("url: '/lua/host_top_peers_protocols.lua?ifname=".._ifname.."&host="..host_info["host"])
+      if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then print("&vlan="..host_info["vlan"]) end
+      print("',\n")
+print [[
+      data: { },
+      error: function(content) { alert("Parse error"); },
+      success: function(content) {
+	 var rsp;
+
+// set crossfilter
+var ndx = crossfilter(content),
+    protocolDim  = ndx.dimension(function(d) {return d.l7proto;}),
+    spendDim = ndx.dimension(function(d) {return Math.floor(d.traffic/10);}),
+    nameDim  = ndx.dimension(function(d) {return d.host;}),
+    spendPerl7proto = protocolDim.group().reduceSum(function(d) {return +d.traffic;}),
+    spendPerhost = nameDim.group().reduceSum(function(d) {return +d.traffic;}),
+    spendHist    = spendDim.group().reduceCount();
+
+protocolChart
+    .width(400).height(300)
+    .dimension(protocolDim)
+    .group(spendPerl7proto)
+    .innerRadius(70);
+
+hostChart
+    .width(600).height(300)
+    .dimension(nameDim)
+    .group(spendPerhost)
+    .elasticX(true)
+    ;
+
+hostChart.xAxis().tickFormat(function(_v) {
+  var v = Math.pow(10, _v);
+
+  if(v < 1024)
+    return(v.toFixed(2));
+  else
+    return bytesToVolume(v);
+});
+
+
+dc.renderAll();
+}
+});
+</script>
+
+   ]]
+
+
+
    elseif((page == "traffic")) then
      total = 0
      for id, _ in ipairs(l4_keys) do
@@ -809,7 +890,7 @@ print (hostinfo2url(host_info)..'";')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
 if (ifstats.iface_sprobe) then show_sprobe = true else show_sprobe = false end
 if (ifstats.iface_vlan)   then show_vlan = true else show_vlan = false end
--- Set the host table option 
+-- Set the host table option
 if(show_sprobe) then print ('flow_rows_option["sprobe"] = true;\n') end
 if(show_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 
@@ -875,7 +956,7 @@ if(show_vlan) then
 if(ifstats.iface_sprobe) then
    print('{ title: "Source Id",\n')
 else
-   if(ifstats.iface_vlan) then  
+   if(ifstats.iface_vlan) then
      print('{ title: "VLAN",\n')
    end
 end
@@ -940,7 +1021,7 @@ end
    when = os.date("%y%m%d", t)
    base_name = when.."|"..ifname.."|"..ntop.getHostId(host_info["host"])
    keyname = base_name.."|contacted_peers"
-   
+
    protocols = {}
    protocols[65535] = interface.getNdpiProtoName(65535)
    v1 = ntop.getHashKeysCache(keyname)
@@ -1091,7 +1172,7 @@ n = 0
 if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
 
 for v,k in pairsByKeys(vals, rev) do
-  
+
    if(v > 0) then
       if(n == 0) then
 	 print("<table class=\"table table-bordered table-striped\">\n")
@@ -1199,11 +1280,11 @@ if(num > 0) then
       -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
       -- Client
       sortTable = {}
-      for k,v in pairs(host["contacts"]["client"]) do 
-      
-        sortTable[v]=k 
+      for k,v in pairs(host["contacts"]["client"]) do
+
+        sortTable[v]=k
       end
-      
+
       num = 0
       max_num = 64 -- Do not create huge maps
       for _v,k in pairsByKeys(sortTable, rev) do
@@ -1211,19 +1292,19 @@ if(num > 0) then
 	 if(num >= max_num) then break end
 	 num = num + 1
 	 name = interface.getHostInfo(k)
-  
+
    -- TOFIX VLAN (We need to remove the host vlan and add the client vlan)
 	 v = host["contacts"]["client"][k]
    info = interface.getHostInfo(k)
-	
+
    if(info ~= nil) then
       if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
       url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(info).."\">"..n.."</A>"
    else
       url = k
    end
-  
-	 
+
+
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
@@ -1254,7 +1335,7 @@ if(num > 0) then
 	 else
 	    url = k
 	 end
-	 
+
 	 if(info ~= nil) then
 	    if((info["country"] ~= nil) and (info["country"] ~= "")) then
 	       url = url .." <img src='/img/blank.gif' class='flag flag-".. string.lower(info["country"]) .."'> "
@@ -1425,10 +1506,10 @@ print [[
    var url_update = "/lua/get_hosts_data.lua?aggregated=1]]
    print("&protocol="..protocol_id.."&client="..host_info["host"]) print ('";')
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc") 
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
 
   print [[
-   $("#table-hosts").datatable({ 
+   $("#table-hosts").datatable({
       title: "Client Host Aggregations",
       url: url_update , ]]
 

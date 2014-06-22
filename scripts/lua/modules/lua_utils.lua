@@ -1131,20 +1131,15 @@ end
 function hostinfo2json(host_info,host_type)
   local rsp = ''
 
-  if(host_type == "cli") then
-    
+  if(host_type == "cli") then    
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
-
   elseif (host_type == "srv") then
-
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
-
   else
-
     if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then 
       host_info = hostkey2hostinfo(host_info)
     end
@@ -1159,7 +1154,6 @@ function hostinfo2json(host_info,host_type)
       rsp = rsp..'host: "'..host_info["mac"] ..'"'
     end
   end
-
 
   if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
     rsp = rsp..', vlan: "'..tostring(host_info["vlan"]) .. '"'
