@@ -18,6 +18,8 @@ hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 key = _GET["key"]
 
+host = _GET["host"]
+
 network_id=_GET["network_id"]
 
 prefs = ntop.getPrefs()
@@ -31,8 +33,14 @@ print [[
 	 <script>
    var url_update = "/lua/get_flows_data.lua]]
 
-   if(application ~= nil) then
+if(application ~= nil) then
    print("?application="..application)
+   num_param = num_param + 1
+end
+
+if(host ~= nil) then
+  if(application ~= nil) then print("&") else print("?") end
+   print("host="..host)
    num_param = num_param + 1
 end
 
@@ -106,7 +114,7 @@ print [[",
 print ('sort: [ ["column_bytes","desc"] ],');
 
 print [[
-	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
+       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
@@ -114,7 +122,9 @@ for key, value in pairsByKeys(stats["ndpi"], asc) do
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key..'">'..key..'</a></li>')
+   print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key)
+   if(host ~= nil) then print('&host='..host) end
+   print('">'..key..'</a></li>')
 end
 
 
