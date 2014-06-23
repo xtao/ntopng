@@ -76,7 +76,7 @@ for value,peer in pairsByKeys(_peers, rev) do
     end
 
     num = num + 1
-   if(num == max_num_entries) then
+   if(num == max_num_peers) then
       break
    end
    end
