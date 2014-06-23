@@ -832,6 +832,8 @@ bool Flow::idle() {
 bool Flow::isFlowPeer(char *numIP, u_int16_t vlanId) {
   char s_buf[32], *ret;
 
+  if((!cli_host) || (!srv_host)) return(false);
+
   ret = cli_host->get_ip()->print(s_buf, sizeof(s_buf));
   if ((strcmp(ret, numIP) == 0) &&
      (cli_host->get_vlan_id() == vlanId))return(true);
