@@ -57,6 +57,12 @@ if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/li
         if test -f "/usr/local/lib/libpcap.a"; then
     	  LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
           echo "Using PF_RING installed in /usr/local/lib"
+	  AC_CHECK_LIB([pcap], [pcap_open_live], pcap=true)
+	  if test x$pcap = x
+	  then
+	    echo "Found /usr/local/lib/libpfring.a but missing header files."
+	    exit
+	  fi
 	else
 	  echo "Found /usr/local/lib/libpfring.a  but missing libpcap.a in the same directory"
 	  echo "Please make sure you have installed your PF_RING libraries and try again"
