@@ -10,7 +10,7 @@
     <script src="/bootstrap/js/bootstrap.js"></script>
     <script src="/js/bootstrap-datatable.js"></script>
     <script src="/js/bootstrap3-typeahead.js"></script>
-    <script src="/js/d3.v3.js"></script>
+    <script charset="utf-8" src="/js/d3.v3.js"></script>
     <script src="/js/jquery.peity.js"></script>
     <script src="/js/rickshaw.js"></script>
     <script src="/js/pie-chart.js"></script>
