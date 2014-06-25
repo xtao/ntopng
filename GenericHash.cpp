@@ -159,6 +159,12 @@ void GenericHash::walk(bool (*walker)(GenericHashEntry *h, void *user_data), voi
 
 /* ************************************ */
 
+/*
+  Bucket Lifecycle
+
+  Active -> Idle -> Ready to be Purged -> Purged
+ */
+
 u_int GenericHash::purgeIdle() {
   u_int i, num_purged = 0;
 
@@ -179,7 +185,7 @@ u_int GenericHash::purgeIdle() {
       while(head) {
 	GenericHashEntry *next = head->next();
 
-	if(head->idle()) {
+	if(head->is_ready_to_be_purged()) {
 	  if(prev == NULL) {
 	    table[i] = next;	    
 	  } else {
@@ -190,6 +196,8 @@ u_int GenericHash::purgeIdle() {
 	  delete(head);
 	  head = next;
 	} else {
+	  if(head->idle()) head->set_to_purge();
+
 	  prev = head;
 	  head = next;
 	}
