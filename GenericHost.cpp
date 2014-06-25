@@ -24,6 +24,9 @@
 /* *************************************** */
 
 GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
+  if(_iface == NULL)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "NULL interface");
+
   ndpiStats = new NdpiStats();
 
   systemHost = false, localHost = false, last_activity_update = 0, host_serial = 0;

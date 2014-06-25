@@ -77,6 +77,9 @@ void Host::save_alternate_name() {
 Host::~Host() {
   char key[128], *k;
 
+  if(num_uses > 0)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: num_uses=%u", num_uses);
+
   if(ip && (!ip->isEmpty())) dumpStats(false);
 
   k = get_string_key(key, sizeof(key));

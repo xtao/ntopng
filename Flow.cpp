@@ -35,7 +35,7 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
   json_info = strdup("{}");
-  tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = 0;
+  tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = pkts_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
   cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
@@ -635,14 +635,13 @@ void Flow::update_hosts_stats(struct timeval *tv) {
       bytes_thpt = bytes_msec;
 
       // pps
-
       float pkts_msec = ((float)((cli2srv_last_packets-prev_cli2srv_last_packets)*1000))/tdiff_msec;
 
       if(pkts_msec < 0) pkts_msec = 0; /* Just to be safe */
 
       if(pkts_thpt < pkts_msec)      pkts_thpt_trend = trend_up;
       else if(pkts_thpt > pkts_msec) pkts_thpt_trend = trend_down;
-      else                             pkts_thpt_trend = trend_stable;
+      else                           pkts_thpt_trend = trend_stable;
 
       pkts_thpt = pkts_msec;
 
