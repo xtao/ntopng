@@ -170,8 +170,7 @@ u_int GenericHash::purgeIdle() {
 
   if(ntop->getGlobals()->isShutdown()) return(0);
 
-  for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {
-  
+  for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {  
     if(++last_purged_hash == num_hashes) last_purged_hash = 0;
     i = last_purged_hash;
 
@@ -221,7 +220,7 @@ GenericHashEntry* GenericHash::findByKey(u_int32_t key) {
 
   locks[hash]->lock(__FILE__, __LINE__);
   while(head != NULL) {
-    if(head->key() == key)
+    if((!head->idle()) && (head->key() == key))
       break;
     else      
       head = head->next();

@@ -73,17 +73,17 @@ Host* HostHash::get(u_int16_t vlanId, const u_int8_t mac[6]) {
 
     while(head != NULL) {
       if((!head->idle())
-	       && (head->get_ip() == NULL /* This is not a L2 host */)
+	 && (head->get_ip() == NULL /* This is not a L2 host */)
          // && (vlanId == 0 /* any vlan */ || head->get_vlan_id() == vlanId)
          && (head->get_vlan_id() == vlanId)
          && (memcmp(mac, head->get_mac(), 6) == 0))
-          break;
+	break;
       else
         head = (Host*)head->next();
     }
     
     locks[hash]->unlock(__FILE__, __LINE__);
-
+    
     return(head);
   }
 }

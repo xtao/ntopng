@@ -524,6 +524,8 @@ int Host::compare(Host *h) {
 /* ***************************************** */
 
 bool Host::isIdle(u_int max_idleness) {
+  if(num_uses > 0) return(false);
+  
   switch(ntop->getPrefs()->get_host_stickness()) {
   case location_none:
     break;
@@ -541,8 +543,7 @@ bool Host::isIdle(u_int max_idleness) {
     break;
   }
 
-  return(((num_uses == 0)
-	  && ((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness))) ? true : false);
+  return(((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness)) ? true : false);
 }
 
 /* ***************************************** */
