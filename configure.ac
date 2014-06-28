@@ -212,6 +212,12 @@ fi
 
 umask 002
 
+INSTALL_DIR=${prefix}
+if test $INSTALL_DIR = "NONE"
+then
+ INSTALL_DIR=${ac_default_prefix}
+fi
+
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
 AC_DEFINE_UNQUOTED(PACKAGE_MACHINE, "$MACHINE", [Architecture of this host])
 AC_SUBST(MACHINE)
@@ -239,6 +245,7 @@ AC_SUBST(NTOPNG_VERSION)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(SVN_DATE)
 AC_SUBST(SVN_WC_DB)
+AC_SUBST(INSTALL_DIR)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(packages/ntopng.spec)
 AC_CONFIG_FILES(packages/ntopng-data.spec)

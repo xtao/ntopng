@@ -1,6 +1,7 @@
 SHELL=/bin/sh
 OS := $(shell uname -s)
 GPP=@GPP@
+INSTALL_DIR=@INSTALL_DIR@
 ######
 HIREDIS_HOME=third-party/hiredis
 HIREDIS_INC=-I$(HIREDIS_HOME)
@@ -226,13 +227,13 @@ install: ntopng geoip
 	@echo "to create a package and install that"
 	@echo "rpm - do 'make build-rpm'"
 	@echo "deb - do 'cd packages/ubuntu;./configure;make"
-	mkdir -p /usr/local/share/ntopng /usr/local/man/man8 /usr/local/bin
-	cp ntopng /usr/local/bin
-	cp ./ntopng.8 /usr/local/man/man8
-	cp -r ./httpdocs /usr/local/share/ntopng
-	cp -r ./scripts /usr/local/share/ntopng
-	find /usr/local/share/ntopng -name "*~"   | xargs /bin/rm -f
-	find /usr/local/share/ntopng -name ".svn" | xargs /bin/rm -rf
+	mkdir -p $(INSTALL_DIR)/share/ntopng $(INSTALL_DIR)/man/man8 $(INSTALL_DIR)/bin
+	cp ntopng $(INSTALL_DIR)/bin
+	cp ./ntopng.8 $(INSTALL_DIR)/man/man8
+	cp -r ./httpdocs $(INSTALL_DIR)/share/ntopng
+	cp -r ./scripts $(INSTALL_DIR)/share/ntopng
+	find $(INSTALL_DIR)/share/ntopng -name "*~"   | xargs /bin/rm -f
+	find $(INSTALL_DIR)/share/ntopng -name ".svn" | xargs /bin/rm -rf
 
 Makefile: @SVN_WC_DB@
 	@echo ""
