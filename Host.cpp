@@ -549,7 +549,7 @@ bool Host::isIdle(u_int max_idleness) {
 /* ***************************************** */
 
 bool Host::idle() {
-  return(isIdle(ntop->getPrefs()->get_host_max_idle(localHost)));
+  return(will_be_purged || isIdle(ntop->getPrefs()->get_host_max_idle(localHost)));
 };
 
 /* ***************************************** */
