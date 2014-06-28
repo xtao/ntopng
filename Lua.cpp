@@ -1192,7 +1192,7 @@ static int ntop_interface_is_idle(lua_State* vm) {
 
   if(!ntop_interface) return(false);
 
-  return(ntop_interface->isIdle());
+  return(ntop_interface->idle());
 }
 
 /* ****************************************** */

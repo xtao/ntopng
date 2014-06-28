@@ -41,6 +41,8 @@ class GenericHashEntry {
   time_t last_seen;    /**< Time of last seen.*/
   NetworkInterface *iface; /**< Pointer of network interface.*/
 
+  virtual bool isIdle(u_int max_idleness);
+
  public:
    /**
     * @brief A Constructor
@@ -95,7 +97,6 @@ class GenericHashEntry {
   inline bool is_ready_to_be_purged() { return(will_be_purged); };
   virtual u_int32_t key()             { return(0);         };  
   virtual char* get_string_key(char *buf, u_int buf_len) { buf[0] = '\0'; return(buf); };
-  virtual bool isIdle(u_int max_idleness);
 };
 
 #endif /* _GENERIC_HASH_ENTRY_H_ */

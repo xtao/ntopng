@@ -148,7 +148,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
 /* **************************************************** */
 
 bool NetworkInterface::checkIdle() {
-  idle = false;
+  is_idle = false;
 
   if(ifname != NULL) {
     char rkey[128], rsp[16];
@@ -157,11 +157,11 @@ bool NetworkInterface::checkIdle() {
     if(ntop->getRedis()->get(rkey, rsp, sizeof(rsp)) == 0) {
       int val = atoi(rsp);
       
-      if(val == 0) idle = true;
+      if(val == 0) is_idle = true;
     }
   }
 
-  return(idle);
+  return(is_idle);
 }
 
 /* **************************************************** */

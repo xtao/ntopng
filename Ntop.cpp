@@ -42,6 +42,7 @@ Ntop::Ntop(char *appName) {
   num_defined_interfaces = 0;
   local_interface_addresses = New_Patricia(128);
   export_interface = NULL;
+  start_time = 0; /* It will be initialized by start() */
 
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
@@ -181,6 +182,8 @@ void Ntop::start() {
   getTrace()->traceEvent(TRACE_NORMAL,
 			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-14 ntop.org",
 			 PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
+
+  start_time = time(NULL);
 
   strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
   snprintf(buf, sizeof(buf), "%s.hostkeys", daybuf);

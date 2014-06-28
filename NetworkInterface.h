@@ -99,7 +99,7 @@ class NetworkInterface {
   bool has_vlan_packets;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
-  bool running, idle;
+  bool running, is_idle;
 
   void deleteDataStructures();
   Flow* getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
@@ -216,8 +216,8 @@ class NetworkInterface {
   void findFatherPidFlows(lua_State *vm, u_int32_t pid);
   void findProcNameFlows(lua_State *vm, char *proc_name);
   void addAllAvailableInterfaces();  
-  inline bool isIdle() { return(idle); }
-  inline void setIdleState(bool new_state) { idle = new_state; }
+  inline bool idle() { return(is_idle); }
+  inline void setIdleState(bool new_state) { is_idle = new_state; }
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

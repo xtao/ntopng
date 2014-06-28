@@ -57,6 +57,7 @@ class Ntop {
   ExportInterface *export_interface;
   Mutex *rrd_lock;
   long time_offset;
+  time_t start_time; /**< Time when start() was called */
 
   void loadLocalInterfaceAddress();
 
@@ -142,7 +143,7 @@ class Ntop {
   bool isLocalAddress(int family, void *addr, int16_t *network_id);
 
   /**
-   * @brief Star ntopng instance.
+   * @brief Start ntopng packet processing.
    */
   void start();
   /**
@@ -290,6 +291,8 @@ class Ntop {
   bool isLocalInterfaceAddress(int family, void *addr);
   inline char* getLocalNetworkName(int16_t local_network_id) { return(address->get_local_network(local_network_id)); };
   void createExportInterface();
+
+  inline u_int32_t getUptime() { return((start_time > 0) ? (time(NULL)-start_time) : 0); }
 };
 
 extern Ntop *ntop;

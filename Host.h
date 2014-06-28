@@ -96,7 +96,6 @@ class Host : public GenericHost {
   void setName(char *name, bool update_categorization);
   int compare(Host *h);
   inline bool equal(IpAddress *_ip)  { return(ip && _ip && ip->equal(_ip)); };
-  bool isIdle(u_int max_idleness);
   void incrContact(Host *peer, bool contacted_peer_as_client);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, 
 		u_int64_t sent_packets, u_int64_t sent_bytes,

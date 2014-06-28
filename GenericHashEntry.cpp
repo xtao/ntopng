@@ -57,6 +57,6 @@ bool GenericHashEntry::idle() {
 /* ***************************************** */
 
 bool GenericHashEntry::isIdle(u_int max_idleness) {
-  return(((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness))
-	 ? true : false);
+  return(will_be_purged 
+	 || (((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness)) ? true : false));
 }

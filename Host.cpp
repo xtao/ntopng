@@ -523,7 +523,7 @@ int Host::compare(Host *h) {
 
 /* ***************************************** */
 
-bool Host::isIdle(u_int max_idleness) {
+bool Host::idle() {
   if(num_uses > 0) return(false);
   
   switch(ntop->getPrefs()->get_host_stickness()) {
@@ -543,13 +543,7 @@ bool Host::isIdle(u_int max_idleness) {
     break;
   }
 
-  return(((u_int)(iface->getTimeLastPktRcvd()) > (last_seen+max_idleness)) ? true : false);
-}
-
-/* ***************************************** */
-
-bool Host::idle() {
-  return(will_be_purged || isIdle(ntop->getPrefs()->get_host_max_idle(localHost)));
+  return(isIdle(ntop->getPrefs()->get_host_max_idle(localHost)));
 };
 
 /* ***************************************** */
@@ -783,7 +777,12 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
     char ip_buf[48], flow_buf[256], msg[512], *h;
 
     if(!triggerAlerts()) return;
-    
+
+    /* 
+       It's normal that at startup several flows are created
+    */
+    if(ntop->getUptime() < 10 /* sec */) return;
+
     h = ip->print(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
 	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a SYN flooder [%u SYNs in the last %u sec] %s", 
