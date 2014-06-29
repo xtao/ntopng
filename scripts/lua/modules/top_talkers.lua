@@ -138,13 +138,14 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
       -- 10 %
       threshold = total / 10
+      low_threshold = total * 0.05  -- 5%
 
       num = 0
       for _key, _value in pairsByKeys(sent, rev) do
 	 key   = sent[_key]
 	 value = _key
 
-	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
+	 if((value == 0) or (value <  low_threshold) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "label": "'..key .. '", "url": "/lua/host_details.lua?host='..key..'", "value": '..value
 	 num = num + 1
@@ -267,13 +268,14 @@ function getTopASs(ifname)
 
    -- 10 %
    threshold = total / 10
+   low_threshold = total * 0.050
 
    num = 0
    for _key, _value in pairsByKeys(asn, rev) do
       key   = asn[_key]
       value = _key
 
-      if((value == 0) or ((value < threshold) and (num > 2))) then break end
+      if((value == 0) or (value < low_threshold) or ((value < threshold) and (num > 2))) then break end
       if(num > 0) then rsp = rsp .. " }," end
       rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
       num = num + 1
