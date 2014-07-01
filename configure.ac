@@ -25,7 +25,7 @@ SYSTEM=`uname -s`
 
 if test $SYSTEM = "Linux"; then
    OSNAME=`./linux.guess`
-else	  
+else
    OSNAME=`./config.guess`
 fi
 AC_DEFINE_UNQUOTED(PACKAGE_OSNAME, "${OSNAME}", [OS name])
@@ -52,7 +52,7 @@ if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/li
        echo "Found PF_RING but the userland libs have not been compiled"
        exit
      fi
-  else  
+  else
     if test -f "/usr/local/lib/libpfring.a"; then
         if test -f "/usr/local/lib/libpcap.a"; then
     	  LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
@@ -83,7 +83,7 @@ CFLAGS="-Wall $CFLAGS"
 
 dnl> http://luajit.org/install.html
 if test $SYSTEM = "Darwin"; then
-   if test $MACHINE = "x86_64"; then 
+   if test $MACHINE = "x86_64"; then
       LINK_OPTS="-pagezero_size 10000 -image_base 100000000"
       RES=`g++ -Wall -fno-color-diagnostics Prefs.cpp 2>&1 | grep "unrecognized command line option "|wc -l`
       if test $RES -eq 0; then
@@ -160,7 +160,7 @@ if test ".${ac_cv_lib_GeoIP_GeoIP_record_by_ipnum}" = ".yes" &&
      AC_DEFINE_UNQUOTED(HAVE_GEOIP_IPv6, 1, [GeoIP IPv6 support is present])
      dnl> LIBS="$LIBS -lGeoIP"
      AC_DEFINE_UNQUOTED(HAVE_GEOIP, 1, [GeoIP support is present])
-     GEOIP_LIB="-lGeoIP" 
+     GEOIP_LIB="-lGeoIP"
      dnl> Download databases
      DOWNLOAD_GEOIP=1
    else
@@ -218,6 +218,12 @@ then
  INSTALL_DIR=${ac_default_prefix}
 fi
 
+MAN_DIR=${mandir}
+if test $MAN_DIR = "NONE"
+then
+ MAN_DIR=${ac_default_prefix}
+fi
+
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
 AC_DEFINE_UNQUOTED(PACKAGE_MACHINE, "$MACHINE", [Architecture of this host])
 AC_SUBST(MACHINE)
@@ -246,6 +252,7 @@ AC_SUBST(SVN_RELEASE)
 AC_SUBST(SVN_DATE)
 AC_SUBST(SVN_WC_DB)
 AC_SUBST(INSTALL_DIR)
+AC_SUBST(MAN_DIR)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(packages/ntopng.spec)
 AC_CONFIG_FILES(packages/ntopng-data.spec)

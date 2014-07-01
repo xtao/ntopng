@@ -115,19 +115,19 @@ static int is_authorized(const struct mg_connection *conn,
 
     return(ntop->checkUserPassword(username, password));
   }
- 
+
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Received session %s/%s", session_id, username);
 
   if(ntop->getPrefs()->do_auto_logout()) {
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
        || strcmp(user, username) /* Users don't match */) {
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user", 
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s/%s is expired or empty user",
 				   session_id, username);
       return(0);
     } else {
       ntop->getRedis()->expire(key, HTTP_SESSION_DURATION); /* Extend session */
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec", 
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Session %s is OK: extended for %u sec",
 				   session_id, HTTP_SESSION_DURATION);
       return(1);
     }
@@ -146,7 +146,7 @@ static void redirect_to_login(struct mg_connection *conn,
 
   mg_get_cookie(conn, "session", session_id, sizeof(session_id));
   ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s(%s)", __FUNCTION__, session_id);
-  
+
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
 	    "Location: %s\r\n\r\n",
@@ -170,9 +170,9 @@ static void authorize(struct mg_connection *conn,
   char user[32], password[32];
 
   if(!strcmp(request_info->request_method, "POST")) {
-    char post_data[1024];    
+    char post_data[1024];
     int post_data_len = mg_read(conn, post_data, sizeof(post_data));
-    
+
     mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
     mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   } else {
@@ -205,9 +205,9 @@ static void authorize(struct mg_connection *conn,
 	      "Set-Cookie: session=%s; path=/; max-age=%u; HttpOnly\r\n"  // Session ID
 	      "Set-Cookie: user=%s; path=/; max-age=%u; HttpOnly\r\n"  // Set user, needed by Javascript code
 	      "Location: /\r\n\r\n",
-	      session_id, HTTP_SESSION_DURATION, 
+	      session_id, HTTP_SESSION_DURATION,
 	      user, HTTP_SESSION_DURATION);
-    
+
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     ntop->getRedis()->set(key, user, HTTP_SESSION_DURATION);
@@ -254,7 +254,7 @@ static int handle_lua_request(struct mg_connection *conn) {
      //|| (strcmp(request_info->request_method, "GET"))
      || (ntop->getRedis() == NULL /* Starting up... */))
     return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method or ntopng still starting up..."));
-  
+
   if(ntop->get_HTTPserver()->is_ssl_enabled() && (!request_info->is_ssl))
     redirect_to_ssl(conn, request_info);
 
@@ -278,9 +278,9 @@ static int handle_lua_request(struct mg_connection *conn) {
      || strstr(request_info->uri, "&&")
      || strstr(request_info->uri, "??")
      || strstr(request_info->uri, "..")) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous", 
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous",
 				 request_info->uri);
-    return(send_error(conn, 400 /* Bad Request */, request_info->uri, 
+    return(send_error(conn, 400 /* Bad Request */, request_info->uri,
 		      "The URL specified contains invalid/dangerous characters"));
   }
 
@@ -292,16 +292,16 @@ static int handle_lua_request(struct mg_connection *conn) {
 
     snprintf(path, sizeof(path), "%s%s", httpserver->get_scripts_dir(),
 	     (strlen(request_info->uri) == 1) ? "/lua/index.lua" : request_info->uri);
-    
+
     ntop->fixPath(path);
     if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
       Lua *l = new Lua();
-      
+
       ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", request_info->uri, path);
-      
+
       if(l == NULL) {
 	ntop->getTrace()->traceEvent(TRACE_ERROR, "[HTTP] Unable to start Lua interpreter");
-	return(send_error(conn, 500 /* Internal server error */, 
+	return(send_error(conn, 500 /* Internal server error */,
 			  "Internal server error", "%s", "Unable to start Lua interpreter"));
       } else {
 	l->handle_script_request(conn, request_info, path);
@@ -309,9 +309,9 @@ static int handle_lua_request(struct mg_connection *conn) {
 	return(1); /* Handled */
       }
     }
-    
+
     uri_encode(request_info->uri, uri, sizeof(uri)-1);
-    
+
     return(send_error(conn, 404, "Not Found", PAGE_NOT_FOUND, uri));
   } else
     return(0); /* This is a static document so let mongoose handle it */
@@ -336,7 +336,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   snprintf(ssl_cert_path, sizeof(ssl_cert_path), "%s/ssl/%s",
 	   docs_dir, CONST_HTTPS_CERT_NAME);
-	   
+
   if(stat(ssl_cert_path, &buf) == 0) {
     use_ssl = true;
     if (use_http)
@@ -349,7 +349,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     ssl_enabled = true;
   } else {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS Disabled: missing SSL certificate %s", ssl_cert_path);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read README.SSL if you want to enable SSL");
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read https://svn.ntop.org/svn/ntop/trunk/ntopng/README.SSL if you want to enable SSL.");
     ssl_enabled = false;
   }
   if ((!use_http) && (!use_ssl & !ssl_enabled)) {
@@ -359,9 +359,9 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     snprintf(ports, sizeof(ports), "%d", port);
     use_http = true;
   }
-  
-  static char *http_options[] = { 
-    (char*)"listening_ports", ports, 
+
+  static char *http_options[] = {
+    (char*)"listening_ports", ports,
     (char*)"enable_directory_listing", (char*)"no",
     (char*)"document_root",  (char*)_docs_dir,
     (char*)"extra_mime_types", (char*)".inc=text/html,.css=text/css,.js=application/javascript",
@@ -374,7 +374,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   callbacks.begin_request = handle_lua_request;
 
   httpd_v4 = mg_start(&callbacks, NULL, (const char**)http_options);
-  
+
   if(httpd_v4 == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server (IPv4) on port %d", port);
     exit(-1);
@@ -390,7 +390,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   if(use_http)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTP server listening on port %d", port);
-  
+
   if(use_ssl & ssl_enabled)
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS server listening on port %d", ntop->getPrefs()->get_https_port());
 };
