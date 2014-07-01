@@ -91,8 +91,8 @@ else
 
    host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", host_info["host"])
 
-   rrdname = dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/" .. host_info["host"] .. "/bytes.rrd"
-   --print(rrdname)
+   rrdname = dirs.workingdir .. "/" .. getInterfaceId(ifname) .. "/rrd/" .. host_info["host"] .. "/bytes.rrd"
+   -- print(rrdname)
 print [[
 <div class="bs-docs-example">
             <nav class="navbar navbar-default" role="navigation">
