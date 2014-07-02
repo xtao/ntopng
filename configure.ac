@@ -218,6 +218,11 @@ then
  INSTALL_DIR=${ac_default_prefix}
 fi
 
+if test $SYSTEM = "Darwin"; then
+  MAN_DIR=$INSTALL_DIR/share
+else
+  MAN_DIR=$INSTALL_DIR
+fi
 
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
 AC_DEFINE_UNQUOTED(PACKAGE_MACHINE, "$MACHINE", [Architecture of this host])

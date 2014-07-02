@@ -24,8 +24,6 @@ class Ntopng < Formula
   depends_on 'lbzip2'
   depends_on 'zeromq'
 
-
-
   def install
     system "./autogen.sh"
     system "./configure", "--prefix=#{prefix}", "--mandir=#{man}"
