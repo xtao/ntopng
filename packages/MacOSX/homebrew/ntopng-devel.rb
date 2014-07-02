@@ -28,7 +28,7 @@ class Ntopng < Formula
 
   def install
     system "./autogen.sh"
-    system "./configure", "--prefix=#{prefix}", "--mandir=#{man[1-8]}"
+    system "./configure", "--prefix=#{prefix}", "--mandir=#{man}"
     system "make"
     system "make install"
   end
