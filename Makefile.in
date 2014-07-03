@@ -103,7 +103,7 @@ ifneq ($(HAS_JSON), 0)
 LIB_TARGETS += $(JSON_LIB)
 endif
 
-.PHONY: default all clean docs
+.PHONY: default all clean docs test
 
 default: $(NDPI_LIB) $(LIB_TARGETS) $(TARGET)
 
@@ -241,3 +241,9 @@ Makefile: @SVN_WC_DB@
 	@echo "Re-running configure as the SVN release has changed"
 	@echo ""
 	./configure
+
+
+test: test_version
+
+test_version:
+	./ntopng --version
