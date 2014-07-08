@@ -55,6 +55,8 @@ class CollectorInterface : public ParserInterface {
   void shutdown();
 
   bool set_packet_filter(char *filter);
+
+  bool is_packet_interface()           { return(false); }
 };
 
 #endif /* _COLLECTOR_INTERFACE_H_ */

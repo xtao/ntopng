@@ -62,7 +62,6 @@ typedef struct zmq_flow {
   u_int32_t first_switched, last_switched;
   json_object *additional_fields;
   u_int8_t src_mac[6], dst_mac[6], direction, source_id;
-  time_t first_seen, last_seen;
 
   /* EPP Extensions */
   char epp_server_name[48], epp_registrar_name[48], epp_cmd_args[64], epp_reason_str[16];
@@ -134,6 +133,7 @@ class NetworkInterface {
   virtual char *getEndpoint(u_int8_t id)       { return NULL;   };
   virtual bool set_packet_filter(char *filter) { return(false); };
   virtual void incrDrops(u_int32_t num)        { ; }
+  inline virtual bool is_packet_interface()    { return(true); }
   inline virtual const char* get_type()        { return("unknown"); }
   inline virtual bool is_ndpi_enabled()        { return(true); }
   inline u_int  getNumnDPIProtocols()          { return(ndpi_get_num_supported_protocols(ndpi_struct)); };

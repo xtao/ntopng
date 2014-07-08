@@ -7,7 +7,7 @@
 			     }
 				 },
 			     {
-			     title: "Throughput",
+			     title: "Actual Thpt",
 				 field: "column_thpt",
 				 sortable: true,
 	 	             css: { 

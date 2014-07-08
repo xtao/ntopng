@@ -177,6 +177,9 @@
 #define NUM_PKTS_TTL_224_255  NTOP_BASE_ID+341
 #define IN_SRC_OSI_SAP        NTOP_BASE_ID+349
 #define OUT_DST_OSI_SAP       NTOP_BASE_ID+350
+#define DURATION_CLI_SRV      NTOP_BASE_ID+391
+#define DURATION_SRV_CLI      NTOP_BASE_ID+392
+
 
 /* SIP */
 #define SIP_CALL_ID NTOP_BASE_ID+130
@@ -400,10 +403,6 @@
 #define FTP_COMMAND           NTOP_BASE_ID+358
 #define FTP_COMMAND_RET_CODE  NTOP_BASE_ID+359
 
-// Sqlite flow
- #define FRIST_SEEN   NTOP_BASE_ID+391
- #define LAST_SEEN   NTOP_BASE_ID+392
-
-/* Last used identifier is NTOP_BASE_ID+392 (SEEN_LAST) */
+/* Last used identifier is NTOP_BASE_ID+392 (DURATION_SRV_CLI) */
 
 #endif /* _TEMPLATE_H_ */

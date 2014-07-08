@@ -55,8 +55,6 @@ class HistoricalInterface : public ParserInterface {
   void collect_flows();
   void startPacketPolling();
   void shutdown();
-
-
 };
 
 #endif /* _HISTORICAL_INTERFACE_H_ */

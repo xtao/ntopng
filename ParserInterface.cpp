@@ -201,26 +201,15 @@
         case DST_PROC_NUM_PAGE_FAULTS:
           flow.dst_process.num_vm_page_faults = atoi(value);
           break;
-          // Sqlite-flow
-          case FRIST_SEEN:
-          flow.first_seen = (time_t) atoi(value);
-          break;
-        case LAST_SEEN:
-          flow.last_seen = (time_t) atoi(value);
-          break;
-
-
         default:
           ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);
           json_object_object_add(flow.additional_fields, key, json_object_new_string(value));
           break;
         }
-
       }
 
       /* Move to the next element */
       json_object_iter_next(&it);
-
     } // while json_object_iter_equal
 
     /* Set default fields for EPP */
@@ -228,7 +217,7 @@
       if(flow.dst_port == 0) flow.dst_port = 443;
       if(flow.src_port == 0) flow.dst_port = 1234;
       flow.l4_proto = IPPROTO_TCP;
-      flow.in_pkts = flow.out_pkts = 1; /* Dummy */
+      flow.in_pkts  = flow.out_pkts = 1; /* Dummy */
       flow.l7_proto = NDPI_PROTOCOL_EPP;
     }
 
@@ -238,17 +227,14 @@
     /* Dispose memory */
     json_object_put(o);
     json_object_put(flow.additional_fields);
-
-
-  } // if o != NULL
-  else {
-
-      ntop->getTrace()->traceEvent(TRACE_WARNING,
-           "Invalid message received: your nProbe sender is outdated or invalid JSON?");
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "[%u] %s", payload_size, payload);
-      return -1;
-    }
-
+  } else {
+    // if o != NULL
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
+				 "Invalid message received: your nProbe sender is outdated or invalid JSON?");
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "[%u] %s", payload_size, payload);
+    return -1;
+  }
+  
   return 0;
  }
 

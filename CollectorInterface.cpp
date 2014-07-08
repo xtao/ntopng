@@ -116,10 +116,10 @@ void CollectorInterface::collect_flows() {
 	size = zmq_recv(items[source_id].socket, payload, payload_len, 0);
 
 	if(size > 0) {
-	 payload[size] = '\0';
-
-        parse_flows( payload, sizeof(payload) , 0, this);
-
+	  payload[size] = '\0';
+	  
+	  parse_flows(payload, sizeof(payload) , 0, this);
+	  
 	  ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
 	}
       }

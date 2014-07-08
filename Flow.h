@@ -53,7 +53,7 @@ class Flow : public GenericHashEntry {
 
   /* Counter values at last host update */
   struct timeval last_update_time;
-  float bytes_thpt, pkts_thpt;
+  float bytes_thpt, top_bytes_thpt, pkts_thpt, top_pkts_thpt;
   ValueTrend bytes_thpt_trend,pkts_thpt_trend;
   u_int64_t cli2srv_last_packets, srv2cli_last_packets,
     prev_cli2srv_last_packets, prev_srv2cli_last_packets;
@@ -62,7 +62,7 @@ class Flow : public GenericHashEntry {
 
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
   void processLua(lua_State* vm, ProcessInfo *proc, bool client);
-  json_object* processJson(ProcessInfo *proc);
+  void processJson(bool is_src, json_object *my_object, ProcessInfo *proc);
 
   void refresh_process();
   void refresh_process_peer(Host *host, u_int16_t port, bool as_client);

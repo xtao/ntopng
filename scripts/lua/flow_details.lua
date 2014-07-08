@@ -36,7 +36,7 @@ function displayProc(proc)
          end
       print(" </span></td></tr>\n")
 
-      print("<tr><th width=30%>Memory Actual/Peak</th><td colspan=2><span id=memory_"..proc.pid..">".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</span></td></tr>\n")
+      print("<tr><th width=30%>Memory Actual / Peak</th><td colspan=2><span id=memory_"..proc.pid..">".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</span></td></tr>\n")
       print("<tr><th width=30%>VM Page Faults</th><td colspan=2><span id=page_faults_"..proc.pid..">")
       if(proc.num_vm_page_faults > 0) then
 	 print("<font color=red><b>"..proc.num_vm_page_faults.."</b></font>")
@@ -189,12 +189,19 @@ else
    end
 
    if((flow.client_process == nil) and (flow.server_process == nil) and (sqlite == nil)) then
-      print("<tr><th width=30%>Actual Throughput</th><td width=20%>")
+      print("<tr><th width=30%>Actual / Peak Throughput</th><td width=20%>")
       if (throughput_type == "bps") then
          print("<span id=throughput>" .. bitsToSize(8*flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
       elseif (throughput_type == "pps") then
          print("<span id=throughput>" .. pktsToSize(flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
       end
+
+      if (throughput_type == "bps") then
+         print(" / <span id=top_throughput>" .. bitsToSize(8*flow["top_throughput_bps"]) .. "</span> <span id=top_throughput_trend></span>")
+      elseif (throughput_type == "pps") then
+         print(" / <span id=top_throughput>" .. pktsToSize(flow["top_throughput_bps"]) .. "</span> <span id=top_throughput_trend></span>")
+      end     
+
       print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
 
       print("</td></tr>\n")
@@ -290,17 +297,18 @@ function update () {
 			   $('#volume_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
-			if(throughput > rsp["throughput"]) {
+			if(throughput > rsp["throughput_raw"]) {
 			   $('#throughput_trend').html("<i class=\"fa fa-arrow-down\"></i>");
-			} else if(throughput < rsp["throughput"]) {
+			} else if(throughput < rsp["throughput_raw"]) {
 			   $('#throughput_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+   		           $('#top_throughput').html(rsp["top_throughput_display"]);
 			} else {
 			   $('#throughput_trend').html("<i class=\"fa fa-minus\"></i>");
 			}
 
 			cli2srv_packets = rsp["cli2srv.packets"];
 			srv2cli_packets = rsp["srv2cli.packets"];
-			throughput = rsp["throughput"];
+			throughput = rsp["throughput_raw"];
 			bytes = rsp["bytes"];
 
          /* **************************************** */

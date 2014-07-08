@@ -364,17 +364,15 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
       flow->guessProtocol();
   }
 
-   if(zflow->first_seen && zflow->last_seen) {
-      // ntop->getTrace()->traceEvent(TRACE_INFO, "Processing Sqlite flow first %u , last %u ",zflow->first_seen , zflow->last_seen);
-      // Init frist_seen using the sqlite-flow information
-      flow->updateSeen(zflow->first_seen);
-      flow->get_cli_host()->updateSeen(zflow->first_seen);
-      flow->get_srv_host()->updateSeen(zflow->first_seen);
-      // Update last_seen  value
-      flow->updateSeen(zflow->last_seen);
-      flow->get_cli_host()->updateSeen(zflow->last_seen);
-      flow->get_srv_host()->updateSeen(zflow->last_seen);
-   }
+#if 0
+  if(!is_packet_interface()) {
+    struct timeval tv, *last_update;
+
+    tv.tv_sec = zflow->last_switched, tv.tv_usec = 0;
+    
+    flow->update_hosts_stats(&tv);
+  }
+#endif
 
   purgeIdle(zflow->last_switched);
 }
@@ -536,7 +534,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 	    Inside the DNS packet it is possible to have multiple queries
 	    and mix query types. In general this is not a practice followed
 	    by applications.
-	   */
+	  */
 
 	  if(is_query) {
 	    u_int16_t query_type = ndpi_flow ? ndpi_flow->protos.dns.query_type : 0;
@@ -562,8 +560,8 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 				      cli, srv);
 	if(ndpi_flow->protos.dns.ret_code != 0) {
 	  /*
-	     This is a negative reply thus we notify the system that
-	     this aggregation must not be tracked
+	    This is a negative reply thus we notify the system that
+	    this aggregation must not be tracked
 	  */
 	  flow->aggregateInfo((char*)ndpi_flow->host_server_name,
 			      NDPI_PROTOCOL_DNS, aggregation_domain_name,
@@ -571,8 +569,8 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 	}
 
 	/*
-	   We reset the nDPI flow so that it can decode new packets
-	   of the same flow (e.g. the DNS response)
+	  We reset the nDPI flow so that it can decode new packets
+	  of the same flow (e.g. the DNS response)
 	*/
 	ndpi_flow->detected_protocol_stack[0] = NDPI_PROTOCOL_UNKNOWN;
       }
@@ -723,10 +721,10 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       } catch(std::bad_alloc& ba) {
 	static bool oom_warning_sent = false;
 
-	  if(!oom_warning_sent) {
-	    ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
-	    oom_warning_sent = true;
-	  }
+	if(!oom_warning_sent) {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "Not enough memory");
+	  oom_warning_sent = true;
+	}
       }
     }
     break;
@@ -858,9 +856,9 @@ static bool update_hosts_stats(GenericHashEntry *node, void *user_data) {
 
   host->updateStats(tv);
   /*
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "Updated: %s [%d]",
-			       ((StringHost*)node)->host_key(),
-			       host->getThptTrend());
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Updated: %s [%d]",
+    ((StringHost*)node)->host_key(),
+    host->getThptTrend());
   */
 
   return(false); /* false = keep on walking */
@@ -890,7 +888,9 @@ void NetworkInterface::updateHostStats() {
   struct timeval tv;
 
   gettimeofday(&tv, NULL);
+  
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
+
   hosts_hash->walk(update_hosts_stats, (void*)&tv);
   strings_hash->walk(update_hosts_stats, (void*)&tv);
 }
@@ -996,21 +996,21 @@ static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
 #endif
 
   if((info->h == NULL) && (host->get_vlan_id() == info->vlan_id)) {
-      if((host->get_name() == NULL) && host->get_ip()) {
-	char ip_buf[32], name_buf[96];
-	char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
-	int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf),
-					      false /* Dont resolve it if not known */);
+    if((host->get_name() == NULL) && host->get_ip()) {
+      char ip_buf[32], name_buf[96];
+      char *ipaddr = host->get_ip()->print(ip_buf, sizeof(ip_buf));
+      int rc = ntop->getRedis()->getAddress(ipaddr, name_buf, sizeof(name_buf),
+					    false /* Dont resolve it if not known */);
 
-	if(rc == 0 /* found */) host->setName(name_buf, false);
-      }
-
-      if((host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
-	 || (host->get_alternate_name() && (!strcmp(host->get_alternate_name(), info->host_to_find)))) {
-	info->h = host;
-	return(true); /* found */
-      }
+      if(rc == 0 /* found */) host->setName(name_buf, false);
     }
+
+    if((host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
+       || (host->get_alternate_name() && (!strcmp(host->get_alternate_name(), info->host_to_find)))) {
+      info->h = host;
+      return(true); /* found */
+    }
+  }
 
   return(false); /* false = keep on walking */
 }
