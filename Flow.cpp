@@ -97,13 +97,13 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
-  if(ntop->getPrefs()->do_dump_flows_on_db() 
+  if(ntop->getPrefs()->do_dump_flows_on_db()
      || ntop->get_export_interface()) {
     char *json;
 
     json = serialize();
-    cli_host->getInterface()->dumpFlow(last_seen, this, json);  
-    
+    cli_host->getInterface()->dumpFlow(last_seen, this, json);
+
     if(ntop->get_export_interface())
       ntop->get_export_interface()->export_data(json);
 
@@ -510,6 +510,7 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
   lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
   lua_push_int_table_entry(vm,  "duration", get_duration());
 
+
   lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
   lua_push_float_table_entry(vm, "client.longitude", get_cli_host()->get_longitude());
   lua_push_float_table_entry(vm, "server.latitude", get_srv_host()->get_latitude());
@@ -872,7 +873,7 @@ void Flow::sumStats(NdpiStats *stats) {
 /* *************************************** */
 
 char* Flow::serialize() {
-  json_object *my_object, *inner;
+  json_object *my_object;
   char *rsp, buf[64], jsonbuf[64];
 
   my_object = json_object_new_object();
@@ -896,7 +897,7 @@ char* Flow::serialize() {
 
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN))
-    json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO_NAME,"L7_PROTO_NAME", jsonbuf, sizeof(jsonbuf)),
+    json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO,"L7_PROTO", jsonbuf, sizeof(jsonbuf)),
 			   json_object_new_string(get_detected_protocol_name()));
 
   if(protocol == IPPROTO_TCP)
@@ -913,15 +914,14 @@ char* Flow::serialize() {
   json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES,"IN_BYTES", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(srv2cli_bytes));
 
-  if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
+  json_object_object_add(my_object, Utils::jsonLabel(SEEN_FRIST,"SEEN_FRIST", jsonbuf, sizeof(jsonbuf)),
+                    json_object_new_int((u_int32_t)first_seen));
+  json_object_object_add(my_object, Utils::jsonLabel(SEEN_LAST,"SEEN_LAST", jsonbuf, sizeof(jsonbuf)),
+                    json_object_new_int((u_int32_t)last_seen));
 
+   if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
 
-  if (0) {
-    inner = json_object_new_object();
-    json_object_object_add(inner, "first", json_object_new_int((u_int32_t)first_seen));
-    json_object_object_add(inner, "last", json_object_new_int((u_int32_t)last_seen));
-    json_object_object_add(my_object, "seen", inner);
-
+if (0) {
     if(vlanId > 0) json_object_object_add(my_object, "vlanId", json_object_new_int(vlanId));
 
     json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
@@ -1019,7 +1019,7 @@ void Flow::handle_process(ProcessInfo *pinfo, bool client_process) {
       memcpy(server_proc, pinfo, sizeof(ProcessInfo));
     else {
       if((proc = new ProcessInfo) == NULL) return;
-      memcpy(proc, pinfo, sizeof(ProcessInfo));      
+      memcpy(proc, pinfo, sizeof(ProcessInfo));
       server_proc = proc, srv_host->setSystemHost();  /* Incoming */
     }
   }

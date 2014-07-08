@@ -130,12 +130,14 @@ extern "C" {
 #include "StringHost.h"
 #include "StringHash.h"
 #include "NetworkInterface.h"
-#include "CollectorInterface.h"
-#include "ExportInterface.h"
 #include "PcapInterface.h"
 #ifdef HAVE_PF_RING
 #include "PF_RINGInterface.h"
 #endif
+#include "ParserInterface.h"
+#include "CollectorInterface.h"
+#include "HistoricalInterface.h"
+#include "ExportInterface.h"
 #include "Geolocation.h"
 #include "GenericHost.h"
 #include "Host.h"

@@ -400,6 +400,10 @@
 #define FTP_COMMAND           NTOP_BASE_ID+358
 #define FTP_COMMAND_RET_CODE  NTOP_BASE_ID+359
 
-/* Last used identifier is NTOP_BASE_ID+390 (DST_PROC_NUM_PAGE_FAULTS) */
+// Sqlite flow
+ #define SEEN_FRIST   NTOP_BASE_ID+391
+ #define SEEN_LAST   NTOP_BASE_ID+392
+
+/* Last used identifier is NTOP_BASE_ID+392 (SEEN_LAST) */
 
 #endif /* _TEMPLATE_H_ */

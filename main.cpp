@@ -114,6 +114,9 @@ int main(int argc, char *argv[])
 	endpoint = ifName;
 
       iface = new CollectorInterface(i, endpoint, topic);
+    } else if (ifName && (strstr(ifName, "sqlite")) ) {
+
+       iface = new HistoricalInterface(i, ifName);
     } else {
 #ifdef HAVE_PF_RING
       try {

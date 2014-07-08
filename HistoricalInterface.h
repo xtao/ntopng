@@ -19,43 +19,45 @@
  *
  */
 
-#ifndef _COLLECTOR_INTERFACE_H_
-#define _COLLECTOR_INTERFACE_H_
+#ifndef _HISTORICAL_INTERFACE_H_
+#define _HISTORICAL_INTERFACE_H_
 
 #include "ntop_includes.h"
 
-class Lua;
-
-typedef struct {
+ typedef struct {
   char *endpoint;
-  void *socket;
-} zmq_subscriber;
+  sqlite3 *db;
+} sqlite_iface;
 
-class CollectorInterface : public ParserInterface {
+class HistoricalInterface : public ParserInterface {
  private:
-  char *topic;
-  void *context;
-  u_int32_t num_drops;
-  u_int8_t num_subscribers;
-  zmq_subscriber subscriber[CONST_MAX_NUM_ZMQ_SUBSCRIBERS];
+  u_int8_t num_historicals;
+  sqlite_iface historical_ifaces[CONST_MAX_NUM_SQLITE_INTERFACE];
+
+  static int sqlite_callback(void *data, int argc, char **argv, char **azColName);
 
  public:
-  CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic);
-  ~CollectorInterface();
+  HistoricalInterface(u_int8_t _id, const char *_endpoint);
+  ~HistoricalInterface();
 
-  inline const char* get_type()         { return("zmq");      };
+  // Father function
+  inline const char* get_type()         { return("sqlite");      };
   inline bool is_ndpi_enabled()         { return(false);      };
-  char* getEndpoint(u_int8_t id)        { return((id < num_subscribers) ?
-						 subscriber[id].endpoint : (char*)""); };
-  inline void incrDrops(u_int32_t num)  { num_drops += num;   };
-  u_int getNumDroppedPackets()          { return(num_drops);  };
-  void collect_flows();
+  // char* getEndpoint(u_int8_t id)        { return(endpoint); };
 
+  char* getEndpoint(u_int8_t id)        { return((id < num_historicals) ?
+             historical_ifaces[id].endpoint : (char*)""); };
+  inline u_int getNumDroppedPackets()   { return 0; };
+
+  bool set_packet_filter(char *filter);
+
+
+  void collect_flows();
   void startPacketPolling();
   void shutdown();
 
-  bool set_packet_filter(char *filter);
+
 };
 
-#endif /* _COLLECTOR_INTERFACE_H_ */
+#endif /* _HISTORICAL_INTERFACE_H_ */
 

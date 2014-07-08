@@ -18,7 +18,7 @@ SqliteClass.__index = SqliteClass -- failed table lookups on the instances shoul
 -- syntax equivalent to "SqliteClass.new = function..."
 function SqliteClass.new(init)
   local self = setmetatable({}, SqliteClass)
-  
+
   self.debug = false
   self.class_benchmark = os.clock()
   self.query_benchmark = os.clock()
@@ -30,8 +30,8 @@ function SqliteClass.new(init)
   ["L4_SRC_PORT"]     = function (table,val) table["cli.port"]        = tonumber(val) end,
   ["IPV4_DST_ADDR"]   = function (table,val) table["srv.ip"]          = val           end,
   ["L4_DST_PORT"]     = function (table,val) table["srv.port"]        = tonumber(val) end,
-  ["PROTOCOL"]        = function (table,val) 
-  if (l4_template[tonumber(val)] ~= nil ) then 
+  ["PROTOCOL"]        = function (table,val)
+  if (l4_template[tonumber(val)] ~= nil ) then
     table["proto.l4"]        = l4_template[tonumber(val)]
   else
     table["proto.l4"]        = val
@@ -61,7 +61,7 @@ function SqliteClass.new(init)
   return self
 end
 
--- ################################### 
+-- ###################################
 -- Getter and setter
 
 function SqliteClass.setDebug(self, bool)
@@ -78,7 +78,7 @@ function SqliteClass.getDB(self)        return self.db end
 function SqliteClass.getQuery(self)     return self.query end
 
 
--- ################################### 
+-- ###################################
 
 function SqliteClass.execQuery(self, db ,query)
   if (db == nil) then return -1 end
@@ -91,17 +91,17 @@ function SqliteClass.execQuery(self, db ,query)
   -- io.write(dirs.workingdir ..db..'\n')
   self.response = ntop.execQuery(dirs.workingdir ..db , query)
   n_rows = ntop.execQuery(dirs.workingdir ..db , "SELECT COUNT (*) as rows_number FROM flows")
-  
+
   if (n_rows ~= nil) then
     self.number_rows = n_rows[1]["rows_number"]
   end
-  
+
   Sqlite:benchmark("query",os.clock())
 
   return self.response
 end
 
--- ################################### 
+-- ###################################
 
 function SqliteClass.getFlows(self)
   if (self.response == nil) then return nil end
@@ -111,7 +111,7 @@ function SqliteClass.getFlows(self)
   num = 0
 
   for _k,_v in pairs(self.response) do
-      
+
        -- init table of table
        self.flows[num] = {}
        self.flows[num]["ID"] = tonumber(self.response[_k]["ID"])
@@ -121,13 +121,13 @@ function SqliteClass.getFlows(self)
 
        -- Throughput
        -- io.write((self.flows[num]["bytes"] / self.flows[num]["duration"])..'\n')
-       self.flows[num]["throughput_bps"] = (self.flows[num]["bytes"] / 8 ) / (self.flows[num]["duration"]) 
+       self.flows[num]["throughput_bps"] = (self.flows[num]["bytes"] / 8 ) / (self.flows[num]["duration"])
        self.flows[num]["throughput_trend_bps"] = 3
 
 
        local info, pos, err = j.decode(self.response[_k]["json"], 1, nil)
 
-       if (info == nil) then 
+       if (info == nil) then
         traceError(TRACE_ERROR,TRACE_CONSOLE,"Impossible read json form sqlite: ".. err)
       else
 
@@ -138,14 +138,14 @@ function SqliteClass.getFlows(self)
           -- Check if the option --jsonlabes is active
           if (rtemplate[tonumber(key)] ~= nil) then label_key = rtemplate[tonumber(key)] end
           if (template[key] ~= nil) then label_key = key end
-          
+
           -- Convert template id into template name
-          if (label_key ~= nil) then 
+          if (label_key ~= nil) then
 
             if (self.flow_template[label_key] ~= nil) then
               -- Call conversion function in order to convert some value to number if it is necessary
               self.flow_template[label_key](self.flows[num],val)
-            else  
+            else
               -- Leave the default key and value
               self.flows[num][key] = val
             end
@@ -167,7 +167,7 @@ function SqliteClass.getFlows(self)
     self.flows_num = num
     Sqlite:benchmark("flows",os.clock())
 
-    return self.flows  
+    return self.flows
   end
 
 
@@ -177,7 +177,7 @@ function SqliteClass.getRowsNumber(self)
   return (self.number_rows);
 end
 
--- ################################### 
+-- ###################################
 -- Utils
 
 function SqliteClass.benchmark(self,type,time)
@@ -192,7 +192,7 @@ function SqliteClass.benchmark(self,type,time)
       bk = self.flows_benchmark
       bk_text = type
     end
-    
+
     traceError(TRACE_DEBUG,TRACE_CONSOLE,string.format(bk_text .. ": elapsed time: %.4f", time - bk))
   end
 end
@@ -225,11 +225,11 @@ end
 
 
 
-function cleanDateTime(datetime,action) 
+function cleanDateTime(datetime,action)
 
   if (datetime == nil) then return {} end
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Initial date and time: '..datetime)
-  
+
   tbl = split(datetime," ")
   q_date = tbl[1]
   q_time = tbl[2]
@@ -238,20 +238,20 @@ function cleanDateTime(datetime,action)
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Default value: ['..q_date..']['..q_time .. '][' .. q_type..']')
 
   date_tbl  = split(q_date,"/")
-  q_month    = tonumber(date_tbl[1])  
+  q_month    = tonumber(date_tbl[1])
   q_day      = tonumber(date_tbl[2])
   q_year     = tonumber(date_tbl[3])
 
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Default value: ['..q_day..']['..q_month .. '][' .. q_year..']')
 
   time_tbl = split(q_time,":")
-  q_hour   = tonumber(time_tbl[1])  
+  q_hour   = tonumber(time_tbl[1])
   q_min  = tonumber(time_tbl[2])
 
-  if (q_type == "PM") then q_hour = q_hour + 12 end 
+  if (q_type == "PM") then q_hour = q_hour + 12 end
 
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'Default value: ['..q_hour..']['..q_min .. ']')
-   
+
   q_epoch = os.time({year=q_year, month=q_month, day=q_day, hour=q_hour, min=q_min})
 
   traceError(TRACE_DEBUG,TRACE_CONSOLE,'epoch: ['.. q_epoch ..']')
@@ -275,16 +275,16 @@ function cleanDateTime(datetime,action)
 
   ret_tbl["q_hour"] = q_q_hour
   ret_tbl["q_min"] = q_q_min
-  
+
   ret_tbl["epoch"] = q_epoch
 
   return ret_tbl
 
 end
 
--- ################################### 
+-- ###################################
 
 -- Don't remove below line
 Sqlite = SqliteClass.new()
 -- Sqlite:benchmark(os.clock())
-Sqlite:setDebug(true)
+Sqlite:setDebug(false)

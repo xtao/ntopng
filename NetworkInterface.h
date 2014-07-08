@@ -36,7 +36,7 @@ class DB;
 /**
  * @struct ether80211q
  * @details [long description]
- * 
+ *
  * @param  [description]
  * @return [description]
  */
@@ -62,6 +62,7 @@ typedef struct zmq_flow {
   u_int32_t first_switched, last_switched;
   json_object *additional_fields;
   u_int8_t src_mac[6], dst_mac[6], direction, source_id;
+  time_t first_seen, last_seen;
 
   /* EPP Extensions */
   char epp_server_name[48], epp_registrar_name[48], epp_cmd_args[64], epp_reason_str[16];
@@ -80,15 +81,15 @@ typedef struct zmq_flow {
  *
  */
 class NetworkInterface {
- protected:  
+ protected:
   char *ifname; /**< Network interface name.*/
   u_int8_t id;
-  EthStats ethStats; 
+  EthStats ethStats;
   int pcap_datalink_type; /**< Datalink type of pcap.*/
   pthread_t pollLoop;
   int cpu_affinity; /**< Index of physical core where the network interface works.*/
-  NdpiStats ndpiStats; 
-  PacketStats pktStats; 
+  NdpiStats ndpiStats;
+  PacketStats pktStats;
   FlowHash *flows_hash; /**< Hash used to memorize the flows information.*/
   /* Hosts */
   HostHash *hosts_hash; /**< Hash used to memorize the hosts information.*/
@@ -150,9 +151,9 @@ class NetworkInterface {
   inline bool is_sprobe_interface()            { return(sprobe_interface); };
   inline void enable_sprobe()                  { sprobe_interface = true; };
   bool dumpFlow(time_t when, Flow *f, char *json);
-  inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) { 
+  inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) {
     ethStats.incStats(eth_proto, num_pkts, pkt_len, pkt_overhead);
-    ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len); 
+    ndpiStats.incStats(ndpi_proto, 0, 0, 1, pkt_len);
     pktStats.incStats(pkt_len);
   };
   inline EthStats* getStats()      { return(&ethStats);          };
@@ -163,7 +164,7 @@ class NetworkInterface {
   bool restoreHost(char *host_ip);
   u_int printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len);
   void findFlowHosts(u_int16_t vlan_id,
-		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src, 
+		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src,
 		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
   Flow* findFlowByKey(u_int32_t key);
   void findHostsByName(lua_State* vm, char *key);
@@ -195,27 +196,27 @@ class NetworkInterface {
   u_int getNumFlows();
   u_int getNumHosts();
   u_int getNumAggregations();
-  
+
   void runHousekeepingTasks();
   Host* findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 		      bool createIfNotPresent);
-  Host* getHost(char *host_ip, u_int16_t vlan_id);  
+  Host* getHost(char *host_ip, u_int16_t vlan_id);
   StringHost* getAggregatedHost(char *host_name);
   bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   void getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family, char *host);
   bool getAggregatedHostInfo(lua_State* vm, char *host_ip);
-  bool getAggregatedFamilies(lua_State* vm);  
+  bool getAggregatedFamilies(lua_State* vm);
   bool getAggregationsForHost(lua_State* vm, char *host_ip);
   bool correlateHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
   bool similarHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  StringHost* findHostByString(char *keyname, u_int16_t family_id, 
-			       bool createIfNotPresent);  
+  StringHost* findHostByString(char *keyname, u_int16_t family_id,
+			       bool createIfNotPresent);
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
   void findUserFlows(lua_State *vm, char *username);
   void findPidFlows(lua_State *vm, u_int32_t pid);
   void findFatherPidFlows(lua_State *vm, u_int32_t pid);
   void findProcNameFlows(lua_State *vm, char *proc_name);
-  void addAllAvailableInterfaces();  
+  void addAllAvailableInterfaces();
   inline bool idle() { return(is_idle); }
   inline void setIdleState(bool new_state) { is_idle = new_state; }
 };

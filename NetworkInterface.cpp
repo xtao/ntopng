@@ -156,7 +156,7 @@ bool NetworkInterface::checkIdle() {
     snprintf(rkey, sizeof(rkey), "ntopng.prefs.%s_not_idle", ifname);
     if(ntop->getRedis()->get(rkey, rsp, sizeof(rsp)) == 0) {
       int val = atoi(rsp);
-      
+
       if(val == 0) is_idle = true;
     }
   }
@@ -359,10 +359,22 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
   if(zflow->src_process.pid || zflow->dst_process.pid) {
     if(zflow->src_process.pid) flow->handle_process(&zflow->src_process, src2dst_direction ? true : false);
     if(zflow->dst_process.pid) flow->handle_process(&zflow->dst_process, src2dst_direction ? false : true);
-    
+
     if(zflow->l7_proto == NDPI_PROTOCOL_UNKNOWN)
       flow->guessProtocol();
   }
+
+   if(zflow->first_seen && zflow->last_seen) {
+      // ntop->getTrace()->traceEvent(TRACE_INFO, "Processing Sqlite flow first %u , last %u ",zflow->first_seen , zflow->last_seen);
+      // Init frist_seen using the sqlite-flow information
+      flow->updateSeen(zflow->first_seen);
+      flow->get_cli_host()->updateSeen(zflow->first_seen);
+      flow->get_srv_host()->updateSeen(zflow->first_seen);
+      // Update last_seen  value
+      flow->updateSeen(zflow->last_seen);
+      flow->get_cli_host()->updateSeen(zflow->last_seen);
+      flow->get_srv_host()->updateSeen(zflow->last_seen);
+   }
 
   purgeIdle(zflow->last_switched);
 }

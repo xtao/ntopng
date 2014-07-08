@@ -175,13 +175,13 @@ class Ntop {
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   /**
    * @brief Get categorization.
-   * 
+   *
    * @return Current categorization instance.
    */
   inline Categorization* get_categorization()        { return(categorization);             };
   /**
    * @brief Get httpbl.
-   * 
+   *
    * @return Current httpbl instance.
    */
   inline HTTPBL* get_httpbl()                        { return(httpbl);             };
@@ -189,27 +189,27 @@ class Ntop {
   /**
    * @brief Register the network interface.
    * @details Check for duplicated interface and add the network interface in to @ref iface.
-   * 
+   *
    * @param i Network interface.
    */
   void registerInterface(NetworkInterface *i);
   /**
    * @brief Get the number of defined network interfaces.
-   * 
+   *
    * @return Number of defined network interfaces.
    */
   inline u_int8_t get_num_interfaces()               { return(num_defined_interfaces); }
   /**
    * @brief Get the network interface identified by Id.
-   * 
-   * @param i Index of network interface.  
+   *
+   * @param i Index of network interface.
    * @return The network interface instance if exists, NULL otherwise.
    */
   inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
   /**
    * @brief Get the network interface identified by name or Id.
    * @details This method accepts both interface names or Ids.
-   * 
+   *
    * @param name Name of network interface.
    * @return The network interface instance if exists, NULL otherwise.
    */
@@ -217,26 +217,26 @@ class Ntop {
   /**
    * @brief Get the Id of network interface.
    * @details This method accepts both interface names or Ids.
-   * 
+   *
    * @param name Name of network interface.
    * @return The network interface Id if exists, -1 otherwise.
    */
   int getInterfaceIdByName(char *name);
   /**
    * @brief Register the HTTP server.
-   * 
+   *
    * @param h HTTP server instance.
    */
   inline void registerHTTPserver(HTTPserver *h)      { httpd = h;              };
   /**
    * @brief Set categorization.
-   * 
+   *
    * @param c The categorization instance.
    */
   inline void setCategorization(Categorization *c)   { categorization = c; };
   /**
    * @brief Set httpbl.
-   * 
+   *
    * @param h The categorization instance.
    */
   inline void setHTTPBL(HTTPBL *h)                   { httpbl = h; };
@@ -244,26 +244,26 @@ class Ntop {
   /**
    * @brief Get the network interface identified by name or Id.
    * @details This method accepts both interface names or Ids.
-   * 
+   *
    * @param name Names or Id of network interface.
    * @return The network interface instance if exists, NULL otherwise.
    */
   NetworkInterface* getNetworkInterface(const char *name);
   /**
    * @brief Get the current HTTPserver instance.
-   * 
+   *
    * @return The current instance of HTTP server.
    */
   inline HTTPserver*       get_HTTPserver()          { return(httpd);            };
   /**
    * @brief Get the current working directory.
-   * 
+   *
    * @return The absolute path of working directory.
    */
   inline char* get_working_dir()                     { return(working_dir);      };
   /**
    * @brief Get the installation path of ntopng.
-   * 
+   *
    * @return The path of installed directory.
    */
   inline char* get_install_dir()                     { return(install_dir);      };
@@ -272,7 +272,7 @@ class Ntop {
   inline Trace*            getTrace()                { return(globals->getTrace()); };
   inline Redis*            getRedis()                { return(redis);               };
   inline Prefs*            getPrefs()                { return(prefs);               };
-  
+
   inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
   inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
   inline ExportInterface* get_export_interface()              { return(export_interface);         };
