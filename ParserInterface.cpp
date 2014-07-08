@@ -202,10 +202,10 @@
           flow.dst_process.num_vm_page_faults = atoi(value);
           break;
           // Sqlite-flow
-          case SEEN_FRIST:
+          case FRIST_SEEN:
           flow.first_seen = (time_t) atoi(value);
           break;
-        case SEEN_LAST:
+        case LAST_SEEN:
           flow.last_seen = (time_t) atoi(value);
           break;
 

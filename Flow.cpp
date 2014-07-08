@@ -914,9 +914,9 @@ char* Flow::serialize() {
   json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES,"IN_BYTES", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(srv2cli_bytes));
 
-  json_object_object_add(my_object, Utils::jsonLabel(SEEN_FRIST,"SEEN_FRIST", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(FRIST_SEEN,"FRIST_SEEN", jsonbuf, sizeof(jsonbuf)),
                     json_object_new_int((u_int32_t)first_seen));
-  json_object_object_add(my_object, Utils::jsonLabel(SEEN_LAST,"SEEN_LAST", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(LAST_SEEN,"LAST_SEEN", jsonbuf, sizeof(jsonbuf)),
                     json_object_new_int((u_int32_t)last_seen));
 
    if(json_info && strcmp(json_info, "{}")) json_object_object_add(my_object, "json", json_object_new_string(json_info));
