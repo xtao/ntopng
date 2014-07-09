@@ -12,7 +12,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 
 function printTable(table,key)
-  
+
   -- traceError(TRACE_DEBUG,TRACE_CONSOLE, "Extern\n")
   if (key ~= nil) then print(""..key..":<ul>") end
   for k, v in pairs(table) do
@@ -20,7 +20,7 @@ function printTable(table,key)
     if (type(v) == "table") then
      printTable(table[k],k)
    else
-    if (type(v) == "boolean") then 
+    if (type(v) == "boolean") then
       if (v) then v = "true" else v = "false" end
     end
     print("<li>"..k .." = "..v.."<br>")
@@ -43,9 +43,9 @@ local debug = true
 host_ip       = _GET["host"]
 hostinfotype  = _GET["hostinfotype"]
 aggregated  = _GET["aggregated"]
-interfacetype = _GET["interfacetype"]  
+interfacetype = _GET["interfacetype"]
 showjson  = _GET["showjson"]
-flowtype      = _GET["flowtype"]  
+flowtype      = _GET["flowtype"]
 aggregated  = _GET["aggregated"]
 protocol  = _GET["protocol"]
 
@@ -62,9 +62,9 @@ protocol  = _GET["protocol"]
 --   print ("Host: "..info["host"].."@"..info["vlan"].."<br>")
 --   host = interface.getHostInfo(key)
 --   print ("key:"..key.."<br>")
---   if(host == nil) then 
---     print ("Null<br>") 
---     else 
+--   if(host == nil) then
+--     print ("Null<br>")
+--     else
 --       print ("Found<br>")
 --     end
 -- end
@@ -87,6 +87,10 @@ else
 end
 print('</ul>')
 
+print('<h4>Available Interfaces</h4>')
+print('<pre><code>interface.getIfNames()</code></pre>')
+printTable(interface.getIfNames())
+
 print('<hr><h4>Switch network interface</h4>')
 print('<p>In order to switch the network interface where ntopng is running, you need to use the method <b>setActiveInterfaceId(id)</b>, for more information please read the documentation and if you are looking for a complete and correctly example how to switch interface and active a new session, please read the source code of the <b>set_active_interface.lua</b> script.</p>')
 
@@ -105,7 +109,7 @@ if (interfacetype == "show") then
   for key, value in pairs(ifstats) do
    if (type(ifstats[key]) == "table") then
     printTable(ifstats[key],key)
-    elseif (type(ifstats[key]) == "boolean") then 
+    elseif (type(ifstats[key]) == "boolean") then
       if (value) then value = "true" else value = "false" end
       print("<li>".. key.." = " ..value.."<br>")
     else
@@ -137,11 +141,11 @@ if (hostinfotype == "minimal_one_host" ) or (hostinfotype == "minimal_all_host")
   hosts = interface.getHosts()
 
   if (hosts == nil) then if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host null\n") end end
-  
+
   for key, value in pairs(hosts) do
     if (hosts[key]["ip"] ~= nil) then
     host_info = hosts[key]["ip"]
-  else 
+  else
     host_info = hosts[key]["mac"]
   end
     print("<li> Key: ".. key)
@@ -157,8 +161,8 @@ if (hostinfotype == "minimal_one_host" ) or (hostinfotype == "minimal_all_host")
 end
 
 if (hostinfotype == "more_one_host" ) or (hostinfotype == "more_all_host") then
-  
-  if(hostinfotype == "more_all_host") then 
+
+  if(hostinfotype == "more_all_host") then
     print('<pre><code>hosts = interface.getHostsInfo()</code></pre>')
   end
 
@@ -170,7 +174,7 @@ if (hostinfotype == "more_one_host" ) or (hostinfotype == "more_all_host") then
       print("<li> HostName: ".. key.."<br>")
       printTable(hosts[key],key)
   end
-  if (hostinfotype == "more_one_host") then 
+  if (hostinfotype == "more_one_host") then
     print('<pre><code>hosts = interface.getHostInfo('..random_host..')</code></pre>')
     print("<li> HostName: ".. random_host.."<br>")
     printTable(interface.getHostInfo(random_host))
@@ -195,7 +199,7 @@ if(showjson ~= nil) then
     print('<ul>')
     if (hosts_json[key]["ip"] ~= nil) then
       host_info = hosts_json[key]["ip"]
-    else 
+    else
       host_info = hosts_json[key]["mac"]
     end
     print('<li><a href="/lua/host_get_json.lua?host=' .. host_info..'&vlan='..hosts_json[key]["vlan"]..'" target="_blank"> All information</a>')
@@ -248,19 +252,19 @@ print('<p><b>Output:</b><p>')
 print('<ul>')
 
 if (aggregated ~= nil) then
-  if(protocol == nil) then 
+  if(protocol == nil) then
     print('<pre><code>aggregated = interface.getAggregatedHostsInfo()</code></pre>')
     hosts_stats = interface.getAggregatedHostsInfo()
   else
     print('<pre><code>aggregated = interface.getAggregatedHostsInfo('..tonumber(protocol)..')</code></pre>')
     hosts_stats = interface.getAggregatedHostsInfo(tonumber(protocol))
   end
-  
-  if (table.empty(hosts_stats)) then 
-    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated null\n") end  
+
+  if (table.empty(hosts_stats)) then
+    if (debug) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated null\n") end
     print('<div class="alert alert-warning">No aggregated hosts found.</div>')
   end
-  
+
   for key, value in pairs(hosts_stats) do
       printTable(hosts_stats[key],key)
   end

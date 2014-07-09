@@ -4,6 +4,7 @@
 require "lua_trace"
 require "preferences_utils"
 
+
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
    ifname = _GET["ifname"]
@@ -52,11 +53,19 @@ function sendHTTPHeader(mime)
 end
 
 function printGETParameters(get)
-  for key, value in pairs(get) do 
+  for key, value in pairs(get) do
     io.write(key.."="..value.."\n")
   end
 end
 
+function isEmptyString(str)
+  -- io.write(str..'\n')
+  if ((str == nil) or (str == "")) then
+    return true
+  else
+    return false
+  end
+end
 
 function findString(str, tofind)
   local upper_lower = true
@@ -924,7 +933,7 @@ function getApplicationLabel(name)
    elseif(findString(name, "DropBox")) then icon = '<i class=\'fa fa-dropbox fa-lg\'></i>'
    elseif(findString(name, "Spotify")) then icon = '<i class=\'fa fa-spotify fa-lg\'></i>'
    elseif(findString(name, "Apple")) then icon = '<i class=\'fa fa-apple fa-lg\'></i>'
-   elseif(findString(name, "Google") or 
+   elseif(findString(name, "Google") or
 	  findString(name, "Chrome")) then icon = '<i class=\'fa fa-google-plus fa-lg\'></i>'
    elseif(findString(name, "FaceBook")) then icon = '<i class=\'fa fa-facebook-square fa-lg\'></i>'
    elseif(findString(name, "Youtube")) then icon = '<i class=\'fa fa-youtube-square fa-lg\'></i>'
@@ -980,7 +989,7 @@ end
 
 --
 -- Split the host key (ip@vlan) creating a new lua table.
--- Example: 
+-- Example:
 --    info = hostkey2hostinfo(key)
 --    ip = info["host"]
 --    vlan = info["vlan"]
@@ -989,8 +998,8 @@ function hostkey2hostinfo(key)
   local host = {}
   local info = split(key,"@")
   if (info[1] ~= nil) then host["host"] = info[1]           end
-  if (info[2] ~= nil) then 
-    host["vlan"] = tonumber(info[2]) 
+  if (info[2] ~= nil) then
+    host["vlan"] = tonumber(info[2])
   else
     host["vlan"] = 0
   end
@@ -999,7 +1008,7 @@ end
 
 --
 -- Analyze the host_info table and return the host key.
--- Example: 
+-- Example:
 --    host_info = interface.getHostInfo("127.0.0.1",0)
 --    key = hostinfo2hostkey(host_info)
 --
@@ -1013,7 +1022,7 @@ function hostinfo2hostkey(host_info,host_type)
     end
 
   elseif (host_type == "srv") then
-    
+
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..host_info["srv.ip"]
     end
@@ -1028,7 +1037,7 @@ function hostinfo2hostkey(host_info,host_type)
     elseif(host_info["mac"] ~= nil) then
       rsp = rsp..host_info["mac"]
     end
-  
+
   end
 
   if ((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
@@ -1046,7 +1055,7 @@ end
 function url2hostinfo(get_info)
   local host = {}
   -- Catch when the host key is using as host url parameter
-  if ((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then 
+  if ((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then
     get_info = hostkey2hostinfo(get_info["host"])
   end
 
@@ -1085,13 +1094,13 @@ function hostinfo2url(host_info,host_type)
     end
 
   elseif (host_type == "srv") then
-    
+
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["srv.ip"]
     end
   else
 
-    if ((type(host_info) ~= "table")) then 
+    if ((type(host_info) ~= "table")) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1131,7 +1140,7 @@ end
 function hostinfo2json(host_info,host_type)
   local rsp = ''
 
-  if(host_type == "cli") then    
+  if(host_type == "cli") then
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
@@ -1140,7 +1149,7 @@ function hostinfo2json(host_info,host_type)
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
   else
-    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then 
+    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1183,7 +1192,7 @@ function hostinfo2jqueryid(host_info,host_type)
 
   else
 
-    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then 
+    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1235,7 +1244,7 @@ end
 -- `indent` sets the initial level of indentation.
 function tprint (tbl, indent)
   if not indent then indent = 0 end
-  
+
   if (tbl ~= nil) then
     for k, v in pairs(tbl) do
      formatting = string.rep("  ", indent) .. k .. ": "
@@ -1243,7 +1252,7 @@ function tprint (tbl, indent)
        io.write(formatting)
        tprint(v, indent+1)
        elseif type(v) == 'boolean' then
-         io.write(formatting .. tostring(v))      
+         io.write(formatting .. tostring(v))
        else
          io.write(formatting .. v)
        end
@@ -1261,6 +1270,29 @@ function table.empty(table)
   return false
 end
 
+-- ############################################
+-- Redis Utils
+-- ############################################
+
+-- Inpur:     General prefix (i.e ntopng.pref)
+-- Output:  User based prefix, if the user exists
+--
+-- Examples:
+--                With user:  ntopng.pref.user_name
+--                Without:    ntopng.pref
+function getRedisPrefix(str)
+  if not (isEmptyString(_SESSION["user"] )) then
+    -- Login enabled
+    return (str .. '.' .. _SESSION["user"])
+  else
+    -- Login disabled
+    return (str)
+  end
+end
+
+
+-----  End of Redis Utils  ------
+
 
 -- ############################################
 -- Runtime preference
@@ -1273,8 +1305,8 @@ function toggleTableButton(label, comment, on_label, on_value, on_color , off_la
       value = ntop.getCache(redis_key)
    end
 
-   -- Read it anyway to 
-   if(value == off_value) then 
+   -- Read it anyway to
+   if(value == off_value) then
       rev_value  = on_value
       on_active  = "btn-default"
       off_active = "btn-"..off_color.." active"
@@ -1303,13 +1335,13 @@ end
 function getThroughputType()
   throughput_type = ntop.getCache("ntopng.prefs.thpt_content")
 
-  if (throughput_type == "") then 
+  if (throughput_type == "") then
     throughput_type = "bps"
   end
   return throughput_type
 end
 
-function isLoopback(name) 
+function isLoopback(name)
    if((name == "lo") or (name == "lo0")) then
       return(true)
    else
@@ -1317,7 +1349,7 @@ function isLoopback(name)
    end
 end
 
-function processColor(proc) 
+function processColor(proc)
    if(proc == nil) then
       return("")
    elseif(proc["average_cpu_load"] < 33) then
@@ -1328,3 +1360,6 @@ function processColor(proc)
       return("<font color=red>"..proc["name"].."</font>")
    end
 end
+
+
+

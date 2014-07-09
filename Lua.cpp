@@ -149,6 +149,8 @@ static int ntop_set_active_interface_id(lua_State* vm) {
 
   iface = ntop->getInterfaceId(id);
 
+  // ntop->getTrace()->traceEvent(TRACE_ERROR, "Index: %d, Name: %s", id, iface->get_name());
+
   if(iface != NULL)
     lua_pushstring(vm, iface->get_name());
   else
@@ -1405,9 +1407,9 @@ static int ntop_http_get(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_prefs(lua_State* vm) {
-  
+
   ntop->getPrefs()->lua(vm);
-  
+
   return(CONST_LUA_OK);
 }
 
@@ -1528,7 +1530,7 @@ void lua_push_int_table_entry(lua_State *L, const char *key, u_int64_t value) {
   lua_pushstring(L, key);
   /* using LUA_NUMBER (double: 64 bit) in place of LUA_INTEGER (ptrdiff_t: 32 or 64 bit
    * according to the platform, as defined in luaconf.h) to handle big counters */
-  lua_pushnumber(L, (lua_Number)value); 
+  lua_pushnumber(L, (lua_Number)value);
   lua_settable(L, -3);
 }
 
@@ -1569,6 +1571,9 @@ static int ntop_get_dirs(lua_State* vm) {
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "installdir", ntop->get_install_dir());
   lua_push_str_table_entry(vm, "workingdir", ntop->get_working_dir());
+  lua_push_str_table_entry(vm, "scriptdir", ntop->getPrefs()->get_scripts_dir());
+  lua_push_str_table_entry(vm, "httpdocsdir", ntop->getPrefs()->get_docs_dir());
+  lua_push_str_table_entry(vm, "callbacksdir", ntop->getPrefs()->get_callbacks_dir());
 
   return(CONST_LUA_OK);
 }
@@ -1691,7 +1696,7 @@ static int sqlite_callback(void *data, int argc,
   for(int i=0; i<argc; i++)
     lua_push_str_table_entry(s->vm, (const char*)azColName[i],
 			     (char*)(argv[i] ? argv[i] : "NULL"));
-  
+
   lua_pushinteger(s->vm, ++s->num_rows);
   lua_insert(s->vm, -2);
   lua_settable(s->vm, -3);
@@ -2486,6 +2491,12 @@ int Lua::handle_script_request(struct mg_connection *conn,
       goto set_preferred_interface;
     }
   } else {
+    // We need to check if ntopng is running with the option --disable-login
+    snprintf(key, sizeof(key), "ntopng.prefs.ifname");
+    if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
+      goto set_preferred_interface;
+    }
+
     NetworkInterface *iface;
 
   set_preferred_interface:

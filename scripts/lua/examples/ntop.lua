@@ -10,7 +10,7 @@ function printTable(table,key)
     if (type(v) == "table") then
        printTable(table[k],k)
     else
-      if (type(v) == "boolean") then 
+      if (type(v) == "boolean") then
         if (v) then v = "true" else v = "false" end
       end
       print("<li>"..k .." = "..v.."<br>")
@@ -21,6 +21,7 @@ end
 -- Set package.path information to be able to require lua module
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
 require "lua_utils"
 
 -- Here you can choose the type of your HTTP message {'text/html','application/json',...}. There are two main function that you can use:
@@ -53,7 +54,7 @@ print('<p>The ntopng lua class provide a few methods to get information about th
 print('<h4>ntopng information</h4>')
 print('<pre><code>ntop.getInfo()</code></pre>')
 print('<ul>')
-for key, value in pairs(ntop.getInfo()) do 
+for key, value in pairs(ntop.getInfo()) do
    print("<li>".. key.." = "..value.."<br>")
 end
 print('</ul>')
@@ -61,7 +62,7 @@ print('</ul>')
 print('<h4>ntopng directory</h4>')
 print('<pre><code>ntop.getDirs()</code></pre>')
 print('<ul>')
-for key, value in pairs(ntop.getDirs()) do 
+for key, value in pairs(ntop.getDirs()) do
    print("<li>".. key.." = "..value.."<br>")
 end
 print('</ul>')

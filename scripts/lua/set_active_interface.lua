@@ -4,6 +4,7 @@
 
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
+if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
 
 require "lua_utils"
 
@@ -13,8 +14,8 @@ active_page = "if_stats"
 ifname = interface.setActiveInterfaceId(tonumber(_GET["id"]))
 
 if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
-   key = "ntopng.prefs." .. _SESSION["user"] .. ".ifname"
-   ntop.setCache(key, ifname)	
+   key = getRedisPrefix("ntopng.prefs") .. ".ifname"
+   ntop.setCache(key, ifname)
 
    sendHTTPHeaderIfName('text/html', ifname, 3600)
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
@@ -23,14 +24,14 @@ if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
    print("<div class=\"alert alert-success\">The selected interface <b>" .. ifname)
    key = 'ntopng.prefs.'..ifname..'.name'
    custom_name = ntop.getCache(key)
-   
+
    if((custom_name ~= nil) and (custom_name ~= "")) then
       print(" (".. custom_name ..")")
    end
 
    print("</b> is now active</div>")
-   
-   ntop.setCache('ntopng.prefs.'.._SESSION["user"]..'.iface', _GET["id"])
+
+   ntop.setCache(getRedisPrefix("ntopng.prefs")..'.iface', _GET["id"])
 
 print [[
 <script>
