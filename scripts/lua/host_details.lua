@@ -712,7 +712,7 @@ dc.renderAll();
 
 	if((sent > 0) or (rcvd > 0)) then
 	    print("<tr><th>")
-	    fname = getRRDName(ifname, host_info["host"], k)
+	    fname = getRRDName(ifname, hostinfo2hostkey(host_info), k)
 	    if(ntop.exists(fname)) then
 	       print("<A HREF=\"/lua/host_details.lua?"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    else
@@ -768,7 +768,7 @@ dc.renderAll();
       for _k in pairsByKeys(vals , desc) do
 	 k = vals[_k]
 	 print("<tr><th>")
-	 fname = getRRDName(ifId, host_info["host"], k..".rrd")
+	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
 	 --print(fname)
 	 if(ntop.exists(fname)) then
 	    print("<A HREF=\"/lua/host_details.lua?"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
@@ -909,7 +909,7 @@ if(num_found > 0) then
 for k,_ in pairsByKeys(names, rev) do
    print("<tr>")
 
-   path = getRRDName(ifname,  host_info["host"], sbase..k)
+   path = getRRDName(ifname,  hostinfo2hostkey(host_info), sbase..k)
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifname, host_info["host"], sbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
@@ -918,7 +918,7 @@ for k,_ in pairsByKeys(names, rev) do
       print("<td colspan=3>&nbsp;</td>")
    end
 
-   path = getRRDName(ifname,  host_info["host"], rbase..k)
+   path = getRRDName(ifname,  hhostinfo2hostkey(host_info), rbase..k)
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifname, host_info["host"], rbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
@@ -1556,7 +1556,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(ifId, host_info["host"], rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
+drawRRD(ifId, hostinfo2hostkey(host_info), rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
 
 
 elseif(page == "aggregations") then
