@@ -84,14 +84,14 @@ void HistoricalInterface::parse_endpoint(const  char * p_endpoint){
       }
 
       if(stat(e, &buf) != 0){
-          ntop->getTrace()->traceEvent(TRACE_NORMAL,"Missing file: %s",e);
+          ntop->getTrace()->traceEvent(TRACE_DEBUG,"Missing file: %s",e);
           num_missing_file++;
           continue;
       }
 
       historical_ifaces[num_historicals].endpoint = strdup(e);
       num_historicals++;
-      ntop->getTrace()->traceEvent(TRACE_NORMAL,"Add historical file from cli: %s",e);
+      ntop->getTrace()->traceEvent(TRACE_DEBUG,"Add historical file from cli: %s",e);
 
       e = strtok(NULL, ",");
 
@@ -129,14 +129,14 @@ void HistoricalInterface::parse_endpoint(const  char * p_endpoint){
         ntop->get_working_dir(), interface_id , path);
 
         if(stat(db_path, &buf) != 0){
-          ntop->getTrace()->traceEvent(TRACE_NORMAL,"Missing file: %s",db_path);
+          ntop->getTrace()->traceEvent(TRACE_DEBUG,"Missing file: %s",db_path);
           num_missing_file++;
           goto new_epoch;
         }
 
         historical_ifaces[num_historicals].endpoint = strdup(db_path);
         num_historicals++;
-        ntop->getTrace()->traceEvent(TRACE_NORMAL,"Add historical file from gui: %s",db_path);
+        ntop->getTrace()->traceEvent(TRACE_DEBUG,"Add historical file from gui: %s",db_path);
 
         new_epoch:
           actual_epoch += 300; //5 minutes
@@ -180,11 +180,11 @@ void HistoricalInterface::collect_flows() {
    for(int i=0; i<num_historicals; i++) {
 
     if(sqlite3_open(historical_ifaces[i].endpoint, &historical_ifaces[i].db)) {
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Unable to open %s: %s",
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to open %s: %s",
       historical_ifaces[i].endpoint, sqlite3_errmsg(historical_ifaces[i].db));
       num_open_error++;
     } else
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Open db %s", historical_ifaces[i].endpoint);
+      ntop->getTrace()->traceEvent(TRACE_DEBUG, "Open db %s", historical_ifaces[i].endpoint);
 
       // Correctly open db, so now we can extract the contained flows
     if(sqlite3_exec(historical_ifaces[i].db, "SELECT * FROM flows ORDER BY first_seen, srv_ip, srv_port, cli_ip, cli_port ASC", sqlite_callback, this, &zErrMsg)) {

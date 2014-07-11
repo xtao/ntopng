@@ -75,10 +75,10 @@ end
 
 if (ntop.isHistoricalInterface(ifstats.id)) then
 
-  if(page == "config_historical") then
-    print("<li class=\"active\"><a href=\"#\">Historical Configuration</a></li>\n")
+  if(page == "load_traffic") then
+    print("<li class=\"active\"><a href=\"#\">Load Traffic</a></li>\n")
   else
-    print("<li><a href=\""..url.."&page=config_historical\">Historical Configuration</a></li>")
+    print("<li><a href=\""..url.."&page=load_traffic\">Load Traffic</a></li>")
   end
 else
 
@@ -233,11 +233,11 @@ elseif(page == "historical") then
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
 
-elseif(page == "config_historical") then
+elseif(page == "load_traffic") then
 
   historical_info = ntop.getHistorical()
 
-print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form">')
+   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form">')
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th width=250>From</th><td colspan=2>")
    print [[
@@ -401,7 +401,7 @@ print [[
 $( "#conf_historical_form" ).submit(function( event ) {
   var frm = $('#start_historical');
   if (check_date()) {
-    alert('ok');
+
     $.ajax({
       type: frm.attr('method'),
       url: frm.attr('action'),
