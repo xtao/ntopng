@@ -864,6 +864,8 @@ u_int32_t Flow::key() {
 /* *************************************** */
 
 bool Flow::idle() {
+  if(!iface->is_purge_idle_interface()) return(false);
+
   /* If this flow is idle for at least MAX_TCP_FLOW_IDLE */
   if((protocol == IPPROTO_TCP)
      && ((tcp_flags & TH_FIN) || (tcp_flags & TH_RST))

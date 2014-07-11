@@ -99,11 +99,18 @@ public:
    */
   void walk(bool (*walker)(GenericHashEntry *h, void *user_data), void *user_data);
   /**
-   * @brief Purge the hash.
+   * @brief Purge idle hash entries.
    *
    * @return Numbers of purged entry, 0 otherwise.
    */
-  u_int purgeIdle();
+  u_int purgeIdle();  
+
+  /**
+   * @brief Purge all hash entries.
+   *
+   */
+  void cleanup();
+
   /**
    * @brief Return the network interface instance associated with the hash.
    * @details Inline method.

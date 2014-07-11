@@ -526,6 +526,8 @@ int Host::compare(Host *h) {
 bool Host::idle() {
   if(num_uses > 0) return(false);
   
+  if(!iface->is_purge_idle_interface()) return(false);
+
   switch(ntop->getPrefs()->get_host_stickness()) {
   case location_none:
     break;

@@ -86,6 +86,7 @@ void StringHost::flushContacts(bool freeHost) {
 /* *************************************** */
 
 bool StringHost::idle() {
+  if(!iface->is_purge_idle_interface()) return(false);
   return(will_be_purged || isIdle(ntop->getPrefs()->get_host_max_idle(tracked_host))); 
 };
 

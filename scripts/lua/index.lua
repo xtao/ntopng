@@ -183,7 +183,7 @@ else
     <br>
     <div class="alert alert-info">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the  <a href="lua/if_stats.lua?if_name=Historical&page=load_traffic">configuration page</a>, the interface, for which you want to load the historical data, and the time interval to be loaded.
+      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the  <a href="/lua/if_stats.lua?if_name=Historical&page=config_historical">configuration page</a>, the interface, for which you want to load the historical data, and the time interval to be loaded.
     </div>
 
     ]]

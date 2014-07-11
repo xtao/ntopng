@@ -188,7 +188,7 @@ void NetworkInterface::deleteDataStructures() {
 NetworkInterface::~NetworkInterface() {
   if(getNumPackets() > 0) {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flushing host contacts for interface %s", get_name());
-    flushHostContacts();
+    cleanup();
   }
 
   deleteDataStructures();
@@ -789,11 +789,13 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
-void NetworkInterface::cleanUp() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Clean up interface %s",get_name());
-  // TO DO
-}
+void NetworkInterface::cleanup() {
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Cleanup interface %s", get_name());
 
+  flows_hash->cleanup();
+  hosts_hash->cleanup();
+  strings_hash->cleanup();
+}
 
 /* **************************************************** */
 
@@ -874,24 +876,6 @@ static bool update_hosts_stats(GenericHashEntry *node, void *user_data) {
 
 /* **************************************************** */
 
-static bool flush_host_contacts(GenericHashEntry *node, void *user_data) {
-  Host *host = (Host*)node;
-
-  host->flushContacts(false);
-  return(false); /* false = keep on walking */
-}
-
-/* **************************************************** */
-
-static bool flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
-  StringHost *host = (StringHost*)node;
-
-  host->flushContacts(false);
-  return(false); /* false = keep on walking */
-}
-
-/* **************************************************** */
-
 void NetworkInterface::updateHostStats() {
   struct timeval tv;
 
@@ -901,13 +885,6 @@ void NetworkInterface::updateHostStats() {
 
   hosts_hash->walk(update_hosts_stats, (void*)&tv);
   strings_hash->walk(update_hosts_stats, (void*)&tv);
-}
-
-/* **************************************************** */
-
-void NetworkInterface::flushHostContacts() {
-  hosts_hash->walk(flush_host_contacts, NULL);
-  strings_hash->walk(flush_string_host_contacts, NULL);
 }
 
 /* **************************************************** */

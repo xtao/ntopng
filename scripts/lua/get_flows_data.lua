@@ -106,18 +106,18 @@ end
 
 -- Prepare aggregation
 if ((aggregation ~= nil) and (key ~= nil)) then
-
    if (aggregation == "ndpi") then application = key end
    if (aggregation == "l4proto") then l4proto = key end
    if (aggregation == "port") then port = tonumber(key) end
-
 end
 
 vals = {}
 num = 0
 
 for key, value in pairs(flows_stats) do
-   --   print(key.."\n")
+   total = total + 1
+
+   -- print(key.."\n")
    if (debug) then io.write("==================\n")end
 
    process = 1
@@ -492,8 +492,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 num = num + 1
       end
    end
-
-   total = total + 1
 end -- for
 
 print ("\n], \"perPage\" : " .. perPage.. ",\n")

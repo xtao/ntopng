@@ -128,7 +128,7 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
-  virtual void cleanUp();
+  virtual void cleanup();
   virtual u_int getNumDroppedPackets()         { return 0;      };
   virtual char *getScriptName()                { return NULL;   }
   virtual char *getEndpoint(u_int8_t id)       { return NULL;   };
@@ -148,8 +148,8 @@ class NetworkInterface {
   inline bool  hasSeenVlanTaggedPackets()      { return(has_vlan_packets); }
   inline void  setSeenVlanTaggedPackets()      { has_vlan_packets = true; }
   inline struct ndpi_detection_module_struct* get_ndpi_struct() { return(ndpi_struct);         };
-  void flushHostContacts();
   inline bool is_sprobe_interface()            { return(sprobe_interface); };
+  inline bool is_purge_idle_interface()        { return(purge_idle_flows_hosts);               };
   inline void enable_sprobe()                  { sprobe_interface = true; };
   bool dumpFlow(time_t when, Flow *f, char *json);
   inline void incStats(u_int16_t eth_proto, u_int16_t ndpi_proto, u_int pkt_len, u_int num_pkts, u_int pkt_overhead) {

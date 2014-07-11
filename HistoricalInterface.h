@@ -65,14 +65,10 @@ class HistoricalInterface : public ParserInterface {
 
   bool set_packet_filter(char *filter);
 
-
   void collect_flows();
   void startPacketPolling();
   void shutdown();
-  void cleanUp();
-
-
-
+  void cleanup();
 };
 
 #endif /* _HISTORICAL_INTERFACE_H_ */

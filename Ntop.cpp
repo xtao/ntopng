@@ -176,11 +176,11 @@ void Ntop::createHistoricalInterface() {
 /* ******************************************* */
 
 void Ntop::startHistoricalInterface(const char * p_endpoint) {
-
   if (historical_interface_id != -1) {
     HistoricalInterface * iface = (HistoricalInterface *) ntop->getInterfaceId(historical_interface_id);
-    if (iface) {
-      iface->cleanUp();
+    
+    if(iface) {
+      iface->cleanup();
       iface->setEndpoint(p_endpoint);
       iface->startPacketPolling();
     } else

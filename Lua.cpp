@@ -180,28 +180,6 @@ static int ntop_get_interface_names(lua_State* vm) {
 }
 
 /* ****************************************** */
-/**
- * @brief Flush the host contacts of the network interface defined into lua.
- *
- * @param vm The lua state.
- * @return @ref CONST_LUA_OK if the network_interface lua variable is not NULL, @ref CONST_LUA_ERROR otherwise.
- */
-static int ntop_flush_host_contacts(lua_State* vm) {
-  NetworkInterface *ntop_interface;
-
-  lua_getglobal(vm, "ntop_interface");
-  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop_interface = handle_null_interface(vm);
-  }
-
-  if(ntop_interface) {
-    ntop_interface->flushHostContacts();
-    return(CONST_LUA_OK);
-  } else
-    return(CONST_LUA_ERROR);
-}
-
-/* ****************************************** */
 
 /**
  * @brief Find the network interface and set it as global variable to lua.
@@ -2172,7 +2150,6 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "setActiveInterfaceId",   ntop_set_active_interface_id },
   { "getIfNames",             ntop_get_interface_names },
   { "find",                   ntop_find_interface },
-  { "flushHostContacts",      ntop_flush_host_contacts },
   { "getStats",               ntop_get_interface_stats },
   { "getNdpiStats",           ntop_get_ndpi_interface_stats },
   { "getNdpiProtoName",       ntop_get_ndpi_protocol_name },

@@ -39,10 +39,21 @@ GenericHash::GenericHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max
 /* ************************************ */
 
 GenericHash::~GenericHash() {
+  cleanup();
+
+  delete[] table;
+
+  for(u_int i = 0; i < num_hashes; i++) delete(locks[i]);
+  delete[] locks;
+}
+
+/* ************************************ */
+
+void GenericHash::cleanup() {
   for(u_int i = 0; i < num_hashes; i++)
     if(table[i] != NULL) {
       GenericHashEntry *head = table[i];
-
+      
       while(head) {
 	GenericHashEntry *next = head->next();
 
@@ -50,11 +61,6 @@ GenericHash::~GenericHash() {
 	head = next;
       }
     }
-
-  delete[] table;
-
-  for(u_int i = 0; i < num_hashes; i++) delete(locks[i]);
-  delete[] locks;
 }
 
 /* ************************************ */

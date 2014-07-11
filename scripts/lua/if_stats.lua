@@ -75,10 +75,10 @@ end
 
 if (ntop.isHistoricalInterface(ifstats.id)) then
 
-  if(page == "load_traffic") then
-    print("<li class=\"active\"><a href=\"#\">Load Traffic</a></li>\n")
+  if(page == "config_historical") then
+    print("<li class=\"active\"><a href=\"#\">Load Data</a></li>\n")
   else
-    print("<li><a href=\""..url.."&page=load_traffic\">Load Traffic</a></li>")
+    print("<li><a href=\""..url.."&page=config_historical\">Load Data</a></li>")
   end
 else
 
@@ -239,7 +239,7 @@ elseif(page == "load_traffic") then
 
    print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form">')
    print("<table class=\"table table-striped table-bordered\">\n")
-   print("<tr><th width=250>From</th><td colspan=2>")
+   print("<tr><th >Begin Date/Time</th><td colspan=2>")
    print [[
    <div class='input-group date' id='datetime_from'>
           <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
@@ -248,7 +248,7 @@ elseif(page == "load_traffic") then
    ]]
    print("</td></tr>\n")
 
-   print("<tr><th width=250>To</th><td colspan=2>")
+   print("<tr><th >End Date/Time</th><td colspan=2>")
    print [[
    <div class='input-group date' id='datetime_to'>
           <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
@@ -258,7 +258,7 @@ elseif(page == "load_traffic") then
    print("</td></tr>\n")
 
 
-print("<tr><th width=250>Interface</th><td colspan=2>")
+print("<tr><th >Source Interface</th><td colspan=2>")
    print [[
    <div class="btn-group">
     ]]
@@ -283,15 +283,12 @@ print [[
    ]]
    print("</td></tr>\n")
 
- print("</table>\n")
-
- print [[
-<div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <button type="submit" class="btn btn-default">Load</button>
-      <button type="reset" class="btn btn-default">Reset</button>
-    </div>
-  </div>
+print [[
+<tr><th colspan=3 class="text-center">
+      <button type="submit" class="btn btn-default">Load Historical Data</button>
+      <button type="reset" class="btn btn-default">Reset Form</button>
+</th></tr>
+</table>
 </form>
 ]]
 
