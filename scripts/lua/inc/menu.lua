@@ -9,13 +9,18 @@ require "lua_utils"
 
 ifstats = interface.getStats()
 names = interface.getIfNames()
+iface_id = interface.name2id(ifname)
+
 num_ifaces = 0
 for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
 
 print [[
       <div class="masthead">
 
+
+
         <ul class="nav nav-pills pull-right">
+
    ]]
 
 interface.find(ifname)
@@ -98,7 +103,7 @@ print [[
    ]]
 
 if(not(isLoopback(ifname))) then
-   print [[ 
+   print [[
 	    <li><a href="/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
 	    <li><a href="/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
       ]]
@@ -178,7 +183,7 @@ print [[
 
 
 for k,v in pairs(names) do
-    if(v == ifname) then 
+    if(v == ifname) then
     print("<li")
     key = 'ntopng.prefs.'..v..'.name'
     custom_name = ntop.getCache(key)
@@ -195,7 +200,7 @@ for k,v in pairs(names) do
       print (v)
     end
 
-    
+
     print("</a></li>")
     end
 end
@@ -247,7 +252,11 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
-      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
+      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li> ]]
+
+if (ntop.isHistoricalInterface(iface_id)) then print ( ' <li><a href="/lua/admin/historical.lua"><i class="fa fa-database"></i> Historical</a></li>') end
+
+  print [[
       <li class="divider"></li>
       <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>

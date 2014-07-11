@@ -369,7 +369,7 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
     struct timeval tv, *last_update;
 
     tv.tv_sec = zflow->last_switched, tv.tv_usec = 0;
-    
+
     flow->update_hosts_stats(&tv);
   }
 #endif
@@ -789,6 +789,14 @@ void NetworkInterface::shutdown() {
 
 /* **************************************************** */
 
+void NetworkInterface::cleanUp() {
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Clean up interface %s",get_name());
+  // TO DO
+}
+
+
+/* **************************************************** */
+
 void NetworkInterface::findFlowHosts(u_int16_t vlanId,
 				     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src,
 				     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst) {
@@ -888,7 +896,7 @@ void NetworkInterface::updateHostStats() {
   struct timeval tv;
 
   gettimeofday(&tv, NULL);
-  
+
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
 
   hosts_hash->walk(update_hosts_stats, (void*)&tv);

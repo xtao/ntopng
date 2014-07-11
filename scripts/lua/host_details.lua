@@ -547,7 +547,7 @@ end
    <table border=0>
    <tr><td>
    <div id="chart-row-hosts">
-       <strong>Top ]] print(host_info["host"]) print [[ Peers</strong>
+       <strong>Top ]] print(hostinfo2hostkey(host_info) ) print [[ Peers</strong>
        <div class="clearfix"></div>
    </div>
 

@@ -70,5 +70,5 @@ else
    print("</table>\n")
 end
 end
-
+print ('<strong>Total flows: ' .. num .. '</strong>')
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

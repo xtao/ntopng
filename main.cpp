@@ -138,6 +138,10 @@ int main(int argc, char *argv[])
     ntop->registerInterface(iface);
   }
 
+  // Create empty and not running historical interface
+  if (prefs->do_dump_flows_on_db() )
+    ntop->createHistoricalInterface();
+
   ntop->createExportInterface();
 
   if(prefs->do_change_user())

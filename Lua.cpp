@@ -2091,6 +2091,75 @@ static int ntop_lua_cli_print(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+/**
+ * @brief Check if the interface is the historical interface
+ * @details Push into lua stack 1 if it is, 0 otherwise.
+ *
+ * @param vm The lua state.
+ * @param id Id of the interface.
+ *
+ * @return CONST_LUA_OK.
+ */
+static int is_historical_interface(lua_State* vm) {
+  u_int8_t id;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  id = (u_int32_t)lua_tonumber(vm, 1);
+
+  lua_pushboolean(vm, (ntop->getHistoricalInterface() == id) );
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int get_historical_info(lua_State* vm) {
+  u_int8_t id, interface_id;
+  HistoricalInterface *iface = NULL;
+
+  id = ntop->getHistoricalInterface();
+  iface = (HistoricalInterface*) ntop->getInterfaceId(id);
+  if (iface != NULL) {
+    interface_id = iface->getActiveInterfaceId();
+    lua_newtable(vm);
+    lua_push_int_table_entry(vm, "id", id);
+    lua_push_int_table_entry(vm, "interface_id", interface_id);
+    lua_push_str_table_entry(vm, "interface_name", ntop->getInterfaceId(interface_id)->get_name());
+    lua_push_int32_table_entry(vm, "from_epoch", iface->getFromEpoch());
+    lua_push_int32_table_entry(vm, "to_epoch", iface->getToEpoch());
+    lua_push_int_table_entry(vm, "open_error", iface->getOpenError());
+    lua_push_int_table_entry(vm, "file_error", iface->getMissingFiles());
+    lua_push_int_table_entry(vm, "query_error", iface->getQueryError());
+    lua_push_bool_table_entry(vm, "running", iface->isRunning());
+
+  }
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_active_historical_interface(lua_State* vm) {
+  u_int32_t from_epoch, to_epoch;
+  u_int8_t iface_id = 0;
+  char buf[64];
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  from_epoch = (u_int32_t)lua_tonumber(vm, 1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  to_epoch = (u_int32_t)lua_tonumber(vm, 2);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  iface_id = lua_tonumber(vm, 3);
+
+  snprintf(buf, sizeof(buf), "%u,%u,%u", from_epoch,to_epoch,iface_id);
+
+  ntop->startHistoricalInterface(buf);
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 typedef struct {
@@ -2209,6 +2278,10 @@ static const luaL_Reg ntop_reg[] = {
   /* SQLite */
   { "execQuery",      ntop_sqlite_exec_query },
 
+  /* Historical Interface */
+  { "getHistorical",      get_historical_info },
+  { "startHistoricalInterface",      ntop_active_historical_interface },
+  { "isHistoricalInterface",      is_historical_interface },
   { "isWindows",      ntop_is_windows },
   { NULL,          NULL}
 };

@@ -128,6 +128,7 @@ class NetworkInterface {
 
   virtual void startPacketPolling();
   virtual void shutdown();
+  virtual void cleanUp();
   virtual u_int getNumDroppedPackets()         { return 0;      };
   virtual char *getScriptName()                { return NULL;   }
   virtual char *getEndpoint(u_int8_t id)       { return NULL;   };
@@ -219,6 +220,7 @@ class NetworkInterface {
   void addAllAvailableInterfaces();
   inline bool idle() { return(is_idle); }
   inline void setIdleState(bool new_state) { is_idle = new_state; }
+
 };
 
 #endif /* _NETWORK_INTERFACE_H_ */

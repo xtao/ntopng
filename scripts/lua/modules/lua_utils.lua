@@ -1275,7 +1275,7 @@ end
 -- ############################################
 
 -- Inpur:     General prefix (i.e ntopng.pref)
--- Output:  User based prefix, if the user exists
+-- Output:  User based prefix, if it exists
 --
 -- Examples:
 --                With user:  ntopng.pref.user_name

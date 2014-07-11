@@ -12,6 +12,7 @@ sendHTTPHeader('text/html')
 interface.find(ifname)
 ifstats = interface.getStats()
 is_loopback = isLoopback(ifname)
+iface_id = interface.name2id(ifname)
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
@@ -34,12 +35,12 @@ end
 -- Default frequency (ms)
 if (refresh == '') then refresh = 5000 end
 
--- 
+--
 
 page = _GET["page"]
-if(page == nil) then 
+if(page == nil) then
    if(not(is_loopback)) then
-      page = "TopFlowTalkers" 
+      page = "TopFlowTalkers"
    else
       page = "TopHosts"
    end
@@ -77,7 +78,7 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    print('</ul>\n\t</div>\n\t</nav>\n')
 
    if(page == "TopFlowTalkers") then
-      print('<div style="text-align: center;">\n<h4>Top Flow Talkers</h4></div>\n') 
+      print('<div style="text-align: center;">\n<h4>Top Flow Talkers</h4></div>\n')
 
       print('<div class="row" style="text-align: center;">')
       dofile(dirs.installdir .. "/scripts/lua/inc/sankey.lua")
@@ -86,17 +87,17 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 print [[
 <div class="control-group" style="text-align: center;">
 &nbsp;Refresh frequency: <div class="btn-group btn-small">
-  <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"> 
-]] 
+  <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+]]
 if (refresh ~= '0') then
-  if (refresh == '60000') then 
+  if (refresh == '60000') then
     print('1 Minute')
   else
     print((refresh/1000)..' Seconds ')
   end
 else
   print(' Never ')
-end 
+end
 
 print [[<span class="caret"></span></button>
   <ul class="dropdown-menu ">
@@ -118,7 +119,7 @@ if (refresh ~= '0') then
             <button id="topflow_graph_state_stop" value="0" type="button" class="btn btn-default btn-xs" data-toggle="button" ><i class="fa fa-stop"></i></button>
           </div>
   ]]
-else 
+else
   print [[
          &nbsp;Refresh:  <div class="btn-group btn-small">
           <button id="topflow_graph_refresh" class="btn btn-default btn-xs">
@@ -136,7 +137,7 @@ print [[
       clearInterval(sankey_interval);
 ]]
 
-if (refresh ~= '0') then 
+if (refresh ~= '0') then
   print ('sankey_interval = window.setInterval(sankey,'..refresh..');')
 end
 
@@ -158,15 +159,15 @@ print [[
                $("#topflow_graph_state_play").removeClass("active");
                $("#topflow_graph_state_stop").addClass("active");
             }
-        }); 
+        });
         $("#topflow_graph_refresh").click(function() {
           sankey();
-        }); 
-        
+        });
+
       </script>
 
       ]]
-   else 
+   else
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_" .. page .. ".inc")
    end
 
@@ -174,19 +175,36 @@ print [[
   --ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_top.inc")
   -- ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_bottom.inc")
 else
-print("<div class=\"alert alert-warning\">No packet has been received yet on interface " .. ifname .. ".<p>Please wait <span id='countdown'></span> seconds until this page reloads.</div> <script type=\"text/JavaScript\">(function countdown(remaining) { if(remaining <= 0) location.reload(true); document.getElementById('countdown').innerHTML = remaining;  setTimeout(function(){ countdown(remaining - 1); }, 1000);})(10);</script>")
+
+  if (ntop.isHistoricalInterface(iface_id)) then
+
+    print [[
+    <br>
+    <div class="alert alert-info">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the configuration menu <i class="fa fa-cog fa-lg"></i>, the interface, for which you want to load the historical data, and the time interval to be loaded . <br>Every time you want change the interval or the interface please use this menu.
+    </div>
+
+    ]]
+
+  else
+
+
+    print("<div class=\"alert alert-warning\">No packet has been received yet on interface " .. ifname .. ".<p>Please wait <span id='countdown'></span> seconds until this page reloads.</div> <script type=\"text/JavaScript\">(function countdown(remaining) { if(remaining <= 0) location.reload(true); document.getElementById('countdown').innerHTML = remaining;  setTimeout(function(){ countdown(remaining - 1); }, 1000);})(10);</script>")
+
+  end
 end
 
 info = ntop.getInfo()
 
 if(page == "TopFlowTalkers") then
    rsp = ntop.httpGet("www.ntop.org", "/ntopng.version")
-   
+
    version_elems = split(info["version"], " ");
-   
+
    stable_version = version2int(rsp)
    this_version   = version2int(version_elems[1])
-   
+
    if(stable_version > this_version) then
       print("<p><div class=\"alert alert-ok\"><i class=\"fa fa-cloud-download fa-lg\"></i> A new ntopng version (v." .. rsp .. ") is available for <A HREF=http://www.ntop.org>download</A>: please upgrade.</div></p>")
    end

@@ -42,6 +42,7 @@ Ntop::Ntop(char *appName) {
   num_defined_interfaces = 0;
   local_interface_addresses = New_Patricia(128);
   export_interface = NULL;
+  historical_interface_id = -1;
   start_time = 0; /* It will be initialized by start() */
 
 #ifdef WIN32
@@ -162,11 +163,37 @@ void Ntop::registerPrefs(Prefs *_prefs) {
 
   redis = new Redis(prefs->get_redis_host(), prefs->get_redis_port());
 }
+/* ******************************************* */
+
+void Ntop::createHistoricalInterface() {
+
+  historical_interface_id = prefs->get_num_user_specified_interfaces();
+  HistoricalInterface *iface = new HistoricalInterface(historical_interface_id , "Historical");
+  ntop->registerInterface(iface);
+}
+
+
+/* ******************************************* */
+
+void Ntop::startHistoricalInterface(const char * p_endpoint) {
+
+  if (historical_interface_id != -1) {
+    HistoricalInterface * iface = (HistoricalInterface *) ntop->getInterfaceId(historical_interface_id);
+    if (iface) {
+      iface->cleanUp();
+      iface->setEndpoint(p_endpoint);
+      iface->startPacketPolling();
+    } else
+       ntop->getTrace()->traceEvent(TRACE_ERROR, "Impossible start Historical Interface");
+    } else
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Missing Historical Interface");
+  }
+
 
 /* ******************************************* */
 
 void Ntop::createExportInterface() {
-  if(prefs->get_export_endpoint()) 
+  if(prefs->get_export_endpoint())
     export_interface = new ExportInterface(prefs->get_export_endpoint());
   else
     export_interface = NULL;
@@ -216,7 +243,7 @@ void Ntop::start() {
 
 /* ******************************************* */
 
-bool Ntop::isLocalAddress(int family, void *addr, int16_t *network_id) { 
+bool Ntop::isLocalAddress(int family, void *addr, int16_t *network_id) {
   *network_id = address->findAddress(family, addr);
   return(((*network_id) == -1) ? false : true);
 };
@@ -224,7 +251,7 @@ bool Ntop::isLocalAddress(int family, void *addr, int16_t *network_id) {
 /* ******************************************* */
 
 bool Ntop::isLocalInterfaceAddress(int family, void *addr) {
-  return((ptree_match(local_interface_addresses, family, addr, 
+  return((ptree_match(local_interface_addresses, family, addr,
 		      (family == AF_INET) ? 32 : 128) != NULL) ? true /* found */ : false /* not found */);
 }
 

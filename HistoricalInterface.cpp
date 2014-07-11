@@ -26,38 +26,11 @@
 HistoricalInterface::HistoricalInterface(u_int8_t _id, const char *_endpoint)
   : ParserInterface(_id, _endpoint) {
 
-    char *tmp, *e;
+    num_historicals = 0, num_query_error = 0, num_open_error = 0, num_missing_file = 0;
+    from_epoch = 0, to_epoch = 0, interface_id = 0;
+    have_endpoint = false;
 
-    num_historicals = 0;
-
-    if((tmp = strdup(_endpoint)) == NULL) throw("Out of memory");
-
-    e = strtok(tmp, ",");
-    while(e != NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR,
-           "Too many historical interface defined %u: skipping those in excess",
-           num_historicals);
-      if(num_historicals == CONST_MAX_NUM_SQLITE_INTERFACE) {
-        ntop->getTrace()->traceEvent(TRACE_ERROR,
-           "Too many historical interface defined %u: skipping those in excess",
-           num_historicals);
-      break;
-    }
-
-      historical_ifaces[num_historicals].endpoint = strdup(e);
-
-      if(sqlite3_open(historical_ifaces[num_historicals].endpoint, &historical_ifaces[num_historicals].db)) {
-        ntop->getTrace()->traceEvent(TRACE_INFO, "Unable to open %s: %s",
-        historical_ifaces[num_historicals].endpoint, sqlite3_errmsg(historical_ifaces[num_historicals].db));
-      } else
-        ntop->getTrace()->traceEvent(TRACE_INFO, "Open db %s", historical_ifaces[num_historicals].endpoint);
-
-      num_historicals++;
-      e = strtok(NULL, ",");
-
-  }
-
-  free(tmp);
+    setEndpoint(_endpoint);
 
 }
 
@@ -69,6 +42,112 @@ HistoricalInterface::~HistoricalInterface() {
     if(historical_ifaces[i].endpoint) free(historical_ifaces[i].endpoint);
    sqlite3_close(historical_ifaces[num_historicals].db);
   }
+}
+
+
+/* **************************************************** */
+
+void HistoricalInterface::cleanUp() {
+  // Free the instance variables
+  for(int i=0; i<num_historicals; i++) {
+    if(historical_ifaces[i].endpoint) free(historical_ifaces[i].endpoint);
+   sqlite3_close(historical_ifaces[num_historicals].db);
+  }
+  num_historicals = 0, num_query_error = 0, num_open_error = 0, num_missing_file = 0;
+  from_epoch = 0, to_epoch = 0, interface_id = 0;
+  have_endpoint = false;
+
+}
+
+
+/* **************************************************** */
+
+void HistoricalInterface::parse_endpoint(const  char * p_endpoint){
+    char *tmp, *e;
+    time_t actual_epoch;
+    char path[MAX_PATH];
+    char db_path[MAX_PATH];
+    struct stat buf;
+
+   if((tmp = strdup(p_endpoint)) == NULL) throw("Out of memory");
+
+    if(strstr(tmp, "sqlite")) {
+      // Endpoint defined via command line
+      e = strtok(tmp, ",");
+      while(e != NULL) {
+      if(num_historicals == CONST_MAX_NUM_SQLITE_INTERFACE) {
+        ntop->getTrace()->traceEvent(TRACE_ERROR,
+           "Too many historical file defined %u: skipping those in excess",
+           num_historicals);
+      break;
+      }
+
+      if(stat(e, &buf) != 0){
+          ntop->getTrace()->traceEvent(TRACE_NORMAL,"Missing file: %s",e);
+          num_missing_file++;
+          continue;
+      }
+
+      historical_ifaces[num_historicals].endpoint = strdup(e);
+      num_historicals++;
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,"Add historical file from cli: %s",e);
+
+      e = strtok(NULL, ",");
+
+      }
+
+      if(num_historicals > 0)
+        have_endpoint = true;
+
+    } else  if(strstr(tmp, ",")) {
+      // Endpoint defined via GUI
+
+      e = strtok(tmp, ",");
+      this->from_epoch = atoi(e);
+
+      e = strtok(NULL, ",");
+      this->to_epoch = atoi(e);
+
+      e = strtok(NULL, ",");
+      this->interface_id = atoi(e);
+
+      actual_epoch = from_epoch;
+      while (actual_epoch <= to_epoch){
+
+        if(num_historicals == CONST_MAX_NUM_SQLITE_INTERFACE) {
+          ntop->getTrace()->traceEvent(TRACE_ERROR,
+            "Too many historical file defined %u: skipping those in excess",
+            num_historicals);
+          break;
+        }
+        memset(path, 0, sizeof(path));
+        memset(db_path, 0, sizeof(db_path));
+
+        strftime(path, sizeof(path), "%Y/%m/%d/%H/%M", localtime(&actual_epoch));
+        snprintf(db_path, sizeof(db_path), "%s/%u/flows/%s.sqlite",
+        ntop->get_working_dir(), interface_id , path);
+
+        if(stat(db_path, &buf) != 0){
+          ntop->getTrace()->traceEvent(TRACE_NORMAL,"Missing file: %s",db_path);
+          num_missing_file++;
+          goto new_epoch;
+        }
+
+        historical_ifaces[num_historicals].endpoint = strdup(db_path);
+        num_historicals++;
+        ntop->getTrace()->traceEvent(TRACE_NORMAL,"Add historical file from gui: %s",db_path);
+
+        new_epoch:
+          actual_epoch += 300; //5 minutes
+      }
+
+      if(num_historicals > 0)
+        have_endpoint = true;
+
+    }
+
+    free(tmp);
+
 }
 
 /* **************************************************** */
@@ -99,13 +178,25 @@ void HistoricalInterface::collect_flows() {
 
    for(int i=0; i<num_historicals; i++) {
 
+    if(sqlite3_open(historical_ifaces[i].endpoint, &historical_ifaces[i].db)) {
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Unable to open %s: %s",
+      historical_ifaces[i].endpoint, sqlite3_errmsg(historical_ifaces[i].db));
+      num_open_error++;
+    } else
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Open db %s", historical_ifaces[i].endpoint);
+
+      // Correctly open db, so now we can extract the contained flows
     if(sqlite3_exec(historical_ifaces[i].db, "SELECT * FROM flows ORDER BY first_seen, srv_ip, srv_port, cli_ip, cli_port ASC", sqlite_callback, this, &zErrMsg)) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "SQL Error: %s", zErrMsg);
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "SQL Error: %s from %s", zErrMsg, historical_ifaces[i].endpoint);
       sqlite3_free(zErrMsg);
+      num_query_error++;
+      goto close_db;
     }
 
-    sqlite3_close(historical_ifaces[i].db);
-     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Terminated flow polling for %s", historical_ifaces[i].endpoint );
+     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Terminated flow polling from %s", historical_ifaces[i].endpoint );
+
+     close_db:
+      sqlite3_close(historical_ifaces[i].db);
    }
 
 }
@@ -125,8 +216,10 @@ static void* packetPollLoop(void* ptr) {
 /* **************************************************** */
 
 void HistoricalInterface::startPacketPolling() {
-  pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
-  NetworkInterface::startPacketPolling();
+  if (have_endpoint) {
+    pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
+    NetworkInterface::startPacketPolling();
+  }
 }
 
 /* **************************************************** */
@@ -149,3 +242,11 @@ bool HistoricalInterface::set_packet_filter(char *filter) {
 }
 
 /* **************************************************** */
+
+void HistoricalInterface::setEndpoint(const char * p_endpoint) {
+    if (p_endpoint != NULL) {
+      parse_endpoint(p_endpoint);
+    } else {
+      running = false;
+    }
+}

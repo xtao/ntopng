@@ -31,22 +31,36 @@
 
 class HistoricalInterface : public ParserInterface {
  private:
-  u_int8_t num_historicals;
+  bool have_endpoint;
+  u_int8_t interface_id;
+  u_int32_t from_epoch;
+  u_int32_t to_epoch;
+  u_int8_t num_historicals, num_query_error, num_open_error, num_missing_file ;
   sqlite_iface historical_ifaces[CONST_MAX_NUM_SQLITE_INTERFACE];
 
   static int sqlite_callback(void *data, int argc, char **argv, char **azColName);
+  void parse_endpoint(const  char * p_endpoint);
 
  public:
   HistoricalInterface(u_int8_t _id, const char *_endpoint);
   ~HistoricalInterface();
 
-  // Father function
   inline const char* get_type()         { return("sqlite");      };
   inline bool is_ndpi_enabled()         { return(false);      };
   // char* getEndpoint(u_int8_t id)        { return(endpoint); };
 
   char* getEndpoint(u_int8_t id)        { return((id < num_historicals) ?
              historical_ifaces[id].endpoint : (char*)""); };
+  void setEndpoint(const char * p_endpoint);
+
+  inline time_t getFromEpoch() { return from_epoch;};
+  inline time_t getToEpoch() { return to_epoch;};
+
+  inline u_int8_t getOpenError() { return num_open_error;};
+  inline u_int8_t getQueryError() { return num_query_error;};
+  inline u_int8_t getMissingFiles() { return num_missing_file;};
+  inline u_int8_t getActiveInterfaceId() { return interface_id;};
+
   inline u_int getNumDroppedPackets()   { return 0; };
 
   bool set_packet_filter(char *filter);
@@ -55,6 +69,10 @@ class HistoricalInterface : public ParserInterface {
   void collect_flows();
   void startPacketPolling();
   void shutdown();
+  void cleanUp();
+
+
+
 };
 
 #endif /* _HISTORICAL_INTERFACE_H_ */
