@@ -70,9 +70,10 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if(not(is_loopback)) then
       if((page == "TopASNs")) then active=' class="active"' else active = "" end
       print('<li'..active..'><a href="/?page=TopASNs">ASNs</a></li>\n')
-
-      if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
-      print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
+      if not (ntop.isHistoricalInterface(iface_id)) then
+        if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
+        print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
+      end
    end
 
    print('</ul>\n\t</div>\n\t</nav>\n')
@@ -182,7 +183,7 @@ else
     <br>
     <div class="alert alert-info">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the configuration menu <i class="fa fa-cog fa-lg"></i>, the interface, for which you want to load the historical data, and the time interval to be loaded . <br>Every time you want change the interval or the interface please use this menu.
+      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the  <a href="if_stats.lua?if_name=Historical&page=config_historical">configuration page</a>, the interface, for which you want to load the historical data, and the time interval to be loaded.
     </div>
 
     ]]

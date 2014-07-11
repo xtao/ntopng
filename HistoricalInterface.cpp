@@ -56,6 +56,7 @@ void HistoricalInterface::cleanUp() {
   num_historicals = 0, num_query_error = 0, num_open_error = 0, num_missing_file = 0;
   from_epoch = 0, to_epoch = 0, interface_id = 0;
   have_endpoint = false;
+  sprobe_interface = false;
 
 }
 

@@ -9,7 +9,6 @@ require "lua_utils"
 
 ifstats = interface.getStats()
 names = interface.getIfNames()
-iface_id = interface.name2id(ifname)
 
 num_ifaces = 0
 for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
@@ -75,8 +74,10 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
-	 <li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>
-   ]]
+      ]]
+  if not (ntop.isHistoricalInterface(ifstats.id)) then
+	 print('<li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
+  end
 
 if(ifstats.iface_sprobe) then
    print('<li><a href="/lua/processes_stats.lua">Processes List</a></li>')
@@ -252,11 +253,7 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
-      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li> ]]
-
-if (ntop.isHistoricalInterface(iface_id)) then print ( ' <li><a href="/lua/admin/historical.lua"><i class="fa fa-database"></i> Historical</a></li>') end
-
-  print [[
+      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
       <li class="divider"></li>
       <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>

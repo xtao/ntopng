@@ -22,6 +22,7 @@ if_name = _GET["if_name"]
 if(if_name == nil) then if_name = ifname end
 
 interface.find(if_name)
+
 --print(if_name)
 ifstats = interface.getStats()
 
@@ -31,7 +32,7 @@ end
 
 rrdname = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd/bytes.rrd")
 
-if (if_name == nil) then 
+if (if_name == nil) then
   _ifname = ifname
 else
   _ifname = if_name
@@ -71,12 +72,24 @@ else
    print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
 end
 
-if(ntop.exists(rrdname)) then
-if(page == "historical") then
-  print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
+
+if (ntop.isHistoricalInterface(ifstats.id)) then
+
+  if(page == "config_historical") then
+    print("<li class=\"active\"><a href=\"#\">Historical Configuration</a></li>\n")
+  else
+    print("<li><a href=\""..url.."&page=config_historical\">Historical Configuration</a></li>")
+  end
 else
-  print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
-end
+
+  if(ntop.exists(rrdname)) then
+    if(page == "historical") then
+      print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
+    else
+      print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
+    end
+  end
+
 end
 
 print [[
@@ -86,14 +99,14 @@ print [[
    ]]
 print ('<div id="alert_placeholder"></div>')
 if((page == "overview") or (page == nil)) then
-    
+
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th width=250>Id</th><td colspan=2>" .. ifstats.id .. " ")
    print("</td></tr>\n")
 
    print("<tr><th width=250>State</th><td colspan=2>")
    state = toggleTableButton("", "", "Active", "1","primary", "Paused", "0","primary", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
-   
+
    if(state == "0") then
       on_state = true
    else
@@ -105,7 +118,7 @@ if((page == "overview") or (page == nil)) then
    print("</td></tr>\n")
 
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
-  
+
   if(ifstats.name ~= nil) then
     alternate_name = ntop.getCache('ntopng.prefs.'..ifstats.name..'.name')
     print [[
@@ -122,7 +135,7 @@ if((page == "overview") or (page == nil)) then
     </td></tr>
        ]]
   end
-   
+
    print("<tr><th>Family</th><td colspan=2>" .. ifstats.type .. "</td></tr>\n")
    print("<tr><th>Bytes</th><td colspan=2><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
    print [[
@@ -142,18 +155,18 @@ end
    print("<tr><th>Received Packets</th><td colspan=2><span id=if_pkts>" .. formatValue(ifstats.stats_packets) .. " " .. label .. "</span> <span id=pkts_trend></span></td></tr>\n")
 
    print("<tr><th>Dropped "..label.."</th><td colspan=2><span id=if_drops>")
-   
+
    if(ifstats.stats_drops > 0) then print('<span class="label label-danger">') end
    print(formatValue(ifstats.stats_drops).. " " .. label)
-   
+
    if((ifstats.stats_packets+ifstats.stats_drops) > 0) then
-      local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)   
+      local pctg = round((ifstats.stats_drops*100)/(ifstats.stats_packets+ifstats.stats_drops), 2)
       if(pctg > 0) then print(" [ " .. pctg .. " % ] ") end
    end
-   
+
    if(ifstats.stats_drops > 0) then print('</span>') end
    print("</span>  <span id=drops_trend></span></td></tr>\n")
-   
+
    print("</table>\n")
 elseif((page == "packets")) then
       print [[
@@ -174,7 +187,7 @@ elseif((page == "packets")) then
 elseif(page == "ndpi") then
       print [[
       <script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
-      <table class="table table-bordered table-striped"> 
+      <table class="table table-bordered table-striped">
       <tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
   </div>
 
@@ -189,12 +202,11 @@ elseif(page == "ndpi") then
   ]]
 
   print [[
-     <table id="myTable" class="table table-bordered table-striped tablesorter"> 
+     <table id="myTable" class="table table-bordered table-striped tablesorter">
      ]]
 
      print("<thead><tr><th>Application Protocol</th><th>Total (Since Startup)</th><th>Percentage</th></tr></thead>\n")
 
-  
   print ('<tbody id="if_stats_ndpi_tbody">\n')
   print ("</tbody>")
   print("</table>\n")
@@ -205,7 +217,7 @@ function update_ndpi_table() {
     type: 'GET',
     url: '/lua/if_stats_ndpi.lua',
     data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
-    success: function(content) { 
+    success: function(content) {
       $('#if_stats_ndpi_tbody').html(content);
     }
   });
@@ -216,10 +228,203 @@ setInterval(update_ndpi_table, 5000);
 
 ]]
 
-else
+elseif(page == "historical") then
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
+
+elseif(page == "config_historical") then
+
+  historical_info = ntop.getHistorical()
+
+print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form">')
+   print("<table class=\"table table-striped table-bordered\">\n")
+   print("<tr><th width=250>From</th><td colspan=2>")
+   print [[
+   <div class='input-group date' id='datetime_from'>
+          <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+          <input name="from" id='datetime_from_val' type='text' class="form-control" readonly/>
+    </div>
+   ]]
+   print("</td></tr>\n")
+
+   print("<tr><th width=250>To</th><td colspan=2>")
+   print [[
+   <div class='input-group date' id='datetime_to'>
+          <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+          <input name="to" id='datetime_to_val' type='text' class="form-control" readonly/>
+    </div>
+   ]]
+   print("</td></tr>\n")
+
+
+print("<tr><th width=250>Interface</th><td colspan=2>")
+   print [[
+   <div class="btn-group">
+    ]]
+
+
+
+names = interface.getIfNames()
+
+print('<button id="interface_displayed"  value="' .. historical_info["interface_name"] ..'" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">'..historical_info["interface_name"]..'<span class="caret"></span></button>\n')
+
+print('    <ul class="dropdown-menu" id="interface_list">\n')
+
+for k,v in pairs(names) do
+    if (v ~= "Historical") then
+      print('<li><a>'..v..'</a></li>')
+    end
+end
+
+print [[
+            </ul>
+          </div><!-- /btn-group -->
+   ]]
+   print("</td></tr>\n")
+
+ print("</table>\n")
+
+ print [[
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-default">Load</button>
+      <button type="reset" class="btn btn-default">Reset</button>
+    </div>
+  </div>
+</form>
+]]
+
+
+print [[
+<form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_intreface.lua">
+  <input type="hidden" name="from" value="" id="form_from">
+  <input type="hidden" name="to" value="" id="form_to">
+  <input type="hidden" name="id" value="" id="form_interface_id">
+</form>
+]]
+
+
+
+print [[
+<script>
+
+$('#interface_list li > a').click(function(e){
+    $('#interface_displayed').html(this.innerHTML+' <span class="caret"></span>');
+    $('#interface_displayed').val(this.innerHTML);
+  });
+
+$('#datetime_from').datetimepicker({
+          minuteStepping:5,               //set the minute stepping
+          language:'us',
+          pick12HourFormat: true]]
+
+if ((historical_info["from_epoch"] ~= nil) and (historical_info["from_epoch"] ~= 0) )then
+   print (',\ndefaultDate: moment('..tonumber(historical_info["from_epoch"]*1000)..')')
+end
+
+print [[
+        });
+
+
+$('#datetime_to').datetimepicker({
+          minuteStepping:5,               //set the minute stepping
+          language:'us',
+          pick12HourFormat: true]]
+
+if ((historical_info["to_epoch"] ~= nil) and (historical_info["to_epoch"] ~= 0) )then
+   print (',\ndefaultDate: moment('..tonumber(historical_info["to_epoch"]*1000)..')')
+end
+
+print [[
+        });
+
+
+  function check_date () {
+
+          var submit = true;
+
+
+          //alert($('#interface_displayed').val());
+
+          //console.log('-' +$('#datetime_from_val').val() + '-');
+          //console.log($('#datetime_to_val').val());
+
+          var from = $('#datetime_from_val').val();
+          var to = $('#datetime_to_val').val();
+
+          if (from == "" || from == NaN) {
+             $('#datetime_from').addClass("has-error has-feedback");
+             $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please select form date and time.</div>');
+            return false;
+          }
+
+          if (to == ""|| to == NaN) {
+             $('#datetime_to').addClass("has-error has-feedback");
+            return false;
+          }
+
+          var from_epoch = moment(from);
+          var from_unix = from_epoch.unix();
+          var to_epoch = moment(to);
+          var to_unix = to_epoch.unix();
+
+          //console.log(from_epoch);
+          //console.log(to_epoch);
+
+          if ((from_epoch > moment()) || (from_epoch.isValid() == false) ){
+            $('#datetime_from').addClass("has-error has-feedback");
+            $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please choose a valid date and time.</div>');
+            submit = false;
+          } else {
+            $('#datetime_from').addClass("has-success has-feedback");
+          }
+
+
+          if ((to_epoch > moment()) || (to_epoch.isValid() == false) ){
+            $('#datetime_to').addClass("has-error has-feedback");
+             $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid To:</strong> please choose a valid date and time.</div>');
+            submit = false;
+          } else {
+            $('#datetime_to').addClass("has-success has-feedback");
+          }
+
+          $('#form_from').val( from_unix);
+          $('#form_to').val(to_unix );
+          $('#form_interface_id').val($('#interface_displayed').val());
+
+
+          return submit;
+        }
+
+
+$( "#conf_historical_form" ).submit(function( event ) {
+  var frm = $('#start_historical');
+  if (check_date()) {
+    alert('ok');
+    $.ajax({
+      type: frm.attr('method'),
+      url: frm.attr('action'),
+      data: frm.serialize(),
+      success: function (data) {
+      console.log(data);
+        var response = jQuery.parseJSON(data);
+        if (response.result == "0") {
+            $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Configuration saved successfully and active  Historical Interface</div>');
+        } else {
+          $('#alert_placeholder').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">x</button><strong>Error</strong> '+response.description+'</div>');
+        }
+      }
+    });
+   window.setTimeout('window.location="index.lua"; ', 3000);
+  }
+  event.preventDefault();
+});
+
+</script>
+
+ ]]
+
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
@@ -279,10 +484,10 @@ print [[";
 print [[
 <script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
 <script>
-$(document).ready(function() 
-    { 
-        $("#myTable").tablesorter(); 
-    } 
-); 
+$(document).ready(function()
+    {
+        $("#myTable").tablesorter();
+    }
+);
 </script>
 ]]
