@@ -55,7 +55,7 @@ class Ntop {
   Categorization *categorization;
   HTTPBL* httpbl;
   ExportInterface *export_interface;
-  u_int8_t historical_interface_id;
+  int8_t historical_interface_id;
   Mutex *rrd_lock;
   long time_offset;
   time_t start_time; /**< Time when start() was called */
@@ -296,7 +296,7 @@ class Ntop {
 // Historical Interface
   void createHistoricalInterface();
   void startHistoricalInterface(const char * p_endpoint);
-  inline u_int8_t getHistoricalInterface() {return historical_interface_id;};
+  inline int8_t getHistoricalInterface() { return(historical_interface_id); };
 
   inline u_int32_t getUptime() { return((start_time > 0) ? (time(NULL)-start_time) : 0); }
 };

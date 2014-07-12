@@ -649,7 +649,7 @@ static int ntop_zmq_receive(lua_State* vm) {
   item.events = ZMQ_POLLIN;
   do {
     rc = zmq_poll(&item, 1, 1000);
-    if (rc < 0 || !ntop_interface->isRunning()) return(CONST_LUA_PARAM_ERROR);
+    if(rc < 0 || !ntop_interface->isRunning()) return(CONST_LUA_PARAM_ERROR);
   } while (rc == 0);
 
   size = zmq_recv(subscriber, &h, sizeof(h), 0);
@@ -711,31 +711,9 @@ static int ntop_verbose_trace(lua_State* vm) {
 
 /* ****************************************** */
 
-/**
- * @brief Get the flow information of network interface.
- * @details Get the ntop interface global variable of lua and push the minimal information of flows into the lua stack as a new hashtable.
- *
- * @param vm The lua state.
- * @return CONST_LUA_OK.
- */
-static int ntop_get_interface_flows_info(lua_State* vm) {
-  NetworkInterface *ntop_interface;
-
-  lua_getglobal(vm, "ntop_interface");
-  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop_interface = handle_null_interface(vm);
-  }
-
-  if(ntop_interface) ntop_interface->getActiveFlowsList(vm);
-
-  return(CONST_LUA_OK);
-}
-
-/* ****************************************** */
-
 static void getHostVlanInfo(char* lua_ip, char** host_ip,
-		      u_int16_t* vlan_id,
-		      char *buf, u_int buf_len) {
+			    u_int16_t* vlan_id,
+			    char *buf, u_int buf_len) {
   char *where, *vlan;
 
   snprintf(buf, buf_len, "%s", lua_ip);
@@ -745,6 +723,38 @@ static void getHostVlanInfo(char* lua_ip, char** host_ip,
 
   if(vlan)
     (*vlan_id) = (u_int16_t)atoi(vlan);
+}
+
+/* ****************************************** */
+
+/**
+ * @brief Get the flow information of network interface.
+ * @details Get the ntop interface global variable of lua and push the minimal information of flows into the lua stack as a new hashtable.
+ *
+ * @param vm The lua state.
+ * @return CONST_LUA_OK.
+ */
+static int ntop_get_interface_flows_info(lua_State* vm) {
+  NetworkInterface *ntop_interface;
+  char *host_ip = NULL;
+  u_int16_t vlan_id = 0;
+  char buf[64];
+
+  if(lua_type(vm, 1) == LUA_TSTRING) {
+    getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
+
+    /* Optional VLAN id */
+    if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
+  }
+
+  lua_getglobal(vm, "ntop_interface");
+  if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop_interface = handle_null_interface(vm);
+  }
+
+  if(ntop_interface) ntop_interface->getActiveFlowsList(vm, host_ip, vlan_id);
+
+  return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
@@ -763,7 +773,7 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -788,7 +798,7 @@ static int ntop_correalate_host_activity(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -813,7 +823,7 @@ static int ntop_similar_host_activity(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   /* Optional VLAN id */
   if(lua_type(vm, 2) == LUA_TNUMBER) vlan_id = (u_int16_t)lua_tonumber(vm, 2);
@@ -840,7 +850,7 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  getHostVlanInfo((char*)lua_tostring(vm, 1),&host_ip, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
   aggregated = lua_toboolean(vm, 2) ? true : false;
@@ -1225,7 +1235,7 @@ static char **make_argv(const char *cmd, lua_State * L) {
   int i;
   int argc = lua_gettop(L) + 1;
 
-  if (!(argv = (char**)calloc(argc, sizeof (char *))))
+  if(!(argv = (char**)calloc(argc, sizeof (char *))))
     /* raise an error and never return */
     luaL_error(L, "Can't allocate memory for arguments array", cmd);
 
@@ -1235,8 +1245,8 @@ static char **make_argv(const char *cmd, lua_State * L) {
   /* fprintf(stderr, "%s\n", argv[0]); */
   for (i=1; i<argc; i++) {
     /* accepts string or number */
-    if (lua_isstring(L, i) || lua_isnumber(L, i)) {
-      if (!(argv[i] = (char*)lua_tostring (L, i))) {
+    if(lua_isstring(L, i) || lua_isnumber(L, i)) {
+      if(!(argv[i] = (char*)lua_tostring (L, i))) {
         /* raise an error and never return */
         luaL_error(L, "%s - error duplicating string area for arg #%d",
                    cmd, i);
@@ -1302,7 +1312,7 @@ static int ntop_rrd_fetch(lua_State* L) {
   reset_rrd_state();
   rrd_fetch(argc, argv, &start, &end, &step, &ds_cnt, &names, &data);
   free(argv);
-  if (rrd_test_error()) luaL_error(L, rrd_get_error());
+  if(rrd_test_error()) luaL_error(L, rrd_get_error());
 
   lua_pushnumber(L, (lua_Number) start);
   lua_pushnumber(L, (lua_Number) step);
@@ -1604,16 +1614,14 @@ static int ntop_get_resolved_address(lua_State* vm) {
   char buf[64];
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  getHostVlanInfo((char*)lua_tostring(vm, 1),&key, &vlan_id, buf, sizeof(buf));
+  getHostVlanInfo((char*)lua_tostring(vm, 1), &key, &vlan_id, buf, sizeof(buf));
 
-
-  if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0) {
+  if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0)
     tmp = rsp;
-  } else {
+  else
     tmp = key;
-  }
 
-  if (vlan_id != 0)
+  if(vlan_id != 0)
     snprintf(value, sizeof(value), "%s@%u", tmp, vlan_id);
   else
     snprintf(value, sizeof(value), "%s", tmp);
@@ -2097,7 +2105,7 @@ static int get_historical_info(lua_State* vm) {
 
   id = ntop->getHistoricalInterface();
   iface = (HistoricalInterface*) ntop->getInterfaceId(id);
-  if (iface != NULL) {
+  if(iface != NULL) {
     interface_id = iface->getActiveInterfaceId();
     lua_newtable(vm);
     lua_push_int_table_entry(vm, "id", id);
@@ -2398,9 +2406,9 @@ static char to_hex(char code) {
 static char* http_encode(char *str) {
   char *pstr = str, *buf = (char*)malloc(strlen(str) * 3 + 1), *pbuf = buf;
   while (*pstr) {
-    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
+    if(isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
       *pbuf++ = *pstr;
-    else if (*pstr == ' ')
+    else if(*pstr == ' ')
       *pbuf++ = '+';
     else
       *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
@@ -2425,12 +2433,12 @@ static char from_hex(char ch) {
 static char* http_decode(char *str) {
   char *pstr = str, *buf = (char*)malloc(strlen(str) + 1), *pbuf = buf;
   while (*pstr) {
-    if (*pstr == '%') {
-      if (pstr[1] && pstr[2]) {
+    if(*pstr == '%') {
+      if(pstr[1] && pstr[2]) {
         *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
         pstr += 2;
       }
-    } else if (*pstr == '+') {
+    } else if(*pstr == '+') {
       *pbuf++ = ' ';
     } else {
       *pbuf++ = *pstr;

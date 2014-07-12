@@ -1196,20 +1196,41 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
 
 /* **************************************************** */
 
+struct flow_details_info {
+  lua_State* vm;
+  Host *h;
+};
+
 static bool flows_get_list_details(GenericHashEntry *h, void *user_data) {
-  lua_State* vm = (lua_State*)user_data;
+  struct flow_details_info *info = (struct flow_details_info*)user_data;
   Flow *flow = (Flow*)h;
 
-  flow->lua(vm, false /* Minimum details */);
+  if(info->h != NULL) {
+    if((info->h != flow->get_cli_host())
+       && (info->h != flow->get_srv_host()))
+      return(false);
+  }
+  
+  flow->lua(info->vm, false /* Minimum details */);
   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getActiveFlowsList(lua_State* vm) {
-  lua_newtable(vm);
+void NetworkInterface::getActiveFlowsList(lua_State* vm,
+					  char *host_ip,
+					  u_int vlan_id) {
+  struct flow_details_info info;
 
-  flows_hash->walk(flows_get_list_details, (void*)vm);
+  info.vm = vm;
+
+  if(host_ip == NULL)
+    info.h = NULL;
+  else
+    info.h = getHost(host_ip, vlan_id);
+
+  lua_newtable(vm);  
+  flows_hash->walk(flows_get_list_details, (void*)&info);
 }
 
 /* **************************************************** */

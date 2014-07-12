@@ -184,7 +184,7 @@ class NetworkInterface {
   void updateHostStats();
   void lua(lua_State* v);
   void getActiveHostsList(lua_State* v, bool host_details);
-  void getActiveFlowsList(lua_State* v);
+  void getActiveFlowsList(lua_State* v, char *host_ip, u_int vlan_id);
   void getFlowPeersList(lua_State* vm, char *numIP, u_int16_t vlanId);
 
   void purgeIdle(time_t when);

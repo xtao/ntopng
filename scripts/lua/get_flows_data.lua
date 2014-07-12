@@ -32,6 +32,7 @@ key = _GET["key"]
 -- System host parameters
 hosts = _GET["hosts"]
 user = _GET["user"]
+host = _GET["host"]
 pid = tonumber(_GET["pid"])
 name = _GET["name"]
 
@@ -69,7 +70,7 @@ end
 interface.find(ifname)
 
 if (sqlite == nil) then
-   flows_stats = interface.getFlowsInfo()
+   flows_stats = interface.getFlowsInfo(host)
 else
    -- Init some parameters
    to_skip = 0
@@ -99,7 +100,7 @@ num_host_list = 0
 single_host = 0
 
 if (hosts ~= nil) then host_list, num_host_list = getHostCommaSeparatedList(hosts) end
-if (host_info["host"] ~= nil) then
+if (host ~= nil) then
    single_host = 1
    num_host_list = 1
 end
