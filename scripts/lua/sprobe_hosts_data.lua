@@ -13,6 +13,7 @@ interface.find(ifname)
 flows_stats = interface.getFlowsInfo()
 
 links = {}
+processes = {}
 
 for key, value in pairs(flows_stats) do
    flow = flows_stats[key]
@@ -24,11 +25,16 @@ for key, value in pairs(flows_stats) do
    s = s .. "@" .. flow["srv.source_id"]
 
    if(flow["client_process"] ~= nil) then
-      links[c] = s
+      if(links[c] == nil) then links[c] = {} end
+      links[c]["peer"] = s
+      if(links[c]["num"] == nil) then links[c]["num"] = 0 end
+      links[c]["num"] = links[c]["num"] + 1
    end
 
    if(flow["server_process"] ~= nil) then
-      links[s] = c
+      if(links[s] == nil) then links[s] = {} end
+      links[s]["peer"] = c
+      if(links[s]["num"] == nil) then links[s]["num"] = 0 end
    end
 end
 
@@ -37,7 +43,7 @@ n = 0
 for key, value in pairs(links) do
    if(n > 0) then print(",") end
 
-   print('\n{"source": "'..key..'", "source_name": "'..ntop.getResolvedAddress(key)..'", "target": "'..value..'", "target_name": "'.. ntop.getResolvedAddress(value)..'", "type": "suit"}')
+   print('\n{"source": "'..key..'", "source_num": '.. links[key]["num"]..', "source_type": "host", "source_pid": -1, "source_name": "'..ntop.getResolvedAddress(key)..'", "target": "'..value["peer"]..'", "target_num": '.. value["num"]..', "target_type": "host", "target_pid": -1, "target_name": "'.. ntop.getResolvedAddress(value["peer"])..'", "type": "host2host"}')
    n = n + 1
 end
 print("\n]\n")

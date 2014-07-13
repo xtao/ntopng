@@ -30,7 +30,6 @@ if (refresh ~= nil) then
   ntop.setCache(refresh_key,refresh)
 else
   refresh = ntop.getCache(refresh_key)
-
 end
 -- Default frequency (ms)
 if (refresh == '') then refresh = 5000 end

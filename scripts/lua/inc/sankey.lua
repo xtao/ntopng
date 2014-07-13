@@ -61,22 +61,23 @@ function sankey() {
 active_sankey = "host"
 local debug = false
 
-if(_GET["host"] ~= nil) then
-  print('d3.json("/lua/iface_flows_sankey.lua?' ..hostinfo2url(host_info).. '"')
-
-elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil))then
-  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
-  active_sankey = "comparison"
-elseif(_GET["hosts"] ~= nil) then
-  print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] ..'"')
-  active_sankey = "comparison"
-else
-  print('d3.json("/lua/iface_flows_sankey.lua"')
- 
+if(_GET["sprobe"] ~= nil) then
+   print('d3.json("/lua/sprobe_hosts_data.lua"');
+else 
+   if(_GET["host"] ~= nil) then
+      print('d3.json("/lua/iface_flows_sankey.lua?' ..hostinfo2url(host_info).. '"')  
+   elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil)) then
+      print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
+      active_sankey = "comparison"
+   elseif(_GET["hosts"] ~= nil) then
+      print('d3.json("/lua/hosts_comparison_sankey.lua?hosts='.._GET["hosts"] ..'"')
+      active_sankey = "comparison"
+   else
+      print('d3.json("/lua/iface_flows_sankey.lua"')
+   end
 end
 
 if (debug) then io.write("Active sankey: "..active_sankey.."\n") end
-
 
 print [[ 
     , function(hosts) {
@@ -282,7 +283,7 @@ print [[
     sankey.relayout();
     link.attr("d", path);
   }
-      });
+ });
 }
 
 sankey();

@@ -34,10 +34,10 @@ for key, value in pairs(flows_stats) do
       links[c] = s
       links[s] = c
       elseif(flow["client_process"] ~= nil) then
-      hosts[flow["client_process"]["pid"]] = flow["srv.ip"]
+      hosts[flow["client_process"]["pid"]] = { flow["srv.ip"], flow["srv.ip"] }
       procs[flow["client_process"]["pid"]] = flow["client_process"]
       elseif(flow["server_process"] ~= nil) then
-      hosts[flow["server_process"]["pid"]] = flow["cli.ip"]
+      hosts[flow["server_process"]["pid"]] = { flow["cli.ip"], flow["srv.ip"] }
       procs[flow["server_process"]["pid"]] = flow["server_process"]
    end
 end
@@ -46,7 +46,7 @@ print("[")
 n = 0
 for key, value in pairs(links) do
    if(n > 0) then print(",") end
-   print('\n\t{"source": "'..key..'", "source_name": "'.. procs[key]["name"] ..'", "target": "'..value..'", "target_name": "'.. procs[value]["name"] ..'", "type": "licensing"}')
+   print('\n\t{"source": "'..key..'", "source_type": "proc", "source_pid": '.. procs[key]["pid"] ..', "source_name": "'.. procs[key]["name"] ..'", "target": "'..value..'", "target_type": "proc", "target_pid": '.. procs[value]["pid"] ..', "target_name": "'.. procs[value]["name"] ..'", "type": "proc2proc"}')
    n = n + 1
 end
 
@@ -54,9 +54,9 @@ for key, value in pairs(hosts) do
    if(n > 0) then print(",") end
 
    if(procs[key]["name"] ~= nil) then
-      print('\n\t{"source": "'..key..'", "source_name": "'.. procs[key]["name"] ..'", "target": "'..value..'", "target_name": "'.. ntop.getResolvedAddress(value) ..'", "type": "resolved"}')
+      print('\n\t{"source": "'..key..'", "source_type": "proc", "source_pid": '.. procs[key]["pid"] ..', "source_name": "'.. procs[key]["name"].."@".. value[2] ..'", "target": "'..value[1]..'", "target_type": "host", "target_pid": -1, "target_name": "'.. ntop.getResolvedAddress(value[1]) ..'", "type": "proc2host"}')
    else
-      print('\n\t{"source": "'..value..'", "source_name": "'.. ntop.getResolvedAddress(value) ..'", "target": "'..key'", "target_name": "'.. procs[key]["name"] ..'", "type": "resolved"}')
+      print('\n\t{"source": "'..value..'", "source_type": "host", "source_pid": -1, "source_name": "'.. ntop.getResolvedAddress(value) ..'", "target": "'..key'", "target_type": "proc", "target_pid": '.. procs[key]["pid"] ..', "target_name": "'.. procs[key]["name"] ..'", "type": "host2proc"}')
    end
    n = n + 1
 end
