@@ -15,50 +15,52 @@ host_id = _GET["host_id"]
 interface.find(ifname)
 flows_stats = interface.getFlowsInfo(host_ip)
 
-procs = {}
-links = {}
-
-hosts = {}
-
-for key, value in pairs(flows_stats) do
-   flow = flows_stats[key]
-
-   if((flow["client_process"] ~= nil)
-      and (flow["server_process"] ~= nil)) then
-      c = flow["client_process"]["pid"]
-      s = flow["server_process"]["pid"]
-
-      procs[c] = flow["client_process"]
-      procs[s] = flow["server_process"]
-
-      links[c] = s
-      links[s] = c
-      elseif(flow["client_process"] ~= nil) then
-      hosts[flow["client_process"]["pid"]] = { flow["srv.ip"], flow["srv.ip"] }
-      procs[flow["client_process"]["pid"]] = flow["client_process"]
-      elseif(flow["server_process"] ~= nil) then
-      hosts[flow["server_process"]["pid"]] = { flow["cli.ip"], flow["srv.ip"] }
-      procs[flow["server_process"]["pid"]] = flow["server_process"]
-   end
-end
 
 print("[")
 n = 0
-for key, value in pairs(links) do
-   if(n > 0) then print(",") end
-   print('\n\t{"source": "'..key..'", "source_type": "proc", "source_pid": '.. procs[key]["pid"] ..', "source_name": "'.. procs[key]["name"] ..'", "target": "'..value..'", "target_type": "proc", "target_pid": '.. procs[value]["pid"] ..', "target_name": "'.. procs[value]["name"] ..'", "type": "proc2proc"}')
-   n = n + 1
-end
 
-for key, value in pairs(hosts) do
-   if(n > 0) then print(",") end
+for key, value in pairs(flows_stats) do
+   flow = flows_stats[key]
+   
+   if((host_ip ~= nil)
+	 and (flow["cli.ip"] ~= host_ip)
+      and (flow["srv.ip"] ~= host_ip)) then
+      -- wrong
+   elseif((flow["client_process"] ~= nil) or (flow["server_process"] ~= nil)) then
+      if(n > 0) then print(",") end
 
-   if(procs[key]["name"] ~= nil) then
-      print('\n\t{"source": "'..key..'", "source_type": "proc", "source_pid": '.. procs[key]["pid"] ..', "source_name": "'.. procs[key]["name"].."@".. value[2] ..'", "target": "'..value[1]..'", "target_type": "host", "target_pid": -1, "target_name": "'.. ntop.getResolvedAddress(value[1]) ..'", "type": "proc2host"}')
-   else
-      print('\n\t{"source": "'..value..'", "source_type": "host", "source_pid": -1, "source_name": "'.. ntop.getResolvedAddress(value) ..'", "target": "'..key'", "target_type": "proc", "target_pid": '.. procs[key]["pid"] ..', "target_name": "'.. procs[key]["name"] ..'", "type": "host2proc"}')
+      if((flow["client_process"] ~= nil)
+	 and (flow["server_process"] ~= nil)) then
+	 print('\n\t{"source": "'..flow["client_process"]["name"]..'", "source_type": "proc", "source_pid": '.. 
+		  flow["client_process"]["pid"] ..', "source_name": "'.. flow["client_process"]["name"] ..'", "target": "'
+		  ..flow["server_process"]["name"]..'", "target_type": "proc", "target_pid": '.. 
+		  flow["server_process"]["pid"] ..', "target_name": "'.. flow["server_process"]["name"] ..'", "type": "proc2proc"}')
+      else
+	 if(flow["client_process"] ~= nil) then
+	    if(flow["cli.ip"] == host_ip) then
+	       print('\n\t{"source": "'..flow["client_process"]["pid"]..'", "source_type": "proc", "source_pid": '.. flow["client_process"]["pid"] ..', "source_name": "'.. 
+			flow["client_process"]["name"]..'", "target": "'..flow["srv.ip"]..'", "target_type": "host", "target_pid": -1, "target_name": "'
+			.. ntop.getResolvedAddress(flow["srv.ip"]) ..'", "type": "proc2host"}')
+	    else
+	       print('\n\t{"target": "'..flow["client_process"]["pid"]..'", "target_type": "proc", "target_pid": '.. flow["client_process"]["pid"] ..
+			', "target_name": "'.. flow["client_process"]["name"].."@".. flow["srv.ip"] ..'", "source": "'..flow["cli.ip"]..
+			'", "source_type": "host", "source_pid": -1, "source_name": "'.. ntop.getResolvedAddress(flow["cli.ip"]) ..'", "type": "host2proc"}')
+	    end
+	 elseif(flow["server_process"] ~= nil) then
+	    if(flow["srv.ip"] == host_ip) then
+	       print('\n\t{"target": "'..flow["server_process"]["pid"]..'", "target_type": "proc", "target_pid": '.. flow["server_process"]["pid"] 
+			..', "target_name": "'.. flow["server_process"]["name"]..'", "source": "'..flow["cli.ip"]..
+			'", "source_type": "host", "source_pid": -1, "source_name": "'.. ntop.getResolvedAddress(flow["cli.ip"]) ..'", "type": "proc2host"}')
+	    else
+	       print('\n\t{"target": "'..flow["server_process"]["pid"]..'", "target_type": "proc", "target_pid": '.. flow["server_process"]["pid"] ..
+			', "target_name": "'.. flow["server_process"]["name"].."@".. flow["srv.ip"] ..'", "source": "'..flow["cli.ip"]..
+			'", "source_type": "host", "source_pid": -1, "source_name": "'.. ntop.getResolvedAddress(flow["cli.ip"]) ..'", "type": "host2proc"}')
+	    end
+	 end
+      end
+      n = n + 1
    end
-   n = n + 1
 end
+
 print("\n]\n")
 
