@@ -31,13 +31,18 @@ for key, value in pairs(flows_stats) do
    --s = s .. "@" .. flow["srv.source_id"]
 
    if(flow["client_process"] ~= nil) then
-      if(hosts[c] == nil) then hosts[c] = { } end      
-      hosts[c][flow["client_process"]["name"]] = flow["client_process"]
+      if(hosts[c] == nil) then hosts[c] = { } end
+      name = flow["client_process"]["name"]
+      if(hosts[c][name] == nil) then hosts[c][name] = { flow["client_process"], { } } end
+      hosts[c][name][2][s] = 1
    end
 
    if(flow["server_process"] ~= nil) then
       if(hosts[s] == nil) then hosts[s] = { } end      
-      hosts[s][flow["server_process"]["name"]] = flow["server_process"]
+      name = flow["server_process"]["name"]
+      if(hosts[s][name] == nil) then hosts[s][name] = { flow["server_process"], { } } end
+      hosts[s][name][2][c] = 1
+
    end
 end
 
@@ -55,13 +60,24 @@ for key, value in pairs(hosts) do
     print('\n\t{ "name": "'..names[key]..'", "children": [')
 
     m = 0
-    for k, v in pairs(value) do
+    for k, _v in pairs(value) do
        if(m > 0) then print(",") end
        m = m + 1
+       v = _v[1]
        -- Process
-       link = "/lua/sprobe_host_process.lua?host="..key.."&name="..v["name"].."&id=0"
        link = "/lua/get_process_info.lua?pid="..v["pid"].."&name="..k.."&host=".. key .."&page=Flows"
-       print('\n\t\t{ "name": "'..k..' (pid '.. v["pid"]..')", "link": "'.. link ..'" }')
+       print('\n\t\t{ "name": "'..k..' (pid '.. v["pid"]..')", "link": "'.. link ..'", "children": [ ')
+       o = 0
+       for peer,_ in pairs(_v[2]) do
+	  if(peer ~= key) then
+	     if(o > 0) then print(",") end
+	     o = o + 1
+	     link = "/lua/host_details.lua?host="..peer .."&page=flows"
+	     print('\n\t\t\t{ "name": "'..names[peer]..'", "link": "'.. link ..'", "children": [ ] } ')	  
+	  end
+       end
+--       print('\n\t\t\t] }')
+       print('\n\t\t] }')
     end
 
     print('\n\t] }')
