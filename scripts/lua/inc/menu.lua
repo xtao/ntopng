@@ -95,7 +95,7 @@ print [[
 ]]
 
 if(ifstats.iface_sprobe) then
-   print('<li><a href="/lua/system_hosts_interaction.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
+   print('<li><a href="/lua/sprobe_hosts.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
 end
 
 
