@@ -29,9 +29,16 @@ print [[
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
 
 print [[
-   $("#table-hosts").datatable({ 
+   $("#table-hosts").datatable({
       title: "DNS Queries",
-      url: url_update , 
+      url: url_update ,
+      ]]
+
+-- Set the preference table
+preference = tablePreferences(aggregation_table_key,perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+print [[
       showPagination: true,
       ]]
 

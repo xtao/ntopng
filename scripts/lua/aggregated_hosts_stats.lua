@@ -28,9 +28,9 @@ print [[
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
 
 print [[
-   $("#table-hosts").datatable({ 
+   $("#table-hosts").datatable({
       title: "Aggregations",
-      url: url_update , 
+      url: url_update ,
       showPagination: true,
       ]]
 
@@ -38,7 +38,7 @@ print [[
 print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
 
 -- Set the preference table
-preference = tablePreferences(host_table_key,perPage)
+preference = tablePreferences(aggregation_table_key,perPage)
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print [[
@@ -53,7 +53,7 @@ for key,v in pairs(families["families"]) do
 --   for key1,v1 in pairs(families["aggregations"]) do
 --      print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
 --   end
-end 
+end
 
 print("</ul> </div>' ],\n")
 

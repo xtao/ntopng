@@ -34,8 +34,15 @@ print [[
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
 
 print [[
-   $("#table-hosts").datatable({ 
-      url: url_update , 
+   $("#table-hosts").datatable({
+      url: url_update,
+      ]]
+
+-- Set the preference table
+preference = tablePreferences(aggregation_table_key,perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+print [[
       showPagination: true,
       ]]
 
@@ -50,7 +57,7 @@ for key,v in pairs(families["families"]) do
    for key1,v1 in pairs(families["aggregations"]) do
       print('<li><a href="/lua/protocols/epp_aggregations.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
    end
-end 
+end
 
 print("</ul> </div>' ],\n")
 

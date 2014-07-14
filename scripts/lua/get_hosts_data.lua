@@ -46,12 +46,16 @@ end
 if(perPage == nil) then
    perPage = 5
 else
-   perPage = tonumber(perPage)
-   tablePreferences(host_table_key,perPage)
+  perPage = tonumber(perPage)
+  if (aggregated ~= nil) then
+    tablePreferences(aggregation_table_key,perPage)
+  else
+    tablePreferences(host_table_key,perPage)
+  end
 end
 
-if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end 
-if(tracked ~= nil) then tracked = tonumber(tracked) else tracked = 0 end 
+if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end
+if(tracked ~= nil) then tracked = tonumber(tracked) else tracked = 0 end
 
 if((mode == nil) or (mode == "")) then mode = "all" end
 
@@ -90,7 +94,7 @@ for key, value in pairs(hosts_stats) do
       --io.write(hosts_stats[key]["aggregation"].." <> "..aggregation.."\n")
       -- io.write("'"..hosts_stats[key]["aggregation"].."' <> '"..aggregation.."'\n")
       if(tonumber(hosts_stats[key]["aggregation"]) ~= aggregation) then
-	 ok = false      
+	 ok = false
       else
 	 if(aggregation == 2) then
 	    if(hosts_stats[key]["tracked"] == true) then
@@ -109,18 +113,18 @@ for key, value in pairs(hosts_stats) do
    if(not((mode == "all")
        or ((mode == "local") and (value["localhost"] == true))
     or ((mode == "remote") and (value["localhost"] ~= true)))) then
-      ok = false      
+      ok = false
    end
 
    if(ok == true) then
       if(client ~= nil) then
 	 ok = false
-	 
+
 	 for k,v in pairs(hosts_stats[key]["contacts"]["client"]) do
 	    --io.write(k.."\n")
 	    if((ok == false) and (k == client)) then ok = true end
 	 end
-	
+
 	 if(ok == false) then
 	    for k,v in pairs(hosts_stats[key]["contacts"]["server"]) do
 	       -- io.write(k.."\n")
@@ -134,7 +138,7 @@ for key, value in pairs(hosts_stats) do
 
    if((protocol ~= nil) and (ok == true)) then
       info = interface.getHostInfo(key)
-      
+
       if(info["ndpi"][protocol] == nil) then
 	 ok = false
       end
@@ -143,9 +147,9 @@ for key, value in pairs(hosts_stats) do
    if(ok) then
       --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
 
-    if(hosts_stats[key]["name"] == nil) then 
+    if(hosts_stats[key]["name"] == nil) then
       if(hosts_stats[key]["ip"] ~= nil) then
-         hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"]) 
+         hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"])
       else
          hosts_stats[key]["name"] = hosts_stats[key]["mac"]
       end
@@ -217,11 +221,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation ~= nil) or (aggregated ~= nil)) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
 	    if((aggregation == nil) and (aggregated == nil)) then
-         if (value["ip"] ~= nil) then 
-          print(value["ip"]) 
+         if (value["ip"] ~= nil) then
+          print(value["ip"])
         else
-          print(value["mac"]) 
-        end 
+          print(value["mac"])
+        end
 	    else
 	       print(mapOS2Icon(key))
 	    end
@@ -241,7 +245,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-	    print(getOSIcon(value["os"]).. "\", \"column_name\" : \"")	    
+	    print(getOSIcon(value["os"]).. "\", \"column_name\" : \"")
 
 	    if((aggregation == nil) and (aggregated == nil)) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
@@ -249,7 +253,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print(shortHostName(value["name"]))
 
 	    if((value["alternate_name"] ~= nil) and (value["alternate_name"] ~= "")) then
-	       print (" ["..value["alternate_name"].."]") 
+	       print (" ["..value["alternate_name"].."]")
 	    end
 
 	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then
@@ -270,16 +274,16 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if(value["category"] ~= nil) then print("\", \"column_category\" : \"".. getCategory(value["category"])) end
 	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then print("\", \"column_httpbl\" : \"".. value["httpbl"]) end
 
-	    if (value["vlan"] ~= nil) then 
-      
+	    if (value["vlan"] ~= nil) then
+
         if (value["vlan"] ~= 0) then
-          print("\", \"column_vlan\" : "..value["vlan"]) 
+          print("\", \"column_vlan\" : "..value["vlan"])
         else
           print("\", \"column_vlan\" : \"0\"")
-        end 
+        end
 
       else
-	       print("\", \"column_vlan\" : \"\"") 
+	       print("\", \"column_vlan\" : \"\"")
 	    end
 
 	    if(value["asn"] ~= nil) then
@@ -290,7 +294,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-	    if((aggregation ~= nil) or (aggregated ~= nil)) then 
+	    if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
          throughput_type = "bps"
@@ -298,9 +302,9 @@ for _key, _value in pairsByKeys(vals, funct) do
 
 	    print(", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
-      
-      if (  (value["throughput_trend_"..throughput_type] ~= nil) and 
-            (value["throughput_trend_"..throughput_type] > 0) 
+
+      if (  (value["throughput_trend_"..throughput_type] ~= nil) and
+            (value["throughput_trend_"..throughput_type] > 0)
       ) then
 
         if (throughput_type == "pps") then
@@ -309,24 +313,24 @@ for _key, _value in pairsByKeys(vals, funct) do
           print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
         end
 
-        if(value["throughput_trend_"..throughput_type] == 1) then 
+        if(value["throughput_trend_"..throughput_type] == 1) then
           print("<i class='fa fa-arrow-up'></i>")
         elseif(value["throughput_trend_"..throughput_type] == 2) then
           print("<i class='fa fa-arrow-down'></i>")
         elseif(value["throughput_trend_"..throughput_type] == 3) then
           print("<i class='fa fa-minus'></i>")
         end
-        
+
         print("\",")
       else
         print ("\"column_thpt\" : \"0 "..throughput_type.."\",")
       end
-	    
+
       if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       --print("\"column_traffic\" : \"" .. formatValue(value["bytes.sent"]+value["bytes.rcvd"]).." ")
 	       print("\"column_queries\" : \"" .. formatValue(value["queries.rcvd"]).." ")
 
-	       if(value["throughput_trend_"..throughput_type] == 1) then 
+	       if(value["throughput_trend_"..throughput_type] == 1) then
           print("<i class='fa fa-arrow-up'></i>")
         elseif(value["throughput_trend_"..throughput_type] == 2) then
           print("<i class='fa fa-arrow-down'></i>")
