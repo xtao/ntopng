@@ -32,25 +32,25 @@ print [[
 
 	    // Compute the distinct nodes from the links.
 	    links.forEach(function(link) {
-				if(isNaN(link.source_pid)) {
-				   /* IP Address -> PID */
-				   _link = "/lua/sprobe_host_process.lua?host="+link.source+"&name="+link.source_name+"&id=0";
-				} else {
-				   /* PID -> IP Address */
-				   _link = "/lua/get_process_info.lua?pid="+link.source_pid+"&name="+link.source_name+"&host=]] print(host_ip) print [[&page=Flows";
-				}
-				link.source = nodes[link.source] || (nodes[link.source] = {name: link.source_name, num:link.source, link: _link, type: link.source_type, pid: link.source_pid });
+		if(link.source_pid == -1) {
+		   /* IP Address -> PID */
+		   _link = "/lua/sprobe_host_process.lua?host="+link.source+"&name="+link.source_name+"&id=0";
+		} else {
+		   /* PID -> IP Address */
+		   _link = "/lua/get_process_info.lua?pid="+link.source_pid+"&name="+link.source_name+"&host=]] print(host_ip) print [[&page=Flows";
+		}
+		link.source = nodes[link.source] || (nodes[link.source] = {name: link.source_name, num:link.source, link: _link, type: link.source_type, pid: link.source_pid });
 
-				if(isNaN(link.target_pid)) {
-				   /* IP Address -> PID */
-				   _link = "/lua/sprobe_host_process.lua?host="+link.target+"&name="+link.target_name+"&id=0";
-				} else {
-				   /* PID -> IP Address */
-				   _link = "/lua/get_process_info.lua?pid="+link.target_pid+"&name="+link.target_name+"&host=]] print(host_ip) print [[&page=Flows";
-				}
+		if(link.target_pid == -1) {
+		   /* IP Address -> PID */
+		   _link = "/lua/sprobe_host_process.lua?host="+link.target+"&name="+link.target_name+"&id=0";
+		} else {
+		   /* PID -> IP Address */
+		   _link = "/lua/get_process_info.lua?pid="+link.target_pid+"&name="+link.target_name+"&host=]] print(host_ip) print [[&page=Flows";
+		}
 
-				link.target = nodes[link.target] || (nodes[link.target] = {name: link.target_name, num: link.target, link: _link, type: link.target_type, pid: link.target_pid });
-			     });
+		link.target = nodes[link.target] || (nodes[link.target] = {name: link.target_name, num: link.target, link: _link, type: link.target_type, pid: link.target_pid });
+	     });
 
     ]]
 
