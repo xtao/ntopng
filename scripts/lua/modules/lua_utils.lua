@@ -2,7 +2,6 @@
 -- (C) 2014 - ntop.org
 --
 require "lua_trace"
-require "preferences_utils"
 
 
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
@@ -1361,5 +1360,13 @@ function processColor(proc)
    end
 end
 
-
-
+function tablePreferences(key, value)
+  table_key = getRedisPrefix("ntopng.prefs.table")
+  if (value == nil) then
+    -- Get preferences
+    return ntop.getHashCache(table_key, key)
+  else
+    -- Set preferences
+    ntop.setHashCache(table_key, key, value)
+  end
+end

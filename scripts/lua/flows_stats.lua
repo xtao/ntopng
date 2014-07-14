@@ -87,7 +87,7 @@ end
 
 print ('";')
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc") 
+ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
 -- Set the flow table option
 if(prefs.is_categorization_enabled) then print ('flow_rows_option["categorization"] = true;\n') end
 if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
@@ -97,7 +97,7 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 			url: url_update , ]]
 print ('rowCallback: function ( row ) { return flow_table_setID(row); },\n')
 
-preference = tablePreferences(flow_table_key,perPage)
+preference = tablePreferences("rows_number",perPage)
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print(" title: \"Active Flows")
@@ -139,7 +139,7 @@ print [[
            title: "VLAN",
          field: "column_vlan",
          sortable: true,
-                 css: { 
+                 css: {
               textAlign: 'center'
            }
          },
@@ -158,7 +158,7 @@ print [[
 			     title: "Category",
 				 field: "column_category",
 				 sortable: true,
-	 	             css: { 
+	 	             css: {
 			        textAlign: 'center'
 			       }
 			       },

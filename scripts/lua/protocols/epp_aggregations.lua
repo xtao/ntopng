@@ -39,7 +39,7 @@ print [[
       ]]
 
 -- Set the preference table
-preference = tablePreferences(aggregation_table_key,perPage)
+preference = tablePreferences("rows_number",perPage)
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print [[

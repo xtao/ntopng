@@ -55,7 +55,7 @@ if(perPage == nil) then
    perPage = 10
 else
    perPage = tonumber(perPage)
-   tablePreferences(flow_table_key,perPage)
+   tablePreferences("rows_number",perPage)
 end
 
 if(port ~= nil) then port = tonumber(port) end

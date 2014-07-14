@@ -47,11 +47,7 @@ if(perPage == nil) then
    perPage = 5
 else
   perPage = tonumber(perPage)
-  if (aggregated ~= nil) then
-    tablePreferences(aggregation_table_key,perPage)
-  else
-    tablePreferences(host_table_key,perPage)
-  end
+  tablePreferences("rows_number",perPage)
 end
 
 if((aggregation ~= nil) or (aggregated ~= nil)) then aggregation = tonumber(aggregation) end

@@ -38,7 +38,7 @@ print [[
 print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row); },')
 
 -- Set the preference table
-preference = tablePreferences(aggregation_table_key,perPage)
+preference = tablePreferences("rows_number",perPage)
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print [[
