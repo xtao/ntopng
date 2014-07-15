@@ -18,6 +18,13 @@ print [[
   <style type="text/css">
 
 
+.circle {
+    border-radius: 50%/50%; 
+    width: 9px;
+    height: 9px;
+margin-right: 5px;
+}
+
 .node circle {
   cursor: pointer;
   stroke-width: 1.5px;
@@ -190,7 +197,13 @@ function toggle(d) {
 }
 
     </script>
+
+<div class="circle" style="background: lightsteelblue;"><div style="font-size: 11px; margin-left: 13px;">&nbsp;Host</div></div>
+<p>
+<div class="circle" style="background: #ff0000;"><div style="font-size: 11px; margin-left: 13px;">Process</div></div>
+
 ]]
+
 
 if(mode ~= "embed") then
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
