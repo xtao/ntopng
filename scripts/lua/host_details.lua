@@ -86,12 +86,12 @@ else
    end
 
    if(_GET["custom_name"] ~=nil) then
-      ntop.setHashCache("ntop.alternate_names", host_info["host"], _GET["custom_name"])
+      ntop.setHashCache("ntop.alternate_names", hostinfo2hostkey(host_info), _GET["custom_name"])
    end
 
-   host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", host_info["host"])
+   host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", hostinfo2hostkey(host_info))
 
-   rrdname = dirs.workingdir .. "/" .. getInterfaceId(ifname) .. "/rrd/" .. host_info["host"] .. "/bytes.rrd"
+   rrdname = dirs.workingdir .. "/" .. getInterfaceId(ifname) .. "/rrd/" .. hostinfo2hostkey(host_info) .. "/bytes.rrd"
    -- print(rrdname)
 print [[
 <div class="bs-docs-example">
@@ -320,13 +320,13 @@ trigger_alerts = _GET["trigger_alerts"]
 
 if(trigger_alerts ~= nil) then
    if(trigger_alerts == "true") then
-      ntop.delHashCache("ntopng.prefs.alerts", host_info["host"])
+      ntop.delHashCache("ntopng.prefs.alerts", hostinfo2hostkey(host_info))
    else
-      ntop.setHashCache("ntopng.prefs.alerts", host_info["host"], trigger_alerts)
+      ntop.setHashCache("ntopng.prefs.alerts", hostinfo2hostkey(host_info), trigger_alerts)
    end
 end
 
-suppressAlerts = ntop.getHashCache("ntopng.prefs.alerts", host_info["host"])
+suppressAlerts = ntop.getHashCache("ntopng.prefs.alerts", hostinfo2hostkey(host_info))
 if((suppressAlerts == "") or (suppressAlerts == nil) or (suppressAlerts == "true")) then
    checked = 'checked="checked"'
    value = "false" -- Opposite
@@ -880,7 +880,7 @@ end
 	 print("</table>\n")
       end
 
-path = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"..host_info["host"].."/")
+path = fixPath(dirs.workingdir .. "/" .. purifyInterfaceName(ifname) .. "/rrd/"..hostinfo2hostkey(host_info).."/")
 
 num_found = 0
 names = {}
