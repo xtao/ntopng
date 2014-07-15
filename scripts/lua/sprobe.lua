@@ -20,8 +20,6 @@ print [[
 
 .node circle {
   cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
   stroke-width: 1.5px;
 }
 
@@ -107,7 +105,9 @@ function update(source) {
 
   nodeEnter.append("svg:circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) {
+			   return (d.type == "host") ? "lightsteelblue" : "#ff0000"; 
+  });
 
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -123,7 +123,9 @@ function update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", 4.5)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { 
+			   return (d.type == "host") ? "lightsteelblue" : "#ff0000"; 
+  });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);

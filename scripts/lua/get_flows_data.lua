@@ -91,7 +91,6 @@ end
 print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 total = 0
 
-
 --host = "a"
 
 -- Prepare host
@@ -116,8 +115,6 @@ vals = {}
 num = 0
 
 for key, value in pairs(flows_stats) do
-   total = total + 1
-
    -- print(key.."\n")
    if (debug) then io.write("==================\n")end
 
@@ -193,7 +190,6 @@ for key, value in pairs(flows_stats) do
    end
    if (debug) then io.write("pid -\t"..process.."\n")end
 
-
    ---------------- NAME ----------------
    if(name ~= nil) then
       if (debug) then io.write("Name:"..name.."\n")end
@@ -218,7 +214,6 @@ for key, value in pairs(flows_stats) do
       end
    end
    if (debug) then io.write("name -\t"..process.."\n")end
-
 
    ---------------- APP ----------------
    if(application ~= nil) then
@@ -248,7 +243,7 @@ for key, value in pairs(flows_stats) do
 	 if (debug) then io.write("Srv:"..flows_stats[key]["srv.ip"].."\n")end
 	 if (debug) then io.write("vlan:"..flows_stats[key]["vlan"].."  ".. host_info["vlan"].."\n")end
 	 if(((flows_stats[key]["cli.ip"] ~= host_info["host"]) and (flows_stats[key]["srv.ip"] ~= host_info["host"]))
-	    or (flows_stats[key]["vlan"] ~= host_info["vlan"])) then
+	 or (flows_stats[key]["vlan"] ~= host_info["vlan"])) then
 
 	    process = 0
 	 end
@@ -257,13 +252,13 @@ for key, value in pairs(flows_stats) do
 	 srv_num = findStringArray(flows_stats[key]["srv.ip"],host_list)
 
 	 if ((cli_num ~= nil) and
-	     (srv_num ~= nil))then
+	  (srv_num ~= nil))then
 	    process  = 1
 	 end -- findStringArray
 
 	 if ( ((cli_num ~= nil) and (cli_num < 1)) or
-		 ((srv_num ~= nil) and (srv_num < 1))
-	 ) then
+	   ((srv_num ~= nil) and (srv_num < 1))
+     ) then
 	    if (flows_stats[key]["cli.ip"] == flows_stats[key]["srv.ip"]) then process = 0 end
 	 end
       end
@@ -285,39 +280,39 @@ for key, value in pairs(flows_stats) do
       postfix = string.format("0.%04u", num)
       if(sortColumn == "column_client") then
 	 vkey = flows_stats[key]["cli.ip"]..postfix
-      elseif(sortColumn == "column_server") then
+	 elseif(sortColumn == "column_server") then
 	 vkey = flows_stats[key]["srv.ip"]..postfix
-      elseif(sortColumn == "column_bytes") then
+	 elseif(sortColumn == "column_bytes") then
 	 vkey = flows_stats[key]["bytes"]+postfix
-      elseif(sortColumn == "column_vlan") then
+	 elseif(sortColumn == "column_vlan") then
 	 vkey = flows_stats[key]["vlan"]+postfix
-      elseif(sortColumn == "column_bytes_last") then
+	 elseif(sortColumn == "column_bytes_last") then
 	 vkey = flows_stats[key]["bytes.last"]+postfix
-      elseif(sortColumn == "column_ndpi") then
+	 elseif(sortColumn == "column_ndpi") then
 	 vkey = flows_stats[key]["proto.ndpi"]..postfix
-      elseif(sortColumn == "column_server_process") then
+	 elseif(sortColumn == "column_server_process") then
 	 if(flows_stats[key]["server_process"] ~= nil) then
 	    vkey = flows_stats[key]["server_process"]["name"]..postfix
 	 else
 	    vkey = postfix
 	 end
-      elseif(sortColumn == "column_client_process") then
+	 elseif(sortColumn == "column_client_process") then
 	 if(flows_stats[key]["client_process"] ~= nil) then
 	    vkey = flows_stats[key]["client_process"]["name"]..postfix
 	 else
 	    vkey = postfix
 	 end
-      elseif(sortColumn == "column_category") then
+	 elseif(sortColumn == "column_category") then
 	 c = flows_stats[key]["category"]
 	 if(c == nil) then c = "" end
    	 vkey = c..postfix
-      elseif(sortColumn == "column_duration") then
+	 elseif(sortColumn == "column_duration") then
 	 vkey = flows_stats[key]["duration"]+postfix
-      elseif(sortColumn == "column_thpt") then
+	 elseif(sortColumn == "column_thpt") then
 	 vkey = flows_stats[key]["throughput_"..throughput_type]+postfix
-      elseif(sortColumn == "column_proto_l4") then
+	 elseif(sortColumn == "column_proto_l4") then
 	 vkey = flows_stats[key]["proto.l4"]..postfix
-      elseif(sortColumn == "column_ID") then
+	 elseif(sortColumn == "column_ID") then
 	 vkey = flows_stats[key]["ID"]..postfix
       else
 	 -- By default sort by bytes
@@ -338,11 +333,15 @@ else
    funct = rev
 end
 
+--total = total + 1
+
+for k,v in pairs(vals) do
+   total = total + 1
+end
 
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]
    value = flows_stats[key]
-
 
    --   print(key.."="..flows_stats[key]["duration"].."\n");
    --   print(key.."=".."\n");
@@ -435,7 +434,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
 	 end
 
-
 	 print(dst_port)
 
 	 if((value["vlan"] ~= nil)) then
@@ -462,24 +460,24 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))
 	 print ("\", \"column_bytes\" : \"" .. bytesToSize(value["bytes"]) .. "")
 
-   if (debug) then io.write ("throughput_type: "..throughput_type.."\n") end
+	 if (debug) then io.write ("throughput_type: "..throughput_type.."\n") end
 	 if ( (value["throughput_trend_"..throughput_type] ~= nil) and
-        (value["throughput_trend_"..throughput_type] > 0)
-    ) then
+	   (value["throughput_trend_"..throughput_type] > 0)
+     ) then
 
-    if (throughput_type == "pps") then
-      print ("\", \"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")
-    else
-      print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
-    end
+	    if (throughput_type == "pps") then
+	       print ("\", \"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")
+	    else
+	       print ("\", \"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
+	    end
 
-    if(value["throughput_trend_"..throughput_type] == 1) then
-       print("<i class='fa fa-arrow-up'></i>")
-       elseif(value["throughput_trend_"..throughput_type] == 2) then
-       print("<i class='fa fa-arrow-down'></i>")
-       elseif(value["throughput_trend_"..throughput_type] == 3) then
-       print("<i class='fa fa-minus'></i>")
-    end
+	    if(value["throughput_trend_"..throughput_type] == 1) then
+	       print("<i class='fa fa-arrow-up'></i>")
+	       elseif(value["throughput_trend_"..throughput_type] == 2) then
+	       print("<i class='fa fa-arrow-down'></i>")
+	       elseif(value["throughput_trend_"..throughput_type] == 3) then
+	       print("<i class='fa fa-minus'></i>")
+	    end
 
 	    print("\"")
 	 else
@@ -507,7 +505,7 @@ end
 
 print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
 if (sqlite == nil) then
-  print ("\"totalRows\" : " .. total .. " \n}")
+   print ("\"totalRows\" : " .. total .. " \n}")
 else
-  print ("\"totalRows\" : " .. (Sqlite:getRowsNumber()) .. " \n}")
+   print ("\"totalRows\" : " .. (Sqlite:getRowsNumber()) .. " \n}")
 end
