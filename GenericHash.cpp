@@ -53,14 +53,16 @@ void GenericHash::cleanup() {
   for(u_int i = 0; i < num_hashes; i++)
     if(table[i] != NULL) {
       GenericHashEntry *head = table[i];
-      
+
       while(head) {
 	GenericHashEntry *next = head->next();
 
 	delete(head);
 	head = next;
       }
+      table[i] = NULL;
     }
+    current_size = 0;
 }
 
 /* ************************************ */
@@ -71,8 +73,8 @@ bool GenericHash::add(GenericHashEntry *h) {
 
     if(false) {
       char buf[256];
-      
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(): adding %s/%u", 
+
+      ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(): adding %s/%u",
 				   __FUNCTION__, h->get_string_key(buf, sizeof(buf)), h->key());
     }
 
@@ -96,7 +98,7 @@ bool GenericHash::remove(GenericHashEntry *h) {
   else {
     GenericHashEntry *head, *prev = NULL;
     bool ret;
-    
+
     locks[hash]->lock(__FILE__, __LINE__);
 
     head = table[hash];
@@ -108,7 +110,7 @@ bool GenericHash::remove(GenericHashEntry *h) {
     if(head) {
       if(false) {
 	char buf[256];
-	
+
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s(): removing %s",
 				     __FUNCTION__, h->get_string_key(buf, sizeof(buf)));
       }
@@ -123,7 +125,7 @@ bool GenericHash::remove(GenericHashEntry *h) {
       ret = true;
     } else
       ret = false;
-    
+
     locks[hash]->unlock(__FILE__, __LINE__);
     return(ret);
   }
@@ -139,7 +141,7 @@ void GenericHash::walk(bool (*walker)(GenericHashEntry *h, void *user_data), voi
   for(u_int hash_id = 0; hash_id < num_hashes; hash_id++) {
     if(table[hash_id] != NULL) {
       GenericHashEntry *head;
-      
+
       //ntop->getTrace()->traceEvent(TRACE_NORMAL, "[walk] Locking %d [%p]", hash_id, locks[hash_id]);
       locks[hash_id]->lock(__FILE__, __LINE__);
       head = table[hash_id];
@@ -176,7 +178,7 @@ u_int GenericHash::purgeIdle() {
 
   if(ntop->getGlobals()->isShutdown()) return(0);
 
-  for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {  
+  for(u_int j = 0; j < num_hashes / PURGE_FRACTION; j++) {
     if(++last_purged_hash == num_hashes) last_purged_hash = 0;
     i = last_purged_hash;
 
@@ -192,7 +194,7 @@ u_int GenericHash::purgeIdle() {
 
 	if(head->is_ready_to_be_purged()) {
 	  if(prev == NULL) {
-	    table[i] = next;	    
+	    table[i] = next;
 	  } else {
 	    prev->set_next(next);
 	  }
@@ -228,11 +230,11 @@ GenericHashEntry* GenericHash::findByKey(u_int32_t key) {
   while(head != NULL) {
     if((!head->idle()) && (head->key() == key))
       break;
-    else      
+    else
       head = head->next();
   }
-  
+
   locks[hash]->unlock(__FILE__, __LINE__);
-  
+
   return(head);
 }

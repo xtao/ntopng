@@ -69,7 +69,7 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
    if(not(is_loopback)) then
       if((page == "TopASNs")) then active=' class="active"' else active = "" end
       print('<li'..active..'><a href="/?page=TopASNs">ASNs</a></li>\n')
-      if not (ntop.isHistoricalInterface(iface_id)) then
+      if not (interface.isHistoricalInterface(iface_id)) then
         if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
         print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
       end
@@ -176,7 +176,7 @@ print [[
   -- ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/index_bottom.inc")
 else
 
-  if (ntop.isHistoricalInterface(iface_id)) then
+  if (interface.isHistoricalInterface(iface_id)) then
 
     print [[
     <br>

@@ -167,6 +167,7 @@ bool NetworkInterface::checkIdle() {
 /* **************************************************** */
 
 void NetworkInterface::deleteDataStructures() {
+
   if(flows_hash)   { delete flows_hash; flows_hash = NULL;     }
   if(hosts_hash)   { delete hosts_hash; hosts_hash = NULL;     }
   if(strings_hash) { delete strings_hash; strings_hash = NULL; }
@@ -177,10 +178,11 @@ void NetworkInterface::deleteDataStructures() {
   }
 
   if(ifname) {
-    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
+    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "Interface %s shutdown", ifname);
     free(ifname);
     ifname = NULL;
   }
+
 }
 
 /* **************************************************** */
@@ -790,11 +792,18 @@ void NetworkInterface::shutdown() {
 /* **************************************************** */
 
 void NetworkInterface::cleanup() {
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Cleanup interface %s", get_name());
+  last_pkt_rcvd = 0;
+  next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
+  cpu_affinity = -1, has_vlan_packets = false;
+  running = false, sprobe_interface = false;
+
+  getStats()->cleanup();
 
   flows_hash->cleanup();
   hosts_hash->cleanup();
   strings_hash->cleanup();
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Cleanup interface %s", get_name());
 }
 
 /* **************************************************** */
@@ -1210,7 +1219,7 @@ static bool flows_get_list_details(GenericHashEntry *h, void *user_data) {
        && (info->h != flow->get_srv_host()))
       return(false);
   }
-  
+
   flow->lua(info->vm, false /* Minimum details */);
   return(false); /* false = keep on walking */
 }
@@ -1229,7 +1238,7 @@ void NetworkInterface::getActiveFlowsList(lua_State* vm,
   else
     info.h = getHost(host_ip, vlan_id);
 
-  lua_newtable(vm);  
+  lua_newtable(vm);
   flows_hash->walk(flows_get_list_details, (void*)&info);
 }
 

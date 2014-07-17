@@ -24,50 +24,151 @@
 
 #include "ntop_includes.h"
 
- typedef struct {
-  char *endpoint;
-  sqlite3 *db;
-} sqlite_iface;
-
 class HistoricalInterface : public ParserInterface {
- private:
-  bool have_endpoint;
-  u_int8_t interface_id;
-  u_int32_t from_epoch;
-  u_int32_t to_epoch;
-  u_int8_t num_historicals, num_query_error, num_open_error, num_missing_file ;
-  sqlite_iface historical_ifaces[CONST_MAX_NUM_SQLITE_INTERFACE];
 
+ private:
+  u_int8_t num_historicals,     /*< Number of historical files loaded*/
+              num_query_error,     /*< Number of query error*/
+              num_open_error,      /*< Number of error while opening a files*/
+              num_missing_file ;   /*< Number of missing files*/
+
+  u_int8_t interface_id;         /*< Interface index of the current data*/
+  time_t from_epoch;            /*< From epoch of the current data*/
+  time_t to_epoch;                /*< To Epoch of the current data*/
+
+  /**
+   * @brief Callback for the sqlite_exe
+   * @details For each flows read on the DB call @ParserInterface::parse_flows,
+   *                in order to inject the flow into the Interface.
+   *
+   * @param data
+   * @param argc Number of columns in the result.
+   * @param argv An array of pointers to strings, one for each column.
+   * @param azColName An array of pointers to strings where each entry represents the name of corresponding result column.
+   * @return non-zero in case of error, zero otherwise.
+   */
   static int sqlite_callback(void *data, int argc, char **argv, char **azColName);
-  void parse_endpoint(const  char * p_endpoint);
+  /**
+   * @brief Rest all statistic information of historical interface instance.
+   * @details Reset information of current data and the counter of error and loaded files.
+   */
+  void resetStats();
 
  public:
+  /**
+   * @brief Constructor
+   * @details Create a new instance and set @ref purge_idle_flows_hosts to false in order to show all the flows.
+   *
+   * @param _id Interface index.
+   * @param _endpoint Interface name.
+   */
   HistoricalInterface(u_int8_t _id, const char *_endpoint);
-  ~HistoricalInterface();
 
+  /**
+   * @brief Get interface type
+   * @return sqlite
+   */
   inline const char* get_type()         { return("sqlite");      };
+  /**
+   * @brief Check if ndpi is enable for this interface
+   * @return True if ndpi is enable, false otherwise.
+   */
   inline bool is_ndpi_enabled()         { return(false);      };
-  // char* getEndpoint(u_int8_t id)        { return(endpoint); };
+  /**
+   * @brief Set current interface index
+   *
+   * @param p_id Interface index
+   */
+  inline void setDataIntrefaceId(u_int8_t p_id) { interface_id = p_id; };
+  /**
+   * @brief Set current from epoch
+   * @details Epoch of first loaded files.
+   *
+   * @param p_epoch Epoch time
+   */
+  inline void setFromEpoch(time_t p_epoch) { from_epoch = p_epoch; };
+  /**
+   * @brief Set current to epoch
+   * @details Epoch of last loaded files.
+   *
+   * @param p_epoch Epoch time
+   */
+  inline void setToEpoch(time_t p_epoch) { to_epoch = p_epoch; };
 
-  char* getEndpoint(u_int8_t id)        { return((id < num_historicals) ?
-             historical_ifaces[id].endpoint : (char*)""); };
-  void setEndpoint(const char * p_endpoint);
-
+  /**
+   * @brief Get current interface index.
+   * @return Data interface index if set, otherwise return zero.
+   */
+  inline u_int8_t getDataIntrefaceId() { return interface_id;};
+  /**
+   * @brief Get from epoch
+   * @details Epoch of first loaded files.]
+   * @return Epoch time if set, zero otherwise.
+   */
   inline time_t getFromEpoch() { return from_epoch;};
+  /**
+   * @brief Get to epoch
+   * @details Epoch of last loaded files.
+   * @return Epoch time if set, zero otherwise.
+   */
   inline time_t getToEpoch() { return to_epoch;};
 
+  /**
+   * @brief Get number of open error
+   * @return Number of errors encountered while opening files.
+   */
   inline u_int8_t getOpenError() { return num_open_error;};
+  /**
+   * @brief Get number of query error
+   * @return Number of errors encountered during the execution of the query.
+   */
   inline u_int8_t getQueryError() { return num_query_error;};
+  /**
+   * @brief Get number of missing error
+   * @return Number of missing files.
+   */
   inline u_int8_t getMissingFiles() { return num_missing_file;};
-  inline u_int8_t getActiveInterfaceId() { return interface_id;};
 
+  /**
+   * @brief Load historical data
+   * @details Check if the file exists and then load flows from it.
+   *
+   * @param p_file_name Path to the historical data file
+   * @return CONST_HISTORICAL_OK in case of success, CONST_HISTORICAL_FILE_ERROR or CONST_HISTORICAL_OPEN_ERROR in case of error.
+   */
+  int loadData(char * p_file_name);
+  /**
+   * @brief Load historical data
+   * @details Loop on the interval, with step of 5 minute. For each step make a correct file path and the load flows form it.
+   *                Until an error occurs.
+   *
+   * @param p_from_epoch Epoch time
+   * @param p_to_epoch Epoch time
+   * @param p_interface_id Index of the interface from which you want to load the data
+    * @return CONST_HISTORICAL_OK in case of success, CONST_HISTORICAL_FILE_ERROR or CONST_HISTORICAL_OPEN_ERROR in case of error.
+   */
+  int loadData(time_t p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id);
+
+  /**
+   * @brief Get Number of dropped packets
+   * @return Zero
+   */
   inline u_int getNumDroppedPackets()   { return 0; };
-
+  /**
+   * @brief For this interface is impossible set packet filter.
+   * @return False
+   */
   bool set_packet_filter(char *filter);
 
-  void collect_flows();
-  void startPacketPolling();
+  /**
+   * @brief Shutdown the interface
+   * @details Reset the stats and cleanup the interface.
+   */
   void shutdown();
+  /**
+   * @brief Cleanup
+   * @details Remove all information about flows, hosts and reset the interface stats.
+   */
   void cleanup();
 };
 

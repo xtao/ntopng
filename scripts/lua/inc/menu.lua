@@ -8,6 +8,7 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
 ifstats = interface.getStats()
+prefs = ntop.getPrefs()
 names = interface.getIfNames()
 
 num_ifaces = 0
@@ -15,7 +16,6 @@ for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
 
 print [[
       <div class="masthead">
-
 
 
         <ul class="nav nav-pills pull-right">
@@ -75,7 +75,7 @@ print [[
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
       ]]
-  if not (ntop.isHistoricalInterface(ifstats.id)) then
+  if not (interface.isHistoricalInterface(ifstats.id)) then
 	 print('<li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
 
@@ -169,7 +169,7 @@ end
 
 
 -- Interfaces
-if(num_ifaces > 1) then
+if(num_ifaces > 0) then
 if active_page == "if_stats" then
   print [[ <li class="dropdown active"> ]]
 else
@@ -223,7 +223,7 @@ for k,v in pairs(names) do
       print (v)
     end
 
-    print(" </a></li>")
+    print(' </a></li>')
     end
 
 print [[
@@ -231,6 +231,10 @@ print [[
 
 end
 
+-- Historical interface disable
+if not (prefs.is_dump_flows_enabled) then
+  print('<li> <a data-toggle="tooltip" data-placement="bottom" title="In order to enable this interface, you have to start ntopng with -F option." >Historical</a></li>')
+end
 
 print [[
 </ul>

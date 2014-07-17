@@ -126,9 +126,6 @@
 #define MAX_NUM_HOST_CONTACTS     16
 #define CONST_DEFAULT_NTOP_PORT   3000
 
-#define CONST_MAX_NUM_SQLITE_INTERFACE 32
-#define MAX_SQLITE_ERROR        10
-
 #define CONST_MAX_NUM_NETWORKS        64
 #define CONST_NUM_OPEN_DB_CACHE        8
 #define CONST_NUM_CONTACT_DBS          8
@@ -162,6 +159,10 @@
 #define CONST_ALERT_GRACE_PERIOD      60 /* No more than 1 alert/min */
 #define CONST_CONTACTED_BY            "contacted_by"
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
+
+#define CONST_HISTORICAL_OK               1
+#define CONST_HISTORICAL_FILE_ERROR               0
+#define CONST_HISTORICAL_OPEN_ERROR               -1
 
 #define CONST_AGGREGATIONS            "aggregations"
 #define CONST_HOST_CONTACTS           "host_contacts"

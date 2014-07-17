@@ -172,24 +172,6 @@ void Ntop::createHistoricalInterface() {
   ntop->registerInterface(iface);
 }
 
-
-/* ******************************************* */
-
-void Ntop::startHistoricalInterface(const char * p_endpoint) {
-  if (historical_interface_id != -1) {
-    HistoricalInterface * iface = (HistoricalInterface *) ntop->getInterfaceId(historical_interface_id);
-    
-    if(iface) {
-      iface->cleanup();
-      iface->setEndpoint(p_endpoint);
-      iface->startPacketPolling();
-    } else
-       ntop->getTrace()->traceEvent(TRACE_ERROR, "Impossible start Historical Interface");
-    } else
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "Missing Historical Interface");
-  }
-
-
 /* ******************************************* */
 
 void Ntop::createExportInterface() {
@@ -719,4 +701,3 @@ void Ntop::shutdown() {
 				 iface[i]->get_name(), iface[i]->isRunning());
   }
 }
-

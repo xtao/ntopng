@@ -42,6 +42,11 @@ class EthStats {
   inline u_int64_t getNumPackets() { return(raw.getPkts());  };
   inline u_int64_t getNumBytes()   { return(raw.getBytes()); };
 
+  /**
+   * @brief Cleanup the proto stats.
+   * @details Reset all proto stats information.
+   */
+  void cleanup();
   void print();
 };
 

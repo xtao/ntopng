@@ -19,7 +19,7 @@ print [[ - <A HREF="http://www.ntop.org">ntop.org</A> <br><font color=lightgray>
 
 info = ntop.getInfo()
 iface_id = interface.name2id(ifname)
-is_historical = ntop.isHistoricalInterface(iface_id)
+is_historical = interface.isHistoricalInterface(iface_id)
 print ("v."..info["version"].." </br>for user ")
 print('<a href="/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="/lua/if_stats.lua?if_name='.. ifname..'">' .. ifname..'</a>')
 
@@ -37,16 +37,16 @@ print [[</font></div> <!-- End column 1 -->
       <div class="col-xs-6 col-sm-4">
     ]]
 if not is_historical then
-key = 'ntopng.prefs.'..ifname..'.speed'
-maxSpeed = ntop.getCache(key)
--- io.write(maxSpeed)
-if((maxSpeed == "") or (maxSpeed == nil)) then
-   maxSpeed = 1000000000 -- 1 Gbit
-else
-   maxSpeed = tonumber(maxSpeed)*1000000
-end
+  key = 'ntopng.prefs.'..ifname..'.speed'
+  maxSpeed = ntop.getCache(key)
+  -- io.write(maxSpeed)
+  if((maxSpeed == "") or (maxSpeed == nil)) then
+     maxSpeed = 1000000000 -- 1 Gbit
+  else
+     maxSpeed = tonumber(maxSpeed)*1000000
+  end
 
-addGauge('gauge', '/lua/set_if_prefs.lua', maxSpeed, 100, 50)
+  addGauge('gauge', '/lua/set_if_prefs.lua', maxSpeed, 100, 50)
 end
 print [[
       </div>
@@ -316,6 +316,17 @@ setInterval(function() {
   $(document).ready(function () { $("[rel='tooltip']").tooltip(); });
   $(document).ready(function () { $("a").tooltip({ 'selector': ''});});
   $(document).ready(function () { $("i").tooltip({ 'selector': ''});});
+
+//Automatically open dropdown-menu
+$(document).ready(function(){
+    $('ul.nav li.dropdown').hover(function() {
+      $(this).find('.dropdown-menu').stop(true, true).delay(150).fadeIn(100);
+    }, function() {
+      $(this).find('.dropdown-menu').stop(true, true).delay(150).fadeOut(100);
+    });
+});
+
+
 </script>
 
     </div> <!-- / header main container -->

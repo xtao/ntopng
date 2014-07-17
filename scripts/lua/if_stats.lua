@@ -58,28 +58,31 @@ else
   print("<li><a href=\""..url.."&page=overview\">Overview</a></li>")
 end
 
-if(ifstats.type ~= "zmq") then
-   if(page == "packets") then
-      print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
-   else
-      print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
-   end
+-- Disable Packets and Protocols tab in case of the number of packets is equal to 0
+if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
+  if(ifstats.type ~= "zmq") then
+     if(page == "packets") then
+        print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
+     else
+        print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
+     end
+  end
+
+  if(page == "ndpi") then
+    print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
+  else
+     print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
+  end
 end
 
-if(page == "ndpi") then
-  print("<li class=\"active\"><a href=\"#\">Protocols</a></li>\n")
-else
-   print("<li><a href=\""..url.."&page=ndpi\">Protocols</a></li>")
-end
-
-
-if (ntop.isHistoricalInterface(ifstats.id)) then
+if (interface.isHistoricalInterface(ifstats.id)) then
 
   if(page == "config_historical") then
     print("<li class=\"active\"><a href=\"#\">Load Data</a></li>\n")
   else
     print("<li><a href=\""..url.."&page=config_historical\">Load Data</a></li>")
   end
+
 else
 
   if(ntop.exists(rrdname)) then
@@ -97,7 +100,7 @@ print [[
 </div>
 </nav>
    ]]
-print ('<div id="alert_placeholder"></div>')
+
 if((page == "overview") or (page == nil)) then
 
    print("<table class=\"table table-striped table-bordered\">\n")
@@ -233,18 +236,29 @@ elseif(page == "historical") then
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
 
-elseif(page == "load_traffic") then
 
-  historical_info = ntop.getHistorical()
 
-   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form">')
+--
+--  Historical Interface configuration page
+--
+elseif(page == "config_historical") then
+
+  historical_info = interface.getHistorical()
+
+   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_intreface.lua">')
+   print[[
+    <input type="hidden" name="from" value="" id="form_from">
+    <input type="hidden" name="to" value="" id="form_to">
+    <input type="hidden" name="id" value="" id="form_interface_id">
+   ]]
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th >Begin Date/Time</th><td colspan=2>")
    print [[
    <div class='input-group date' id='datetime_from'>
           <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-          <input name="from" id='datetime_from_val' type='text' class="form-control" readonly/>
+          <input id='datetime_from_val' type='text' class="form-control" readonly/>
     </div>
+    <span class="help-block">Specify the date and time from which to begin loading data.</span>
    ]]
    print("</td></tr>\n")
 
@@ -252,8 +266,9 @@ elseif(page == "load_traffic") then
    print [[
    <div class='input-group date' id='datetime_to'>
           <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-          <input name="to" id='datetime_to_val' type='text' class="form-control" readonly/>
+          <input id='datetime_to_val' type='text' class="form-control" readonly/>
     </div>
+    <span class="help-block">Specify the end of the loading interval.</span>
    ]]
    print("</td></tr>\n")
 
@@ -263,11 +278,9 @@ print("<tr><th >Source Interface</th><td colspan=2>")
    <div class="btn-group">
     ]]
 
-
-
 names = interface.getIfNames()
 
-print('<button id="interface_displayed"  value="' .. historical_info["interface_name"] ..'" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">'..historical_info["interface_name"]..'<span class="caret"></span></button>\n')
+print('<button id="interface_displayed"  value="' .. historical_info["interface_name"].. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. historical_info["interface_name"].. '<span class="caret"></span></button>\n')
 
 print('    <ul class="dropdown-menu" id="interface_list">\n')
 
@@ -280,6 +293,7 @@ end
 print [[
             </ul>
           </div><!-- /btn-group -->
+          <span class="help-block">Specify the interface from which to load the data (previously saved into your data directory).</span>
    ]]
    print("</td></tr>\n")
 
@@ -292,6 +306,7 @@ print [[
 </form>
 ]]
 
+print ('<div id="alert_placeholder"></div>')
 
 print [[
 <form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_intreface.lua">
@@ -301,7 +316,9 @@ print [[
 </form>
 ]]
 
-
+actual_time =os.time()
+mod = actual_time%300
+actual_time = actual_time - mod
 
 print [[
 <script>
@@ -313,107 +330,102 @@ $('#interface_list li > a').click(function(e){
 
 $('#datetime_from').datetimepicker({
           minuteStepping:5,               //set the minute stepping
-          language:'us',
-          pick12HourFormat: true]]
+          language:'en',
+          pick12HourFormat: false]]
 
 if ((historical_info["from_epoch"] ~= nil) and (historical_info["from_epoch"] ~= 0) )then
    print (',\ndefaultDate: moment('..tonumber(historical_info["from_epoch"]*1000)..')')
+else
+  print (',\ndefaultDate: moment('..tonumber(actual_time - 600) * 1000 ..')')
 end
+print (',\nmaxDate: "'.. os.date("%x", actual_time+ 86400) .. '"') -- One day more in order to enable today (library issue)
 
 print [[
         });
-
 
 $('#datetime_to').datetimepicker({
           minuteStepping:5,               //set the minute stepping
-          language:'us',
-          pick12HourFormat: true]]
+          language:'en',
+          pick12HourFormat: false]]
 
 if ((historical_info["to_epoch"] ~= nil) and (historical_info["to_epoch"] ~= 0) )then
    print (',\ndefaultDate: moment('..tonumber(historical_info["to_epoch"]*1000)..')')
+else
+  print (',\ndefaultDate: moment('..tonumber(actual_time - 300) * 1000 ..')')
 end
+
+print (',\nmaxDate: "'.. os.date("%x", actual_time+ 86400) .. '"') -- One day more in order to enable today (library issue)
 
 print [[
         });
 
-
   function check_date () {
 
-          var submit = true;
+    var submit = true;
+    var from = $('#datetime_from_val').val();
+    var to = $('#datetime_to_val').val();
 
+    if (from == "" || from == NaN) {
+       $('#datetime_from').addClass("has-error has-feedback");
+       $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please select form date and time.</div>');
+      return false;
+    }
 
-          //alert($('#interface_displayed').val());
+    if (to == ""|| to == NaN) {
+       $('#datetime_to').addClass("has-error has-feedback");
+      return false;
+    }
 
-          //console.log('-' +$('#datetime_from_val').val() + '-');
-          //console.log($('#datetime_to_val').val());
+    var from_epoch = moment(from);
+    var from_unix = from_epoch.unix();
+    var to_epoch = moment(to);
+    var to_unix = to_epoch.unix();
 
-          var from = $('#datetime_from_val').val();
-          var to = $('#datetime_to_val').val();
+    if ((from_epoch > moment()) || (from_epoch.isValid() == false) ){
+      $('#datetime_from').addClass("has-error has-feedback");
+      $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please choose a valid date and time.</div>');
+      submit = false;
+    } else {
+      $('#datetime_from').addClass("has-success has-feedback");
+    }
 
-          if (from == "" || from == NaN) {
-             $('#datetime_from').addClass("has-error has-feedback");
-             $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please select form date and time.</div>');
-            return false;
-          }
+    if ((to_epoch > moment()) || (to_epoch.isValid() == false) ){
+      $('#datetime_to').addClass("has-error has-feedback");
+       $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid To:</strong> please choose a valid date and time.</div>');
+      submit = false;
+    } else {
+      $('#datetime_to').addClass("has-success has-feedback");
+    }
 
-          if (to == ""|| to == NaN) {
-             $('#datetime_to').addClass("has-error has-feedback");
-            return false;
-          }
+    $('#form_from').val( from_unix);
+    $('#form_to').val(to_unix );
+    $('#form_interface_id').val($('#interface_displayed').val());
 
-          var from_epoch = moment(from);
-          var from_unix = from_epoch.unix();
-          var to_epoch = moment(to);
-          var to_unix = to_epoch.unix();
+    return submit;
 
-          //console.log(from_epoch);
-          //console.log(to_epoch);
-
-          if ((from_epoch > moment()) || (from_epoch.isValid() == false) ){
-            $('#datetime_from').addClass("has-error has-feedback");
-            $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid From:</strong> please choose a valid date and time.</div>');
-            submit = false;
-          } else {
-            $('#datetime_from').addClass("has-success has-feedback");
-          }
-
-
-          if ((to_epoch > moment()) || (to_epoch.isValid() == false) ){
-            $('#datetime_to').addClass("has-error has-feedback");
-             $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong> Invalid To:</strong> please choose a valid date and time.</div>');
-            submit = false;
-          } else {
-            $('#datetime_to').addClass("has-success has-feedback");
-          }
-
-          $('#form_from').val( from_unix);
-          $('#form_to').val(to_unix );
-          $('#form_interface_id').val($('#interface_displayed').val());
-
-
-          return submit;
-        }
+  }
 
 
 $( "#conf_historical_form" ).submit(function( event ) {
-  var frm = $('#start_historical');
-  if (check_date()) {
+  var frm = $('#conf_historical_form');
+  $('#alert_placeholder').html("");
 
+  if (check_date()) {
     $.ajax({
       type: frm.attr('method'),
       url: frm.attr('action'),
       data: frm.serialize(),
+      async: false,
       success: function (data) {
-      console.log(data);
         var response = jQuery.parseJSON(data);
         if (response.result == "0") {
-            $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Configuration saved successfully and active  Historical Interface</div>');
+            $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Data loaded successfully</div>');
         } else {
-          $('#alert_placeholder').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">x</button><strong>Error</strong> '+response.description+'</div>');
+          $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning</strong> Data loaded but some file is missing.<br>'+response.description+'</div>');
         }
       }
     });
-   window.setTimeout('window.location="index.lua"; ', 3000);
+   //window.setTimeout('window.location="index.lua"; ', 3000);
   }
   event.preventDefault();
 });
@@ -421,7 +433,6 @@ $( "#conf_historical_form" ).submit(function( event ) {
 </script>
 
  ]]
-
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
@@ -429,7 +440,6 @@ dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
 print("<script>\n")
 print("var last_pkts  = " .. ifstats.stats_packets .. ";\n")
 print("var last_drops = " .. ifstats.stats_drops .. ";\n")
-
 
 print [[
 setInterval(function() {
@@ -478,6 +488,7 @@ print [[";
 </script>
 
 ]]
+
 print [[
 <script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
 <script>

@@ -33,7 +33,7 @@ EthStats::EthStats() {
 
 /* *************************************** */
 
-void EthStats::incStats(u_int16_t proto, u_int32_t num_pkts, 
+void EthStats::incStats(u_int16_t proto, u_int32_t num_pkts,
 			u_int32_t num_bytes, u_int pkt_overhead) {
   raw.inc(num_pkts, num_bytes+pkt_overhead*num_pkts);
 
@@ -77,4 +77,15 @@ void EthStats::print() {
   eth_ARP.print  ("[ARP]  ");
   eth_MPLS.print ("[MPLS] ");
   eth_other.print("[Other]");
+}
+
+/* *************************************** */
+
+void EthStats::cleanup() {
+  raw.reset();
+  eth_IPv4.reset();
+  eth_IPv6.reset();
+  eth_ARP.reset();
+  eth_MPLS.reset();
+  eth_other.reset();
 }

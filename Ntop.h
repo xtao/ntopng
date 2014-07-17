@@ -294,9 +294,22 @@ class Ntop {
   void createExportInterface();
 
 // Historical Interface
+/**
+ * @brief Get Historical Interface
+ * @details Use  @ref historical_interface_id to identify the Historical Interface
+ * @return Pointer to Historical Interface instance
+ */
+  inline NetworkInterface* getHistoricalInterface() {  return (historical_interface_id != -1)  ? getInterfaceId(historical_interface_id) : NULL; };
+  /**
+   * @brief Get Historical Interface index
+   * @return index of current historical interface instance
+   */
+  inline u_int8_t getHistoricalInterfaceId() {  return historical_interface_id; };
+  /**
+   * @brief Create a new Historical Interface instance
+   * @details Create a new instance and register the interface
+   */
   void createHistoricalInterface();
-  void startHistoricalInterface(const char * p_endpoint);
-  inline int8_t getHistoricalInterface() { return(historical_interface_id); };
 
   inline u_int32_t getUptime() { return((start_time > 0) ? (time(NULL)-start_time) : 0); }
 };

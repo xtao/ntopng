@@ -113,15 +113,6 @@ img {
 min-width: 100px;
 }
 
-/*Automatically open dropdown-menu*/
-.dropdown:hover .dropdown-menu {
-  display: block;
-}
-
-.dropdown:menu .caret {
-  display: block;
-}
-
 /*Footer sticky*/
 #footer {
   /*position: absolute;*/
