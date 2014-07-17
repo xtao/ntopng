@@ -61,11 +61,11 @@ for key, value in pairs(flows_stats) do
 	 if(s_flow["cli.host"] == s_flow["srv.host"]) then
 	    if(s_flow["client_process"] == flow["server_process"]) then
 	       if(s_flow["server_process"] ~= nil) then
-		  hosts[c][name][3][s_flow["server_process"]["pid"]] = s_flow["server_process"]
+		  hosts[s][name][3][s_flow["server_process"]["pid"]] = s_flow["server_process"]
 	       end
 	       elseif(s_flow["server_process"] == flow["server_process"]) then
 	       if(s_flow["client_process"] ~= nil) then
-		  hosts[c][name][3][s_flow["client_process"]["pid"]] = s_flow["client_process"]
+		  hosts[s][name][3][s_flow["client_process"]["pid"]] = s_flow["client_process"]
 	       end
 	    end
 	 end
