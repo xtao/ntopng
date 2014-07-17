@@ -47,6 +47,7 @@ Prefs::Prefs(Ntop *_ntop) {
   dns_mode = 0;
   logFd = NULL;
   disable_alerts = false;
+  use_syslog_alerts = false;
   pid_path = strdup(DEFAULT_PID_PATH);
   packet_filter = NULL;
   disable_host_persistency = false;
@@ -160,6 +161,7 @@ void usage() {
 #endif
 
 	 "[--disable-alerts|-H]               | Disable alerts generation\n"
+       "[--syslog-alerts| -L]               | Print alert message to syslog\n"
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
 	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:\n"
 	 "                                    | 0 - No aggregations (default)\n"
@@ -238,6 +240,9 @@ static const struct option long_options[] = {
 #endif
   { "disable-alerts",                    no_argument,       NULL, 'H' },
   { "export-flows",                      required_argument, NULL, 'I' },
+#ifndef WIN32
+  { "syslog-alerts",                    no_argument,       NULL, 'L' },
+#endif
   { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
@@ -451,6 +456,12 @@ int Prefs::setOption(int optkey, char *optarg) {
     export_endpoint = strdup(optarg);
     break;
 
+#ifndef WIN32
+  case 'L':
+    use_syslog_alerts = true;
+    break;
+#endif
+
   case 'U':
     free(user);
     user = strdup(optarg);
@@ -517,8 +528,8 @@ int Prefs::checkOptions() {
 int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
-  while((c = getopt_long(argc, argv, 
-			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HI:S:U:X:W:V",
+  while((c = getopt_long(argc, argv,
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HLI:S:U:X:W:V",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
@@ -649,7 +660,7 @@ void Prefs::add_default_interfaces() {
 /* *************************************** */
 
 void Prefs::lua(lua_State* vm) {
-  
+
   lua_newtable(vm);
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", resolve_all_host_ip);
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", enable_dns_resolution);
@@ -663,7 +674,7 @@ void Prefs::lua(lua_State* vm) {
   lua_push_bool_table_entry(vm, "is_dump_flows_enabled", dump_flows_on_db);
   lua_push_int_table_entry(vm, "dump_hosts", dump_hosts_to_db);
   lua_push_int_table_entry(vm, "dump_aggregation", dump_aggregations_to_db);
-  
+
 }
 
 /* *************************************** */

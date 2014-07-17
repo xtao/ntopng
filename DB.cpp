@@ -44,7 +44,7 @@ DB::~DB() {
   if(ntop->getPrefs()->do_dump_flows_on_db()) {
     void *res;
 
-    pthread_join(dumpContactsThreadLoop, &res);
+    if (dumpContactsThreadLoop) pthread_join(dumpContactsThreadLoop, &res);
   }
 
   termDB();

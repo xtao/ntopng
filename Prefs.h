@@ -34,7 +34,7 @@ class Prefs {
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, httpbl_enabled, resolve_all_host_ip, change_user, daemonize,
     dump_timeline, shorten_aggregation_names, enable_auto_logout,
-    disable_alerts;
+    disable_alerts, use_syslog_alerts;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
   u_int16_t non_local_host_max_idle, local_host_max_idle, flow_max_idle;
   u_int32_t max_num_hosts, max_num_flows;
@@ -56,6 +56,7 @@ class Prefs {
   int dns_mode;
   int json_symbolic_labels;
   FILE *logFd;
+
 
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
@@ -119,6 +120,12 @@ class Prefs {
   void add_network_interface(char *name);
   inline u_int32_t get_json_symbolic_labels()                  { return(json_symbolic_labels);  };
   void lua(lua_State* vm);
+  /**
+   * @brief Check if dump alerts into syslog are enabled
+   * @return True if it is enabled, False otherwise
+   */
+  inline bool are_alerts_syslog_enabled()            { return(use_syslog_alerts);  };
+
 };
 
 #endif /* _PREFS_H_ */

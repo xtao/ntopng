@@ -236,7 +236,7 @@ u_int32_t Redis::incrKey(char *key) {
   if(reply) {
     if(reply->type == REDIS_REPLY_ERROR)
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = 0;
-    else 
+    else
       rc = (u_int)reply->integer;
 
     freeReplyObject(reply);
@@ -336,7 +336,7 @@ int Redis::del(char *key) {
 
   l->lock(__FILE__, __LINE__);
   reply = (redisReply*)redisCommand(redis, "DEL %s", key);
-  
+
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
 
@@ -353,7 +353,7 @@ int Redis::pushHostToHTTPBL(char *hostname, bool dont_check_for_existance, bool 
 
   return(pushHost(HTTPBL_CACHE, HTTPBL_TO_RESOLVE, hostname, dont_check_for_existance, localHost));
 }
- 
+
 /* **************************************** */
 
 int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool localHost) {
@@ -361,10 +361,10 @@ int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool
 
   return(pushHost(DNS_CACHE, DNS_TO_RESOLVE, hostname, dont_check_for_existance, localHost));
 }
- 
+
 /* **************************************** */
 
-int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname, 
+int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
 		    bool dont_check_for_existance, bool localHost) {
   int rc;
   char key[128];
@@ -425,13 +425,13 @@ int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
 int Redis::popHostToHTTPBL(char *hostname, u_int hostname_len) {
   return(popHost(HTTPBL_TO_RESOLVE, hostname, hostname_len));
 }
- 
+
 /* **************************************** */
 
 int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
   return(popHost(DNS_TO_RESOLVE, hostname, hostname_len));
 }
- 
+
 /* **************************************** */
 
 int Redis::popHost(const char* ns_list, char *hostname, u_int hostname_len) {
@@ -649,7 +649,7 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
 
   h = strtok_r(numeric, ";", &w);
 
-  while(h != NULL) {   
+  while(h != NULL) {
     snprintf(key, sizeof(key), "%s.%s", DNS_CACHE, h);
     rc = set(key, symbolic_ip, DNS_CACHE_DURATION);
     h = strtok_r(NULL, ";", &w);
@@ -801,13 +801,13 @@ int Redis::smembers(lua_State* vm, char *setName) {
 
 /* *************************************** */
 
-void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_int32_t id) { 
+void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_int32_t id) {
   char buf[32], keybuf[384], host_id[16], _daybuf[32], value[32];
   //redisReply *reply;
 
   if(daybuf == NULL) {
     time_t when = time(NULL);
-    
+
     strftime(_daybuf, sizeof(_daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
     daybuf = _daybuf;
   }
@@ -926,7 +926,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   if(kreply && (kreply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", kreply->str ? kreply->str : "???");
   l->unlock(__FILE__, __LINE__);
-  
+
   if(kreply && (kreply->type == REDIS_REPLY_ARRAY)) {
     for(u_int kid = 0; kid < kreply->elements; kid++) {
       char *_key = (char*)kreply->element[kid]->str, key[256];
@@ -990,20 +990,20 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      char *zErrMsg, *pipe = strchr(host_buf,'|');
 	      char buf[256];
 	      int rc;
-	      
+
 	      if(pipe) {
 		snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
 			 host_index, interface_idx, &pipe[1]);
-		
+
 		ntop->getTrace()->traceEvent(TRACE_INFO, "%s", buf);
-		
+
 		if((rc = sqlite3_exec(db, buf, NULL, 0, &zErrMsg)) != SQLITE_OK) {
 		  if(rc != SQLITE_CONSTRAINT /* Key already existing */)
 		    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s][%d/%d]", zErrMsg, buf, rc, SQLITE_MISMATCH);
 
 		  sqlite3_free(zErrMsg);
 		}
-		
+
 		num_hosts++;
 	      }
 	    }
@@ -1063,12 +1063,12 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 			  snprintf(hash_key, sizeof(hash_key), "%s|%s|%s|%s", day, ifname,
 				   (loop == 1) ? server_idx : client_idx,
 				   (loop == 1) ? CONST_CONTACTED_BY : CONST_CONTACTS);
-			  snprintf(buf, sizeof(buf), "%s@%s", 
+			  snprintf(buf, sizeof(buf), "%s@%s",
 				   (loop == 1) ? server_idx : client_idx, contact_family);
 			  hashDel(hash_key, buf);
 			}
 		      }
-		    
+
 		      l->lock(__FILE__, __LINE__);
 		      r2 = (redisReply*)redisCommand(redis, "HDEL %s %s", hash_key, r->element[j]->str);
 		      if(r2 && (r2->type == REDIS_REPLY_ERROR))
@@ -1146,6 +1146,14 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
   /* Put the latest messages on top so old messages (if any) will be discarded */
   reply = (redisReply*)redisCommand(redis, "LPUSH %s %s",
 				    CONST_ALERT_MSG_QUEUE, what);
+#ifndef WIN32
+  // Print alerts into syslog
+  if(ntop->getPrefs()->are_alerts_syslog_enabled()){
+    if( alert_level_info == level) syslog(LOG_INFO, "%s", what);
+    else if ( alert_level_warning == level) syslog(LOG_WARNING, "%s", what);
+    else if ( alert_level_error == level) syslog(LOG_ALERT, "%s", what);
+  }
+#endif
 
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");

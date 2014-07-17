@@ -2100,7 +2100,13 @@ static int is_historical_interface(lua_State* vm) {
 }
 
 /* ****************************************** */
-
+/**
+ * @brief Get Historical Interface configuration
+ * @details Push the main information of the interface into the lua stack.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK
+ */
 static int get_historical_info(lua_State* vm) {
   HistoricalInterface *iface = NULL;
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
@@ -2122,7 +2128,16 @@ static int get_historical_info(lua_State* vm) {
 }
 
 /* ****************************************** */
-
+/**
+ * @brief Set Historical Interface configuration
+ * @details Require the following parameters:
+ *                number from_epoch
+ *                number to_epoch
+ *                number interface id
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK
+ */
 static int set_historical_info(lua_State* vm) {
   u_int32_t from_epoch, to_epoch;
   u_int8_t iface_id = 0;
@@ -2149,6 +2164,16 @@ static int set_historical_info(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Load historical data based on a time interval
+ * @details Cleanup the interface before load the new data. Require the following parameters:
+ *                number from_epoch
+ *                number to_epoch
+ *                number interface id
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK and push the return code into the Lua stack
+ */
 static int load_historical_interval(lua_State* vm) {
   u_int32_t from_epoch, to_epoch;
   u_int8_t iface_id = 0;
@@ -2172,6 +2197,15 @@ static int load_historical_interval(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Load historical data from a single file
+ * @details Require the following parameters:
+ *                string absolute file path
+ *                boolean it true cleanup the interface, default value is false
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_OK and push the return code into the Lua stack
+ */
 static int load_historical_file(lua_State* vm) {
   char *file_name;
   bool cleanup;

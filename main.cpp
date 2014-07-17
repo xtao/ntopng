@@ -203,6 +203,12 @@ int main(int argc, char *argv[])
     prefs->enable_httpbl();
   }
 
+#ifndef WIN32
+    if (prefs->are_alerts_syslog_enabled())
+      ntop->getTrace()->traceEvent(TRACE_NORMAL,
+        "Print alerts into syslog");
+#endif
+
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Working directory: %s",
 			       ntop->get_working_dir());
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Scripts/HTML pages directory: %s",
