@@ -2,10 +2,10 @@
 
 NB: Work in progress
 
-- SUBMIT FORMULA   
-cp ntopng-devel.rb /usr/local/Library/Formula/
+- SUBMIT FORMULA
+cp ntopng.rb /usr/local/Library/Formula/
 
 - INSTALL FORMULA
 #check the formula
-brew audit ntopng-devel
-brew install -vd ntopng-devel
+brew audit ntopng
+brew install -vd ntopng
