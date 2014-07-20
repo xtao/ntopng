@@ -95,7 +95,7 @@ Host::~Host() {
     ntop->getRedis()->del(key);
   }
 
-  if(localHost) {
+  if(localHost || systemHost) {
     if(ip != NULL) {
       snprintf(key, sizeof(key), "%s.client", k);
       ntop->getRedis()->del(key);
@@ -109,11 +109,14 @@ Host::~Host() {
 
   save_alternate_name();
 
-  if(localHost && ntop->getPrefs()->is_host_persistency_enabled()) {
+  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "Deleting %s (%s)", k, localHost ? "local": "remote");
+
+  if((localHost || systemHost)
+     && ntop->getPrefs()->is_host_persistency_enabled()) {
     char *json = serialize();
     snprintf(key, sizeof(key), "%s.%d.json", k, vlan_id);
     ntop->getRedis()->set(key, json, 3600 /* 1 hour */);
-    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", key, json);
+    //ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", k, json);
     free(json);
   }
 
@@ -191,14 +194,18 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       updateLocal();
       systemHost = ip->isLocalInterfaceAddress();
 
-      if((localHost && ntop->getPrefs()->is_host_persistency_enabled())
+      // ntop->getTrace()->traceEvent(TRACE_NORMAL, "Loading %s (%s)", k, localHost ? "local": "remote");
+
+      if(((localHost || systemHost)
+	  && ntop->getPrefs()->is_host_persistency_enabled())
 	 && (!ntop->getRedis()->get(redis_key, json, sizeof(json)))) {
 	/* Found saved copy of the host so let's start from the previous state */
 	// ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s => %s", redis_key, json);
 	deserialize(json);
       }
 
-      if(localHost || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
+      if(localHost || systemHost
+	 || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
 	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0) {
 	  if(symbolic_name) free(symbolic_name);
 	  symbolic_name = strdup(rsp);
@@ -206,7 +213,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	// else ntop->getRedis()->pushHostToResolve(host, false, localHost);
       }
 
-      if((!localHost) && ntop->getPrefs()->is_httpbl_enabled() && ip->isIPv4()) {
+      if((!localHost || systemHost) && ntop->getPrefs()->is_httpbl_enabled() && ip->isIPv4()) {
 	// http:bl only works for IPv4 addresses
 	if(ntop->getRedis()->getAddressHTTPBL(host, iface, httpbl, sizeof(httpbl), true) == 0) {
           if(strcmp(httpbl, NULL_BL)) {
@@ -234,7 +241,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       localHost = true;
     }
 
-    if(localHost && ip) readStats();
+    if((localHost || systemHost)
+       && ip) readStats();
   }
 
   if(!host_serial) computeHostSerial();
@@ -533,11 +541,11 @@ bool Host::idle() {
     break;
 
   case location_local_only:
-    if(localHost) return(false);
+    if(localHost || systemHost) return(false);
     break;
 
   case location_remote_only:
-    if(!localHost) return(false);
+    if(!(localHost||systemHost)) return(false);
     break;
 
   case location_all:
@@ -639,6 +647,7 @@ char* Host::serialize() {
   if(longitude)           json_object_object_add(my_object, "longitude", json_object_new_double(longitude));
   if(ip)                  json_object_object_add(my_object, "ip", ip->getJSONObject());
   json_object_object_add(my_object, "localHost", json_object_new_boolean(localHost));
+  json_object_object_add(my_object, "systemHost", json_object_new_boolean(systemHost));
   json_object_object_add(my_object, "tcp_sent", tcp_sent.getJSONObject());
   json_object_object_add(my_object, "tcp_rcvd", tcp_rcvd.getJSONObject());
   json_object_object_add(my_object, "udp_sent", udp_sent.getJSONObject());

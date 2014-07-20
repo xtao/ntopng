@@ -84,7 +84,7 @@ print [[
 for key, value in pairs(hosts) do
    if(n > 0) then print(",") end
 
-    print('\n\t{ "name": "'..names[key]..'", "type": "host", "children": [')
+    print('\n\t{ "name": "'..names[key]..'", "type": "host", "link": "/lua/host_details.lua?host='..key ..'&page=flows", "children": [')
 
     m = 0
     for k, _v in pairs(value) do

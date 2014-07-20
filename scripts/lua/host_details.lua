@@ -542,6 +542,16 @@ end
 
    elseif((page == "peers")) then
 
+host_info = url2hostinfo(_GET)
+flows     = interface.getFlowPeers(host_info["host"],host_info["vlan"])
+found     = 0
+
+for key, value in pairs(flows) do
+   found = 1
+   break
+end
+
+if(found) then 
    print [[
 
    <table border=0>
@@ -670,7 +680,9 @@ dc.renderAll();
 </script>
 
    ]]
-
+else 
+   print("<disv class=\"alert alert-danger\"><img src=/img/warning.png> No active flows have been observed for the specified host</div>")
+end
 
 
    elseif((page == "traffic")) then

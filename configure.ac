@@ -1,4 +1,5 @@
 dnl> Do not add anything above
+dnl> ntopng software version is specified below
 AC_INIT([Makefile.in], 1.1.4)
 
 AC_PROG_CPP
@@ -15,6 +16,10 @@ AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
 SVN_DATE=`svn info . | grep "^Last Changed Date"|cut -d " " -f 4-`
 AC_DEFINE_UNQUOTED(NTOPNG_SVN_DATE, "${SVN_DATE}", [Last SVN change])
 PACKAGE_VERSION="${NTOPNG_VERSION}_${SVN_RELEASE}"
+
+if test -z `which pkg-config`; then
+   echo "#!/bin/sh\n" > pkg-config
+fi
 
 if test -f ".svn/wc.db"; then
    SVN_WC_DB=".svn/wc.db"
