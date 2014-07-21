@@ -45,7 +45,14 @@ DATE=`date +"%Y-%m-%d"`
 
 PF_RING_HOME=${HOME}/PF_RING
 AC_MSG_CHECKING(for PF_RING source installed in $PF_RING_HOME)
-if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
+
+if test -d "/opt/pfring"; then
+   PF_RING_LIB="/opt/pfring"
+else
+   PF_RING_LIB="/usr/local/lib"
+fi
+
+if test -f "${PF_RING_LIB}/libpfring.a"  || test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
   AC_DEFINE_UNQUOTED(HAVE_PF_RING, 1, [Native PF_RING support])
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
   echo "${PF_RING_HOME}/userland/libpcap/libpcap.a"
@@ -58,18 +65,18 @@ if test -f "/usr/local/lib/libpfring.a"  || test -f "${PF_RING_HOME}/userland/li
        exit
      fi
   else
-    if test -f "/usr/local/lib/libpfring.a"; then
-        if test -f "/usr/local/lib/libpcap.a"; then
-    	  LDFLAGS="${LDFLAGS} /usr/local/lib/libpfring.a"
-          echo "Using PF_RING installed in /usr/local/lib"
+    if test -f "${PF_RING_LIB}/libpfring.a"; then
+        if test -f "${PF_RING_LIB}/libpcap.a"; then
+    	  LDFLAGS="${LDFLAGS} ${PF_RING_LIB}/libpfring.a"
+          echo "Using PF_RING installed in ${PF_RING_LIB}"
 	  AC_CHECK_LIB([pcap], [pcap_open_live], pcap=true)
 	  if test x$pcap = x
 	  then
-	    echo "Found /usr/local/lib/libpfring.a but missing header files."
+	    echo "Found ${PF_RING_LIB}/libpfring.a but missing header files."
 	    exit
 	  fi
 	else
-	  echo "Found /usr/local/lib/libpfring.a  but missing libpcap.a in the same directory"
+	  echo "Found ${PF_RING_LIB}/libpfring.a  but missing libpcap.a in the same directory"
 	  echo "Please make sure you have installed your PF_RING libraries and try again"
 	  exit
         fi
