@@ -979,6 +979,12 @@ print [[
       url: url_update ,
       rowCallback: function ( row ) { return flow_table_setID(row); },
          showPagination: true,
+]]
+-- Set the preference table
+preference = tablePreferences("rows_number",perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+print [[
          title: "Active Flows",]]
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_top.inc")

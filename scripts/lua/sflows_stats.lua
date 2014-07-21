@@ -70,6 +70,12 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
    flow_rows_option["sprobe"] = true;
    $("#table-flows").datatable({
       url: url_update ,
+]]
+-- Set the preference table
+preference = tablePreferences("rows_number",perPage)
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+print [[
       rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
