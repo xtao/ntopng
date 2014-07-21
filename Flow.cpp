@@ -100,6 +100,8 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
+  checkBlacklistedFlow();
+
   if(ntop->getPrefs()->do_dump_flows_on_db()
      || ntop->get_export_interface()) {
     char *json;
@@ -122,6 +124,33 @@ Flow::~Flow() {
 
   if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
+}
+
+/* *************************************** */
+
+void Flow::checkBlacklistedFlow() {
+  if(!blacklist_alarm_emitted) {
+    if(cli_host
+       && srv_host
+       && (cli_host->is_blacklisted()
+	   || srv_host->is_blacklisted())) {
+      char c_buf[64], s_buf[64], *c, *s, alert_msg[512];
+      
+      c = cli_host->get_ip()->print(c_buf, sizeof(c_buf));
+      s = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
+      
+      snprintf(alert_msg, sizeof(alert_msg), 
+	       "%s <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> contacted %s host <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A>",
+	       cli_host->is_blacklisted() ? "Blacklisted host" : "Host",
+	       c, iface->get_name(), cli_host->get_name() ? cli_host->get_name() : c, 
+	       srv_host->is_blacklisted() ? "blacklisted" : "",
+	       s, iface->get_name(), srv_host->get_name() ? srv_host->get_name() : s);
+
+      ntop->getRedis()->queueAlert(alert_level_warning, alert_dangerous_host, alert_msg);
+    }
+
+    blacklist_alarm_emitted = true;
+  }
 }
 
 /* *************************************** */
@@ -665,6 +694,8 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
   if(updated)
     memcpy(&last_update_time, tv, sizeof(struct timeval));
+
+  checkBlacklistedFlow();
 }
 
 /* *************************************** */
@@ -1013,7 +1044,6 @@ void Flow::incStats(bool cli2srv_direction, u_int pkt_len) {
     cli_host->get_recv_stats()->incStats(pkt_len), srv_host->get_sent_stats()->incStats(pkt_len);
   }
 };
-
 
 /* *************************************** */
 

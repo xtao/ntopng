@@ -32,6 +32,8 @@ interface.find(ifname)
 ifId = ifName2Id(ifname)
 ifstats = interface.getStats()
 
+
+
 --ip_elems = split(host_info["host"], " ");
 --host_info["host"] = ip_elems[1]
 host = nil
@@ -40,6 +42,7 @@ family = nil
 --print(">>>") print(host_info["host"]) print("<<<")
 if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info["host"] .. ", Vlan: "..host_vlan.."\n") end
 --if(ip_elems[2] == nil) then
+
    host = interface.getHostInfo(host_info["host"],host_vlan)
    restoreFailed = false
 
@@ -64,7 +67,7 @@ if(host == nil) then
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
       print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host ".. hostinfo2hostkey(host_info) .. " cannot be found.")
       if((json ~= nil) and (json ~= "")) then
-	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?'..hostinfo2url(host_info) ..'&mode=restore">here</A> to restore it from cache.\n')
+	 print('<p>Such host as been purged from memory due to inactivity. Click <A HREF="?ifname='..ifname..'&'..hostinfo2url(host_info) ..'&mode=restore">here</A> to restore it from cache.\n')
       else
 	 print('<p>Perhaps this host has been previously purged from memory or it has never been observed by this ntopng instance.</p>\n')
       end
@@ -72,7 +75,7 @@ if(host == nil) then
       print("</div>")
       dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
    else
-      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?"..hostinfo2url(host_info)))
+      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?ifname=".. ifname.."&"..hostinfo2url(host_info)))
    end
    return
 else
@@ -100,7 +103,7 @@ print [[
 <ul class="nav navbar-nav">
 ]]
 if ((debug_hosts) and (host["ip"] ~= nil)) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host["ip"] .. ", Vlan: "..host["vlan"].."\n") end
-url="/lua/host_details.lua?"..hostinfo2url(host_info)
+url="/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info)
 
 print("<li><a href=\"#\">Host: "..host_info["host"].." </a></li>\n")
 
@@ -422,7 +425,7 @@ end
 
    print("<tr><th>Flows 'As Client' / 'As Server'</th><td><span id=flows_as_client>" .. formatValue(host["flows.as_client"]) .. "</span> <span id=as_client_trend></span></td><td><span id=flows_as_server>" .. formatValue(host["flows.as_server"]) .. "</span> <span id=as_server_trend></td></tr>\n")
 
-   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?"..hostinfo2url(host_info)..">Download<A></td></tr>\n") end
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?ifname="..ifname.."&"..hostinfo2url(host_info)..">Download<A></td></tr>\n") end
 
    print [[
 	    <tr><th>Activity Map</th><td colspan=2>
@@ -438,7 +441,7 @@ end
         sent_calendar.init({
 		       itemSelector: "#sentHeatmap",
 		       data: "]]
-     print("/lua/get_host_activitymap.lua?"..hostinfo2url(host_info)..'",\n')
+     print("/lua/get_host_activitymap.lua?ifname="..ifname.."&"..hostinfo2url(host_info)..'",\n')
 
      timezone = get_timezone()
 
@@ -469,7 +472,7 @@ end
 	    $(document).ready(function(){
 			    $('#heatmap-refresh').click(function(){
 							      sent_calendar.update(]]
-									     print("\"/lua/get_host_activitymap.lua?"..hostinfo2url(host_info)..'\");\n')
+									     print("\"/lua/get_host_activitymap.lua?ifname="..ifname.."&"..hostinfo2url(host_info)..'\");\n')
 									     print [[
 						    });
 				      });
@@ -726,7 +729,7 @@ end
 	    print("<tr><th>")
 	    fname = getRRDName(ifname, hostinfo2hostkey(host_info), k)
 	    if(ntop.exists(fname)) then
-	       print("<A HREF=\"/lua/host_details.lua?"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	       print("<A HREF=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    else
 	       print(label)
 	    end
@@ -783,7 +786,7 @@ end
 	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
 	 --print(fname)
 	 if(ntop.exists(fname)) then
-	    print("<A HREF=\"/lua/host_details.lua?"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	    print("<A HREF=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 else
 	    print(k)
 	 end
@@ -864,7 +867,7 @@ end
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
 					 var refresh = 3000 /* ms */;
-					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
+					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifname) print [[", mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
            ]]
@@ -883,7 +886,7 @@ print [[
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
          var refresh = 3000 /* ms */;
-	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
+	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifname) print [[", mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
 ]]
@@ -925,7 +928,7 @@ for k,_ in pairsByKeys(names, rev) do
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifname, host_info["host"], sbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
-      print(" <A HREF=/lua/host_details.lua?host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..sbase.. k .."><i class='fa fa-search'></i></A></td>")
+      print(" <A HREF=/lua/host_details.lua?ifname="..ifname.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..sbase.. k .."><i class='fa fa-search'></i></A></td>")
    else
       print("<td colspan=3>&nbsp;</td>")
    end
@@ -934,7 +937,7 @@ for k,_ in pairsByKeys(names, rev) do
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifname, host_info["host"], rbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
-      print(" <A HREF=/lua/host_details.lua?host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..rbase.. k .."><i class='fa fa-search'></i></A></td>")
+      print(" <A HREF=/lua/host_details.lua?ifname="..ifname.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..rbase.. k .."><i class='fa fa-search'></i></A></td>")
    else
       print("<td colspan=3>&nbsp;</td>")
    end
@@ -956,7 +959,8 @@ end
 print [[
       <div id="table-flows"></div>
 	 <script>
-   var url_update = "/lua/get_flows_data.lua?]]
+   var url_update = "/lua/get_flows_data.lua?ifname=]]
+print(ifname.."&")
 print (hostinfo2url(host_info)..'";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
@@ -1117,10 +1121,10 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/lua/get_host_contacts.lua?"..hostinfo2url(host_info).."&protocol="..protocol_id.."\",\n")
+				  print("url: \"/lua/get_host_contacts.lua?ifname="..ifname.."&"..hostinfo2url(host_info).."&protocol="..protocol_id.."\",\n")
 print [[
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu" rule="menu" id="host_dropdown">]]
-url = "/lua/host_details.lua?"..hostinfo2url(host_info).."&page=todays_contacts"
+url = "/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info).."&page=todays_contacts"
 print('<li><a href="'.. url ..'">All</a></li>')
 
 for key,v in pairs(protocols) do
@@ -1171,7 +1175,7 @@ print [[
 
    ]]
 
-print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&"..hostinfo2url(host_info).."'>Download "..host_info["host"].." contacts as JSON<A>\n")
+print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&ifname="..ifname.."&"..hostinfo2url(host_info).."'>Download "..host_info["host"].." contacts as JSON<A>\n")
 elseif(page == "talkers") then
 print("<center>")
 print('<div class="row">')
@@ -1205,7 +1209,7 @@ print [[
 
 <script type="text/javascript">
 /* IP Address to zoom */
-  var zoomIP = "]] print(hostinfo2url(host_info)) print [[ ";
+  var zoomIP = "]] print('ifname='..ifname.."&"..hostinfo2url(host_info)) print [[ ";
 </script>
 
     <script type="text/javascript" src="/js/googleMapJson.js" ></script>
@@ -1259,7 +1263,7 @@ for v,k in pairsByKeys(vals, rev) do
          -- print the host row together with the Jaccard coefficient
 	 print("<tr>")
    -- print("<th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th>")
-	 print("<th align=left><A HREF=/lua/host_details.lua?"..hostinfo2url(correlated_host)..">"..hostinfo2hostkey(correlated_host).."</a></th>")
+	 print("<th align=left><A HREF=/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(correlated_host)..">"..hostinfo2hostkey(correlated_host).."</a></th>")
 	 print("<th>"..round(v,2).."</th>");
 
 	 -- print the activity map row
@@ -1271,7 +1275,7 @@ for v,k in pairsByKeys(vals, rev) do
 		 sent_calendar.init({
 	 ]]
 	print("itemSelector: \"#sentHeatmap"..n.."\",data: \"");
-  print("/lua/get_host_activitymap.lua?"..hostinfo2url(correlated_host)..'",\n')
+  print("/lua/get_host_activitymap.lua?ifname="..ifname.."&"..hostinfo2url(correlated_host)..'",\n')
   -- print("/lua/get_host_activitymap.lua?host="..k..'",\n')
 
 	timezone = get_timezone()
@@ -1295,7 +1299,7 @@ for v,k in pairsByKeys(vals, rev) do
 	    $(document).ready(function(){
 			    $('#heatmap-refresh').click(function(){
 				    sent_calendar.update(]]
-					    print("\"/lua/get_host_activitymap.lua?"..hostinfo2url(correlated_host)..'\");\n')
+					    print("\"/lua/get_host_activitymap.lua?ifname="..ifname.."&"..hostinfo2url(correlated_host)..'\");\n')
 				    print [[
 				    });
 			    });
@@ -1324,7 +1328,7 @@ end
 print [[
 <b>Note</b>:
 <ul>
-	 <li>Jaccard Similarity considers only activity map as shown in the <A HREF=/lua/host_details.lua?]] print(hostinfo2url(host_info)) print [[>host overview</A>.
+	 <li>Jaccard Similarity considers only activity map as shown in the <A HREF=/lua/host_details.lua?ifname="]] print(ifname.."&"..hostinfo2url(host_info)) print [[>host overview</A>.
 <li>Two hosts are similar according to the Jaccard coefficient when their activity tends to overlap. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Jaccard_index>Jaccard similarity coefficient</A> is a number between +1 and 0.
 </ul>
 ]]
@@ -1371,7 +1375,7 @@ if(num > 0) then
 
    if(info ~= nil) then
       if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(info).."\">"..n.."</A>"
+      url = "<A HREF=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(info).."\">"..n.."</A>"
    else
       url = k
    end
@@ -1403,7 +1407,7 @@ if(num > 0) then
    info = interface.getHostInfo(k)
 	 if(info ~= nil) then
 	    if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-	    url = "<A HREF=\"/lua/host_details.lua?"..hostinfo2url(info).."\">"..n.."</A>"
+	    url = "<A HREF=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(info).."\">"..n.."</A>"
 	 else
 	    url = k
 	 end
@@ -1439,7 +1443,7 @@ for _,e in pairs(alerts_granularity) do
    l = e[2]
 
    if(k == tab) then print("\t<li class=active>") else print("\t<li>") end
-   print("<a href=\"/lua/host_details.lua?"..hostinfo2url(host_info).."&page=alerts&tab="..k.."\">"..l.."</a></li>\n")
+   print("<a href=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info).."&page=alerts&tab="..k.."\">"..l.."</a></li>\n")
 end
 
 -- Before doing anything we need to check if we need to save values
@@ -1568,7 +1572,7 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(ifId, hostinfo2hostkey(host_info), rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
+drawRRD(ifId, hostinfo2hostkey(host_info), rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?ifname='..ifname..'&'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
 
 
 elseif(page == "aggregations") then
@@ -1593,7 +1597,7 @@ print [[
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
-   print('<li><a href="/lua/host_details.lua?'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
+   print('<li><a href="/lua/host_details.lua?ifname='..ifname..'&'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
 end
 
 print("</ul> </div>' ],")
@@ -1616,7 +1620,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_bottom.in
 
 -- families = interface.getAggregationFamilies()
 -- for key,v in pairs(families["families"]) do
---    print('<li><a href="/lua/host_details.lua?'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
+--    print('<li><a href="/lua/host_details.lua?ifname='..ifname..'&'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
 -- end
 
 -- print("</ul> </div>' ],")

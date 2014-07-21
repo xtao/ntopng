@@ -175,7 +175,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
   syn_flood_alert = new AlertCounter(CONST_MAX_NUM_SYN_PER_SECOND, CONST_MAX_THRESHOLD_CROSS_DURATION);
-  category[0] = '\0', os[0] = '\0', httpbl[0] = '\0';
+  category[0] = '\0', os[0] = '\0', httpbl[0] = '\0', blacklisted_host = false;
   num_uses = 0, symbolic_name = alternate_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
@@ -217,7 +217,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 	// http:bl only works for IPv4 addresses
 	if(ntop->getRedis()->getAddressHTTPBL(host, iface, httpbl, sizeof(httpbl), true) == 0) {
           if(strcmp(httpbl, NULL_BL)) {
-	    ntop->getTrace()->traceEvent(TRACE_WARNING,"%s=>%s", host, httpbl);
+	    blacklisted_host = true;
+	    ntop->getTrace()->traceEvent(TRACE_INFO,"Blacklisted host found %s [%s]", host, httpbl);
 	  }
 	}
       }

@@ -29,6 +29,7 @@ class Host : public GenericHost {
   u_int8_t mac_address[6];
   u_int32_t asn;
   char *symbolic_name, *alternate_name, *country, *city, *asname, category[8], os[16], httpbl[12];
+  bool blacklisted_host;
   u_int16_t num_uses;
   int16_t local_network_id;
   float latitude, longitude;
@@ -69,15 +70,16 @@ class Host : public GenericHost {
   u_int32_t key();
   char* getJSON();
   inline void setOS(char *_os)                 { if(os[0] == '\0') snprintf(os, sizeof(os), "%s", _os); }
-  inline IpAddress* get_ip()                   { return(ip);            }
+  inline IpAddress* get_ip()                   { return(ip);               }
   void set_mac(char *m);
   void set_alternate_name(char *name);
-  inline u_int8_t*  get_mac()                  { return(mac_address);   }
-  inline char* get_os()                        { return(os);            }
-  inline char* get_name()                      { return(symbolic_name); }
-  inline char* get_alternate_name()            { return(alternate_name);}
-  inline char* get_country()                   { return(country);       }
-  inline char* get_city()                      { return(city);          }
+  inline bool is_blacklisted()                 { return(blacklisted_host); }
+  inline u_int8_t*  get_mac()                  { return(mac_address);      }
+  inline char* get_os()                        { return(os);               }
+  inline char* get_name()                      { return(symbolic_name);    }
+  inline char* get_alternate_name()            { return(alternate_name);   }
+  inline char* get_country()                   { return(country);          }
+  inline char* get_city()                      { return(city);             }
   inline char* get_category()                  { refreshCategory(); return(category); }
   inline char* get_httpbl()                    { refreshHTTPBL();   return(httpbl); }
   inline u_int32_t get_asn()                   { return(asn);           }

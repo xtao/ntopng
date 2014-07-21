@@ -891,7 +891,6 @@ void NetworkInterface::updateHostStats() {
   gettimeofday(&tv, NULL);
 
   flows_hash->walk(flow_update_hosts_stats, (void*)&tv);
-
   hosts_hash->walk(update_hosts_stats, (void*)&tv);
   strings_hash->walk(update_hosts_stats, (void*)&tv);
 }

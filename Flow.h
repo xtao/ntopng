@@ -31,7 +31,7 @@ class Flow : public GenericHashEntry {
   u_int16_t vlanId;
   u_int8_t protocol, tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
-  bool detection_completed, protocol_processed;
+  bool detection_completed, protocol_processed, blacklist_alarm_emitted;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -66,6 +66,7 @@ class Flow : public GenericHashEntry {
 
   void refresh_process();
   void refresh_process_peer(Host *host, u_int16_t port, bool as_client);
+  void checkBlacklistedFlow();
 
  public:
   Flow(NetworkInterface *_iface,
