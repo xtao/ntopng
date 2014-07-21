@@ -186,7 +186,6 @@ void Ntop::createExportInterface() {
 void Ntop::start() {
   char daybuf[64], buf[32];
   time_t when = time(NULL);
-  bool have_sprobe = false;
 
   getTrace()->traceEvent(TRACE_NORMAL,
 			 "Welcome to ntopng %s v.%s (%s) - (C) 1998-14 ntop.org",
@@ -205,13 +204,8 @@ void Ntop::start() {
 
   loadLocalInterfaceAddress();
 
-  if(ntop->getRedis()->hashLen((char*)SPROBE_HASH_NAME) > 0)
-    have_sprobe = true;
-
-  for(int i=0; i<num_defined_interfaces; i++) {
-    if(have_sprobe) iface[i]->enable_sprobe();
-    iface[i]->startPacketPolling();
-  }
+  for(int i=0; i<num_defined_interfaces; i++)
+    iface[i]->startPacketPolling();  
 
   sleep(2);
   address->startResolveAddressLoop();

@@ -63,9 +63,6 @@ class Flow : public GenericHashEntry {
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
   void processLua(lua_State* vm, ProcessInfo *proc, bool client);
   void processJson(bool is_src, json_object *my_object, ProcessInfo *proc);
-
-  void refresh_process();
-  void refresh_process_peer(Host *host, u_int16_t port, bool as_client);
   void checkBlacklistedFlow();
 
  public:
