@@ -1,6 +1,6 @@
 dnl> Do not add anything above
-dnl> ntopng software version is specified below
 AC_INIT([Makefile.in], 1.1.4)
+dnl> Do not add anything above
 
 AC_PROG_CPP
 
