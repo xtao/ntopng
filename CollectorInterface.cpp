@@ -92,7 +92,11 @@ void CollectorInterface::collect_flows() {
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Collecting flows on %s", ifname);
 
   while(isRunning()) {
-    while(idle()) { purgeIdle(time(NULL)); sleep(1); }
+    while(idle()) {
+      purgeIdle(time(NULL));
+      sleep(1);
+      if(ntop->getGlobals()->isShutdown()) return;
+    }
 
     for(int i=0; i<num_subscribers; i++)
       items[i].socket = subscriber[i].socket, items[i].fd = 0, items[i].events = ZMQ_POLLIN, items[i].revents = 0;
@@ -117,9 +121,9 @@ void CollectorInterface::collect_flows() {
 
 	if(size > 0) {
 	  payload[size] = '\0';
-	  
+
 	  parse_flows(payload, sizeof(payload) , 0, this);
-	  
+
 	  ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
 	}
       }

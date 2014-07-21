@@ -2115,13 +2115,15 @@ static int get_historical_info(lua_State* vm) {
     lua_newtable(vm);
     lua_push_int_table_entry(vm, "id", iface->get_id());
     lua_push_str_table_entry(vm, "name", iface->get_name());
+    lua_push_bool_table_entry(vm, "on_load", iface->is_on_load());
     lua_push_int_table_entry(vm, "interface_id", iface->getDataIntrefaceId());
     lua_push_str_table_entry(vm, "interface_name", ntop->getInterfaceId(iface->getDataIntrefaceId())->get_name());
     lua_push_int_table_entry(vm, "from_epoch", iface->getFromEpoch());
     lua_push_int_table_entry(vm, "to_epoch", iface->getToEpoch());
-    lua_push_int_table_entry(vm, "open_error", iface->getOpenError());
-    lua_push_int_table_entry(vm, "file_error", iface->getMissingFiles());
-    lua_push_int_table_entry(vm, "query_error", iface->getQueryError());
+    lua_push_int32_table_entry(vm, "num_files", iface->getNumFiles());
+    lua_push_int32_table_entry(vm, "open_error", iface->getOpenError());
+    lua_push_int32_table_entry(vm, "file_error", iface->getMissingFiles());
+    lua_push_int32_table_entry(vm, "query_error", iface->getQueryError());
   }
 
   return(CONST_LUA_OK);
@@ -2158,15 +2160,14 @@ static int set_historical_info(lua_State* vm) {
   iface->setToEpoch( (time_t) to_epoch);
   iface->setDataIntrefaceId(iface_id);
 
-
   return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
 
 /**
- * @brief Load historical data based on a time interval
- * @details Cleanup the interface before load the new data. Require the following parameters:
+ * @brief Start loading historical data process based on a time interval
+ * @details Require the following parameters:
  *                number from_epoch
  *                number to_epoch
  *                number interface id
@@ -2189,8 +2190,13 @@ static int load_historical_interval(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   iface_id = lua_tonumber(vm, 3);
-  iface->cleanup();
-  lua_pushnumber(vm,  iface->loadData( (time_t) from_epoch, (time_t) to_epoch, iface_id) );
+
+  if (iface->is_on_load())
+     lua_pushboolean(vm,false);
+   else {
+    iface->startLoadData( (time_t) from_epoch, (time_t) to_epoch, iface_id);
+    lua_pushboolean(vm,true);
+   }
 
   return(CONST_LUA_OK);
 }

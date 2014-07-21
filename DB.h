@@ -40,12 +40,11 @@ class DB {
   u_int32_t dir_duration;
   char db_path[MAX_PATH];
   time_t end_dump;
-  pthread_t dumpContactsThreadLoop;
   u_int8_t db_id;
 
   void initDB(time_t when, const char *create_sql_string);
   void termDB();
-  bool execSQL(sqlite3 *_db, char* sql);  
+  bool execSQL(sqlite3 *_db, char* sql);
   int get_open_db_contacts_connection(char *path, int *db_to_purge);
 
  public:

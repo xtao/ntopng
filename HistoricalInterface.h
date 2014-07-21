@@ -27,7 +27,7 @@
 class HistoricalInterface : public ParserInterface {
 
  private:
-  u_int8_t num_historicals,     /*< Number of historical files loaded*/
+  u_int32_t num_historicals,     /*< Number of historical files loaded*/
               num_query_error,     /*< Number of query error*/
               num_open_error,      /*< Number of error while opening a files*/
               num_missing_file ;   /*< Number of missing files*/
@@ -35,6 +35,7 @@ class HistoricalInterface : public ParserInterface {
   u_int8_t interface_id;         /*< Interface index of the current data*/
   time_t from_epoch;            /*< From epoch of the current data*/
   time_t to_epoch;                /*< To Epoch of the current data*/
+  bool on_load;                     /*< Set on true when loading historical data, false otherwise*/
 
   /**
    * @brief Callback for the sqlite_exe
@@ -74,6 +75,11 @@ class HistoricalInterface : public ParserInterface {
    * @return True if ndpi is enable, false otherwise.
    */
   inline bool is_ndpi_enabled()         { return(false);      };
+  /**
+   * @brief Check if the loading process running
+   * @return True if is running, false otherwise.
+   */
+   inline bool is_on_load()         { return(on_load);      };
   /**
    * @brief Set current interface index
    *
@@ -117,17 +123,22 @@ class HistoricalInterface : public ParserInterface {
    * @brief Get number of open error
    * @return Number of errors encountered while opening files.
    */
-  inline u_int8_t getOpenError() { return num_open_error;};
+  inline u_int32_t getOpenError() { return num_open_error;};
   /**
    * @brief Get number of query error
    * @return Number of errors encountered during the execution of the query.
    */
-  inline u_int8_t getQueryError() { return num_query_error;};
+  inline u_int32_t getQueryError() { return num_query_error;};
   /**
    * @brief Get number of missing error
    * @return Number of missing files.
    */
-  inline u_int8_t getMissingFiles() { return num_missing_file;};
+  inline u_int32_t getMissingFiles() { return num_missing_file;};
+  /**
+   * @brief Get total number of file inside the interval
+   * @return Number of files.
+   */
+  inline u_int32_t getNumFiles() { return num_historicals;};
 
   /**
    * @brief Load historical data
@@ -142,13 +153,18 @@ class HistoricalInterface : public ParserInterface {
    * @details Loop on the interval, with step of 5 minute. For each step make a correct file path and the load flows form it.
    *                Until an error occurs.
    *
+   * @return CONST_HISTORICAL_OK.
+   */
+  int loadData();
+  /**
+   * @brief Start loading historical data process
+   * @details Cleanup the interface, set on true @ref on_load and initialize the interval values.
+   *
    * @param p_from_epoch Epoch time
    * @param p_to_epoch Epoch time
    * @param p_interface_id Index of the interface from which you want to load the data
-    * @return CONST_HISTORICAL_OK in case of success, CONST_HISTORICAL_FILE_ERROR or CONST_HISTORICAL_OPEN_ERROR in case of error.
    */
-  int loadData(time_t p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id);
-
+  void startLoadData(time_t  p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id);
   /**
    * @brief Get Number of dropped packets
    * @return Zero

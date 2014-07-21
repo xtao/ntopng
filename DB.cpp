@@ -41,12 +41,6 @@ DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
 /* ******************************************* */
 
 DB::~DB() {
-  if(ntop->getPrefs()->do_dump_flows_on_db()) {
-    void *res;
-
-    if (dumpContactsThreadLoop) pthread_join(dumpContactsThreadLoop, &res);
-  }
-
   termDB();
 }
 

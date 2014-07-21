@@ -248,8 +248,68 @@ setInterval(function() {
 		var alarm_threshold_low = 60;  /* 60% */
 		var alarm_threshold_high = 90; /* 90% */
 		var alert = 0;
-            if (is_historical) msg = "";
-    msg += "<a href=/lua/hosts_stats.lua>";
+
+            if (is_historical) {
+
+              msg = ""; //Reset msg
+              if(rsp.on_load)
+                msg += "&nbsp;<i class=\"fa fa-cog fa-spin\"></i> Load in process ... </br>";
+
+              if(rsp.success_pctg < alarm_threshold_low) {
+              msg += "<span class=\"label label-default\">";
+              } else if(rsp.success_pctg < alarm_threshold_high) {
+              alert = 1;
+              msg += "<span class=\"label label-warning\">";
+              } else {
+              alert = 1;
+              msg += "<span class=\"label label-success\">";
+              }
+
+              msg += rsp.success_file+" Loaded Files</span>&nbsp;";
+
+              if(rsp.file_pctg < alarm_threshold_low) {
+              msg += "<span class=\"label label-default\">";
+              } else if(rsp.file_pctg < alarm_threshold_high) {
+              alert = 1;
+              msg += "<span class=\"label label-warning\">";
+              } else {
+              alert = 1;
+              msg += "<span class=\"label label-danger\">";
+              }
+
+              msg += rsp.file_error+" Missing Files</span></br>";
+
+              if(rsp.open_error > 0){
+                if(rsp.open_pctg < alarm_threshold_low) {
+                msg += "<span class=\"label label-default\">";
+                } else if(rsp.open_pctg < alarm_threshold_high) {
+                alert = 1;
+                msg += "<span class=\"label label-warning\">";
+                } else {
+                alert = 1;
+                msg += "<span class=\"label label-danger\">";
+                }
+
+                msg += rsp.open_error+" Open Error</span>&nbsp;";
+              }
+
+              if(rsp.query_error > 0){
+                if(rsp.query_pctg < alarm_threshold_low) {
+                msg += "<span class=\"label label-default\">";
+                } else if(rsp.query_pctg < alarm_threshold_high) {
+                alert = 1;
+                msg += "<span class=\"label label-warning\">";
+                } else {
+                alert = 1;
+                msg += "<span class=\"label label-danger\">";
+                }
+
+                msg += rsp.query_error+" Query Error</span></br>";
+              }
+
+          } // End is_historical
+
+            msg += "<a href=/lua/hosts_stats.lua>";
 		if(rsp.hosts_pctg < alarm_threshold_low) {
 		  msg += "<span class=\"label label-default\">";
 		} else if(rsp.hosts_pctg < alarm_threshold_high) {

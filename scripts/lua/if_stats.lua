@@ -106,7 +106,7 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th width=250>Id</th><td colspan=2>" .. ifstats.id .. " ")
    print("</td></tr>\n")
-
+  if not (interface.isHistoricalInterface(ifstats.id)) then
    print("<tr><th width=250>State</th><td colspan=2>")
    state = toggleTableButton("", "", "Active", "1","primary", "Paused", "0","primary", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
 
@@ -119,7 +119,7 @@ if((page == "overview") or (page == nil)) then
    interface.setInterfaceIdleState(on_state)
 
    print("</td></tr>\n")
-
+  end
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
 
   if(ifstats.name ~= nil) then
@@ -245,6 +245,8 @@ elseif(page == "config_historical") then
 
   historical_info = interface.getHistorical()
 
+  print ('<div id="alert_placeholder"></div>')
+
    print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_intreface.lua">')
    print[[
     <input type="hidden" name="from" value="" id="form_from">
@@ -280,13 +282,29 @@ print("<tr><th >Source Interface</th><td colspan=2>")
 
 names = interface.getIfNames()
 
-print('<button id="interface_displayed"  value="' .. historical_info["interface_name"].. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. historical_info["interface_name"].. '<span class="caret"></span></button>\n')
+ key = 'ntopng.prefs.'..historical_info["interface_name"]..'.name'
+custom_name = ntop.getCache(key)
+current_name = historical_info["interface_name"]
+
+if((custom_name ~= nil) and (custom_name ~= "")) then
+  current_name = custom_name
+end
+
+
+print('<button id="interface_displayed"  value="' .. historical_info["interface_name"].. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
 
 print('    <ul class="dropdown-menu" id="interface_list">\n')
 
 for k,v in pairs(names) do
+  key = 'ntopng.prefs.'..v..'.name'
+  custom_name = ntop.getCache(key)
     if (v ~= "Historical") then
-      print('<li><a>'..v..'</a></li>')
+      print('<li><a name="' ..v..'" >')
+      if((custom_name ~= nil) and (custom_name ~= "")) then
+        print(custom_name..'</a></li>')
+      else
+        print(v..'</a></li>')
+      end
     end
 end
 
@@ -306,8 +324,6 @@ print [[
 </form>
 ]]
 
-print ('<div id="alert_placeholder"></div>')
-
 print [[
 <form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_intreface.lua">
   <input type="hidden" name="from" value="" id="form_from">
@@ -325,7 +341,7 @@ print [[
 
 $('#interface_list li > a').click(function(e){
     $('#interface_displayed').html(this.innerHTML+' <span class="caret"></span>');
-    $('#interface_displayed').val(this.innerHTML);
+    $('#interface_displayed').val(this.name);
   });
 
 $('#datetime_from').datetimepicker({
@@ -419,9 +435,9 @@ $( "#conf_historical_form" ).submit(function( event ) {
       success: function (data) {
         var response = jQuery.parseJSON(data);
         if (response.result == "0") {
-            $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Data loaded successfully</div>');
+            $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Data loading process started successfully</div>');
         } else {
-          $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning</strong> Data loaded but some file is missing.<br>'+response.description+'</div>');
+          $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning</strong> Please wait that the loading process will be complete.<br></div>');
         }
       }
     });

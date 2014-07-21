@@ -29,7 +29,7 @@
 
  u_int8_t ParserInterface::parse_flows(char *payload, int payload_size, u_int8_t source_id, void *data) {
 
-  json_object *o;
+  json_object *o, *additional_o;
   ZMQ_Flow flow;
 
   HistoricalInterface * iface = (HistoricalInterface*) data;
@@ -61,6 +61,27 @@
         ntop->getTrace()->traceEvent(TRACE_INFO, "[%s]=[%s]", key, value);
 
         switch(key_id) {
+        case 0: //json additional object added by Flow::serialize()
+          additional_o = json_tokener_parse(value);
+          if( (additional_o != NULL) && (strcmp(key,"json") == 0) ) {
+            struct json_object_iterator additional_it = json_object_iter_begin(additional_o);
+            struct json_object_iterator additional_itEnd = json_object_iter_end(additional_o);
+
+            while(!json_object_iter_equal(&additional_it, &additional_itEnd)) {
+
+              const char *additional_key   = json_object_iter_peek_name(&additional_it);
+              json_object *additional_v    = json_object_iter_peek_value(&additional_it);
+              const char *additional_value = json_object_get_string(additional_v);
+
+              if((additional_key != NULL) && (additional_value != NULL)) {
+                  json_object_object_add(flow.additional_fields, additional_key, json_object_new_string(additional_value));
+                }
+               json_object_iter_next(&additional_it);
+            }
+            /* Dispose memory */
+            json_object_put(additional_o);
+          }
+          break;
         case IN_SRC_MAC:
           /* Format 00:00:00:00:00:00 */
           sscanf(value, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
@@ -234,7 +255,7 @@
     ntop->getTrace()->traceEvent(TRACE_WARNING, "[%u] %s", payload_size, payload);
     return -1;
   }
-  
+
   return 0;
  }
 

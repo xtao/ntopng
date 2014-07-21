@@ -34,13 +34,16 @@ HistoricalInterface::HistoricalInterface(u_int8_t _id, const char *_endpoint)
 void HistoricalInterface::resetStats() {
   num_historicals = 0, num_query_error = 0, num_open_error = 0, num_missing_file = 0, interface_id = 0;
   from_epoch = 0, to_epoch = 0;
+  on_load = false;
 }
 
 /* **************************************************** */
 
 void HistoricalInterface::cleanup() {
-  NetworkInterface::cleanup();
-  resetStats();
+  if (!on_load) {
+    NetworkInterface::cleanup();
+    resetStats();
+  }
 }
 
 /* **************************************************** */
@@ -65,10 +68,10 @@ int HistoricalInterface::loadData(char* p_file_name) {
   char *zErrMsg = 0;
   sqlite3 *db;
 
-  if (p_file_name){
+  if (p_file_name && isRunning()){
 
-    if (running == false)
-      NetworkInterface::startPacketPolling();
+    // if (running == false)
+    //   NetworkInterface::startPacketPolling();
 
     if(stat(p_file_name, &buf) != 0) {
       ntop->getTrace()->traceEvent(TRACE_WARNING,"Missing file: %s",p_file_name);
@@ -104,44 +107,76 @@ int HistoricalInterface::loadData(char* p_file_name) {
 /* **************************************************** */
 
 
-int HistoricalInterface::loadData(time_t  p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id) {
+int HistoricalInterface::loadData() {
   time_t actual_epoch;
   char path[MAX_PATH];
   char db_path[MAX_PATH];
   int ret_state = CONST_HISTORICAL_OK;
 
-  if ((p_from_epoch != 0) && (p_to_epoch != 0)) {
+  if ((from_epoch != 0) && (to_epoch != 0)) {
 
-    actual_epoch = p_from_epoch;
-    p_to_epoch -= 300; // Adjust to epoch each file contains 5 minute of data
-    while (actual_epoch <= p_to_epoch) {
+    actual_epoch = from_epoch;
+    to_epoch -= 300; // Adjust to epoch each file contains 5 minute of data
+    while (actual_epoch <= to_epoch && isRunning()) {
 
       memset(path, 0, sizeof(path));
       memset(db_path, 0, sizeof(db_path));
 
       strftime(path, sizeof(path), "%Y/%m/%d/%H/%M", localtime(&actual_epoch));
       snprintf(db_path, sizeof(db_path), "%s/%u/flows/%s.sqlite",
-                    ntop->get_working_dir(), p_interface_id , path);
+                    ntop->get_working_dir(), interface_id , path);
 
-      ret_state = loadData(db_path);
-      if (ret_state != CONST_HISTORICAL_OK) break;
+     loadData(db_path);
 
+      num_historicals++;
       actual_epoch += 300; // 5 minute steps
     }
 
-    from_epoch = p_from_epoch;
-    to_epoch = p_to_epoch;
-    interface_id = p_interface_id;
   }
+  on_load = false;
 
   return ret_state;
 }
 
 /* **************************************************** */
 
+static void* packetPollLoop(void* ptr) {
+  HistoricalInterface *iface = (HistoricalInterface*)ptr;
+
+  /* Wait until the initialization completes */
+  while(!iface->isRunning() || !iface->is_on_load()) sleep(1);
+
+  iface->loadData();
+  return(NULL);
+}
+
+/* **************************************************** */
+
+void HistoricalInterface::startLoadData(time_t  p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id) {
+
+  if (!on_load) {
+    cleanup();
+    on_load = true;
+
+    from_epoch = p_from_epoch;
+    to_epoch = p_to_epoch;
+    interface_id = p_interface_id;
+
+    pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
+    NetworkInterface::startPacketPolling();
+  }
+
+}
+
+/* **************************************************** */
+
 void HistoricalInterface::shutdown() {
-  if(running)
+  void *res;
+
+  if(running) {
     NetworkInterface::shutdown();
+    pthread_join(pollLoop, &res);
+  }
 }
 
 /* **************************************************** */
