@@ -1142,18 +1142,19 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
 	   (unsigned int)time(NULL), (unsigned int)level,
 	   (unsigned int)t, msg);
 
-  l->lock(__FILE__, __LINE__);
-  /* Put the latest messages on top so old messages (if any) will be discarded */
-  reply = (redisReply*)redisCommand(redis, "LPUSH %s %s",
-				    CONST_ALERT_MSG_QUEUE, what);
 #ifndef WIN32
   // Print alerts into syslog
-  if(ntop->getPrefs()->are_alerts_syslog_enabled()){
+  if(ntop->getRuntimePrefs()->are_alerts_syslog_enable()){
     if( alert_level_info == level) syslog(LOG_INFO, "%s", what);
     else if ( alert_level_warning == level) syslog(LOG_WARNING, "%s", what);
     else if ( alert_level_error == level) syslog(LOG_ALERT, "%s", what);
   }
 #endif
+
+  l->lock(__FILE__, __LINE__);
+  /* Put the latest messages on top so old messages (if any) will be discarded */
+  reply = (redisReply*)redisCommand(redis, "LPUSH %s %s",
+				    CONST_ALERT_MSG_QUEUE, what);
 
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");

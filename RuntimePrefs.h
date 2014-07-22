@@ -45,47 +45,63 @@ class RuntimePrefs {
    */
   RuntimePrefs();
 
+   /**
+   * @brief Set alert syslog preference.
+   * @details Enable or disable the preference and save it in Redis.
+   *
+   * @param enable Preference boolean value.
+   */
+  void set_alerts_syslog(bool enable);
+
+   /**
+   * @brief Get the alert syslog preference.
+   * @details Read for Redis the preference, if it doesn't exist
+   * the preference will be set to default value (true).
+   * @return The preference boolean value
+   */
+  bool are_alerts_syslog_enable();
+
   /**
    * @brief Set the local hosts rrd creation preference.
    * @details Enable or disable the preference and save it in Redis.
-   * 
+   *
    * @param enable Preference boolean value.
    */
   void set_local_hosts_rrd_creation(bool enable);
   /**
    * @brief Get the local hosts rrd creation preference.
-   * @details Read for Redis the preference, if it doesn't exist 
+   * @details Read for Redis the preference, if it doesn't exist
    * the preference will be set to default value (true).
-   * @return The preference boolean value 
+   * @return The preference boolean value
    */
   bool are_local_hosts_rrd_created();
   /**
    * @brief Set the hosts ndpi rrd creation preference.
    * @details Enable or disable the preference and save it in Redis.
-   * 
+   *
    * @param enable Preference boolean value.
    */
   void set_hosts_ndpi_rrd_creation(bool enable);
   /**
    * @brief Get the hosts ndpi rrd creation preference.
-   * @details Read for Redis the preference, if it doesn't exist 
+   * @details Read for Redis the preference, if it doesn't exist
    * the preference will be set to default value (true).
-   * @return The preference boolean value 
+   * @return The preference boolean value
    */
   bool are_hosts_ndpi_rrd_created();
   /**
    * @brief Set the throughput unit preference.
-   * @details Save the unit preference in Redis. The preference will be 
+   * @details Save the unit preference in Redis. The preference will be
    * set to "bps" if @ref use_bps is true otherwise to "pps".
-   * 
+   *
    * @param use_bps Preference boolean value.
    */
   void set_throughput_unit(bool use_bps);
   /**
    * @brief Test if the throughput preference is set to "bps".
-   * @details Read for Redis the preference, if it doesn't exist 
+   * @details Read for Redis the preference, if it doesn't exist
    * the preference will be set to default value (bps).
-   * @return True if the preference is "pps", false if it is "bps" 
+   * @return True if the preference is "pps", false if it is "bps"
    */
   bool use_bps_as_set_throughput_unit();
 };

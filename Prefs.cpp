@@ -47,7 +47,6 @@ Prefs::Prefs(Ntop *_ntop) {
   dns_mode = 0;
   logFd = NULL;
   disable_alerts = false;
-  use_syslog_alerts = false;
   pid_path = strdup(DEFAULT_PID_PATH);
   packet_filter = NULL;
   disable_host_persistency = false;
@@ -161,7 +160,6 @@ void usage() {
 #endif
 
 	 "[--disable-alerts|-H]               | Disable alerts generation\n"
-       "[--syslog-alerts| -L]               | Print alert message to syslog\n"
 	 "[--packet-filter|-B] <filter>       | Ingress packet filter (BPF filter)\n"
 	 "[--enable-aggregations|-A] <mode>   | Setup data aggregation:\n"
 	 "                                    | 0 - No aggregations (default)\n"
@@ -240,9 +238,6 @@ static const struct option long_options[] = {
 #endif
   { "disable-alerts",                    no_argument,       NULL, 'H' },
   { "export-flows",                      required_argument, NULL, 'I' },
-#ifndef WIN32
-  { "syslog-alerts",                    no_argument,       NULL, 'L' },
-#endif
   { "disable-host-persistency",          no_argument,       NULL, 'P' },
   { "sticky-hosts",                      required_argument, NULL, 'S' },
   { "user",                              required_argument, NULL, 'U' },
@@ -455,12 +450,6 @@ int Prefs::setOption(int optkey, char *optarg) {
   case 'I':
     export_endpoint = strdup(optarg);
     break;
-
-#ifndef WIN32
-  case 'L':
-    use_syslog_alerts = true;
-    break;
-#endif
 
   case 'U':
     free(user);
