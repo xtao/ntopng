@@ -169,7 +169,7 @@ class NetworkInterface {
 		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
   Flow* findFlowByKey(u_int32_t key);
   void findHostsByName(lua_State* vm, char *key);
-
+  void flushHostContacts();
   void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
   void packet_processing(const u_int32_t when,
 			 const u_int64_t time,

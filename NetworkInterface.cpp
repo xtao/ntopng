@@ -897,6 +897,32 @@ void NetworkInterface::updateHostStats() {
 
 /* **************************************************** */
 
+static bool flush_host_contacts(GenericHashEntry *node, void *user_data) {
+  Host *host = (Host*)node;
+
+  host->flushContacts(false);
+  return(false); /* false = keep on walking */
+}
+
+/* **************************************************** */
+
+static bool flush_string_host_contacts(GenericHashEntry *node, void *user_data) {
+  StringHost *host = (StringHost*)node;
+
+  host->flushContacts(false);
+  return(false); /* false = keep on walking */
+}
+
+/* **************************************************** */
+
+/* Used by daily lua script to flush contacts at the end of the day */
+void NetworkInterface::flushHostContacts() {
+  hosts_hash->walk(flush_host_contacts, NULL);
+  strings_hash->walk(flush_string_host_contacts, NULL);
+}
+
+/* **************************************************** */
+
 static bool hosts_get_list(GenericHashEntry *h, void *user_data) {
   lua_State* vm = (lua_State*)user_data;
 
