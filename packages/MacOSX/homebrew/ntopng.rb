@@ -26,8 +26,13 @@ class Ntopng < Formula
   def install
     system "./autogen.sh"
     system "./configure", "--prefix=#{prefix}"
+    system "svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/"
+    cd "nDPI" do
+        system "./configure"
+        system "make"
+    end
     system "make"
-    system "make install"
+    system "make","install"
   end
 
   test do
