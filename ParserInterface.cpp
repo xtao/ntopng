@@ -46,9 +46,7 @@
     memset(&flow, 0, sizeof(flow));
     flow.additional_fields = json_object_new_object();
     flow.pkt_sampling_rate = 1; /* 1:1 (no sampling) */
-    flow.source_id = source_id;
-
-    flow.vlan_id = source_id;
+    flow.source_id = flow.vlan_id = source_id;
 
     while(!json_object_iter_equal(&it, &itEnd)) {
       const char *key   = json_object_iter_peek_name(&it);

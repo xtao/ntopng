@@ -122,7 +122,7 @@ void CollectorInterface::collect_flows() {
 	if(size > 0) {
 	  payload[size] = '\0';
 
-	  parse_flows(payload, sizeof(payload) , 0, this);
+	  parse_flows(payload, sizeof(payload) , source_id, this);
 
 	  ntop->getTrace()->traceEvent(TRACE_INFO, "[%u] %s", h.size, payload);
 	}
