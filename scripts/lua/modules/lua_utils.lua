@@ -973,18 +973,40 @@ function getHostCommaSeparatedList(p_hosts)
 end
 
 
+-- Flow Utils --
+
+function flowinfo2hostname(flow_info,host_type,show_vlan)
+   local name = ""
+
+  if(host_type == "srv") then
+    name = flow_info["srv.host"]
+    if((name == "") or (name == nil)) then
+      name = flow_info["srv.ip"]
+    end
+    name = ntop.getResolvedAddress(name)
+    if (name ~= flow_info["srv.ip"]) then
+      srv_tooltip = flow_info["srv.ip"]
+    end
+  else
+    name = flow_info["cli.host"]
+    if((name == "") or (name == nil)) then
+      name = flow_info["cli.ip"]
+    end
+    name = ntop.getResolvedAddress(name)
+    if (name ~= flow_info["cli.ip"]) then
+      cli_tooltip = flow_info["cli.ip"]
+    end
+  end
+
+  if(show_vlan) then name = name .. '@' .. flow_info["vlan"] end
+
+  return name
+end
+
+
+
+
 -- Url Util --
-
-
--- function clean_hostkey(key)
---   local rsp = ""
---   local info = split(key,"@")
---   if (info[1] ~= nil) then rsp = rsp..info[1] end
---   if ((info[2] ~= nil) and (info[2] ~= '5')) then
---     rsp = rsp.."@"..info[2]
---   end
---   return rsp
--- end
 
 --
 -- Split the host key (ip@vlan) creating a new lua table.

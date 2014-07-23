@@ -353,7 +353,7 @@ print [[
       print('</form></td></tr>')
    end
 
-   if((host["vlan"] ~= nil) and (host["vlan"] ~= 0)) then
+   if(ifstats.iface_vlan and (host["vlan"] ~= nil)) then
       print("<tr><th>")
 
       if(ifstats.iface_sprobe) then
@@ -554,7 +554,7 @@ for key, value in pairs(flows) do
    break
 end
 
-if(found) then 
+if(found) then
    print [[
 
    <table border=0>
@@ -594,7 +594,7 @@ var hostChart     = dc.rowChart("#chart-row-hosts");
 $.ajax({
       type: 'GET',]]
       print("url: '/lua/host_top_peers_protocols.lua?ifname=".._ifname.."&host="..host_info["host"])
-      if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then print("&vlan="..host_info["vlan"]) end
+      if((host_info["vlan"] ~= nil) and ifstats.iface_vlan) then print("&vlan="..host_info["vlan"]) end
       print("',\n")
 print [[
       data: { },
@@ -683,7 +683,7 @@ dc.renderAll();
 </script>
 
    ]]
-else 
+else
    print("<disv class=\"alert alert-danger\"><img src=/img/warning.png> No active flows have been observed for the specified host</div>")
 end
 

@@ -111,8 +111,7 @@ if(flow == nil) then
 else
 
    print("<table class=\"table table-bordered table-striped\">\n")
-   if ((flow["vlan"] ~= nil) and (flow["vlan"] ~= 0)) then
-      ifstats = interface.getStats()
+   if (ifstats.iface_vlan and (flow["vlan"] ~= nil)) then
       print("<tr><th width=30%>")
       if(ifstats.iface_sprobe) then
          print('Source Id')
@@ -123,7 +122,7 @@ else
       print("</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
    end
      print("<tr><th width=30%>Flow Peers</th><td colspan=2><A HREF=\"/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
-   if(flow["cli.host"] ~= nil) then print(flow["cli.host"]) else print(flow["cli.ip"]) end
+     print(flowinfo2hostname(flow,"cli",ifstats.iface_vlan))
    if(flow["cli.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["cli.port"] > 0) then
@@ -131,7 +130,7 @@ else
    end
    print("</A> <i class=\"fa fa-exchange fa-lg\"></i> \n")
    print("<A HREF=\"/lua/host_details.lua?" .. hostinfo2url(flow,"srv") .. "\">")
-   if(flow["srv.host"] ~= nil) then print(flow["srv.host"]) else print(flow["srv.ip"]) end
+   print(flowinfo2hostname(flow,"srv",ifstats.iface_vlan))
    if(flow["srv.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["srv.port"] > 0) then
@@ -200,7 +199,7 @@ else
          print(" / <span id=top_throughput>" .. bitsToSize(8*flow["top_throughput_bps"]) .. "</span> <span id=top_throughput_trend></span>")
       elseif (throughput_type == "pps") then
          print(" / <span id=top_throughput>" .. pktsToSize(flow["top_throughput_bps"]) .. "</span> <span id=top_throughput_trend></span>")
-      end     
+      end
 
       print("</td><td><span id=thpt_load_chart>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>")
 

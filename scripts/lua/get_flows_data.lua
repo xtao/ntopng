@@ -11,6 +11,8 @@ require "sqlite_utils"
 sendHTTPHeader('text/html')
 local debug = false
 
+interface.find(ifname)
+ifstats = interface.getStats()
 -- printGETParameters(_GET)
 
 
@@ -356,23 +358,8 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 srv_tooltip = ""
 	 cli_tooltip = ""
 
-	 srv_name = value["srv.host"]
-	 if((srv_name == "") or (srv_name == nil)) then
-	    srv_name = value["srv.ip"]
-	 end
-	 srv_name = ntop.getResolvedAddress(srv_name)
-	 if (srv_name ~= value["srv.ip"]) then
-	    srv_tooltip = value["srv.ip"]
-	 end
-
-	 cli_name = value["cli.host"]
-	 if((cli_name == "") or (cli_name == nil)) then
-	    cli_name = value["cli.ip"]
-	 end
-	 cli_name = ntop.getResolvedAddress(cli_name)
-	 if (cli_name ~= value["cli.ip"]) then
-	    cli_tooltip = value["cli.ip"]
-	 end
+	 srv_name = flowinfo2hostname(value,"srv", ifstats.iface_vlan )
+       cli_name = flowinfo2hostname(value,"cli", ifstats.iface_vlan )
 
 	 src_key="<A HREF='/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
 	 if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
