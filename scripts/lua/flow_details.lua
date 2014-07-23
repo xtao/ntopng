@@ -26,15 +26,30 @@ function displayProc(proc)
    if(proc.actual_memory > 0) then
       print("<tr><th width=30%>Average CPU Load</th><td colspan=2><span id=average_cpu_load_"..proc.pid..">")
 
+      cpu_load = round(proc.average_cpu_load, 2)..""
       if(proc.average_cpu_load < 33) then
 	     if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
-	        print("<font color=green>"..proc.average_cpu_load.." %</font>")
+	        print("<font color=green>"..cpu_load.." %</font>")
          elseif(proc.average_cpu_load < 66) then
-	        print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+	        print("<font color=orange><b>"..cpu_load.." %</b></font>")
          else
-	        print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+	        print("<font color=red><b>"..cpu_load.." %</b></font>")
          end
       print(" </span></td></tr>\n")
+
+      print("<tr><th width=30%>I/O Wait Time Percentage</th><td colspan=2><span id=percentage_iowait_time_"..proc.pid..">")
+
+      cpu_load = round(proc.percentage_iowait_time, 2)..""
+      if(proc.percentage_iowait_time < 33) then
+	     if(proc.percentage_iowait_time == 0) then proc.percentage_iowait_time = "< 1" end
+	        print("<font color=green>"..cpu_load.." %</font>")
+         elseif(proc.percentage_iowait_time < 66) then
+	        print("<font color=orange><b>"..cpu_load.." %</b></font>")
+         else
+	        print("<font color=red><b>"..cpu_load.." %</b></font>")
+         end
+      print(" </span></td></tr>\n")
+
 
       print("<tr><th width=30%>Memory Actual / Peak</th><td colspan=2><span id=memory_"..proc.pid..">".. bytesToSize(proc.actual_memory) .. " / ".. bytesToSize(proc.peak_memory) .. " [" .. round((proc.actual_memory*100)/proc.peak_memory, 1) .."%]</span></td></tr>\n")
       print("<tr><th width=30%>VM Page Faults</th><td colspan=2><span id=page_faults_"..proc.pid..">")
@@ -205,6 +220,15 @@ else
 
       print("</td></tr>\n")
    else
+      if((flow.client_process ~= nil) or (flow.server_process ~= nil)) then
+	 print('<tr><th colspan=3><div id="sprobe"></div>')
+	 width  = 640
+	 height = 200
+	 url = "/lua/sprobe_flow_data.lua?flow_key="..flow_key
+	 dofile(dirs.installdir .. "/scripts/lua/inc/sprobe.lua")
+	 print('</th></tr>\n')
+      end
+
       if(flow.client_process ~= nil) then
          print("<tr><th colspan=3 class=\"info\">Client Process Information</th></tr>\n")
          displayProc(flow.client_process)
@@ -319,6 +343,7 @@ function update () {
             // console.log(proc);
             if (proc["memory"])           $('#memory_'+pid).html(proc["memory"]);
             if (proc["average_cpu_load"]) $('#average_cpu_load_'+pid).html(proc["average_cpu_load"]);
+            if (proc["percentage_iowait_time"]) $('#percentage_iowait_time_'+pid).html(proc["percentage_iowait_time"]);
             if (proc["page_faults"])      $('#page_faults_'+pid).html(proc["page_faults"]);
          }
 

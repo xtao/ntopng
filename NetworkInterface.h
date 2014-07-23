@@ -49,7 +49,7 @@ typedef struct {
   u_int32_t pid, father_pid;
   char name[48], father_name[48], user_name[48];
   u_int32_t actual_memory, peak_memory;
-  float average_cpu_load;
+  float average_cpu_load, percentage_iowait_time;
   u_int32_t num_vm_page_faults;
 } ProcessInfo;
 

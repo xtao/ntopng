@@ -59,13 +59,14 @@ else
       if(proc.actual_memory > 0) then
         -- average_cpu_load
         print('"average_cpu_load": "')
+	load = round(proc.average_cpu_load, 2)
         if(proc.average_cpu_load < 33) then
           if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
-          print("<font color=green>"..proc.average_cpu_load.." %</font>")
+          print("<font color=green>"..load.." %</font>")
         elseif(proc.average_cpu_load < 66) then
-          print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+          print("<font color=orange><b>"..load.." %</b></font>")
         else
-          print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+          print("<font color=red><b>"..load.." %</b></font>")
         end
         print('"')
         -- memory
@@ -90,14 +91,15 @@ else
 
       if(proc.actual_memory > 0) then
         -- average_cpu_load
+        load = round(proc.average_cpu_load, 2)
         print('"average_cpu_load": "')
         if(proc.average_cpu_load < 33) then
           if(proc.average_cpu_load == 0) then proc.average_cpu_load = "< 1" end
-          print("<font color=green>"..proc.average_cpu_load.." %</font>")
+          print("<font color=green>"..load.." %</font>")
         elseif(proc.average_cpu_load < 66) then
-          print("<font color=orange><b>"..proc.average_cpu_load.." %</b></font>")
+          print("<font color=orange><b>"..load.." %</b></font>")
         else
-          print("<font color=red><b>"..proc.average_cpu_load.." %</b></font>")
+          print("<font color=red><b>"..load.." %</b></font>")
         end
         print('"')
 

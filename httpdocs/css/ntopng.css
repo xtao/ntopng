@@ -122,3 +122,31 @@ min-width: 100px;
   height: 120px;
   /*background-color: #f5f5f5;*/
 }
+
+
+/* sprobe ****************************** */
+
+
+.circle {
+    border-radius: 50%/50%; 
+    width: 9px;
+    height: 9px;
+margin-right: 5px;
+}
+
+.node circle {
+  cursor: pointer;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font-size: 11px;
+}
+
+path.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+/* ****************************** */

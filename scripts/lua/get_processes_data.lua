@@ -315,7 +315,7 @@ elseif (mode == "timeline") then
       '\"label\":\"'          .. key                                                .. '\",' ..
       '\"value\":'            .. (value["bytes_sent"] + value["bytes_rcvd"])        .. ',' ..
       '\"actual_memory\":'    .. value["actual_memory"]                             .. ',' ..
-      '\"average_cpu_load\":' .. value["average_cpu_load"]                          ..
+	     '\"average_cpu_load\":' .. round(value["average_cpu_load"],2)                          ..
     '}')
     num = num + 1
 

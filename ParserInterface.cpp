@@ -46,7 +46,7 @@
     memset(&flow, 0, sizeof(flow));
     flow.additional_fields = json_object_new_object();
     flow.pkt_sampling_rate = 1; /* 1:1 (no sampling) */
-    flow.source_id = flow.vlan_id = source_id;
+    flow.source_id = source_id, flow.vlan_id = 0;
 
     while(!json_object_iter_equal(&it, &itEnd)) {
       const char *key   = json_object_iter_peek_name(&it);
@@ -185,10 +185,13 @@
           flow.src_process.peak_memory = atoi(value);
           break;
         case SRC_PROC_AVERAGE_CPU_LOAD:
-          flow.src_process.average_cpu_load = (u_int8_t)atoi(value);
+          flow.src_process.average_cpu_load = ((float)atol(value))/((float)100);
           break;
         case SRC_PROC_NUM_PAGE_FAULTS:
           flow.src_process.num_vm_page_faults = atoi(value);
+          break;
+        case SRC_PROC_PCTG_IOWAIT:
+          flow.src_process.percentage_iowait_time = ((float)atol(value))/((float)100);
           break;
 
         case DST_PROC_PID:
@@ -215,11 +218,15 @@
           flow.dst_process.peak_memory = atoi(value);
           break;
         case DST_PROC_AVERAGE_CPU_LOAD:
-          flow.dst_process.average_cpu_load = (u_int8_t)atoi(value);
+          flow.dst_process.average_cpu_load = ((float)atol(value))/((float)100);
           break;
         case DST_PROC_NUM_PAGE_FAULTS:
           flow.dst_process.num_vm_page_faults = atoi(value);
           break;
+        case DST_PROC_PCTG_IOWAIT:
+          flow.dst_process.percentage_iowait_time = ((float)atol(value))/((float)100);
+          break;
+
         default:
           ntop->getTrace()->traceEvent(TRACE_INFO, "Not handled ZMQ field %u", key_id);
           json_object_object_add(flow.additional_fields, key, json_object_new_string(value));

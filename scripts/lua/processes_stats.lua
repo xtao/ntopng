@@ -125,7 +125,7 @@ print [[
   <table class="table table-bordered">
     <tr>
       
-      <th class="text-center span3">
+      <th class="text-left span3">
         <legend>Legend</legend>
         <div id="legend"></div>
         <br/><br/>
