@@ -97,7 +97,7 @@ if(ifstats.iface_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
 			url: url_update , ]]
 print ('rowCallback: function ( row ) { return flow_table_setID(row); },\n')
 
-preference = tablePreferences("rows_number",perPage)
+preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print(" title: \"Active Flows")

@@ -9,7 +9,6 @@ require "lua_utils"
 sendHTTPHeader('application/json')
 
 currentPage = _GET["currentPage"]
-perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 protocol_id = _GET["protocol"]
@@ -28,7 +27,7 @@ else
 end
 
 if(perPage == nil) then
-   perPage = 5
+   perPage = getDefaultTableSize()
 else
    perPage = tonumber(perPage)
 end

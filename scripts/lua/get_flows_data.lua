@@ -54,7 +54,7 @@ else
 end
 
 if(perPage == nil) then
-   perPage = 10
+   perPage = getDefaultTableSize()
 else
    perPage = tonumber(perPage)
    tablePreferences("rows_number",perPage)

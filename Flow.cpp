@@ -134,17 +134,18 @@ void Flow::checkBlacklistedFlow() {
        && srv_host
        && (cli_host->is_blacklisted()
 	   || srv_host->is_blacklisted())) {
-      char c_buf[64], s_buf[64], *c, *s, alert_msg[512];
+      char c_buf[64], s_buf[64], *c, *s, fbuf[256], alert_msg[1024];
       
       c = cli_host->get_ip()->print(c_buf, sizeof(c_buf));
       s = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
       
       snprintf(alert_msg, sizeof(alert_msg), 
-	       "%s <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> contacted %s host <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A>",
+	       "%s <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> contacted %s host <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> [%s]",
 	       cli_host->is_blacklisted() ? "Blacklisted host" : "Host",
 	       c, iface->get_name(), cli_host->get_name() ? cli_host->get_name() : c, 
 	       srv_host->is_blacklisted() ? "blacklisted" : "",
-	       s, iface->get_name(), srv_host->get_name() ? srv_host->get_name() : s);
+	       s, iface->get_name(), srv_host->get_name() ? srv_host->get_name() : s,
+	       print(fbuf, sizeof(fbuf)));
 
       ntop->getRedis()->queueAlert(alert_level_warning, alert_dangerous_host, alert_msg);
     }

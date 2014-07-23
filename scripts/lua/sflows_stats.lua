@@ -14,9 +14,10 @@ active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 application = _GET["application"]
-hosts = _GET["hosts"]
+hosts       = _GET["hosts"]
 aggregation = _GET["aggregation"]
-key = _GET["key"]
+key         = _GET["key"]
+perPage     = _GET["perPage"]
 
 stats = interface.getNdpiStats()
 num_param = 0
@@ -61,8 +62,6 @@ if(key ~= nil) then
   num_param = num_param + 1
 end
 
-
-
 print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")    
@@ -72,7 +71,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
       url: url_update ,
 ]]
 -- Set the preference table
-preference = tablePreferences("rows_number",perPage)
+preference = tablePreferences("rows_number", _GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print [[

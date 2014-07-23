@@ -43,7 +43,7 @@ else
 end
 
 if(perPage == nil) then
-   perPage = 5
+   perPage = getDefaultTableSize()
 else
    perPage = tonumber(perPage)
 end

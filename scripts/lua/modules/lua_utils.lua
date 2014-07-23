@@ -1382,6 +1382,13 @@ function processColor(proc)
    end
 end
 
+function getDefaultTableSize()
+  table_key = getRedisPrefix("ntopng.prefs.table")
+  value = ntop.getHashCache(table_key, "rows_number")
+  if(value == nil) then value = 10 end
+  return(value)
+end
+
 function tablePreferences(key, value)
   table_key = getRedisPrefix("ntopng.prefs.table")
   if (value == nil) then
@@ -1392,3 +1399,4 @@ function tablePreferences(key, value)
     ntop.setHashCache(table_key, key, value)
   end
 end
+

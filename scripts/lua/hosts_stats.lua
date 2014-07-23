@@ -66,7 +66,7 @@ end
 print ('rowCallback: function ( row ) { return host_table_setID(row); },')
 
 -- Set the preference table
-preference = tablePreferences("rows_number",perPage)
+preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 -- Automatic default sorted. NB: the column must be exists.

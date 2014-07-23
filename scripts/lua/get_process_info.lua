@@ -49,7 +49,7 @@ else
   end
 
   if(num == 0) then
-     print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, or process terminated.</div>")
+     print("<div class=\"alert alert-danger\"><img src=/img/warning.png> No traffic detected for this process, flow process expired, or process terminated.</div>")
   else
     if(host_key ~= nil) then
       name = ntop.getResolvedAddress(host_key)
@@ -228,10 +228,12 @@ if(host_key ~= nil) then
   num_param = num_param + 1
 end
 
+print('",')
+-- Set the preference table
+preference = tablePreferences("rows_number", _GET["perPage"])
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
-
-print [[",
-         showPagination: true,
+print [[ showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
 if (pid_key ~= nil) then
