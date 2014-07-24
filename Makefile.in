@@ -105,6 +105,8 @@ endif
 
 .PHONY: default all clean docs test
 
+.NOTPARALLEL: default all
+
 default: $(NDPI_LIB) $(LIB_TARGETS) $(TARGET)
 
 all: default
