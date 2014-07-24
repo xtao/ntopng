@@ -13,9 +13,30 @@ In order to use SSL with ntopng (i.e. HTTPS) you need to
    ln -s /usr/lib/x86_64-linux-gnu/libssl.so .
 
    - OSX
-   ln -s /opt/local/lib/libssl.dylib /opt/local/lib/libcrypto.dylib .
+    ln -s /opt/local/lib/libssl.dylib /opt/local/lib/libcrypto.dylib .
 
 4. Start ntopng
 
+== Ubuntu and Centos packages ==
+
+  cd /tmp/
+  openssl req -new -x509 -sha1 -extensions v3_ca -nodes -days 365 -out cert.pem
+  cat privkey.pem cert.pem > /usr/local/share/ntopng/httpdocs/ssl/ntopng-cert.pem
+  /bin/rm -f privkey.pem cert.pem
+  cd /usr/local/bin/
+  ln -s /usr/lib/x86_64-linux-gnu/libssl.so .
+  ntopng
+
+== HomeBrew Formula ==
+
+  cd /tmp/
+  openssl req -new -x509 -sha1 -extensions v3_ca -nodes -days 365 -out cert.pem
+  mkdir /usr/local/share/ntopng/httpdocs/ssl/
+  cat privkey.pem cert.pem > /usr/local/share/ntopng/httpdocs/ssl/ntopng-cert.pem
+  /bin/rm -f privkey.pem cert.pem
+  cd /usr/local/bin/
+  ln -s /opt/local/lib/libssl.dylib /opt/local/lib/libcrypto.dylib .
+  ntopng
+
 ----------------------------
-(C) ntop.org - January 2013
+(C) ntop.org - July 2014
