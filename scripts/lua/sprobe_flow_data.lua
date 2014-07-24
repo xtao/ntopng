@@ -34,16 +34,16 @@ function displayProc(proc, same_host)
    if(not(same_host)) then
 print [[
 {
- "name": "XXX", 
- "type": "host", 
- "children": [ 
+ "name": "XXX",
+ "type": "host",
+ "children": [
   { "name": "init/1", "type": "proc", "children": [ ]]
 end
-   
+
    if((num == 0) or (same_father == 0)) then
       if(proc.father_pid ~= 1) then
 	 link = "/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. key .."&page=Flows"
-	 print('\n\t\t{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ')
+	 print('\n\t\t{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ]')
       end
    end
 
@@ -51,11 +51,11 @@ end
       link = "/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. key .."&page=Flows"
       print('\n\t\t{ "name": "'..proc.name..' (pid '.. proc.pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ] }')
    end
-  
-   
-   if(not(same_host)) then 
+
+
+   if(not(same_host)) then
       print('\t\t\n] } ] } ] ')
-      
+
       if(proc.father_pid == 1) then
 	 print('} ]\n')
       end
@@ -69,7 +69,7 @@ end
 end
 
 if((flow.client_process ~= nil) and (flow.server_process ~= nil)) then
-   if((flow.client_process.father_pid == flow.server_process.father_pid) 
+   if((flow.client_process.father_pid == flow.server_process.father_pid)
       and (flow["cli.ip"] == flow["srv.ip"])) then
       same_father = 1
    end
@@ -78,8 +78,8 @@ end
 if(flow["cli.ip"] == flow["srv.ip"]) then
 print [[
 {
- "name": "init/1", 
- "type": "proc", 
+ "name": "init/1",
+ "type": "proc",
  "children": [ ]]
 else
    print('{  "name": "/", "type": "host", "children": [\n')
@@ -96,7 +96,7 @@ if(flow.server_process ~= nil) then
 end
 
 if(flow["cli.ip"] == flow["srv.ip"]) then
-   print('\n}')
+   print(']\n}')
 else
    print('] }\n}\n')
 end

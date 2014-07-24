@@ -98,9 +98,9 @@ else
       if (debug) then io.write(srv_key .. '\n') end
 
       process = 0
-      if ((findStringArray(cli_key,compared_hosts) ~= nil) and
-        (findStringArray(srv_key,compared_hosts) ~= nil))then
-      process  = 1
+      if ((findStringArray(cli_key,compared_hosts)) and
+        (findStringArray(srv_key,compared_hosts)))then
+        if(cli_key ~= srv_key) then process  = 1 end
       end -- findStringArray
 
       if (num > max_num_hosts)then process = 0 end

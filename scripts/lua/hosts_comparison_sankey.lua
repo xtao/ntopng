@@ -63,15 +63,16 @@ if (_GET["hosts"] ~= nil) then
         cli_num = findStringArray(cli_key,compared_hosts)
         srv_num = findStringArray(srv_key,compared_hosts)
 
-        if ((cli_num ~= nil) and
-            (srv_num ~= nil))then
-            process  = 1
-        end -- findStringArray
-
-        if ( ((cli_num ~= nil) and (cli_num < 1)) or
-            ((srv_num ~= nil) and (srv_num < 1))
-        ) then
-         if (cli_key == srv_key) then process = 0 end
+         if ( (cli_num ~= nil) and (srv_num ~= nil) )then
+          if (cli_num and srv_num) then
+            if (cli_key == srv_key) then
+              process = 0
+            else
+              process = 1
+            end
+          else
+            process = 0
+          end
         end
 
         if (links_size > max_num_links) then process = 0 end

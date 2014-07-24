@@ -255,12 +255,8 @@ print(url.."hosts=".._GET["hosts"])
     .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
     .append("title")
     .text(function(d) {
-      if (d.vlan != 0) {
         return (d.name);
-      } else {
-        return (d.host);
-      }
-    });
+      });
 
   /* Hook for clicking on host name */
   node.append("rect")
@@ -273,7 +269,7 @@ print(url.."hosts=".._GET["hosts"])
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 4 + sankey.nodeWidth())
     .append("title")
-    .text(function(d) { return "Host: " + d.host + "Vlan: " + d.vlan});
+    .text(function(d) { return "Ip: " + d.ip + " Vlan: " + d.vlan});
 
   node.append("text")
     .attr("x", -6)
@@ -282,11 +278,7 @@ print(url.."hosts=".._GET["hosts"])
     .attr("text-anchor", "end")
     .attr("transform", null)
     .text(function(d) {
-      if (d.vlan != 0) {
         return (d.name);
-      } else {
-        return (d.host);
-      }
      })
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 6 + sankey.nodeWidth())

@@ -100,16 +100,15 @@ end
 function findStringArray(str, tofind)
    if(str == nil) then return(nil) end
    if(tofind == nil) then return(nil) end
-   local rsp = nil
+   local rsp = false
 
-   num = 0
    for k,v in pairs(tofind) do
      str1    = string.gsub(str, "-", "_")
      tofind1 = string.gsub(v, "-", "_")
-     if(string.find(str1, tofind1, 1) == 1) then
-       rsp = num
+     if(str1 == tofind1) then
+       rsp = true
      end
-     num = num + 1
+
    end
 
    return(rsp)
@@ -1387,7 +1386,7 @@ function getDefaultTableSize()
   table_key = getRedisPrefix("ntopng.prefs.table")
   value = ntop.getHashCache(table_key, "rows_number")
   if(value == nil) then value = 10 end
-  return(value)
+  return(tonumber(value))
 end
 
 function tablePreferences(key, value)
