@@ -1,6 +1,8 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2014 - ntop.org
 --
+
+ifstats = interface.getStats()
 
 print [[
 
@@ -39,6 +41,11 @@ print [[
 <script src="/js/sankey.js"></script>
 
 <script>
+]]
+-- Create javascript vlan boolean variable
+if (ifstats.iface_vlan) then print("var iface_vlan = true;") else print("var iface_vlan = false;") end
+
+print [[
 
 var margin = {top: 1, right: 1, bottom: 6, left: 1},
     width = 800 - margin.left - margin.right,
@@ -56,16 +63,16 @@ function sankey() {
     format = function(sent, rcvd) { return "[sent: "+b2s(sent)+", rcvd: "+b2s(rcvd)+"]"; },
     color = d3.scale.category20();
 
-]]    
+]]
 -- Default value
 active_sankey = "host"
 local debug = false
 
 if(_GET["sprobe"] ~= nil) then
    print('d3.json("/lua/sprobe_hosts_data.lua"');
-else 
+else
    if(_GET["host"] ~= nil) then
-      print('d3.json("/lua/iface_flows_sankey.lua?ifname='..ifname..'&' ..hostinfo2url(host_info).. '"')  
+      print('d3.json("/lua/iface_flows_sankey.lua?ifname='..ifname..'&' ..hostinfo2url(host_info).. '"')
    elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil)) then
       print('d3.json("/lua/hosts_comparison_sankey.lua?ifname='..ifname..'&'..'hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
       active_sankey = "comparison"
@@ -79,11 +86,11 @@ end
 
 if (debug) then io.write("Active sankey: "..active_sankey.."\n") end
 
-print [[ 
+print [[
     , function(hosts) {
-    
+
     if ((hosts.links.length == 0) && (hosts.nodes.length == 0)) {
-      $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning: </strong>There are no talkers for the current host.</div>'); 
+      $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning: </strong>There are no talkers for the current host.</div>');
       return;
     }
   d3.select("#chart").select("svg").remove();
@@ -110,7 +117,7 @@ print [[
 
 if (active_sankey == "host") then
 
-print [[ 
+print [[
 
   /* Color the link according to traffic prevalence */
   var colorlink = function(d){
@@ -126,7 +133,19 @@ print [[
 	  .style("stroke-width", function(d) { return Math.max(1, d.dy); })
 	  .style("stroke", function(d){ return d.color = colorlink(d); })
 	  .sort(function(a, b) { return b.dy - a.dy; })
-    .on("dblclick", function(d) { window.location.href = "/lua/hosts_comparison.lua?hosts="+escape(d.source.host)+"@"+escape(d.source.vlan)+","+escape(d.target.host)+"@"+escape(d.target.vlan);  });
+    .on("dblclick", function(d) {
+        url_ref = "/lua/hosts_comparison.lua?hosts="+escape(d.source.host);
+
+        if(iface_vlan )
+          url_ref  += "@"+escape(d.source.vlan);
+
+        url_ref += ","+escape(d.target.host);
+
+        if(iface_vlan )
+          url_ref  += "@"+escape(d.target.vlan);
+
+          window.location.href = url_ref;
+      });
 
 	link.append("title")
 	  .text(function(d) { return d.source.name + " - " + d.target.name + "\n" + format(d.sent, d.rcvd) + "\n Double click to show more information about the flows between this two host." ; });
@@ -170,12 +189,12 @@ print [[
 	  .attr("dy", ".35em")
 	  .attr("text-anchor", "end")
 	  .attr("transform", null)
-	  .text(function(d) { 
+	  .text(function(d) {
       if (d.vlan != 0) {
         return (d.name);
       } else {
         return (d.host);
-      }  
+      }
      })
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 6 + sankey.nodeWidth())
@@ -193,8 +212,8 @@ else
    url = "/lua/flows_stats.lua?"
 end
 
-print [[ 
-  
+print [[
+
   /* Color the link according to traffic volume */
   var colorlink = function(d){
     return color(d.value);
@@ -235,12 +254,12 @@ print(url.."hosts=".._GET["hosts"])
     .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
     .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
     .append("title")
-    .text(function(d) { 
+    .text(function(d) {
       if (d.vlan != 0) {
         return (d.name);
       } else {
         return (d.host);
-      }   
+      }
     });
 
   /* Hook for clicking on host name */
@@ -262,12 +281,12 @@ print(url.."hosts=".._GET["hosts"])
     .attr("dy", ".35em")
     .attr("text-anchor", "end")
     .attr("transform", null)
-    .text(function(d) { 
+    .text(function(d) {
       if (d.vlan != 0) {
         return (d.name);
       } else {
         return (d.host);
-      }  
+      }
      })
     .filter(function(d) { return d.x < width / 2; })
     .attr("x", 6 + sankey.nodeWidth())

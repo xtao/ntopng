@@ -1033,7 +1033,7 @@ end
 --    host_info = interface.getHostInfo("127.0.0.1",0)
 --    key = hostinfo2hostkey(host_info)
 --
-function hostinfo2hostkey(host_info,host_type)
+function hostinfo2hostkey(host_info,host_type,show_vlan)
   local rsp = ""
 
   if(host_type == "cli") then
@@ -1061,7 +1061,8 @@ function hostinfo2hostkey(host_info,host_type)
 
   end
 
-  if ((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
+  if ( ( (host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0) ) or
+        ( (show_vlan ~= nil) and show_vlan) )  then
     rsp = rsp..'@'..tostring(host_info["vlan"])
   end
 

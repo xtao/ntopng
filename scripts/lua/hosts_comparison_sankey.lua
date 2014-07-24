@@ -11,7 +11,7 @@ sendHTTPHeader('application/json')
 -- Defaul value
 local debug = false
 interface.find(ifname)
-
+ifstats = interface.getStats()
 max_num_links = 32
 max_num_hosts = 8
 aggregation = "ndpi"
@@ -27,6 +27,9 @@ if (_GET["hosts"] ~= nil) then
 
   compared_hosts, compared_hosts_size = getHostCommaSeparatedList(_GET["hosts"])
 
+  for k,v in pairs(compared_hosts) do
+    if(debug) then io.write(k .. '-'.. v.."\n") end
+  end
   if (compared_hosts_size >= 2) then
 
     if(_GET["aggregation"] ~= nil) then
@@ -35,25 +38,30 @@ if (_GET["hosts"] ~= nil) then
 
     -- 1.    Find all flows between compared hosts
     flows_stats = interface.getFlowsInfo()
-    
+
     links = {}
     links_size = 0
-    
+
     ndpi = {}
     ndpi_size = compared_hosts_size
-    
+
     l4 = {}
     l4_size = compared_hosts_size
-    
+
     ports = {}
     ports_size = compared_hosts_size
-   
+
 
     for key, value in pairs(flows_stats) do
 
+      cli_key = hostinfo2hostkey(flows_stats[key],"cli",ifstats.iface_vlan)
+      srv_key = hostinfo2hostkey(flows_stats[key],"srv",ifstats.iface_vlan)
+      if (debug) then io.write(cli_key .. '\t') end
+      if (debug) then io.write(srv_key .. '\n') end
+
         process = 0
-        cli_num = findStringArray(flows_stats[key]["cli.ip"],compared_hosts)
-        srv_num = findStringArray(flows_stats[key]["srv.ip"],compared_hosts)
+        cli_num = findStringArray(cli_key,compared_hosts)
+        srv_num = findStringArray(srv_key,compared_hosts)
 
         if ((cli_num ~= nil) and
             (srv_num ~= nil))then
@@ -61,18 +69,18 @@ if (_GET["hosts"] ~= nil) then
         end -- findStringArray
 
         if ( ((cli_num ~= nil) and (cli_num < 1)) or
-            ((srv_num ~= nil) and (srv_num < 1)) 
+            ((srv_num ~= nil) and (srv_num < 1))
         ) then
-         if (flows_stats[key]["cli.ip"] == flows_stats[key]["srv.ip"]) then process = 0 end
+         if (cli_key == srv_key) then process = 0 end
         end
-        
+
         if (links_size > max_num_links) then process = 0 end
-        if ((ndpi_size > max_num_hosts) or 
-            (l4_size > max_num_hosts) or 
+        if ((ndpi_size > max_num_hosts) or
+            (l4_size > max_num_hosts) or
             (ports_size > max_num_hosts))then process = 0 end
 
         if (process == 1) then
-            if (debug) then io.write("Cli:"..flows_stats[key]["cli.ip"]..",Srv:"..flows_stats[key]["srv.ip"]..",Ndpi:"..flows_stats[key]["proto.ndpi"]..",L4:"..flows_stats[key]["proto.l4"].."\n") end
+            if (debug) then io.write("Cli:"..cli_key..",Srv:"..srv_key..",Ndpi:"..flows_stats[key]["proto.ndpi"]..",L4:"..flows_stats[key]["proto.l4"].."\n") end
             if (debug) then io.write("Aggregation:"..aggregation.."\n") end
             aggregation_value = {}
             if (aggregation == "ndpi") then
@@ -113,26 +121,27 @@ if (_GET["hosts"] ~= nil) then
                     nport = nport + 1
                 end
             end
-            
+
             for k,v in pairs(aggregation_value) do
-            
-                if (links[flows_stats[key]["cli.ip"]..":"..v] == nil) then
-                    links[flows_stats[key]["cli.ip"]..":"..v] = {}
-                    links[flows_stats[key]["cli.ip"]..":"..v]["value"] = flows_stats[key]["cli2srv.bytes"]
+              if(debug) then io.write("links:" ..k .. '-' .. v ..'\n') end
+
+                if (links[cli_key..":"..v] == nil) then
+                    links[cli_key..":"..v] = {}
+                    links[cli_key..":"..v]["value"] = flows_stats[key]["cli2srv.bytes"]
                 else
-                    links[flows_stats[key]["cli.ip"]..":"..v]["value"] = links[flows_stats[key]["cli.ip"]..":"..v]["value"] + flows_stats[key]["cli2srv.bytes"]
-                end
-                
-                if (links[flows_stats[key]["srv.ip"]..":"..v] == nil) then
-                    links[flows_stats[key]["srv.ip"]..":"..v] = {}
-                    links[flows_stats[key]["srv.ip"]..":"..v]["value"] = flows_stats[key]["srv2cli.bytes"]
-                else
-                    links[flows_stats[key]["srv.ip"]..":"..v]["value"] = links[flows_stats[key]["srv.ip"]..":"..v]["value"] + flows_stats[key]["cli2srv.bytes"]
+                    links[cli_key..":"..v]["value"] = links[cli_key..":"..v]["value"] + flows_stats[key]["cli2srv.bytes"]
                 end
 
-                if(debug) then io.write("Client: "..flows_stats[key]["cli.ip"]..", aggregation: "..v..",Value: "..links[flows_stats[key]["cli.ip"]..":"..v]["value"].."\n") end
-                if(debug) then io.write("Server: "..flows_stats[key]["srv.ip"]..", aggregation: "..v..",Value: "..links[flows_stats[key]["srv.ip"]..":"..v]["value"].."\n") end
-                
+                if (links[srv_key..":"..v] == nil) then
+                    links[srv_key..":"..v] = {}
+                    links[srv_key..":"..v]["value"] = flows_stats[key]["srv2cli.bytes"]
+                else
+                    links[srv_key..":"..v]["value"] = links[srv_key..":"..v]["value"] + flows_stats[key]["cli2srv.bytes"]
+                end
+
+                if(debug) then io.write("Client: "..cli_key..", aggregation: "..v..",Value: "..links[cli_key..":"..v]["value"].."\n") end
+                if(debug) then io.write("Server: "..srv_key..", aggregation: "..v..",Value: "..links[srv_key..":"..v]["value"].."\n") end
+
             end
         end
     end
@@ -142,24 +151,24 @@ if (_GET["hosts"] ~= nil) then
 
     -- 2.1   Host node
     node_size = 0
-    
+
     for i,host_ip in ipairs(compared_hosts) do
-      
+
       if(node_size > 0) then
         print ",\n"
       end
       node_info = interface.getHostInfo(host_ip)
-      
-      if (node_info ~= nil) then 
+
+      if (node_info ~= nil) then
         vlan_id = node_info["vlan"]
       else
-        vlan_id = " " 
+        vlan_id = " "
       end
 
       print ("\t{\"name\": \"" .. ntop.getResolvedAddress(host_ip) .. "\", \"ip\": \"" .. host_ip .. "\", \"vlan\": \"" .. vlan_id .. "\"}")
       node_size = node_size + 1
     end
-    
+
     -- 2.2   Aggregation node
 
     if(aggregation == "l4proto") then
@@ -170,32 +179,32 @@ if (_GET["hosts"] ~= nil) then
         -- Default ndpi
         aggregation_node = ndpi
     end
-        
+
       for key,value in pairs(aggregation_node) do
           if(debug) then io.write("Aggregation Node: "..key.."\n") end
           if(node_size > 0) then
             print ",\n"
           end
-      
+
           print ("\t{\"name\": \"" .. key .. "\", \"ip\": \"" .. key ..  "\"}")
-          
+
           node_size = node_size + 1
       end
 
-   
+
     -- 3.    Create links
-   
+
     print "\n],\n"
     print '"links" : [\n'
 
-    
+
     -- 2. print links
     num = 0
     for i,host_ip in ipairs(compared_hosts) do
 
        for aggregation_key,value in pairs(aggregation_node) do
-           
-           
+
+
 
            if(links[host_ip..":"..aggregation_key] ~= nil) then
 
@@ -203,7 +212,7 @@ if (_GET["hosts"] ~= nil) then
                print ",\n"
            end
                val = links[host_ip..":"..aggregation_key]["value"]
-               
+
                if (val == 0 ) then val = 1 end
 
                print ("\t{\"source\": "..(i -1).. ", \"target\": "..(compared_hosts_size + value -2)..", \"value\": " .. val .. ", \"aggregation\": \""..aggregation.."\"}")

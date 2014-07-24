@@ -38,7 +38,7 @@ function setAggregationValue(p_type,p_flow,p_key)
   elseif (p_type == "l4proto") then
     l4 = l_array
   else -- port
-    ports =l_array 
+    ports =l_array
   end
 
 end
@@ -91,9 +91,15 @@ else
     num = 0
     for key, value in pairs(flows_stats) do
       flow = flows_stats[key]
+
+      cli_key = hostinfo2hostkey(flow,"cli",ifstats.iface_vlan)
+      srv_key = hostinfo2hostkey(flow,"srv",ifstats.iface_vlan)
+      if (debug) then io.write(cli_key .. '\t') end
+      if (debug) then io.write(srv_key .. '\n') end
+
       process = 0
-      if ((findStringArray(flow["cli.ip"],compared_hosts) ~= nil) and
-        (findStringArray(flow["srv.ip"],compared_hosts) ~= nil))then
+      if ((findStringArray(cli_key,compared_hosts) ~= nil) and
+        (findStringArray(srv_key,compared_hosts) ~= nil))then
       process  = 1
       end -- findStringArray
 
@@ -101,8 +107,8 @@ else
 
       if (process == 1) then
 
-        if (debug) then io.write("PROCESS => Cli:"..flow["cli.ip"]..",Srv:"..flow["srv.ip"]..",Ndpi:"..flow["proto.ndpi"]..",L4:"..flow["proto.l4"]..",Bytes:"..flow["bytes"].."\n") end
-        
+        if (debug) then io.write("PROCESS => Cli:"..cli_key..",Srv:"..srv_key..",Ndpi:"..flow["proto.ndpi"]..",L4:"..flow["proto.l4"]..",Bytes:"..flow["bytes"].."\n") end
+
         -- 1.1   Save ndpi protocol
         if (aggregation == "ndpi") then
           setAggregationValue(aggregation,flow,"proto.ndpi")
