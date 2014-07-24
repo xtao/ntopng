@@ -16,6 +16,7 @@ class Ntopng < Formula
   depends_on 'json-glib' => :build
   depends_on 'json-c' => :build
   depends_on :libtool => :build
+  depends_on 'geoip'
   depends_on 'sqlite'
   depends_on 'rrdtool'
   depends_on 'wget'
