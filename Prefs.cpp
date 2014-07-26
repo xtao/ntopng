@@ -642,7 +642,7 @@ void Prefs::add_network_interface(char *name) {
 /* ******************************************* */
 
 void Prefs::add_default_interfaces() {
-  NetworkInterface *dummy = new NetworkInterface(0);
+  NetworkInterface *dummy = new NetworkInterface("dummy");
   dummy->addAllAvailableInterfaces();
   delete dummy;
 };
