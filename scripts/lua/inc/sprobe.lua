@@ -28,6 +28,15 @@ var vis = d3.select("#sprobe").append("svg:svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
+function nodecolor(node) {
+   var ret = "Burlywood";
+
+  if(node == "host") ret = "lightsteelblue";
+  else if(node == "proc") ret = "red";
+  
+  return(ret);
+}
+
 d3.json("]] print(url) print[[", function(json) {
   root = json;
   root.x0 = h / 2;
@@ -74,9 +83,8 @@ function sprobe_update(source) {
 
   nodeEnter.append("svg:circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) {
-			   return (d.type == "host") ? "lightsteelblue" : "#ff0000"; 
-  });
+      .style("fill", function(d) { return(nodecolor(d.type)); }
+  );
 
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -92,9 +100,8 @@ function sprobe_update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", 4.5)
-      .style("fill", function(d) { 
-			   return (d.type == "host") ? "lightsteelblue" : "#ff0000"; 
-  });
+      .style("fill", function(d) { return(nodecolor(d.type)); }
+  );
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);

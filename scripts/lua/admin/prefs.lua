@@ -14,6 +14,9 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "admin"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+ntop.loadPrefsDefaults()
+prefs = ntop.getPrefs()
+
 print [[
    <h2>Runtime Preferences</h2>
    <table class="table">
@@ -44,8 +47,16 @@ toggleTableButton("Alerts On Syslog",
       "Toggle the dump of alerts on syslog.",
       "On", "1", "success", "Off", "0", "danger", "toggle_alert_syslog", "ntopng.prefs.alerts_syslog")
 
+-- ================================================================================
+print('<tr><th colspan=2 class="info">Data Purge</th></tr>')
+prefsInputField("Local Host Idle Timeout", "Inactivity time after which a local host is considered idle (sec). Default: 300.", "local_host_max_idle", prefs.local_host_max_idle)
+prefsInputField("Remote Host Idle Timeout", "Inactivity time after which a remote host is considered idle (sec). Default: 60.", "non_local_host_max_idle", prefs.non_local_host_max_idle)
+prefsInputField("Flow Idle Timeout", "Inactivity time after which a flow is considered idle (sec). Default: 60.", "flow_max_idle", prefs.flow_max_idle)
+
+-- ================================================================================
 print [[
    </table>
    ]]
+
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

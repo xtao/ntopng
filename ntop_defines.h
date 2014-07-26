@@ -75,7 +75,10 @@
 #define HOST_FAMILY_ID            ((u_int16_t)-1)
 #define FLOW_PURGE_FREQUENCY      1 /* sec */
 #define HOST_PURGE_FREQUENCY      1 /* sec */
-#define MAX_TCP_FLOW_IDLE         3 /* sec */
+#define MAX_TCP_FLOW_IDLE         3 /* sec - how long to delete a flow where the 3wh termination has been seen */
+#define MAX_FLOW_IDLE            60 /* sec */
+#define MAX_LOCAL_HOST_IDLE     300 /* sec */
+#define MAX_REMOTE_HOST_IDLE     60 /* sec */
 #define PURGE_FRACTION           32 /* check 1/32 of hashes per iteration */
 #define MAX_NUM_QUEUED_ADDRS    500 /* Maximum number of queued address for resolution */
 #define MAX_NUM_QUEUED_CONTACTS 25000
@@ -160,8 +163,8 @@
 #define CONST_CONTACTS                "contacted_peers" /* Peers contacted by this host */
 
 #define CONST_HISTORICAL_OK               1
-#define CONST_HISTORICAL_FILE_ERROR               0
-#define CONST_HISTORICAL_OPEN_ERROR               -1
+#define CONST_HISTORICAL_FILE_ERROR       0
+#define CONST_HISTORICAL_OPEN_ERROR      -1
 
 #define CONST_AGGREGATIONS            "aggregations"
 #define CONST_HOST_CONTACTS           "host_contacts"
@@ -169,6 +172,9 @@
 #define CONST_ALERT_MSG_QUEUE         "ntopng.alert_queue"
 #define CONST_ALERT_PREFS             "ntopng.prefs.alerts"
 #define CONST_IFACE_ID_PREFS          "ntopng.prefs.iface_id"
+#define CONST_LOCAL_HOST_IDLE_PREFS   "ntopng.prefs.local_host_max_idle"
+#define CONST_REMOTE_HOST_IDLE_PREFS  "ntopng.prefs.non_local_host_max_idle"
+#define CONST_FLOW_MAX_IDLE_PREFS     "ntopng.prefs.flow_max_idle"
 
 #define CONST_RUNTIME_PREFS_HOST_RRD_CREATION        "ntopng.prefs.host_rrd_creation" /* 0 / 1 */
 #define CONST_RUNTIME_PREFS_HOST_NDPI_RRD_CREATION   "ntopng.prefs.host_ndpi_rrd_creation" /* 0 / 1 */

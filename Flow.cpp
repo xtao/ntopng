@@ -1087,6 +1087,8 @@ void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
 void Flow::handle_process(ProcessInfo *pinfo, bool client_process) {
   ProcessInfo *proc;
 
+  if(pinfo->pid == 0) return;
+
   if(client_process) {
     if(client_proc)
       memcpy(client_proc, pinfo, sizeof(ProcessInfo));

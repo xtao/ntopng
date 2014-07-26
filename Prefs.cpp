@@ -28,7 +28,6 @@ Prefs::Prefs(Ntop *_ntop) {
   local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, httpbl_enabled = false, resolve_all_host_ip = false;
-  non_local_host_max_idle = 60 /* sec */, local_host_max_idle = 300 /* sec */, flow_max_idle = 30 /* sec */;
   max_num_hosts = MAX_NUM_INTERFACE_HOSTS, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
   data_dir = strdup(CONST_DEFAULT_DATA_DIR);
   docs_dir = strdup(CONST_DEFAULT_DOCS_DIR);
@@ -61,6 +60,11 @@ Prefs::Prefs(Ntop *_ntop) {
   daemonize = true;
 #endif
   export_endpoint = NULL;
+
+  /* Defaults */
+  non_local_host_max_idle = MAX_REMOTE_HOST_IDLE /* sec */;
+  local_host_max_idle     = MAX_LOCAL_HOST_IDLE /* sec */;
+  flow_max_idle           = MAX_FLOW_IDLE /* sec */;
 }
 
 /* ******************************************* */
@@ -203,6 +207,21 @@ void usage() {
   n.printAvailableInterfaces(true, 0, NULL, 0);
 
   exit(0);
+}
+
+/* ******************************************* */
+
+void Prefs::loadIdleDefaults() {
+  char rsp[32];
+
+  if(ntop->getRedis()->get((char*)CONST_LOCAL_HOST_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
+    local_host_max_idle = atoi(rsp);
+
+  if(ntop->getRedis()->get((char*)CONST_REMOTE_HOST_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
+    non_local_host_max_idle = atoi(rsp);
+
+  if(ntop->getRedis()->get((char*)CONST_FLOW_MAX_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
+    flow_max_idle = atoi(rsp);
 }
 
 /* ******************************************* */
@@ -646,11 +665,12 @@ void Prefs::add_default_interfaces() {
   dummy->addAllAvailableInterfaces();
   delete dummy;
 };
+
 /* *************************************** */
 
 void Prefs::lua(lua_State* vm) {
-
   lua_newtable(vm);
+
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled_for_all_hosts", resolve_all_host_ip);
   lua_push_bool_table_entry(vm, "is_dns_resolution_enabled", enable_dns_resolution);
   lua_push_bool_table_entry(vm, "is_categorization_enabled", categorization_enabled);
@@ -663,7 +683,5 @@ void Prefs::lua(lua_State* vm) {
   lua_push_bool_table_entry(vm, "is_dump_flows_enabled", dump_flows_on_db);
   lua_push_int_table_entry(vm, "dump_hosts", dump_hosts_to_db);
   lua_push_int_table_entry(vm, "dump_aggregation", dump_aggregations_to_db);
-
 }
 
-/* *************************************** */

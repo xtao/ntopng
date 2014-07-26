@@ -1417,9 +1417,16 @@ static int ntop_http_get(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_prefs(lua_State* vm) {
-
   ntop->getPrefs()->lua(vm);
 
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_load_prefs_defaults(lua_State* vm) {
+  ntop->getPrefs()->loadIdleDefaults();
+  ntop->getPrefs()->lua(vm);
   return(CONST_LUA_OK);
 }
 
@@ -2360,7 +2367,8 @@ static const luaL_Reg ntop_reg[] = {
   { "rrd_fetch",      ntop_rrd_fetch  },
 
   /* Prefs */
-  { "getPrefs",       ntop_get_prefs },
+  { "getPrefs",          ntop_get_prefs },
+  { "loadPrefsDefaults", ntop_load_prefs_defaults },
 
   /* HTTP */
   { "httpRedirect",   ntop_http_redirect },

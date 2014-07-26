@@ -997,7 +997,9 @@ function flowinfo2hostname(flow_info,host_type,show_vlan)
     end
   end
 
-  if(show_vlan) then name = name .. '@' .. flow_info["vlan"] end
+  if(show_vlan and (flow_info["vlan"] > 0)) then
+     name = name .. '@' .. flow_info["vlan"] 
+  end
 
   return name
 end
@@ -1317,6 +1319,33 @@ end
 
 -- ############################################
 -- Runtime preference
+
+function prefsInputField(label, comment, key, value)
+
+if(_GET[key] ~= nil) then
+   k = "ntopng.prefs."..key
+   v = tonumber(_GET[key])
+   if((v > 0) and (v < 86400)) then
+      -- print(k.."="..v)
+      ntop.setCache(k, tostring(v))
+      value = v
+   end
+end
+
+print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td>')
+
+print [[
+<td class="input-group col-lg-3" align=right><form class="navbar-form navbar-left">
+ <div class="input-group" >
+      <input type="text" class="form-control" name="]] print(key) print [[" value="]] print(value.."") print [[">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="submit">Save</button>
+      </span>
+    </div><!-- /input-group -->
+</form></td></tr>
+]]
+
+end
 
 function toggleTableButton(label, comment, on_label, on_value, on_color , off_label, off_value, off_color, submit_field, redis_key)
    if(_GET[submit_field] ~= nil) then

@@ -201,6 +201,7 @@ void Ntop::start() {
 
   runtimeprefs = new RuntimePrefs();
 
+  prefs->loadIdleDefaults();
   loadLocalInterfaceAddress();
 
   for(int i=0; i<num_defined_interfaces; i++)
