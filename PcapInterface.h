@@ -31,7 +31,7 @@ class PcapInterface : public NetworkInterface {
   FILE *pcap_list;
 
  public:
-  PcapInterface(u_int8_t _id, const char *name);
+  PcapInterface(const char *name);
   ~PcapInterface();
 
   inline const char* get_type()    { return("pcap");        };

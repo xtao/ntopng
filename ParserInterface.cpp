@@ -23,7 +23,7 @@
 
 /* **************************************************** */
 
- ParserInterface::ParserInterface(u_int8_t _id, const char *endpoint) : NetworkInterface(_id, endpoint) { }
+ ParserInterface::ParserInterface(const char *endpoint) : NetworkInterface(endpoint) { }
 
 /* **************************************************** */
 

@@ -29,8 +29,7 @@
 
 /* **************************************************** */
 
-PF_RINGInterface::PF_RINGInterface(u_int8_t _id, const char *name)
-  : NetworkInterface(_id, name) {
+PF_RINGInterface::PF_RINGInterface(const char *name) : NetworkInterface(name) {
   u_int flags = ntop->getGlobals()->getPromiscuousMode() ? PF_RING_PROMISC : 0;
 
   flags |= PF_RING_LONG_HEADER;

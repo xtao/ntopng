@@ -23,8 +23,8 @@
 
 /* **************************************************** */
 
-HistoricalInterface::HistoricalInterface(u_int8_t _id, const char *_endpoint)
-  : ParserInterface(_id, _endpoint) {
+HistoricalInterface::HistoricalInterface(const char *_endpoint)
+  : ParserInterface(_endpoint) {
     resetStats();
     purge_idle_flows_hosts = false;
 }

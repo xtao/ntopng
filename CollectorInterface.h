@@ -40,7 +40,7 @@ class CollectorInterface : public ParserInterface {
   zmq_subscriber subscriber[CONST_MAX_NUM_ZMQ_SUBSCRIBERS];
 
  public:
-  CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic);
+  CollectorInterface(const char *_endpoint, const char *_topic);
   ~CollectorInterface();
 
   inline const char* get_type()         { return("zmq");      };

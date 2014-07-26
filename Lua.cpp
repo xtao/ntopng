@@ -2099,6 +2099,8 @@ static int ntop_lua_cli_print(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+/* ****************************************** */
+
 /**
  * @brief Check if the interface is the historical interface
  * @details Push into lua stack 1 if it is, 0 otherwise.

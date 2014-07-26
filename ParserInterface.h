@@ -28,7 +28,7 @@ class ParserInterface : public NetworkInterface {
  private:
 
  public:
-  ParserInterface(u_int8_t _id, const char *endpoint);
+  ParserInterface(const char *endpoint);
   static u_int8_t parse_flows(char *payload, int payload_size, u_int8_t source_id, void *data);
 };
 

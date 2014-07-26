@@ -50,10 +50,11 @@ static void free_wrapper(void *freeable)
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(u_int8_t _id) {
+/* Method used for collateral activities */
+NetworkInterface::NetworkInterface() {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
-    purge_idle_flows_hosts = true, id = _id,
+    purge_idle_flows_hosts = true, id = (u_int8_t)-1,
     sprobe_interface = false, has_vlan_packets = false;
 
   db = new DB(this);
@@ -63,7 +64,7 @@ NetworkInterface::NetworkInterface(u_int8_t _id) {
 
 /* **************************************************** */
 
-NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
+NetworkInterface::NetworkInterface(const char *name) {
   char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
   u_int32_t num_hashes;
@@ -73,7 +74,8 @@ NetworkInterface::NetworkInterface(u_int8_t _id, const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
-  id = _id;
+  id = ifname2id(name);
+
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
@@ -162,6 +164,33 @@ bool NetworkInterface::checkIdle() {
   }
 
   return(is_idle);
+}
+
+/* **************************************************** */
+
+u_int8_t NetworkInterface::ifname2id(const char *name) {
+  char rsp[256];
+
+  if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp, sizeof(rsp)) == 0) {
+    /* Found */
+    return(atoi(rsp));
+  } else {
+    for(u_int8_t idx=0; idx<255; idx++) {
+      char key[256];
+
+      snprintf(key, sizeof(key), "%u", idx);
+      if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, key, rsp, sizeof(rsp)) < 0) {
+	/* Free Id */
+	
+	snprintf(rsp, sizeof(rsp), "%u", idx);
+	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp);
+	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, rsp, (char*)name);
+	return(idx);
+      }
+    }
+  }
+  
+  return((u_int8_t)-1); /* This can't happen, hopefully */
 }
 
 /* **************************************************** */
@@ -1390,10 +1419,10 @@ void NetworkInterface::lua(lua_State *vm) {
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%s][EthStats][Rcvd: %llu]", ifname, getNumPackets());
   lua_push_int_table_entry(vm, "stats_packets", getNumPackets());
   lua_push_int_table_entry(vm, "stats_bytes",   getNumBytes());
-  lua_push_int_table_entry(vm, "stats_flows", getNumFlows());
-  lua_push_int_table_entry(vm, "stats_hosts", getNumHosts());
+  lua_push_int_table_entry(vm, "stats_flows",   getNumFlows());
+  lua_push_int_table_entry(vm, "stats_hosts",   getNumHosts());
   lua_push_int_table_entry(vm, "stats_aggregations", getNumAggregations());
-  lua_push_int_table_entry(vm, "stats_drops", getNumDroppedPackets());
+  lua_push_int_table_entry(vm, "stats_drops",   getNumDroppedPackets());
 
   ethStats.lua(vm);
   ndpiStats.lua(this, vm);

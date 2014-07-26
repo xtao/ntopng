@@ -25,7 +25,6 @@
 #include "ntop_includes.h"
 
 class HistoricalInterface : public ParserInterface {
-
  private:
   u_int32_t num_historicals,     /*< Number of historical files loaded*/
               num_query_error,     /*< Number of query error*/
@@ -60,10 +59,9 @@ class HistoricalInterface : public ParserInterface {
    * @brief Constructor
    * @details Create a new instance and set @ref purge_idle_flows_hosts to false in order to show all the flows.
    *
-   * @param _id Interface index.
    * @param _endpoint Interface name.
    */
-  HistoricalInterface(u_int8_t _id, const char *_endpoint);
+  HistoricalInterface(const char *_endpoint);
 
   /**
    * @brief Get interface type

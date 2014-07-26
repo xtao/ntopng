@@ -23,8 +23,8 @@
 
 /* **************************************************** */
 
-CollectorInterface::CollectorInterface(u_int8_t _id, const char *_endpoint, const char *_topic)
-  : ParserInterface(_id, _endpoint) {
+CollectorInterface::CollectorInterface(const char *_endpoint, const char *_topic)
+  : ParserInterface(_endpoint) {
   char *tmp, *e;
 
   num_drops = 0, num_subscribers = 0;

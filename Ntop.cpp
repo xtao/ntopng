@@ -166,10 +166,9 @@ void Ntop::registerPrefs(Prefs *_prefs) {
 /* ******************************************* */
 
 void Ntop::createHistoricalInterface() {
-
-  historical_interface_id = prefs->get_num_user_specified_interfaces();
-  HistoricalInterface *iface = new HistoricalInterface(historical_interface_id , "Historical");
+  HistoricalInterface *iface = new HistoricalInterface("Historical");
   ntop->registerInterface(iface);
+  historical_interface_id = iface->get_id();
 }
 
 /* ******************************************* */

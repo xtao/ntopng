@@ -39,11 +39,7 @@ else
   _ifname = if_name
 end
 
-
-
 url= '/lua/if_stats.lua?if_name=' .. _ifname
-
-
 
 print [[
   <nav class="navbar navbar-default" role="navigation">
@@ -77,7 +73,6 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 end
 
 if (interface.isHistoricalInterface(ifstats.id)) then
-
   if(page == "config_historical") then
     print("<li class=\"active\"><a href=\"#\">Load Data</a></li>\n")
   else
@@ -103,7 +98,6 @@ print [[
    ]]
 
 if((page == "overview") or (page == nil)) then
-
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th width=250>Id</th><td colspan=2>" .. ifstats.id .. " ")
    print("</td></tr>\n")

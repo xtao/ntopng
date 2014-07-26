@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   ntop->registerPrefs(prefs);
 
   if(prefs->get_num_user_specified_interfaces() == 0) {
-    /* We add all interfaces avilable on this host */
+    /* We add all interfaces available on this host */
     prefs->add_default_interfaces();
   }
 
@@ -113,14 +113,14 @@ int main(int argc, char *argv[])
       else
 	endpoint = ifName;
 
-      iface = new CollectorInterface(i, endpoint, topic);
+      iface = new CollectorInterface(endpoint, topic);
     } else {
 #ifdef HAVE_PF_RING
       try {
-	iface = new PF_RINGInterface(i, ifName);
+	iface = new PF_RINGInterface(ifName);
       } catch (int) {
 #endif
-	iface = new PcapInterface(i, ifName);
+	iface = new PcapInterface(ifName);
 #ifdef HAVE_PF_RING
       }
 #endif

@@ -114,6 +114,7 @@ class NetworkInterface {
   void process_epp_flow(ZMQ_Flow *zflow, Flow *flow);
   bool isInterfaceUp(char *name);
   bool checkIdle();
+  u_int8_t ifname2id(const char *name);
 
  public:
   /**
@@ -122,8 +123,8 @@ class NetworkInterface {
   *
   * @return A new instance of NetworkInteface.
   */
-  NetworkInterface(u_int8_t _id);
-  NetworkInterface(u_int8_t _id, const char *name);
+  NetworkInterface();
+  NetworkInterface(const char *name);
   virtual ~NetworkInterface();
 
   virtual void startPacketPolling();
