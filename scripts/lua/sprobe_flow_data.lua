@@ -21,84 +21,93 @@ else
    flow = interface.findFlowByKey(tonumber(flow_key))
 end
 
-if((flow.client_process ~= nil) or (flow.server_process ~= nil)) then
-
-
-same_father = 0
-num = 0
 key = "" -- TODO
 
-function displayProc(proc, same_host)
-   if(num > 0) then print(',') end
+-- ====================================
 
-   if(not(same_host)) then
-print [[
-{
- "name": "XXX",
- "type": "host",
- "children": [
-  { "name": "init/1", "type": "proc", "children": [ ]]
+function nest2tab(level)
+   print('\n')
+
+   while(level > 0) do
+      print('\t')
+      level = level - 1
+   end
 end
 
-   if((num == 0) or (same_father == 0)) then
-      if(proc.father_pid ~= 1) then
-	 link = "/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. key .."&page=Flows"
-	 print('\n\t\t{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ]')
-      end
+-- ====================================
+
+function displayProc(nest, proc, host, add_host, add_father, first_element, last_element)
+   -- if(num > 0) then print(',') end
+
+   if(add_host) then
+      nest2tab(nest)
+      link = "/lua/host_details.lua?host=".. host .."&page=flows"
+      print('{ "name": "'..host..'", "type": "host", "link": "'..link..'", "children": [ ')
+      nest = nest + 1
    end
-
-   if(proc.pid ~= 1) then
-      link = "/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. key .."&page=Flows"
-      print('\n\t\t{ "name": "'..proc.name..' (pid '.. proc.pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ] }')
-   end
-
-
-   if(not(same_host)) then
-      print('\t\t\n] } ] } ] ')
-
-      if(proc.father_pid == 1) then
-	 print('} ]\n')
-      end
-   else
-      if(((num == 0) and (same_father == 0)) or (num > 0)) then
-	 if(proc.father_pid ~= 1) then
-	    print('\t\t\n] }')
+  
+   if(add_father) then
+      if(first_element and (proc.father_pid ~= 1)) then
+	 nest2tab(nest)
+	 print('{ "name": "init/1", "type": "proc", "children": [ ')
+	 nest = nest + 1
+      else
+	 if(not(first_element)) then
+	    nest2tab(nest)
+	    print('] },')
+	    nest = nest -1
 	 end
       end
+      
+      -- No link for father
+      -- link = "/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. host .."&page=flows"
+      nest2tab(nest)
+      print('{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "type": "proc", "children": [ ')
+      nest = nest + 1
    end
+
+   link = "/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. host .."&page=Flows"
+   nest2tab(nest)
+   print('{ "name": "'..proc.name..' (pid '.. proc.pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ] }')
+
+   if(last_element) then
+      while(nest > 0) do
+	 nest2tab(nest)
+	 print('] }')
+	 nest = nest -1
+      end
+   end
+
+   return(nest)
 end
 
+nest = 0
 if((flow.client_process ~= nil) and (flow.server_process ~= nil)) then
-   if((flow.client_process.father_pid == flow.server_process.father_pid)
-      and (flow["cli.ip"] == flow["srv.ip"])) then
-      same_father = 1
+   if(flow["cli.ip"] ~= flow["srv.ip"]) then 
+      print('{ "name": "/", "type": "proc", "children": [') 
+      nest = 1
    end
+   nest = displayProc(nest, flow.client_process, flow["cli.ip"], true, true, true, false)
+   displayProc(nest, flow.server_process, flow["srv.ip"], (flow["cli.ip"] ~= flow["srv.ip"]), (flow.client_process.father_pid ~= flow.server_process.father_pid), false, true)
+elseif(flow.client_process ~= nil) then
+   nest = displayProc(nest, flow.client_process, flow["cli.ip"], true, true, true, true)
+elseif(flow.server_process ~= nil) then
+   nest = displayProc(nest, flow.server_process, flow["srv.ip"], true, true, true, true)
 end
 
-if(flow["cli.ip"] == flow["srv.ip"]) then
-print [[
-{
- "name": "init/1",
- "type": "proc",
- "children": [ ]]
-else
-   print('{  "name": "/", "type": "host", "children": [\n')
-end
 
-if(flow.client_process ~= nil) then
-   displayProc(flow.client_process, (flow["cli.ip"] == flow["srv.ip"]))
-   num = num + 1
-end
 
-if(flow.server_process ~= nil) then
-   displayProc(flow.server_process, (flow["cli.ip"] == flow["srv.ip"]))
-   num = num + 1
-end
 
-if(flow["cli.ip"] == flow["srv.ip"]) then
-   print(']\n}')
-else
-   print('] }\n}\n')
-end
-
-end
+if(false) then 
+   if(flow["cli.ip"] == flow["srv.ip"]) then
+      print [[
+	    {
+	       "name": "init/1",
+	       "type": "proc",
+	       "children": [ ]]
+	 else
+	    print('{  "name": "/", "type": "host", "children": [\n')
+	 end
+	 
+	 print(']\n}')
+ end

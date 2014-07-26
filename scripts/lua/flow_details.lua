@@ -222,7 +222,7 @@ else
    else
       if((flow.client_process ~= nil) or (flow.server_process ~= nil)) then
 	 print('<tr><th colspan=3><div id="sprobe"></div>')
-	 width  = 640
+	 width  = 1024
 	 height = 200
 	 url = "/lua/sprobe_flow_data.lua?flow_key="..flow_key
 	 dofile(dirs.installdir .. "/scripts/lua/inc/sprobe.lua")
