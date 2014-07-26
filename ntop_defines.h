@@ -91,6 +91,7 @@
 #define DNS_CACHE_DURATION      3600  /*  1 h */
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
+#define DUMMY_IFACE_ID          ((u_int8_t)-1)
 
 #ifndef TH_FIN
 #define	TH_FIN	0x01

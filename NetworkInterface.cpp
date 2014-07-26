@@ -74,7 +74,10 @@ NetworkInterface::NetworkInterface(const char *name) {
   if(name == NULL) name = "1"; /* First available interface */
 #endif
 
-  id = ifname2id(name);
+  if(ntop->getRedis())
+    id = ifname2id(name);
+  else
+    id = (u_int8_t)-1;
 
   purge_idle_flows_hosts = true;
 
@@ -111,40 +114,42 @@ NetworkInterface::NetworkInterface(const char *name) {
 
   ifname = strdup(name);
 
-  num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
-  flows_hash = new FlowHash(this, num_hashes, ntop->getPrefs()->get_max_num_flows());
-
-  num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
-  hosts_hash = new HostHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
-  strings_hash = new StringHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
-
+  if(id != DUMMY_IFACE_ID) {
+    num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
+    flows_hash = new FlowHash(this, num_hashes, ntop->getPrefs()->get_max_num_flows());
+    
+    num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
+    hosts_hash = new HostHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
+    strings_hash = new StringHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
+    
   // init global detection structure
-  ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
-					   malloc_wrapper, free_wrapper, debug_printf);
-  if(ndpi_struct == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
-    exit(-1);
+    ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
+					     malloc_wrapper, free_wrapper, debug_printf);
+    if(ndpi_struct == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
+      exit(-1);
+    }
+    
+    if(ntop->getCustomnDPIProtos() != NULL)
+      ndpi_load_protocols_file(ndpi_struct, ntop->getCustomnDPIProtos());
+    
+    ndpi_port_range d_port[MAX_DEFAULT_PORTS];
+    memset(d_port, 0, sizeof(d_port));
+    ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
+			    (char*)"Operating System", d_port, d_port);
+    
+    // enable all protocols
+    NDPI_BITMASK_SET_ALL(all);
+    ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
+
+    last_pkt_rcvd = 0;
+    next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
+    cpu_affinity = -1, has_vlan_packets = false;
+    running = false, sprobe_interface = false;
+    
+    db = new DB(this);
+    checkIdle();
   }
-
-  if(ntop->getCustomnDPIProtos() != NULL)
-    ndpi_load_protocols_file(ndpi_struct, ntop->getCustomnDPIProtos());
-
-  ndpi_port_range d_port[MAX_DEFAULT_PORTS];
-  memset(d_port, 0, sizeof(d_port));
-  ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
-			  (char*)"Operating System", d_port, d_port);
-
-  // enable all protocols
-  NDPI_BITMASK_SET_ALL(all);
-  ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
-
-  last_pkt_rcvd = 0;
-  next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
-  cpu_affinity = -1, has_vlan_packets = false;
-  running = false, sprobe_interface = false;
-
-  db = new DB(this);
-  checkIdle();
 }
 
 /* **************************************************** */
@@ -171,6 +176,8 @@ bool NetworkInterface::checkIdle() {
 u_int8_t NetworkInterface::ifname2id(const char *name) {
   char rsp[256];
 
+  if(name == NULL) return(DUMMY_IFACE_ID);
+
   if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp, sizeof(rsp)) == 0) {
     /* Found */
     return(atoi(rsp));
@@ -190,7 +197,7 @@ u_int8_t NetworkInterface::ifname2id(const char *name) {
     }
   }
   
-  return((u_int8_t)-1); /* This can't happen, hopefully */
+  return(DUMMY_IFACE_ID); /* This can't happen, hopefully */
 }
 
 /* **************************************************** */
