@@ -636,16 +636,16 @@ void NetworkInterface::purgeIdle(time_t when) {
     last_pkt_rcvd = when;
 
     if((n = purgeIdleFlows()) > 0)
-      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows",
-				   n, getNumFlows());
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle flows on %s",
+				   n, getNumFlows(), ifname);
 
     if((n = purgeIdleHosts()) > 0)
-      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts",
-				   n, getNumHosts());
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle hosts on %s",
+				   n, getNumHosts(), ifname);
 
     if((n = purgeIdleAggregatedHosts()) > 0)
-      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts",
-				   n, getNumHosts());
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Purged %u/%u idle aggregated hosts on %s",
+				   n, getNumHosts(), ifname);
   }
 }
 

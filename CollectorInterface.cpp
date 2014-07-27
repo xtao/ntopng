@@ -102,8 +102,9 @@ void CollectorInterface::collect_flows() {
       items[i].socket = subscriber[i].socket, items[i].fd = 0, items[i].events = ZMQ_POLLIN, items[i].revents = 0;
 
     do {
-      rc = zmq_poll(items, num_subscribers, 1000);
+      rc = zmq_poll(items, num_subscribers, 1000 /* 1 sec */);
       if((rc < 0) || (!isRunning())) return;
+      if(rc == 0) purgeIdle(time(NULL));
     } while(rc == 0);
 
     for(int source_id=0; source_id<num_subscribers; source_id++) {
