@@ -24,7 +24,7 @@
 /* ************************************ */
 
 GenericHash::GenericHash(NetworkInterface *_iface, u_int _num_hashes, u_int _max_hash_size) {
-  num_hashes = _num_hashes, max_hash_size = _max_hash_size, current_size = 0;
+  num_hashes = _num_hashes, max_hash_size = _max_hash_size, current_size = 0, active_elements_size = 0;
   iface = _iface;
   table = new GenericHashEntry*[num_hashes];
   for(u_int i = 0; i < num_hashes; i++)
@@ -62,7 +62,7 @@ void GenericHash::cleanup() {
       }
       table[i] = NULL;
     }
-    current_size = 0;
+  current_size = 0;
 }
 
 /* ************************************ */
@@ -192,6 +192,22 @@ u_int GenericHash::purgeIdle() {
       while(head) {
 	GenericHashEntry *next = head->next();
 
+#if 1
+	if(head->idle()) {
+	  if(prev == NULL) {
+	    table[i] = next;
+	  } else {
+	    prev->set_next(next);
+	  }
+	  
+	  num_purged++, current_size--;
+	  delete(head);
+	  head = next;
+	} else {
+	  prev = head;
+	  head = next;
+	}
+#else
 	if(head->is_ready_to_be_purged()) {
 	  if(prev == NULL) {
 	    table[i] = next;
@@ -203,11 +219,13 @@ u_int GenericHash::purgeIdle() {
 	  delete(head);
 	  head = next;
 	} else {
-	  if(head->idle()) head->set_to_purge();
+	  if(head->idle())
+	    head->set_to_purge();
 
 	  prev = head;
 	  head = next;
 	}
+#endif
       } /* while */
 
       locks[i]->unlock(__FILE__, __LINE__);

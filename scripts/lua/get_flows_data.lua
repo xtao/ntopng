@@ -323,8 +323,6 @@ else
    funct = rev
 end
 
---total = total + 1
-
 for k,v in pairs(vals) do
    total = total + 1
 end

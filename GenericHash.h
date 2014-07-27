@@ -40,7 +40,7 @@
   GenericHashEntry **table; /**< Entry table. It is used for maintain an update history.*/
 
  u_int num_hashes; /**< Number of hash.*/
- u_int current_size; /**< Current size of hash.*/
+ u_int current_size; /**< Current size of hash (including idle or ready-to-purge elements).*/
  u_int max_hash_size; /**< Max size of hash.*/
 
  Mutex **locks;
