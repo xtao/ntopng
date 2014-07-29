@@ -168,7 +168,8 @@ void Ntop::registerPrefs(Prefs *_prefs) {
 void Ntop::createHistoricalInterface() {
   HistoricalInterface *iface = new HistoricalInterface("Historical");
   ntop->registerInterface(iface);
-  historical_interface_id = iface->get_id();
+  //We have to create this interface as last interface
+  historical_interface_id = num_defined_interfaces -1 ;
 }
 
 /* ******************************************* */
@@ -205,7 +206,7 @@ void Ntop::start() {
   loadLocalInterfaceAddress();
 
   for(int i=0; i<num_defined_interfaces; i++)
-    iface[i]->startPacketPolling();  
+    iface[i]->startPacketPolling();
 
   sleep(2);
   address->startResolveAddressLoop();

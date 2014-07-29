@@ -10,7 +10,7 @@ require "lua_utils"
 ifstats = interface.getStats()
 prefs = ntop.getPrefs()
 names = interface.getIfNames()
-
+is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 num_ifaces = 0
 for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
 
@@ -75,7 +75,7 @@ print [[
     <ul class="dropdown-menu">
       <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
       ]]
-  if not (interface.isHistoricalInterface(ifstats.id)) then
+  if not (is_historical) then
 	 print('<li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
 

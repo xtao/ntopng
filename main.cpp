@@ -135,11 +135,13 @@ int main(int argc, char *argv[])
     ntop->registerInterface(iface);
   }
 
-  // Create empty and not running historical interface
+  ntop->createExportInterface();
+
+   // Create empty and not running historical interface
+   // This interface must be create ad last interface, in order to be able to set the right
+   // interface id (not redis id but ntop.h id).
   if(prefs->do_dump_flows_on_db())
     ntop->createHistoricalInterface();
-
-  ntop->createExportInterface();
 
   if(prefs->do_change_user())
     Utils::dropPrivileges();

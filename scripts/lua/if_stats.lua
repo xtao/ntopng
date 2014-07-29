@@ -23,7 +23,7 @@ if_name = _GET["if_name"]
 if(if_name == nil) then if_name = ifname end
 
 interface.find(if_name)
-
+is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 --print(if_name)
 ifstats = interface.getStats()
 
@@ -72,7 +72,7 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
   end
 end
 
-if (interface.isHistoricalInterface(ifstats.id)) then
+if (is_historical) then
   if(page == "config_historical") then
     print("<li class=\"active\"><a href=\"#\">Load Data</a></li>\n")
   else
@@ -101,7 +101,7 @@ if((page == "overview") or (page == nil)) then
    print("<table class=\"table table-striped table-bordered\">\n")
    print("<tr><th width=250>Id</th><td colspan=2>" .. ifstats.id .. " ")
    print("</td></tr>\n")
-  if not (interface.isHistoricalInterface(ifstats.id)) then
+  if not (is_historical) then
    print("<tr><th width=250>State</th><td colspan=2>")
    state = toggleTableButton("", "", "Active", "1","primary", "Paused", "0","primary", "toggle_local", "ntopng.prefs."..if_name.."_not_idle")
 

@@ -112,9 +112,13 @@ int HistoricalInterface::loadData() {
   char path[MAX_PATH];
   char db_path[MAX_PATH];
   int ret_state = CONST_HISTORICAL_OK;
+  u_int8_t iface_dump_id;
 
-  if ((from_epoch != 0) && (to_epoch != 0)) {
+  NetworkInterface * iface = ntop->getInterfaceId(interface_id);
 
+  if ((iface != NULL) && (from_epoch != 0) && (to_epoch != 0)) {
+
+    iface_dump_id = iface->get_id();
     actual_epoch = from_epoch;
     to_epoch -= 300; // Adjust to epoch each file contains 5 minute of data
     while (actual_epoch <= to_epoch && isRunning()) {
@@ -124,7 +128,7 @@ int HistoricalInterface::loadData() {
 
       strftime(path, sizeof(path), "%Y/%m/%d/%H/%M", localtime(&actual_epoch));
       snprintf(db_path, sizeof(db_path), "%s/%u/flows/%s.sqlite",
-                    ntop->get_working_dir(), interface_id , path);
+                    ntop->get_working_dir(), iface_dump_id , path);
 
      loadData(db_path);
 

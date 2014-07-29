@@ -1156,9 +1156,9 @@ THE SOFTWARE.
             if (picker.viewDate) update();
         },
 
-        picker.setMaxDate = function (date) {
+        picker.setMaxDate = function (date,format) {
             if (date == undefined) return;
-            picker.options.maxDate = pMoment(date);
+            picker.options.maxDate = pMoment(date, "MM/DD/YY");
             if (picker.viewDate) update();
         },
 
