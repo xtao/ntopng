@@ -47,7 +47,12 @@ print [[
     <ul class="nav navbar-nav">
 ]]
 
--- print("<li><a href=\"#\">Interface " .. ifname .."</a></li>\n")
+short_name = string.sub(ifname, 1, 30)
+if(short_name ~= ifname) then
+   short_name = short_name .. "..."
+end
+
+print("<li><a href=\"#\">Interface: " .. short_name .."</a></li>\n")
 
 if((page == "overview") or (page == nil)) then
   print("<li class=\"active\"><a href=\"#\">Overview</a></li>\n")
