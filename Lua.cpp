@@ -2126,7 +2126,7 @@ static int is_historical_interface(lua_State* vm) {
 
     if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
     id = (u_int32_t)lua_tonumber(vm, 1);
-    printf("%d -- %d\n",historical_id,id);
+
     lua_pushboolean(vm, (historical_id == id) );
   } else
     lua_pushboolean(vm, false );
