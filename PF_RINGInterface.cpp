@@ -38,6 +38,9 @@ PF_RINGInterface::PF_RINGInterface(const char *name) : NetworkInterface(name) {
   flags |= PF_RING_DO_NOT_PARSE;
 #endif
 
+  if(ntop->getPrefs()->are_ixia_timestamps_enabled())
+    flags |= PF_RING_IXIA_TIMESTAMP;
+
   if((pfring_handle = pfring_open(ifname, ntop->getGlobals()->getSnaplen(), flags)) == NULL) {
     throw 1;
   } else {
@@ -83,7 +86,7 @@ static void* packetPollLoop(void* ptr) {
 
       if(pfring_recv(pd, &buffer, 0, &hdr, 0 /* wait_for_packet */) > 0) {
 	try {
-	  gettimeofday(&hdr.ts, NULL);
+	  if(hdr.ts.tv_sec == 0) gettimeofday(&hdr.ts, NULL);
 	  iface->packet_dissector((const struct pcap_pkthdr *) &hdr, buffer);
 	} catch(std::bad_alloc& ba) {
 	  static bool oom_warning_sent = false;

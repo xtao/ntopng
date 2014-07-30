@@ -84,6 +84,8 @@ PcapInterface::PcapInterface(const char *name) : NetworkInterface(name) {
     }
   }
   
+  if(pcap_handle)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Hardware timestamps are supported only on PF_RING capture interfaces");
 }
 
 /* **************************************************** */

@@ -702,14 +702,25 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     return;
   }
 
-  if(eth_type == 0x8100 /* VLAN */) {
-    Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
-
-    vlan_id = ntohs(qType->vlanId) & 0xFFF;
-    eth_type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
-    ip_offset += 4;
+  while(true) {
+    if(eth_type == 0x8100 /* VLAN */) {
+      Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
+      
+      vlan_id = ntohs(qType->vlanId) & 0xFFF;
+      eth_type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
+      ip_offset += 4;
+    } else if(eth_type == 0x8847 /* MPLS */) {
+      u_int8_t bos; /* bottom_of_stack */
+      
+      bos = (((u_int8_t)packet[ip_offset+2]) & 0x1), ip_offset += 4;
+      if(bos) {
+	eth_type = ETHERTYPE_IP;
+	break;
+      }
+    } else
+      break;
   }
-
+    
   // just work on Ethernet packets that contain IPv4
   switch(eth_type) {
   case ETHERTYPE_IP:

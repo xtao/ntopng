@@ -60,6 +60,7 @@ Prefs::Prefs(Ntop *_ntop) {
   daemonize = true;
 #endif
   export_endpoint = NULL;
+  enable_ixia_timestamps = false;
 
   /* Defaults */
   non_local_host_max_idle = MAX_REMOTE_HOST_IDLE /* sec */;
@@ -188,8 +189,10 @@ void usage() {
 	 "                                    | local  - Keep only local hosts\n"
 	 "                                    | remote - Keep only remote hosts\n"
 	 "                                    | none   - Flush hosts when idle\n"
-   "--json-labels                       | In case JSON label is used (e.g. with ZMQ/Sqlite)\n"
-   "                                    | labels instead of numbers are used as keys.\n"
+	 "--json-labels                       | In case JSON label is used (e.g. with ZMQ/Sqlite)\n"
+	 "                                    | labels instead of numbers are used as keys.\n"
+	 "--hw-timestamp-mode <mode>          | Enable hw timestamping/stripping. Supported TS modes are:\n"
+	 "                                    | ixia - Timestamped packets by ixiacom.com hardware devices\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--version|-V]                      | Print version and quit\n"
 	 "[--help|-h]                         | Help\n"
@@ -267,6 +270,7 @@ static const struct option long_options[] = {
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
   { "json-labels",                       no_argument,       NULL, 211 },
+  { "hw-timestamp-mode",                 required_argument, NULL, 212 },
 
   /* End of options */
   { NULL,                                no_argument,       NULL,  0 }
@@ -487,6 +491,14 @@ int Prefs::setOption(int optkey, char *optarg) {
   case 211:
     json_symbolic_labels = 1;
     break;
+
+  case 212:
+    if(strcmp(optarg, "ixia") == 0)
+      enable_ixia_timestamps = true;
+    else
+      ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				   "Unknown --hw-timestamp-mode mode, it has been ignored\n");
+  break;
 
   default:
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unknown option -%c: Ignored.", (char)optkey);
