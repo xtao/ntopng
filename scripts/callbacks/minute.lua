@@ -34,12 +34,15 @@ host_rrd_creation = ntop.getCache("ntopng.prefs.host_rrd_creation")
 host_ndpi_rrd_creation = ntop.getCache("ntopng.prefs.host_ndpi_rrd_creation")
 
 -- id = 0
-for iface_id,_ifname in pairs(ifnames) do
-   if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..iface_id.."]") end
+for _,_ifname in pairs(ifnames) do
+   interface.find(_ifname)
+   ifstats = interface.getStats()
+
+   if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..ifstats.id.."]") end
    -- Dump topTalkers every minute
 
-   talkers = getTopTalkers(iface_id, _ifname)
-   basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when))
+   talkers = getTopTalkers(ifstats.id, _ifname)
+   basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when))
    filename = fixPath(basedir .. os.date("/%M.json", when))
 
    if(not(ntop.exists(basedir))) then
@@ -65,12 +68,7 @@ for iface_id,_ifname in pairs(ifnames) do
       -- Scan "5 minute" alerts
       scanAlerts("5mins")
 
-      interface.find(_ifname)
-
-      -- Save interface stats. The second.lua file creates bytes.rrd/packets.rrd
-      ifstats = interface.getStats()
-
-      basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/rrd")	
+      basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd")	
       for k in pairs(ifstats["ndpi"]) do
 	 v = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
 	 if(verbose) then print("["..__FILE__()..":"..__LINE__().."] ".._ifname..": "..k.."="..v.."\n") end
@@ -96,7 +94,7 @@ for iface_id,_ifname in pairs(ifnames) do
 	    end
 
 	    if(host.localhost) then
-	       basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/rrd/" .. key)
+	       basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd/" .. key)
 
 	       if(not(ntop.exists(basedir))) then
 		  if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Creating base directory ", basedir, '\n') end
@@ -107,7 +105,7 @@ for iface_id,_ifname in pairs(ifnames) do
 	       name = fixPath(basedir .. "/bytes.rrd")
 	       createRRDcounter(name, verbose)
 	       ntop.rrd_update(name, "N:"..hosts_stats[key]["bytes.sent"] .. ":" .. hosts_stats[key]["bytes.rcvd"])
-	       if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD "..name..'\n') end
+	       if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD [".. ifstats.name .."] "..name..'\n') end
 
 	       -- L4 Protocols
 	       for id, _ in ipairs(l4_keys) do
@@ -119,7 +117,7 @@ for iface_id,_ifname in pairs(ifnames) do
 		     createRRDcounter(name, verbose)
 		     -- io.write(name.."="..host[k..".bytes.sent"].."|".. host[k..".bytes.rcvd"] .. "\n")
 		     ntop.rrd_update(name, "N:".. host[k..".bytes.sent"] .. ":" .. host[k..".bytes.rcvd"])
-		     if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD "..name..'\n') end
+		     if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD [".. ifstats.name .."] "..name..'\n') end
 		  else
 		     -- L2 host
 		     --io.write("Discarding "..k.."@"..key.."\n")
@@ -132,7 +130,7 @@ for iface_id,_ifname in pairs(ifnames) do
 		  name = fixPath(basedir .. "/".. k .. ".rrd")
 		  createRRDcounter(name, verbose)
 		  ntop.rrd_update(name, "N:".. host["ndpi"][k]["bytes.sent"] .. ":" .. host["ndpi"][k]["bytes.rcvd"])
-		  if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD "..name..'\n') end
+		  if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Updating RRD [".. ifstats.name .."] "..name..'\n') end
 	         end
 
 	         if(host["epp"]) then dumpSingleTreeCounters(basedir, "epp", host, verbose) end

@@ -12,16 +12,13 @@ require "graph_utils"
 local enable_second_debug = 0
 
 ifnames = interface.getIfNames()
-id = 0
 for _,ifname in pairs(ifnames) do
    a = string.ends(ifname, ".pcap")
    if(not(a)) then 
-      iface_id = id
-      id = id + 1
       interface.find(ifname)
       ifstats = interface.getStats()
       dirs = ntop.getDirs()
-      basedir = fixPath(dirs.workingdir .. "/" .. iface_id .. "/rrd")
+      basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd")
 
       -- io.write(basedir.."\n")
       if(not(ntop.exists(basedir))) then
@@ -33,11 +30,11 @@ for _,ifname in pairs(ifnames) do
       name = fixPath(basedir .. "/" .. "bytes.rrd")
       create_rrd(name,"bytes")
       ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
-      if(enable_second_debug == 1) then io.write('Updating RRD '.. name .. " " .. ifstats.stats_bytes ..'\n') end
+      if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name .. " " .. ifstats.stats_bytes ..'\n') end
 
       name = fixPath(basedir .. "/" .. "packets.rrd")
       create_rrd(name,"packets")
       ntop.rrd_update(name, "N:".. ifstats.stats_packets)
-      if(enable_second_debug == 1) then io.write('Updating RRD '.. name ..'\n') end
+      if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name ..'\n') end
    end
 end -- for _,ifname in pairs(ifnames) do
