@@ -2118,14 +2118,18 @@ static int ntop_lua_cli_print(lua_State* vm) {
  * @return CONST_LUA_OK.
  */
 static int is_historical_interface(lua_State* vm) {
-  u_int8_t id, historical_id;
+  u_int32_t id, historical_id;
 
-  historical_id = ntop->getHistoricalInterfaceId();
+  if(ntop->getPrefs()->do_dump_flows_on_db()){
 
-  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  id = (u_int32_t)lua_tonumber(vm, 1);
+    historical_id = ntop->getHistoricalInterfaceId();
 
-  lua_pushboolean(vm, (historical_id == id) );
+    if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+    id = (u_int32_t)lua_tonumber(vm, 1);
+    printf("%d -- %d\n",historical_id,id);
+    lua_pushboolean(vm, (historical_id == id) );
+  } else
+    lua_pushboolean(vm, false );
 
   return(CONST_LUA_OK);
 }
