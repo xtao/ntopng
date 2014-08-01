@@ -122,8 +122,8 @@
 #define MAX_PATH                  256
 #endif
 
-//#define DEMO_WIN32              1
-#define MAX_NUM_PACKETS           2000
+//#define DEMO_WIN32                1
+#define MAX_NUM_PACKETS           5000
 
 #define MAX_NUM_HOST_CONTACTS     16
 #define CONST_DEFAULT_NTOP_PORT   3000

@@ -1980,8 +1980,9 @@ static const struct {
   SC(CREATE_VTABLE      )
   SC(DROP_VTABLE        )
   SC(FUNCTION           )
+#ifndef WIN32
   SC(SAVEPOINT          )
-
+#endif
   /* terminator */
   { NULL, 0 }
 };

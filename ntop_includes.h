@@ -156,7 +156,10 @@ extern "C" {
 #include "template.h"
 
 #ifdef WIN32
-extern const char *strcasestr(const char *haystack, const char *needle);
+extern "C" {
+	const char *strcasestr(const char *haystack, const char *needle);
+	int strncasecmp(const char *s1, const char *s2, unsigned int n);
+};
 #endif
 
 #endif /* _NTOP_H_ */

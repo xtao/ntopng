@@ -68,6 +68,12 @@
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h> /* IPv6 */
+
+typedef u_char  u_int8_t;
+typedef u_short u_int16_t;
+typedef unsigned int   u_int32_t;
+typedef unsigned __int64 u_int64_t;
+
 #endif
 
 /* { from mrt.h */

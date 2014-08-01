@@ -1674,7 +1674,7 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
     pearson = Utils::pearsonValueCorrelation(info->x, y);
 
     /* ntop->getTrace()->traceEvent(TRACE_WARNING, "%s: %f", name, pearson); */
-    lua_push_float_table_entry(info->vm, name, pearson);
+    lua_push_float_table_entry(info->vm, name, (float)pearson);
   }
 
   return(false); /* false = keep on walking */
@@ -1704,7 +1704,7 @@ static bool similarity_walker(GenericHashEntry *node, void *user_data) {
     jaccard = Utils::JaccardSimilarity(info->x, y);
 
     /* ntop->getTrace()->traceEvent(TRACE_WARNING, "%s: %f", name, pearson); */
-    lua_push_float_table_entry(info->vm, name, jaccard);
+    lua_push_float_table_entry(info->vm, name, (float)jaccard);
   }
 
   return(false); /* false = keep on walking */
@@ -1864,7 +1864,10 @@ void NetworkInterface::findFatherPidFlows(lua_State *vm, u_int32_t father_pid) {
 /* **************************************** */
 
 bool NetworkInterface::isInterfaceUp(char *name) {
-  struct ifreq ifr;
+#ifdef WIN32
+	return(true);
+#else
+	struct ifreq ifr;
   int sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_IP);
 
   memset(&ifr, 0, sizeof(ifr));
@@ -1875,6 +1878,7 @@ bool NetworkInterface::isInterfaceUp(char *name) {
   }
   close(sock);
   return(!!(ifr.ifr_flags & IFF_UP));
+#endif
 }
 
 /* **************************************** */

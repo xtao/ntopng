@@ -291,7 +291,7 @@ class Ntop {
   void shutdown();
   void runHousekeepingTasks();
   bool isLocalInterfaceAddress(int family, void *addr);
-  inline char* getLocalNetworkName(int16_t local_network_id) { return(address->get_local_network(local_network_id)); };
+  inline char* getLocalNetworkName(int16_t local_network_id) { return(address->get_local_network((u_int8_t)local_network_id)); };
   void createExportInterface();
 
 // Historical Interface
@@ -312,7 +312,7 @@ class Ntop {
    */
   void createHistoricalInterface();
 
-  inline u_int32_t getUptime() { return((start_time > 0) ? (time(NULL)-start_time) : 0); }
+  inline u_int32_t getUptime() { return((u_int32_t)((start_time > 0) ? (time(NULL)-start_time) : 0)); }
 };
 
 extern Ntop *ntop;

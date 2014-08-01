@@ -151,7 +151,7 @@ int Redis::hashLen(char *key) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
 
   if(reply && (reply->type == REDIS_REPLY_INTEGER))
-    rc = reply->integer;
+    rc = (int)reply->integer;
   else
     rc = -1;
 
@@ -988,7 +988,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
       num_activities++;
 
       if((num_activities % 10000) == 0) {
-	u_int diff = time(NULL)-begin;
+	u_int diff = (u_int)(time(NULL)-begin);
 
 	if(diff == 0) diff = 1;
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u activities processed [%.f activities/sec]",

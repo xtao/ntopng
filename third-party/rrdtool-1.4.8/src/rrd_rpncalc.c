@@ -812,12 +812,14 @@ short rpn_calc(
 		} else {
 		    stptr-=shifts;
 		}
+		{
 		/* the real calculation */
 		double val=DNAN;
 		/* the info on the datasource */
 		time_t  dsstep = (time_t) rpnp[rpi - 1].step;
 		int    dscount = rpnp[rpi - 1].ds_cnt;
 		int   locstep = (int)ceil((float)locstepsize/(float)dsstep);
+		int loop;
 
 		/* the sums */
                 double    sum = 0;
@@ -826,9 +828,9 @@ short rpn_calc(
 		/* now loop for each position */
 		int doshifts=shifts;
 		if (shifts<0) { doshifts=-shifts; }
-		for(int loop=0;loop<doshifts;loop++) {
+		for( loop=0;loop<doshifts;loop++) {
 		    /* calculate shift step */
-		    int shiftstep=1;
+		    int shiftstep=1, i;
 		    if (shifts<0) {
 			shiftstep = loop*rpnstack->s[stptr];
 		    } else { 
@@ -840,7 +842,7 @@ short rpn_calc(
 		    }
 		    shiftstep=(int)ceil((float)shiftstep/(float)dsstep);
 		    /* loop all local shifts */
-		    for(int i=0;i<=locstep;i++) {
+		    for( i=0;i<=locstep;i++) {
 			/* now calculate offset into data-array - relative to output_idx*/
 			int offset=shiftstep+i;
 			/* and process if we have index 0 of above */
@@ -874,6 +876,7 @@ short rpn_calc(
 		}
 		rpnstack->s[stptr] = val;
 	    }
+		}
             break;
         case OP_TREND:
         case OP_TRENDNAN:

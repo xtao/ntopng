@@ -20,10 +20,11 @@
  */
 
 #include "ntop_includes.h"
-#include <ifaddrs.h>
 
 #ifdef WIN32
 #include <shlobj.h> /* SHGetFolderPath() */
+#else
+#include <ifaddrs.h>
 #endif
 
 Ntop *ntop;
@@ -97,7 +98,7 @@ Ntop::Ntop(char *appName) {
 
 void Ntop::initTimezone() {
   time_t now = time(NULL);
-  time_offset = mktime(localtime(&now)) - mktime(gmtime(&now));
+  time_offset =(long)(mktime(localtime(&now)) - mktime(gmtime(&now)));
 }
 
 /* ******************************************* */
@@ -235,6 +236,7 @@ bool Ntop::isLocalInterfaceAddress(int family, void *addr) {
 /* ******************************************* */
 
 void Ntop::loadLocalInterfaceAddress() {
+#ifndef WIN32
   struct ifaddrs *local_addresses, *ifa;
   /* buf must be big enough for an IPv6 address(e.g. 3ffe:2fa0:1010:ca22:020a:95ff:fe8a:1cf8) */
   char buf[128], buf2[128];
@@ -277,6 +279,7 @@ void Ntop::loadLocalInterfaceAddress() {
   }
 
   freeifaddrs(local_addresses);
+#endif
 }
 
 /* ******************************************* */
