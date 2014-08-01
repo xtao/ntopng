@@ -344,8 +344,11 @@ for _key, _value in pairsByKeys(vals, funct) do
    srv_tooltip = ""
    cli_tooltip = ""
 
-   srv_name = flowinfo2hostname(value,"srv", ifstats.iface_vlan )
-       cli_name = flowinfo2hostname(value,"cli", ifstats.iface_vlan )
+   srv_name = flowinfo2hostname(value, "srv", ifstats.iface_vlan)
+   cli_name = flowinfo2hostname(value, "cli", ifstats.iface_vlan)
+
+   if(cli_name == nil) then cli_name = "???" end
+   if(srv_name == nil) then srv_name = "???" end
 
    src_key="<A HREF='/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
    if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end

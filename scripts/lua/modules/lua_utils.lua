@@ -977,34 +977,19 @@ end
 function flowinfo2hostname(flow_info,host_type,show_vlan)
    local name = ""
 
-  if(host_type == "srv") then
-    name = flow_info["srv.host"]
-    if((name == "") or (name == nil)) then
-      name = flow_info["srv.ip"]
-    end
-    name = ntop.getResolvedAddress(name)
-    if (name ~= flow_info["srv.ip"]) then
-      srv_tooltip = flow_info["srv.ip"]
-    end
-  else
-    name = flow_info["cli.host"]
-    if((name == "") or (name == nil)) then
-      name = flow_info["cli.ip"]
-    end
-    name = ntop.getResolvedAddress(name)
-    if (name ~= flow_info["cli.ip"]) then
-      cli_tooltip = flow_info["cli.ip"]
-    end
-  end
+   name = flow_info[host_type..".host"]
+   if((name == "") or (name == nil)) then
+      name = flow_info[host_type..".ip"]
+   end
 
-  if(show_vlan and (flow_info["vlan"] > 0)) then
-     name = name .. '@' .. flow_info["vlan"] 
-  end
-
-  return name
+   name = ntop.getResolvedAddress(name)
+   
+   if(show_vlan and (flow_info["vlan"] > 0)) then
+      name = name .. '@' .. flow_info["vlan"] 
+   end
+  
+   return name
 end
-
-
 
 
 -- Url Util --
