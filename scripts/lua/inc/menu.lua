@@ -31,8 +31,6 @@ else
 end
 
 print [[
-
-
       <a class="dropdown-toggle" data-toggle="dropdown" href="#">
         Home <b class="caret"></b>
       </a>
@@ -184,26 +182,32 @@ print [[
 
 
 for k,v in pairs(names) do
-    if(v == ifname) then
-    print("<li")
-    key = 'ntopng.prefs.'..v..'.name'
-    custom_name = ntop.getCache(key)
+   if(v == ifname) then
+      print("<li")
+      key = 'ntopng.prefs.'..v..'.name'
+      custom_name = ntop.getCache(key)
 
-    print(">")
-    print("<a href=\"/lua/if_stats.lua?if_name="..v.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"Current ")
-    if (isPausedInterface(v)) then  print('and paused ') end
-    print("interface\"> ")
-    if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
-    if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
-    if((custom_name ~= nil) and (custom_name ~= "")) then
-       print(custom_name)
-    else
-      print (v)
-    end
+      print(">")
+      print("<a href=\"/lua/if_stats.lua?if_name="..v.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"Current ")
+      if (isPausedInterface(v)) then  print('and paused ') end
+      print("interface\"> ")
+      if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
+      if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
+      if((custom_name ~= nil) and (custom_name ~= "")) then
+	 print(custom_name)
+      else
+	 interface.find(v)
+	 ifstats = interface.getStats()
 
+	 if(v ~= ifstats.description) then
+	    print(ifstats.description)
+	 else
+	    print(ifstats.name)
+	 end
+      end
 
-    print("</a></li>")
-    end
+      print("</a></li>")
+   end
 end
 
 

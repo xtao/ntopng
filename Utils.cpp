@@ -450,3 +450,32 @@ const char *strcasestr(const char *haystack, const char *needle) {
 }
 #endif
 
+/* **************************************************** */
+
+u_int8_t Utils::ifname2id(const char *name) {
+  char rsp[256];
+
+  if(name == NULL) return(DUMMY_IFACE_ID);
+
+  if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp, sizeof(rsp)) == 0) {
+    /* Found */
+    return(atoi(rsp));
+  } else {
+    for(u_int8_t idx=0; idx<255; idx++) {
+      char key[256];
+
+      snprintf(key, sizeof(key), "%u", idx);
+      if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, key, rsp, sizeof(rsp)) < 0) {
+	/* Free Id */
+	
+	snprintf(rsp, sizeof(rsp), "%u", idx);
+	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp);
+	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, rsp, (char*)name);
+	return(idx);
+      }
+    }
+  }
+  
+  return(DUMMY_IFACE_ID); /* This can't happen, hopefully */
+}
+

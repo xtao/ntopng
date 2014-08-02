@@ -648,7 +648,7 @@ int Prefs::save() {
     fprintf(fd, "interface=");
 
     for(int i=0; i<num_interfaces; i++)
-      fprintf(fd, "%s%s", (i > 0) ? "," : "", ifNames[i]);
+      fprintf(fd, "%s%s", (i > 0) ? "," : "", ifNames[i].name);
 
     fprintf(fd, "\n");
   }
@@ -675,10 +675,12 @@ int Prefs::save() {
 /* ******************************************* */
 
 void Prefs::add_network_interface(char *name, char *description) {
-  if(num_interfaces < (MAX_NUM_INTERFACES-1)) {
-    ifNames[num_interfaces].name = strdup(name);
-	ifNames[num_interfaces].description = strdup(description ? description : name);
-	num_interfaces++;
+  u_int32_t id = Utils::ifname2id(name);
+  
+  if(id < (MAX_NUM_INTERFACES-1)) {
+    ifNames[id].name = strdup(name);
+    ifNames[id].description = strdup(description ? description : name);
+    num_interfaces++;
   } else
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many interfaces: discarded %s", name);
 }

@@ -115,10 +115,11 @@ int main(int argc, char *argv[])
   if(prefs->daemonize_ntopng())
     ntop->daemonize();
 
-  for(int i=0; i<max_val(1, prefs->get_num_user_specified_interfaces()); i++) {
+  for(int i=0; i<MAX_NUM_INTERFACES; i++) {
     NetworkInterface *iface;
 
-    ifName = ntop->get_if_name(i);
+    if((ifName = ntop->get_if_name(i)) == NULL)
+      continue;
 
     /* [ zmq-collector.lua@tcp://127.0.0.1:5556 ] */
     if(ifName && (strstr(ifName, "tcp://")

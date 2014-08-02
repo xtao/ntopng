@@ -114,7 +114,6 @@ class NetworkInterface {
   void process_epp_flow(ZMQ_Flow *zflow, Flow *flow);
   bool isInterfaceUp(char *name);
   bool checkIdle();
-  u_int8_t ifname2id(const char *name);
 
  public:
   /**

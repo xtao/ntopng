@@ -75,7 +75,7 @@ NetworkInterface::NetworkInterface(const char *name) {
 #endif
 
   if(ntop->getRedis())
-    id = ifname2id(name);
+    id = Utils::ifname2id(name);
   else
     id = (u_int8_t)-1;
 
@@ -169,35 +169,6 @@ bool NetworkInterface::checkIdle() {
   }
 
   return(is_idle);
-}
-
-/* **************************************************** */
-
-u_int8_t NetworkInterface::ifname2id(const char *name) {
-  char rsp[256];
-
-  if(name == NULL) return(DUMMY_IFACE_ID);
-
-  if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp, sizeof(rsp)) == 0) {
-    /* Found */
-    return(atoi(rsp));
-  } else {
-    for(u_int8_t idx=0; idx<255; idx++) {
-      char key[256];
-
-      snprintf(key, sizeof(key), "%u", idx);
-      if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, key, rsp, sizeof(rsp)) < 0) {
-	/* Free Id */
-	
-	snprintf(rsp, sizeof(rsp), "%u", idx);
-	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp);
-	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, rsp, (char*)name);
-	return(idx);
-      }
-    }
-  }
-  
-  return(DUMMY_IFACE_ID); /* This can't happen, hopefully */
 }
 
 /* **************************************************** */
@@ -1378,9 +1349,9 @@ u_int NetworkInterface::purgeIdleFlows() {
 
 /* **************************************************** */
 
-u_int NetworkInterface::getNumFlows()        { return(flows_hash->getNumEntries());   };
-u_int NetworkInterface::getNumHosts()        { return(hosts_hash->getNumEntries());   };
-u_int NetworkInterface::getNumAggregations() { return(strings_hash->getNumEntries()); };
+u_int NetworkInterface::getNumFlows()        { return(flows_hash ? flows_hash->getNumEntries() : 0);   };
+u_int NetworkInterface::getNumHosts()        { return(hosts_hash ? hosts_hash->getNumEntries() : 0);   };
+u_int NetworkInterface::getNumAggregations() { return(strings_hash ? strings_hash->getNumEntries() : 0); };
 
 /* **************************************************** */
 
@@ -1430,7 +1401,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "name", ifname);
-   lua_push_str_table_entry(vm, "description", ntop->get_if_descr(id));
+  lua_push_str_table_entry(vm, "description", ntop->get_if_descr(id));
   lua_push_int_table_entry(vm, "id", id);
 
   lua_push_str_table_entry(vm, "type", (char*)get_type());
