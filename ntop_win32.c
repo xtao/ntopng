@@ -257,14 +257,14 @@ static const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
 				cur.len++;
 		} else {
 			if (cur.base != -1) {
-				if (best.base == -1 || cur.len best.len)
+				if (best.base == -1 || cur.len > best.len)
 					best = cur;
 				cur.base = -1;
 			}
 		}
 	}
 	if (cur.base != -1) {
-		if (best.base == -1 || cur.len best.len)
+		if (best.base == -1 || cur.len > best.len)
 			best = cur;
 	}
 	if (best.base != -1 && best.len < 2)
@@ -293,7 +293,7 @@ static const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
 			tp += strlen(tp);
 			break;
 		}
-		tp += SPRINTF((tp, "%x", words[i]));
+		tp += sprintf(tp, "%x", words[i]);
 	}
 	/* Was it a trailing run of 0x00's? */
 	if (best.base != -1 && (best.base + best.len) == 8)
@@ -301,7 +301,7 @@ static const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
 	*tp++ = '\0';
 
 	/* Check for overflow, copy, and we're done. */
-	if ((socklen_t)(tp - tmp) size) {
+	if ((socklen_t)(tp - tmp) > size) {
 		//__set_errno (ENOSPC);
 		return (NULL);
 	}
@@ -384,7 +384,7 @@ static int inet_pton6(const char *src, u_char *dst)
 		if (pch != NULL) {
 			val <<= 4;
 			val |= (pch - xdigits);
-			if (val 0xffff)
+			if (val > 0xffff)
 				return (0);
 			saw_xdigit = 1;
 			continue;
@@ -399,7 +399,7 @@ static int inet_pton6(const char *src, u_char *dst)
 			} else if (*src == '\0') {
 				return (0);
 			}
-			if (tp + 2 endp)
+			if (tp + 2 > endp)
 				return (0);
 			*tp++ = (u_char) (val >8) & 0xff;
 			*tp++ = (u_char) val & 0xff;
@@ -408,7 +408,7 @@ static int inet_pton6(const char *src, u_char *dst)
 			continue;
 		}
 		if (ch == '.' && ((tp + 4) <= endp) &&
-		    inet_pton4(curtok, tp) 0) {
+		    inet_pton4(curtok, tp) > 0) {
 			tp += 4;
 			saw_xdigit = 0;
 			break;	/* '\0' was seen by inet_pton4(). */
@@ -416,7 +416,7 @@ static int inet_pton6(const char *src, u_char *dst)
 		return (0);
 	}
 	if (saw_xdigit) {
-		if (tp + 2 endp)
+		if (tp + 2 > endp)
 			return (0);
 		*tp++ = (u_char) (val >8) & 0xff;
 		*tp++ = (u_char) val & 0xff;

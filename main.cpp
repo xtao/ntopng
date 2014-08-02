@@ -63,8 +63,23 @@ void sigproc(int sig) {
 
 /* ******************************************* */
 
-
 #ifdef WIN32
+
+void initWinsock32() {
+  WORD wVersionRequested;
+  WSADATA wsaData;
+  int err;
+
+  wVersionRequested = MAKEWORD(2, 0);
+  err = WSAStartup( wVersionRequested, &wsaData );
+  if( err != 0 ) {
+    /* Tell the user that we could not find a usable */
+    /* WinSock DLL.                                  */
+    printf("FATAL ERROR: unable to initialise Winsock 2.x.\n");
+    exit(-1);
+  }
+}
+
 extern "C" {
 int ntop_main(int argc, char *argv[])
 #else
@@ -75,6 +90,10 @@ int main(int argc, char *argv[])
   Prefs *prefs = NULL;
   char *ifName;
   int rc;
+
+#ifdef WIN32
+  initWinsock32();
+#endif
 
   if((ntop = new(std::nothrow)  Ntop(argv[0])) == NULL) exit(0);
   if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)   exit(0);

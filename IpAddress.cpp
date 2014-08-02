@@ -165,12 +165,10 @@ void IpAddress::compute_key() {
   if(addr.ipVersion == 4) {
     ip_key = ntohl(addr.ipType.ipv4);
   } else if(addr.ipVersion == 6) {
-    u_int32_t key = 0;
+    ip_key = 0;
 
     for(u_int32_t i=0; i<4; i++)
-      key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];
-
-    ip_key = key;
+      ip_key += addr.ipType.ipv6.__u6_addr.__u6_addr32[i];
   }
 }
 

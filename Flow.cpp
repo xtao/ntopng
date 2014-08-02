@@ -874,7 +874,9 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[pkts_thpt: %.2f] [pkts_thpt_trend: %d]", pkts_thpt,pkts_thpt_trend);
 
   if(!detailed_dump) {
-    lua_pushinteger(vm, key()); // Index
+    lua_Integer k = key();
+  
+	lua_pushinteger(vm, k); // Index
     lua_insert(vm, -2);
     lua_settable(vm, -3);
   } else {

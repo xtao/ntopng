@@ -736,12 +736,12 @@ static int ntop_verbose_trace(lua_State* vm) {
 static void getHostVlanInfo(char* lua_ip, char** host_ip,
 			    u_int16_t* vlan_id,
 			    char *buf, u_int buf_len) {
-  char *where, *vlan;
+  char *where, *vlan = NULL;
 
   snprintf(buf, buf_len, "%s", lua_ip);
 
-  (*host_ip) = strtok_r(buf, "@", &where);
-  vlan = strtok_r(NULL, "@", &where);
+  if(((*host_ip) = strtok_r(buf, "@", &where)) != NULL)
+	 vlan = strtok_r(NULL, "@", &where);
 
   if(vlan)
     (*vlan_id) = (u_int16_t)atoi(vlan);
@@ -1645,6 +1645,9 @@ static int ntop_get_resolved_address(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   getHostVlanInfo((char*)lua_tostring(vm, 1), &key, &vlan_id, buf, sizeof(buf));
 
+  if(key == NULL) 
+	  return(CONST_LUA_ERROR);
+  
   if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0)
     tmp = rsp;
   else

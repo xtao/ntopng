@@ -1181,15 +1181,19 @@ Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
 /* **************************************************** */
 
 bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id) {
-  Host *h = getHost(host_ip, vlan_id);
+	if(host_ip == NULL)
+		return(false);
+	else {
+	  Host *h = getHost(host_ip, vlan_id);
 
-  if(h) {
-    lua_newtable(vm);
+	  if(h) {
+		lua_newtable(vm);
 
-    h->lua(vm, true, true, true);
-    return(true);
-  } else
-    return(false);
+		h->lua(vm, true, true, true);
+		return(true);
+	  } else
+		return(false);
+	}
 }
 
 /* **************************************************** */
