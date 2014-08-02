@@ -1,5 +1,5 @@
 dnl> Do not add anything above
-AC_INIT([Makefile.in], 1.1.4)
+AC_INIT([Makefile.in], 1.1.99)
 dnl> Do not add anything above
 
 AC_PROG_CPP
