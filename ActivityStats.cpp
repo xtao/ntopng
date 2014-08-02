@@ -65,9 +65,9 @@ void ActivityStats::reset() {
 
 /* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
-  if((last_set_requested != when) || (when < begin_time)) {
+  if((last_set_requested != when) && (when >= begin_time)) {
     Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-    time_t w;
+    size_t w;
 
     last_set_requested = when;
 
