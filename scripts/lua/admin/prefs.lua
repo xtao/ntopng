@@ -54,9 +54,18 @@ prefsInputField("Remote Host Idle Timeout", "Inactivity time after which a remot
 prefsInputField("Flow Idle Timeout", "Inactivity time after which a flow is considered idle (sec). Default: 60.", "flow_max_idle", prefs.flow_max_idle)
 
 -- ================================================================================
+print('<tr><th colspan=2 class="info">Alerts</th></tr>')
+
+-- CONST_MAX_NEW_FLOWS_SECOND
+prefsInputField("Host Flow Alert Threshold", "Max number of new flows/sec over which a host is considered a flooder. Default: 25.", "host_max_new_flows_sec_threshold", prefs.host_max_new_flows_sec_threshold)
+
+-- CONST_MAX_NUM_SYN_PER_SECOND
+prefsInputField("Host SYN Alert Threshold", "Max number of TCP SYN packets/sec over which a host is considered a flooder. Default: 10.", "host_max_num_syn_sec_threshold", prefs.host_max_num_syn_sec_threshold)
+
+-- ================================================================================
+
 print [[
    </table>
-   ]]
-
+]]
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

@@ -36,7 +36,8 @@ class Prefs {
     dump_timeline, shorten_aggregation_names, enable_auto_logout,
     disable_alerts, enable_ixia_timestamps;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
-  u_int16_t non_local_host_max_idle, local_host_max_idle, flow_max_idle;
+  u_int16_t non_local_host_max_idle, local_host_max_idle, flow_max_idle,
+    host_max_new_flows_sec_threshold, host_max_num_syn_sec_threshold;
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port, https_port;
   u_int8_t num_interfaces;
@@ -60,6 +61,7 @@ class Prefs {
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
   int checkOptions();
+  u_int32_t getDefaultPrefsValue(const char *pref_key, u_int32_t default_value);
 
  public:
   Prefs(Ntop *_ntop);
@@ -108,7 +110,9 @@ class Prefs {
   inline u_int16_t get_flow_max_idle()                  { return(flow_max_idle);  };
   inline u_int32_t get_max_num_hosts()                  { return(max_num_hosts);  };
   inline u_int32_t get_max_num_flows()                  { return(max_num_flows);  };
-  inline bool daemonize_ntopng()                        { return(daemonize);                 };
+  inline u_int16_t get_host_max_new_flows_sec()         { return(host_max_new_flows_sec_threshold); };
+  inline u_int16_t get_host_max_new_syn_sec()           { return(host_max_num_syn_sec_threshold);   };
+  inline bool daemonize_ntopng()                        { return(daemonize);                        };
   void add_default_interfaces();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);

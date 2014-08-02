@@ -66,6 +66,8 @@ Prefs::Prefs(Ntop *_ntop) {
   non_local_host_max_idle = MAX_REMOTE_HOST_IDLE /* sec */;
   local_host_max_idle     = MAX_LOCAL_HOST_IDLE /* sec */;
   flow_max_idle           = MAX_FLOW_IDLE /* sec */;
+  host_max_new_flows_sec_threshold = CONST_MAX_NEW_FLOWS_SECOND; /* flows/sec */
+  host_max_num_syn_sec_threshold = CONST_MAX_NUM_SYN_PER_SECOND; /* syn/sec */
 }
 
 /* ******************************************* */
@@ -214,17 +216,26 @@ void usage() {
 
 /* ******************************************* */
 
+u_int32_t Prefs::getDefaultPrefsValue(const char *pref_key, u_int32_t default_value) {
+ char rsp[32];
+
+ if(ntop->getRedis()->get((char*)pref_key, rsp, sizeof(rsp)) == 0)
+    return(atoi(rsp));
+  else {
+    snprintf(rsp, sizeof(rsp), "%u", default_value);
+    ntop->getRedis()->set((char*)pref_key, rsp);
+    return(default_value);
+  }
+}
+
+/* ******************************************* */
+
 void Prefs::loadIdleDefaults() {
-  char rsp[32];
-
-  if(ntop->getRedis()->get((char*)CONST_LOCAL_HOST_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
-    local_host_max_idle = atoi(rsp);
-
-  if(ntop->getRedis()->get((char*)CONST_REMOTE_HOST_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
-    non_local_host_max_idle = atoi(rsp);
-
-  if(ntop->getRedis()->get((char*)CONST_FLOW_MAX_IDLE_PREFS, rsp, sizeof(rsp)) == 0)
-    flow_max_idle = atoi(rsp);
+  local_host_max_idle = getDefaultPrefsValue(CONST_LOCAL_HOST_IDLE_PREFS, MAX_REMOTE_HOST_IDLE);
+  non_local_host_max_idle = getDefaultPrefsValue(CONST_REMOTE_HOST_IDLE_PREFS, MAX_LOCAL_HOST_IDLE);
+  flow_max_idle = getDefaultPrefsValue(CONST_FLOW_MAX_IDLE_PREFS, MAX_FLOW_IDLE);
+  host_max_new_flows_sec_threshold = getDefaultPrefsValue(CONST_MAX_NEW_FLOWS_PREFS, CONST_MAX_NEW_FLOWS_SECOND);
+  host_max_num_syn_sec_threshold = getDefaultPrefsValue(CONST_MAX_NUM_SYN_PREFS, CONST_MAX_NUM_SYN_PER_SECOND);
 }
 
 /* ******************************************* */
@@ -695,5 +706,7 @@ void Prefs::lua(lua_State* vm) {
   lua_push_bool_table_entry(vm, "is_dump_flows_enabled", dump_flows_on_db);
   lua_push_int_table_entry(vm, "dump_hosts", dump_hosts_to_db);
   lua_push_int_table_entry(vm, "dump_aggregation", dump_aggregations_to_db);
+  lua_push_int_table_entry(vm, "host_max_new_flows_sec_threshold", host_max_new_flows_sec_threshold);
+  lua_push_int_table_entry(vm, "host_max_num_syn_sec_threshold", host_max_num_syn_sec_threshold);  
 }
 

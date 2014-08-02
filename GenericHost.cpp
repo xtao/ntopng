@@ -35,7 +35,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
   contacts = new HostContacts(this);
   num_alerts_detected = 0, source_id = 0;
-  flow_count_alert = new AlertCounter(CONST_MAX_NEW_FLOWS_SECOND, CONST_MAX_THRESHOLD_CROSS_DURATION);
+  flow_count_alert = new AlertCounter(ntop->getPrefs()->get_host_max_new_flows_sec(), CONST_MAX_THRESHOLD_CROSS_DURATION);
   // readStats(); - Commented as if put here it's too early and the key is not yet set
 }
 
