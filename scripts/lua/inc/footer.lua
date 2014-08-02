@@ -20,8 +20,11 @@ print [[ - <A HREF="http://www.ntop.org">ntop.org</A> <br><font color=lightgray>
 info = ntop.getInfo()
 iface_id = interface.name2id(ifname)
 is_historical = interface.isHistoricalInterface(iface_id)
+
+ifstats = interface.getStats()
+
 print ("v."..info["version"].." </br>for user ")
-print('<a href="/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="/lua/if_stats.lua?if_name='.. ifname..'">' .. ifname..'</a>')
+print('<a href="/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="/lua/if_stats.lua?if_name='.. ifname..'">' .. ifstats.description..'</a>')
 
 key = 'ntopng.prefs.'..ifname..'.name'
 custom_name = ntop.getCache(key)

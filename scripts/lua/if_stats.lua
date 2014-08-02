@@ -139,6 +139,10 @@ if((page == "overview") or (page == nil)) then
        ]]
   end
 
+   if(ifstats.name ~= ifstats.description) then
+      print("<tr><th>Description</th><td colspan=2>" .. ifstats.description .. "</td></tr>\n")
+   end
+
    print("<tr><th>Family</th><td colspan=2>" .. ifstats.type .. "</td></tr>\n")
    print("<tr><th>Bytes</th><td colspan=2><div id=if_bytes>" .. bytesToSize(ifstats.stats_bytes) .. "</div>");
    print [[
