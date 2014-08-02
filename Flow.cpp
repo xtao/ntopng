@@ -59,7 +59,7 @@ Flow::Flow(NetworkInterface *_iface,
   /* if(iface->is_ndpi_enabled()) */ allocFlowMemory();
 
   if(!iface->is_packet_interface())
-    last_update_time.tv_sec = first_seen;
+    last_update_time.tv_sec = (long)first_seen;
 
   // refresh_process();
 }

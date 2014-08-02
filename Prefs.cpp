@@ -409,7 +409,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'i':
-    add_network_interface(optarg);
+    add_network_interface(optarg, optarg);
     break;
 
   case 'w':
@@ -674,10 +674,12 @@ int Prefs::save() {
 
 /* ******************************************* */
 
-void Prefs::add_network_interface(char *name) {
-  if(num_interfaces < (MAX_NUM_INTERFACES-1))
-    ifNames[num_interfaces++] = strdup(name);
-  else
+void Prefs::add_network_interface(char *name, char *description) {
+  if(num_interfaces < (MAX_NUM_INTERFACES-1)) {
+    ifNames[num_interfaces].name = strdup(name);
+	ifNames[num_interfaces].description = strdup(description ? description : name);
+	num_interfaces++;
+  } else
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Too many interfaces: discarded %s", name);
 }
 

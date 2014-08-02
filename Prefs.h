@@ -28,6 +28,10 @@ class Ntop;
 
 extern void usage();
 
+typedef struct {
+	char *name, *description;
+} InterfaceInfo;
+
 class Prefs {
  private:
   Ntop *ntop;
@@ -43,7 +47,8 @@ class Prefs {
   u_int8_t num_interfaces;
   bool dump_flows_on_db;
   AggregationMode enable_aggregations;
-  char *ifNames[MAX_NUM_INTERFACES], *local_networks;
+  InterfaceInfo ifNames[MAX_NUM_INTERFACES];
+  char *local_networks;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir, *export_endpoint;
   char *categorization_key;
   char *httpbl_key;
@@ -87,7 +92,8 @@ class Prefs {
   inline AggregationMode get_aggregation_mode()         { return(enable_aggregations);    };
   inline u_int8_t get_num_user_specified_interfaces()   { return(num_interfaces);         };
   inline bool  do_dump_flows_on_db()                    { return(dump_flows_on_db);       };
-  inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id] : NULL); };
+  inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id].name : NULL); };
+  inline char* get_if_descr(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id].description : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
   inline char* get_scripts_dir()                        { return(scripts_dir);    };
@@ -121,7 +127,7 @@ class Prefs {
   inline LocationPolicy get_dump_hosts_to_db_policy()   { return(dump_hosts_to_db);          };
   inline LocationPolicy get_dump_aggregations_to_db()   { return(dump_aggregations_to_db);   };
   int save();
-  void add_network_interface(char *name);
+  void add_network_interface(char *name, char *description);
   inline u_int32_t get_json_symbolic_labels()           { return(json_symbolic_labels);      };
   void lua(lua_State* vm);
   void loadIdleDefaults();

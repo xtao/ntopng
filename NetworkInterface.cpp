@@ -1897,7 +1897,7 @@ void NetworkInterface::addAllAvailableInterfaces() {
     for(int i = 0; devpointer != 0; i++) {
       if(validInterface(devpointer->description)
 	 && isInterfaceUp(devpointer->name)) {
-	ntop->getPrefs()->add_network_interface(devpointer->name);
+	ntop->getPrefs()->add_network_interface(devpointer->name, devpointer->description);
       }
 
       devpointer = devpointer->next;

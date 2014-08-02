@@ -1952,10 +1952,10 @@ static int ntop_queue_alert(lua_State* vm) {
   char *alert_msg;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  alert_level = lua_tonumber(vm, 1);
+  alert_level = (int)lua_tonumber(vm, 1);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  alert_type = lua_tonumber(vm, 2);
+  alert_type = (int)lua_tonumber(vm, 2);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
   alert_msg = (char*)lua_tostring(vm, 3);
@@ -2192,7 +2192,7 @@ static int set_historical_info(lua_State* vm) {
     to_epoch = (u_int32_t)lua_tonumber(vm, 2);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-    iface_id = lua_tonumber(vm, 3);
+    iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
   iface->setFromEpoch( (time_t) from_epoch);
   iface->setToEpoch( (time_t) to_epoch);
@@ -2227,7 +2227,7 @@ static int load_historical_interval(lua_State* vm) {
   to_epoch = (u_int32_t)lua_tonumber(vm, 2);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  iface_id = lua_tonumber(vm, 3);
+  iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
   if (iface->is_on_load())
      lua_pushboolean(vm,false);
