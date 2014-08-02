@@ -93,7 +93,7 @@ class Prefs {
   inline u_int8_t get_num_user_specified_interfaces()   { return(num_interfaces);         };
   inline bool  do_dump_flows_on_db()                    { return(dump_flows_on_db);       };
   inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id].name : NULL); };
-  inline char* get_if_descr(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id].description : NULL); };
+  inline char* get_if_descr(u_int id)                   { return((id < MAX_NUM_INTERFACES) ? ifNames[id].description : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
   inline char* get_docs_dir()                           { return(docs_dir);       }; // HTTP docs
   inline char* get_scripts_dir()                        { return(scripts_dir);    };

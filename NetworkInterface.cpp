@@ -1430,6 +1430,7 @@ void NetworkInterface::lua(lua_State *vm) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "name", ifname);
+   lua_push_str_table_entry(vm, "description", ntop->get_if_descr(id));
   lua_push_int_table_entry(vm, "id", id);
 
   lua_push_str_table_entry(vm, "type", (char*)get_type());

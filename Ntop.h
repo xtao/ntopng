@@ -172,6 +172,7 @@ class Ntop {
    * @return ....
    */
   inline char* get_if_name(u_int8_t id)              { return(prefs->get_if_name(id));     };
+  inline char* get_if_descr(u_int8_t id)             { return(prefs->get_if_descr(id));    };
   inline char* get_data_dir()                        { return(prefs->get_data_dir());      };
   inline char* get_callbacks_dir()                   { return(prefs->get_callbacks_dir()); };
   /**
