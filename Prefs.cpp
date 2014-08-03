@@ -24,6 +24,8 @@
 /* ******************************************* */
 
 Prefs::Prefs(Ntop *_ntop) {
+  num_deferred_interfaces_to_register = 0;
+  memset(deferred_interfaces_to_register, 0, sizeof(deferred_interfaces_to_register));
   ntop = _ntop, dump_timeline = false, sticky_hosts = location_none;
   local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
   enable_dns_resolution = sniff_dns_responses = true;
@@ -409,7 +411,10 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'i':
-    add_network_interface(optarg, optarg);
+    if(num_deferred_interfaces_to_register < MAX_NUM_INTERFACES)
+      deferred_interfaces_to_register[num_deferred_interfaces_to_register++] = optarg;
+    else
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many interfaces specified with -i: ignored %s", optarg);
     break;
 
   case 'w':
@@ -507,7 +512,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     if(strcmp(optarg, "ixia") == 0)
       enable_ixia_timestamps = true;
     else
-      ntop->getTrace()->traceEvent(TRACE_WARNING, 
+      ntop->getTrace()->traceEvent(TRACE_WARNING,
 				   "Unknown --hw-timestamp-mode mode, it has been ignored\n");
   break;
 
@@ -676,7 +681,7 @@ int Prefs::save() {
 
 void Prefs::add_network_interface(char *name, char *description) {
   u_int32_t id = Utils::ifname2id(name);
-  
+
   if(id < (MAX_NUM_INTERFACES-1)) {
     ifNames[id].name = strdup(name);
     ifNames[id].description = strdup(description ? description : name);
@@ -711,6 +716,14 @@ void Prefs::lua(lua_State* vm) {
   lua_push_int_table_entry(vm, "dump_hosts", dump_hosts_to_db);
   lua_push_int_table_entry(vm, "dump_aggregation", dump_aggregations_to_db);
   lua_push_int_table_entry(vm, "host_max_new_flows_sec_threshold", host_max_new_flows_sec_threshold);
-  lua_push_int_table_entry(vm, "host_max_num_syn_sec_threshold", host_max_num_syn_sec_threshold);  
+  lua_push_int_table_entry(vm, "host_max_num_syn_sec_threshold", host_max_num_syn_sec_threshold);
 }
 
+/* *************************************** */
+
+void Prefs::registerNetworkInterfaces() {
+  for(int i=0; i<num_deferred_interfaces_to_register; i++) {
+    if(deferred_interfaces_to_register[i] != NULL)
+      add_network_interface(deferred_interfaces_to_register[i], NULL);
+  }
+}

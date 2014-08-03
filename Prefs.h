@@ -29,11 +29,13 @@ class Ntop;
 extern void usage();
 
 typedef struct {
-	char *name, *description;
+  char *name, *description;
 } InterfaceInfo;
 
 class Prefs {
  private:
+  u_int8_t num_deferred_interfaces_to_register;
+  char *deferred_interfaces_to_register[MAX_NUM_INTERFACES];
   Ntop *ntop;
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, httpbl_enabled, resolve_all_host_ip, change_user, daemonize,
@@ -131,6 +133,7 @@ class Prefs {
   inline u_int32_t get_json_symbolic_labels()           { return(json_symbolic_labels);      };
   void lua(lua_State* vm);
   void loadIdleDefaults();
+  void registerNetworkInterfaces();
 };
 
 #endif /* _PREFS_H_ */

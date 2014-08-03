@@ -106,6 +106,8 @@ int main(int argc, char *argv[])
   if(rc < 0) return(-1);
 
   ntop->registerPrefs(prefs);
+  
+  prefs->registerNetworkInterfaces();
 
   if(prefs->get_num_user_specified_interfaces() == 0) {
     /* We add all interfaces available on this host */
