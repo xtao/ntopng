@@ -46,7 +46,7 @@ DATE=`date +"%Y-%m-%d"`
 if test -d "/usr/include/hiredis"; then
  AC_DEFINE_UNQUOTED(HAVE_HIREDIS, 1, [Local hiredis package present])
  HIREDIS_INC="`pkg-config --cflags hiredis` -I/usr/include/hiredis"
- HIREDIS_LIB=`pkg-config --libs hiredis`
+ HIREDIS_LIB="`pkg-config --libs hiredis` -lhiredis"
 else
  HIREDIS_INC="-I ./third-party/hiredis"
 fi
