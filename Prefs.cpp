@@ -161,6 +161,7 @@ void usage() {
 	 "[--user|-U] <sys user>              | Run ntopng with the specified user\n"
 	 "                                    | instead of %s\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
+   "[--disable-autologout|-q]           | Disable web interface logout for inactivity\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--max-num-flows|-X] <num>          | Max number of active flows\n"
 	 "                                    | (default: %u)\n"

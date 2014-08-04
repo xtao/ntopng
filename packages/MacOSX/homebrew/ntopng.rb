@@ -1,14 +1,10 @@
 require "formula"
 
 class Ntopng < Formula
-  homepage "http://www.ntop.org"
+  homepage "http://www.ntop.org/products/ntop/"
   url 'https://svn.ntop.org/svn/ntop/tags/ntopng-1.1.4.tar.gz', :using => :curl
   sha1 "9e1297def6e103110741d08cc7f3d4f4f4bc5c7d"
-
-  devel do
-    url 'https://svn.ntop.org/svn/ntop/trunk/ntopng/'
-    version "1.1.4"
-  end
+  head 'https://svn.ntop.org/svn/ntop/trunk/ntopng/'
 
   depends_on :autoconf => :build
   depends_on :automake => :build

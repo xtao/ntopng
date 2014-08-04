@@ -19,14 +19,14 @@ ntopng \- display top network users
 or
 
 .B ntopng
-.RB [ -i 
+.RB [ -i
 .IR <interface|pcap> ]
 .RB [ -d
 .IR <data_directory> ]
-.RB [ -n 
+.RB [ -n
 .IR <mode> ]
 .RB [ -e ]
-.RB [ -w 
+.RB [ -w
 .IR <http_port> ]
 .RB [ -W
 .IR <https_port> ]
@@ -39,10 +39,10 @@ or
 .RB [ -q ]
 .RB [ -r
 .IR <redis_host:port> ]
-.RB [ -s ] 
+.RB [ -s ]
 .RB [ -U
 .IR <sys_user> ]
-.RB [ -l ] 
+.RB [ -l ]
 .RB [ -X
 .IR <max num flows> ]
 .RB [ -B
@@ -62,19 +62,24 @@ or
 .IR <dump-aggregations> ]
 .RB [ -S
 .IR <sticky-hosts> ]
-.RB [ -v ] 
+.RB [ -H ]
+.RB [ --hw-timestamp-mode
+.IR <mode> ]
+.RB [ --json-label ]
+.RB [ -v ]
+.RB [ -V ]
 .RB [ -h ]
 
 .SH DESCRIPTION
 .B ntopng
 shows the current network usage. It displays a list of hosts that are
-currently using the network and reports information concerning the (IP and non-IP) 
+currently using the network and reports information concerning the (IP and non-IP)
 traffic generated and received by each host.
-.B ntop
-may operate as a front-end collector or as a stand-alone collector/display program. 
-A web browser is needed to access the information captured by the 
 .B ntopng
-program. 
+may operate as a front-end collector or as a stand-alone collector/display program.
+A web browser is needed to access the information captured by the
+.B ntopng
+program.
 
 .B ntopng
 is a hybrid layer 2 / layer 3 network monitor, by default it uses the layer 2 Media
@@ -87,14 +92,14 @@ for a complete picture of network activity.
 .SH "COMMAND\-LINE OPTIONS"
 
 .It filename
-The text of 
+The text of
 .B filename
 is copied - ignoring line breaks and comment lines (anything following a #) - into the
 command line.
 .B ntopng
 behaves as if all of the text had simply been typed directly on the command line.
-For example, if the command line is "ntopng s.conf" and file s.conf contains 
-just the line '-s', then the effective command line is "ntopng -s". 
+For example, if the command line is "ntopng s.conf" and file s.conf contains
+just the line '-s', then the effective command line is "ntopng -s".
 In case you use a configuration file, the following options on the command line
 will be ignored. Example "ntopng /etc/ntopng/ntopng.conf -v" the -v option is ignored.
 
@@ -105,14 +110,14 @@ or
 --interface=p1p2
 For options with no value (e.g. -v) the equal is also necessary. Example: "-v=" must be used.
 
-Remember, most 
-B ntopng 
-options are "sticky", that is they just set an internal flag. Invoking 
+Remember, most
+.B ntopng
+options are "sticky", that is they just set an internal flag. Invoking
 them multiple times doesn't change the
-.B ntopng's 
+.B ntopng's
 behavior. However, options that set a value, such as --trace-level, will use the LAST value
 given: -w 8000 -w 8080 will run as -w 8080.
- 
+
 .It -n|--dns-mode
 Sets the DNS address resolution mode:
 0 - Decode DNS responses and resolve only local (-m) numeric IPs
@@ -126,33 +131,36 @@ Specifies the network interface or collector endpoint to be used by
 for network monitoring. On Unix you can specify both the interface name (e.g. lo)
 or the numeric interface id as shown by ntopng -h. On Windows you must use
 the interface number instead. Note that you can specify -i multiple times in order
-to instruct 
-.B ntopng 
+to instruct
+.B ntopng
 to create multiple interfaces.
 
-If a collector endpoint is specified, 
+If a collector endpoint is specified,
 .B ntopng
 open a ZeroMQ connection to the specified endpoint as a subscriber whose format
 is  <ZMQ endpoint>. Example of valid collector endpoints are "tcp://127.0.0.1:5556" or ipc://flows.ipc
+Note that you can specify multiple endpoint, comma separated list, in order
+to instruct
+.B ntopng
+to aggregate it in a single interface. (e.g -i tcp://127.0.0.1:5556,ipc://flows.ipc)
 
-If you want you can pass a path of a pcap file (e.g. -i dummy.pcap) and ntopng
-will read packets from the specified pcap file.
+If you want you can pass a path of a pcap file (e.g. -i dummy.pcap) or a path of a list file contains a path of a pcap file for each line (e.g. -i pcap.list) and ntopng will read packets from the specified pcap file/s.
 
-.B nProbe 
-can be instructed to act as a publisher delivering flows to a ZeroMQ endpoint using the --zmq <endpoint> parameter.
+.B nProbe
+can be instructed to act as a publisher delivering flows to a ZeroMQ endpoint using the --ZMQ <endpoint> parameter.
 
 .It -d|--data-dir
-Specifies the data directory (it must be writable). Default directory is ./data
+Specifies the data directory (it must be writable). Default directory is /var/tmp/data
 
 .It -G|--pid-path
-Specifies the path where the PID (process ID) is saved.
+Specifies the path where the PID (process ID) is saved. Default is /var/tmp/ntopng.pid
 
 .It -H|--disable-alerts
 Disable the generation of alerts.
 
 .It -c|--categorization-key
 Sets the key used to access host categorization services.
-.B ntopng 
+.B ntopng
 categorizes hosts using services provided by http://block.si
 In order to use these categorization services you need to mail info@block.si and
 ask for a test key to be used in ntopng.
@@ -163,7 +171,7 @@ For test driving the service please use as key 9hoAtewwpC2tXRMJBfifrY24B
 This parameter causes ntop to become a daemon, i.e. a task which runs in the background without connection to a specific terminal. To use ntop other than as a casual monitoring tool, you probably will want to use this option.
 
 .It -w|--http-port
-Sets the HTTP port of the embedded web server.
+Sets the HTTP port of the embedded web server. If set to 0, the http server will be disable.
 
 .It -W|--https-port
 Sets the HTTPS port of the embedded web server. If not set, it will be set to the value of -w plus one.
@@ -188,15 +196,24 @@ The format is <tcp|udp>:<port>,<tcp|udp>:<port>,.....@<proto> where
 or host:"<string>"@<proto> where string is part of an host name.
 As example see https://svn.ntop.org/svn/ntop/trunk/nDPI/example/protos.txt
 
+.It -P|--disable-host-persistency
+Disable host persistency.
+
 .It -q|--disable-autologout
 Disable web interface logout for inactivity.
 
+.It -l|--disable-login
+Disable user login. This is useful for debug purposes or if you want to let everyone access the web gui.
+
 .It -r|--redis
-Specifies the redis database host and port. For more information about redis, please refer 
+Specifies the redis database host and port. For more information about redis, please refer
 to http://redis.io/.
 
 .It -U|--user
 Run ntopng with the specified system user instead of 'nobody'.
+
+.It -s|--dont-change-user
+Do not change user (debug only).
 
 .It -B|--packet-filter
 Specifies the packet filter for the specified interface. For pcap/PF_RING interfaces
@@ -207,8 +224,9 @@ Enable timeline dump on disk (default: disabled).
 
 .It -A|--enable-aggregations <mode>
 Enable data aggregations (e.g. Operating System, DNS etc). The available modes are:
-0 (disable aggregations, default), 1 (enable aggregations but do not dump on disk
-their activity timeline), 2 (enable aggregations and timeline dump on disk).
+0  - Disable aggregations, default
+1  - Enable aggregations but do not dump on disk their activity timeline
+2  - Enable aggregations and timeline dump on disk.
 
 .It -X|--max-num-flows
 Specify the maximum number of active flows that ntopng will handle. If more flows are
@@ -218,15 +236,9 @@ detected they will be discarded.
 Specify the maximum number of active hosts that ntopng will handle. If more hosts are
 detected they will be discarded.
 
-.It -s|--dont-change-user
-Do not change user (debug only)
-
-.It -l|--disable-login
-Disable user login. This is useful for debug purposes or if you want to let everyone access the web gui.
-
 .It -F|--dump-flows
 If ntopng is compiled with sqlite support, flows can dumped persistently on disk using this option.
-Databases are created daily under <data directory>/<interface>db.
+Databases are created daily under <data directory>/<interface>/db. Using this option you can reload the dumped flows via the Historical Interface specify the time interval and the interface.
 
 .It -D|--dump-hosts
 If ntopng is compiled with sqlite support, hosts contacts can dumped persistently on disk using this option.
@@ -237,7 +249,7 @@ specified, no hosts are dumped to disk.
 .It -I|--export-flows
 Export the expired flows on the specified endpoint. For instance supposing to start ntopng on host
 1.2.3.4 as ntopng -I "tcp://*:3456", it exports flows on this endpoint so that you can create a
-hierarchy of ntopng's. You can achieve that by starting a collector ntopng as 
+hierarchy of ntopng's. You can achieve that by starting a collector ntopng as
 ntopng -i tcp://1.2.3.4:3456
 
 .It -E|--dump-aggregations
@@ -251,8 +263,20 @@ ntopng periodically purges idle hosts. With this option you can modify this beha
 not to purge the hosts specified by -S. This parameter requires an argument that can be "all" (Keep all hosts in memory),
 "local" (Keep only local hosts), "remote" (Keep only remote hosts), "none" (Flush hosts when idle).
 
+.It --json-labels
+Using this option in case JSON label is used (e.g. with ZMQ/Sqlite) labels instead of numbers are used as keys.
+
+.It --hw-timestamp-mode
+Enable hw timestamping/stripping. Supported TS modes are:
+ixia - Timestamped packets by ixiacom.com hardware devices .
+
 .It -v|--verbose
-Verbose tracing
+Verbose tracing.
+
+.It -V|--version
+Print
+.B ntopng
+version and quit.
 
 .It -h|--help
 Help
@@ -264,8 +288,8 @@ is running, multiple users can access the traffic information using their web br
 .B ntopng
 makes use of JavaScript and LESS CSS.
 
-We do not expect problems with any current web browser, but our ability to test with less 
-common ones is very limited.  Testing has included Safari, Chrome, Firefox and Internet Explorer, 
+We do not expect problems with any current web browser, but our ability to test with less
+common ones is very limited.  Testing has included Safari, Chrome, Firefox and Internet Explorer,
 with very limited testing on other current common browsers such as Opera.
 
 .SH NOTES
@@ -280,7 +304,7 @@ from http://www.tcpdump.org/, version 1.0 or newer.
 
 The Windows version makes use of
 .B WinPcap
-(libpcap for Windows) which may be downloaded from 
+(libpcap for Windows) which may be downloaded from
 http://winpcap.polito.it/install/default.htm.
 .
 
@@ -290,7 +314,7 @@ requires a POSIX threads library.
 
 The
 .B rrdtool
-library creates 'Round-Robin databases' which are used to store historical data 
+library creates 'Round-Robin databases' which are used to store historical data
 in a format that permits long duration retention without growing larger over time.
 The rrdtool home page is http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/
 
@@ -309,7 +333,7 @@ is a socket library supporting the publish/subscribe pattern used to collect flo
 
 .B ntopng
 includes LuaJIT, mongoose, rrdtool and zeromq in the third-party/ directory.  Users of
-.B ntopng 
+.B ntopng
 should not need to specifically install such libraries.
 .
 
@@ -323,7 +347,7 @@ should not need to specifically install such libraries.
 .SH USER SUPPORT
 Please send bug reports to the ntop-dev <ntop-dev@ntop.org> mailing list. The
 ntopng <ntop@ntop.org> mailing list is used for discussing ntopng usage issues. In
-order to post messages on the lists a (free) subscription is required 
+order to post messages on the lists a (free) subscription is required
 to limit/avoid spam. Please do NOT contact the author directly unless this is
 a personal question.
 
