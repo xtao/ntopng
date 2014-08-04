@@ -31,8 +31,9 @@ ActivityStats::ActivityStats(time_t when) {
   _bitset = new Uint32EWAHBoolArray;
 
   begin_time  = (when == 0) ? time(NULL) : when;
-  begin_time -= (begin_time % CONST_MAX_ACTIVITY_DURATION);
   begin_time += ntop->get_time_offset();
+  begin_time -= (begin_time % CONST_MAX_ACTIVITY_DURATION);
+
 
   wrap_time = begin_time + CONST_MAX_ACTIVITY_DURATION;
 

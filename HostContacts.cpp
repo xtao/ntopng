@@ -116,11 +116,14 @@ void HostContacts::getContacts(lua_State* vm) {
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(clientContacts[i].num_contacts > 0) {
       char *peer = clientContacts[i].host.print(buf, sizeof(buf));
-      int len = strlen(peer);
       // Add the vlan id only if != 0
-      if (host->get_vlan_id() != 0)
-        snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
+      if(host->get_vlan_id() != 0) {
+	int len = strlen(peer);
 
+        snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
+      }
+
+      // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s)", __FUNCTION__, peer);
       lua_push_int_table_entry(vm, peer, clientContacts[i].num_contacts);
     }
   }
@@ -133,11 +136,15 @@ void HostContacts::getContacts(lua_State* vm) {
   for(int i=0; i<MAX_NUM_HOST_CONTACTS; i++) {
     if(serverContacts[i].num_contacts > 0) {
       char *peer = serverContacts[i].host.print(buf, sizeof(buf));
-      int len = strlen(peer);
-      // Add the vlan id only if != 0
-      if (host->get_vlan_id() != 0)
-        snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
 
+      // Add the vlan id only if != 0
+      if(host->get_vlan_id() != 0) {
+	int len = strlen(peer);
+
+        snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
+      }
+
+      // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s)", __FUNCTION__, peer);
       lua_push_int_table_entry(vm, peer, serverContacts[i].num_contacts);
     }
   }

@@ -14,6 +14,9 @@ Prerequisites
 - redis (redis server) 2.2 or newer
 - GeoIP (optional) 1.4.8 or newer
 - wget (for 'make geoip')
+- libxml2-dev
+- libglib2.0-dev
+- libsqlite3-dev
 
 On Fedora
 - yum groupinstall "Development tools"

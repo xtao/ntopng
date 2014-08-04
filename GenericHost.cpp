@@ -32,7 +32,7 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   systemHost = false, localHost = false, last_activity_update = 0, host_serial = 0;
   last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
   last_packets = 0, pkts_thpt = 0, pkts_thpt_trend = trend_unknown;
-  last_update_time.tv_sec = 0, last_update_time.tv_usec = 0;
+  last_update_time.tv_sec = 0, last_update_time.tv_usec = 0, vlan_id = 0;
   contacts = new HostContacts(this);
   num_alerts_detected = 0, source_id = 0;
   flow_count_alert = new AlertCounter(ntop->getPrefs()->get_host_max_new_flows_sec(), CONST_MAX_THRESHOLD_CROSS_DURATION);

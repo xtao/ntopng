@@ -172,7 +172,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
-  // if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
+  if(_vlanId > 0) ntop->getTrace()->traceEvent(TRACE_NORMAL, "VLAN => %d", vlan_id);
 
   syn_flood_alert = new AlertCounter(ntop->getPrefs()->get_host_max_new_syn_sec(), CONST_MAX_THRESHOLD_CROSS_DURATION);
   category[0] = '\0', os[0] = '\0', httpbl[0] = '\0', blacklisted_host = false;
