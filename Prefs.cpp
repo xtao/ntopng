@@ -75,6 +75,10 @@ Prefs::Prefs(Ntop *_ntop) {
 /* ******************************************* */
 
 Prefs::~Prefs() {
+  for(int i=0; i<num_deferred_interfaces_to_register; i++)
+    if(deferred_interfaces_to_register[i] != NULL)
+      free(deferred_interfaces_to_register[i]);
+  
   if(logFd) fclose(logFd);
   if(data_dir) free(data_dir);
   if(docs_dir) free(docs_dir);
@@ -412,7 +416,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'i':
     if(num_deferred_interfaces_to_register < MAX_NUM_INTERFACES)
-      deferred_interfaces_to_register[num_deferred_interfaces_to_register++] = optarg;
+      deferred_interfaces_to_register[num_deferred_interfaces_to_register++] = strdup(optarg);
     else
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Too many interfaces specified with -i: ignored %s", optarg);
     break;
