@@ -24,7 +24,6 @@
 
 typedef EWAHBoolArray<u_int32_t> Uint32EWAHBoolArray;
 
-
 /* *************************************** */
 
 /* Daily duration */
@@ -67,7 +66,7 @@ void ActivityStats::reset() {
 void ActivityStats::set(time_t when) {
   if((last_set_requested != when) && (when >= begin_time)) {
     Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-    size_t w;
+    time_t w;
 
     last_set_requested = when;
 
