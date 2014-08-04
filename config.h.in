@@ -12,6 +12,9 @@
 /* We have gnutls */
 #undef HAVE_GNUTLS
 
+/* Local hiredis package present */
+#undef HAVE_HIREDIS
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 

@@ -208,9 +208,11 @@ static void free_ptree_data(void *data) { ; }
 /* **************************************** */
 
 AddressResolution::~AddressResolution() {
+#if 0
   void *res;
 
   pthread_join(resolveThreadLoop, &res);
+#endif
 
   ntop->getTrace()->traceEvent(TRACE_NORMAL, "Address resolution stats [%u resolved][%u failures]",
 			       num_resolved_addresses, num_resolved_fails);

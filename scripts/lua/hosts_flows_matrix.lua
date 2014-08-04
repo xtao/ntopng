@@ -17,7 +17,21 @@ end
 print("<h2>Top Hosts Traffic</H2>")
 print [[
 		<style>
-		@import url(/css/style_matrix.css);
+
+                svg {
+                 font: 10px sans-serif;
+                }
+
+                .axis path, .axis line {
+                  fill: none;
+                  stroke: #000;
+                  shape-rendering: crispEdges;
+                }
+
+                sup, sub {
+                  line-height: 0;
+                }
+
 		.background {
 		  fill: #eee;
 		}

@@ -21,7 +21,7 @@
 
 #include "ntop_includes.h"
 
-#ifndef WIN32
+#if !defined(HAVE_HIREDIS) && !defined(WIN32)
 #include "third-party/hiredis/hiredis.c"
 #include "third-party/hiredis/net.c"
 #include "third-party/hiredis/sds.c"

@@ -43,6 +43,14 @@ fi
 
 DATE=`date +"%Y-%m-%d"`
 
+if test -d "/usr/include/hiredis"; then
+ AC_DEFINE_UNQUOTED(HAVE_HIREDIS, 1, [Local hiredis package present])
+ HIREDIS_INC="`pkg-config --cflags hiredis` -I/usr/include/hiredis"
+ HIREDIS_LIB=`pkg-config --libs hiredis`
+else
+ HIREDIS_INC="-I ./third-party/hiredis"
+fi
+
 PF_RING_HOME=${HOME}/PF_RING
 if test -d ${PF_RING_HOME}; then
   AC_MSG_CHECKING(for PF_RING source installed in $PF_RING_HOME)
@@ -270,6 +278,8 @@ AC_SUBST(SVN_DATE)
 AC_SUBST(SVN_WC_DB)
 AC_SUBST(INSTALL_DIR)
 AC_SUBST(MAN_DIR)
+AC_SUBST(HIREDIS_INC)
+AC_SUBST(HIREDIS_LIB)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(packages/ntopng.spec)
 AC_CONFIG_FILES(packages/ntopng-data.spec)
