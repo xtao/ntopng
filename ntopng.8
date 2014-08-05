@@ -48,6 +48,8 @@ or
 .RB [ -B
 .IR <filter> ]
 .RB [ -C ]
+.RB [ -k
+.IR <key> ]
 .RB [ -A
 .IR <mode> ]
 .RB [ -x
@@ -139,7 +141,7 @@ If a collector endpoint is specified,
 .B ntopng
 open a ZeroMQ connection to the specified endpoint as a subscriber whose format
 is  <ZMQ endpoint>. Example of valid collector endpoints are "tcp://127.0.0.1:5556" or ipc://flows.ipc
-Note that you can specify multiple endpoint, comma separated list, in order
+Note that you can specify multiple endpoint, commas separated list, in order
 to instruct
 .B ntopng
 to aggregate it in a single interface. (e.g -i tcp://127.0.0.1:5556,ipc://flows.ipc)
@@ -157,6 +159,9 @@ Specifies the path where the PID (process ID) is saved. Default is /var/tmp/ntop
 
 .It -H|--disable-alerts
 Disable the generation of alerts.
+
+.it-k| --httpbl-key <key>
+Set the key used to access httpbl services (default: disabled).  Please read README.httpbl for more info.
 
 .It -c|--categorization-key
 Sets the key used to access host categorization services.

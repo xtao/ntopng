@@ -231,9 +231,8 @@ if (flowtype == "description" ) then
 end
 
 if (flowtype == "peers" ) then
-  print('<pre><code>flows_stats = interface.getFlowPeers(random_host)\nprint(\'Host: \'..random_host..)\nprintTable(flows_peers,"Peers")</code></pre>')
+  print('<pre><code>flows_stats = interface.getFlowPeers()\nprintTable(flows_peers,"Peers")</code></pre>')
   flows_peers = interface.getFlowPeers()
-  print('Host: '..random_host.."<br>")
   printTable(flows_peers,"Peers")
 end
 

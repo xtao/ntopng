@@ -18,6 +18,10 @@ Prerequisites
 - libglib2.0-dev
 - libsqlite3-dev
 
+On Ubuntu
+- apt-get install build-essential 
+- apt-get install libglib2.0 libxml2-dev libpcap-dev libtool rrdtool autoconf automake autogen redis-server wget sqlite-dev libhiredis-dev libgeoip-dev
+
 On Fedora
 - yum groupinstall "Development tools"
 - yum install autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget
@@ -31,9 +35,13 @@ On Windows you can download the redis server from
   
 Binary Packages
 ---------------
-- Debian/CentOS		 http://packages.ntop.org
-- OSX			 http://sourceforge.net/projects/ntop/files/ntopng/
-- Windows		 http://shop.ntop.org or build it from source
+- Debian/CentOS   http://packages.ntop.org
+- OSX             
+                  http://sourceforge.net/projects/ntop/files/ntopng/
+                  Homebrew
+                    brew update
+                    brew install ntopng
+- Windows         http://shop.ntop.org or build it from source
 
 Using ntopng as a flow collector
 --------------------------------
