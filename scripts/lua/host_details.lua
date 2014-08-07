@@ -31,15 +31,11 @@ interface.find(ifname)
 ifstats = interface.getStats()
 ifId = ifstats.id
 
-
---ip_elems = split(host_info["host"], " ");
---host_info["host"] = ip_elems[1]
 host = nil
 family = nil
 
 --print(">>>") print(host_info["host"]) print("<<<")
 if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info["host"] .. ", Vlan: "..host_vlan.."\n") end
---if(ip_elems[2] == nil) then
 
    host = interface.getHostInfo(host_info["host"],host_vlan)
    restoreFailed = false
@@ -50,9 +46,6 @@ if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info
       host = interface.getHostInfo(host_info["host"],host_vlan)
       restoreFailed = true
    end
---else
---   family = ip_elems[2]
---end
 
 if(host == nil) then
    -- We need to check if this is an aggregated host
@@ -336,8 +329,6 @@ else
    value = "true" -- Opposite
 end
 
-
-
 if(host["ip"] ~= nil) then
 
 print [[
@@ -542,7 +533,6 @@ end
 	]]
 
    elseif((page == "peers")) then
-
 host_info = url2hostinfo(_GET)
 flows     = interface.getFlowPeers(host_info["host"],host_info["vlan"])
 found     = 0
@@ -567,9 +557,6 @@ if(found) then
        <div class="clearfix"></div>
    </div>
    </td></tr></table>
-
-
-
 
 <div class="row">
     <div>
@@ -679,7 +666,7 @@ dc.renderAll();
 }
 });
 
-
+</script>
    ]]
 
 
@@ -695,8 +682,6 @@ dc.renderAll();
 else
    print("<disv class=\"alert alert-danger\"><img src=/img/warning.png> No active flows have been observed for the specified host</div>")
 end
-
-
    elseif((page == "traffic")) then
      total = 0
      for id, _ in ipairs(l4_keys) do
@@ -1014,7 +999,7 @@ print [[
 	       showPagination: true,
 	       title: "Active Flows",
 	       ]]
-	
+
 -- Set the preference table
 preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
@@ -1867,8 +1852,7 @@ $("#show_processes input:radio").change(function() {
 });]]
 
 
--- Processes Tree graph javascritp
-
+-- Processes Tree graph javascript
 print [[
   tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (','.. hostinfo2json(host_info)) print [[ },"","Bytes"); ]]
 
@@ -1898,20 +1882,11 @@ print [[
 
 print [[ </script>]]
 
-
 -- End Sprobe Page
-else
-   print(page)
 end
 end
 
-print [[
-
-
-//var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
-
-]]
-
+print [[ <script>]]
 print("var last_pkts_sent = " .. host["pkts.sent"] .. ";\n")
 print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";\n")
 print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
