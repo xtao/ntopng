@@ -206,6 +206,8 @@ bool PcapInterface::set_packet_filter(char *filter) {
   struct bpf_program fcode;
   struct in_addr netmask;
 
+  if(!pcap_handle) return(false);
+
   netmask.s_addr = htonl(0xFFFFFF00);
 
   if((pcap_compile(pcap_handle, &fcode, filter, 1, netmask.s_addr) < 0)

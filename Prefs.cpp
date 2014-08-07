@@ -78,7 +78,7 @@ Prefs::~Prefs() {
   for(int i=0; i<num_deferred_interfaces_to_register; i++)
     if(deferred_interfaces_to_register[i] != NULL)
       free(deferred_interfaces_to_register[i]);
-  
+
   if(logFd) fclose(logFd);
   if(data_dir) free(data_dir);
   if(docs_dir) free(docs_dir);
@@ -161,7 +161,7 @@ void usage() {
 	 "[--user|-U] <sys user>              | Run ntopng with the specified user\n"
 	 "                                    | instead of %s\n"
 	 "[--dont-change-user|-s]             | Do not change user (debug only)\n"
-   "[--disable-autologout|-q]           | Disable web interface logout for inactivity\n"
+	 "[--disable-autologout|-q]           | Disable web interface logout for inactivity\n"
 	 "[--disable-login|-l]                | Disable user login authentication\n"
 	 "[--max-num-flows|-X] <num>          | Max number of active flows\n"
 	 "                                    | (default: %u)\n"
@@ -207,7 +207,7 @@ void usage() {
 	 "[--help|-h]                         | Help\n"
 	 , PACKAGE_MACHINE, PACKAGE_VERSION, NTOPNG_SVN_RELEASE,
 #ifndef WIN32
-	 CONST_DEFAULT_DATA_DIR,
+	 ntop->get_working_dir(),
 #endif
 	 CONST_DEFAULT_DOCS_DIR, CONST_DEFAULT_SCRIPTS_DIR,
          CONST_DEFAULT_CALLBACKS_DIR, CONST_DEFAULT_NTOP_PORT, CONST_DEFAULT_NTOP_PORT+1,
@@ -224,9 +224,9 @@ void usage() {
 /* ******************************************* */
 
 u_int32_t Prefs::getDefaultPrefsValue(const char *pref_key, u_int32_t default_value) {
- char rsp[32];
+  char rsp[32];
 
- if(ntop->getRedis()->get((char*)pref_key, rsp, sizeof(rsp)) == 0)
+  if(ntop->getRedis()->get((char*)pref_key, rsp, sizeof(rsp)) == 0)
     return(atoi(rsp));
   else {
     snprintf(rsp, sizeof(rsp), "%u", default_value);
@@ -519,7 +519,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     else
       ntop->getTrace()->traceEvent(TRACE_WARNING,
 				   "Unknown --hw-timestamp-mode mode, it has been ignored\n");
-  break;
+    break;
 
   default:
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unknown option -%c: Ignored.", (char)optkey);
@@ -535,17 +535,17 @@ int Prefs::checkOptions() {
 #ifndef WIN32
   if(daemonize)
 #endif
-  {
-    char path[MAX_PATH];
-    ntop_mkdir(data_dir, 0777);
-    snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir() /* "C:\\Windows\\Temp" */);
-    ntop->fixPath(path);
-    logFd = fopen(path, "w");
-    if(logFd)
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Logging into %s", path);
-    else
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to create log %s", path);
-  }
+    {
+      char path[MAX_PATH];
+      ntop_mkdir(data_dir, 0777);
+      snprintf(path, sizeof(path), "%s/ntopng.log", ntop->get_working_dir() /* "C:\\Windows\\Temp" */);
+      ntop->fixPath(path);
+      logFd = fopen(path, "w");
+      if(logFd)
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Logging into %s", path);
+      else
+	ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to create log %s", path);
+    }
 
   free(data_dir); data_dir = strdup(ntop->get_install_dir());
   docs_dir      = ntop->getValidPath(docs_dir);
@@ -624,7 +624,7 @@ int Prefs::loadFromFile(const char *path) {
     opt = long_options;
     while (opt->name != NULL) {
       if((strcmp(opt->name, key) == 0)
-	  || ((key[1] == '\0') && (opt->val == key[0]))) {
+	 || ((key[1] == '\0') && (opt->val == key[0]))) {
         setOption(opt->val, value);
         break;
       }
