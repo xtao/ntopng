@@ -678,7 +678,7 @@ hostChart.xAxis().tickFormat(function(_v) {
 dc.renderAll();
 }
 });
-</script>
+
 
    ]]
 
@@ -1906,7 +1906,7 @@ end
 end
 
 print [[
-<script>
+
 
 //var thptChart = $("#thpt_load_chart").peity("line", { width: 64 });
 
