@@ -26,12 +26,10 @@ end
 
 if(protocol_id == nil) then protocol_id = "" end
 
-_ifname = tostring(interface.name2id(ifname))
 interface.find(ifname)
 
-ifId = ifName2Id(ifname)
 ifstats = interface.getStats()
-
+ifId = ifstats.id
 
 
 --ip_elems = split(host_info["host"], " ");
@@ -504,9 +502,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -533,9 +531,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -588,7 +586,7 @@ if(found) then
 
 
 <script>]]
-print("var dc_url = '/lua/host_top_peers_protocols.lua?ifname=".._ifname.."&host="..host_info["host"])
+print("var dc_url = '/lua/host_top_peers_protocols.lua?ifname="..ifId.."&host="..host_info["host"])
        if((host_info["vlan"] ~= nil) and ifstats.iface_vlan) then print("&vlan="..host_info["vlan"]) end
   print("';\n")
 print [[</script>
@@ -621,7 +619,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(_ifname) print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifId) print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
   print [[
 				}
 
@@ -668,7 +666,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(_ifname) print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId) print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
 				}
 
 	    </script><p>
@@ -697,7 +695,6 @@ end
 	 k = vals[_k]
 	 print("<tr><th>")
 	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
-	 --print(fname)
 	 if(ntop.exists(fname)) then
 	    print("<A HREF=\"/lua/host_details.lua?ifname="..ifname.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 else
@@ -1716,7 +1713,7 @@ print [[
 
 -- Users graph javascript
 print [[
-      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(_ifname) print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1731,7 +1728,7 @@ print [[
       users_type = "bytes";
     }
     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
@@ -1739,14 +1736,14 @@ $("#show_users input:radio").change(function() {
     users_filter = this.value
     if (sprobe_debug) { alert("users_type: "+users_type+"\n users_filter: "+users_filter); }
     if (sprobe_debug) { alert("url: /lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
 -- Processes graph javascritp
 
 print [[
-processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname)print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId)print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1761,14 +1758,14 @@ print [[
       processes_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
 $("#show_processes input:radio").change(function() {
     processes_filter = this.value
     if (sprobe_debug) { alert("processes_type: "+processes_type+"\n processes_filter: "+processes_filter); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(_ifname) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
@@ -1846,7 +1843,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
-		    data: { ifname: "]] print(_ifname)  print('", '..hostinfo2json(host_info)) print [[ },
+		    data: { ifname: "]] print(ifId)  print('", '..hostinfo2json(host_info)) print [[ },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);

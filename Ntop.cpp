@@ -649,7 +649,7 @@ int Ntop::getInterfaceIdByName(char *name) {
 
   for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), name) == 0) {
-      return(i);
+      return(iface[i]->get_id());
     }
   }
 

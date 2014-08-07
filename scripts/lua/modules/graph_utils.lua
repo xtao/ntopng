@@ -67,19 +67,6 @@ end
 
 -- ########################################################
 
-function ifName2Id(ifname)
-   stats = interface.getIfNames()
-   for id, name in pairs(stats) do
-      if(name == ifname) then
-	 return(id)
-      end
-   end
-
-   return(-1)
-end
-
--- ########################################################
-
 function getRRDName(ifid, host, rrdFile)
    rrdname = fixPath(dirs.workingdir .. "/" .. ifid .. "/rrd/")
    if(host ~= nil) then
