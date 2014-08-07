@@ -111,7 +111,7 @@ print [[",
 ]]
 
 -- Automatic default sorted. NB: the column must be exists.
-print ('sort: [ ["column_bytes","desc"] ],');
+print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
 
 print [[
        buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]

@@ -587,99 +587,12 @@ if(found) then
 </div>
 
 
-<script>
-var protocolChart = dc.pieChart("#chart-ring-protocol");
-var hostChart     = dc.rowChart("#chart-row-hosts");
-
-$.ajax({
-      type: 'GET',]]
-      print("url: '/lua/host_top_peers_protocols.lua?ifname=".._ifname.."&host="..host_info["host"])
-      if((host_info["vlan"] ~= nil) and ifstats.iface_vlan) then print("&vlan="..host_info["vlan"]) end
-      print("',\n")
-print [[
-      data: { },
-      error: function(content) { alert("Parse error"); },
-      success: function(content) {
-	 var rsp;
-
-// set crossfilter
-var ndx = crossfilter(content),
-    protocolDim  = ndx.dimension(function(d) {return d.l7proto;}),
-    trafficDim = ndx.dimension(function(d) {return Math.floor(d.traffic/10);}),
-    nameDim  = ndx.dimension(function(d) {return d.name;});
-    trafficPerl7proto = protocolDim.group().reduceSum(function(d) {return +d.traffic;}),
-    trafficPerhost = nameDim.group().reduceSum(function(d) {return +d.traffic;}),
-    trafficHist    = trafficDim.group().reduceCount();
-
-protocolChart
-    .width(400).height(300)
-    .dimension(protocolDim)
-    .group(trafficPerl7proto)
-    .innerRadius(70);
-
-// Tooltip
-protocolChart.title(function(d){
-      return d.key+": " + bytesToVolume(Math.pow(10, d.value));
-      })
-
-protocolChart.on("click", function(){ alert("A"); });
-
-hostChart
-    .width(600).height(300)
-    .dimension(nameDim)
-    .group(trafficPerhost)
-    .elasticX(true);
-
-// Tooltip
-hostChart.title(function(d){
-      return "Host "+d.key+": " + bytesToVolume(Math.pow(10, d.value));
-      })
-
-hostChart.xAxis().tickFormat(function(_v) {
-  var v = Math.pow(10, _v);
-
-  if(v < 1024)
-    return(v.toFixed(2));
-  else
-    return bytesToVolume(v);
-});
-
-  // dimension by full date
-    var dateDimension = ndx.dimension(function (d) {
-        return d.host;
-    });
-
-   dc.dataTable(".dc-data-table")
-        .dimension(dateDimension)
-        .group(function (d) { return d.name; })
-        .size(10) // (optional) max number of records to be shown, :default = 25
-        // dynamic columns creation using an array of closures
-        .columns([
-            function (d) {
-                return d.url;
-            },
-            function (d) {
-                return d.l7proto_url;
-            },
-            function (d) {
-                return bytesToVolume(d.traffic);
-            }
-        ])
-        // (optional) sort using the given field, :default = function(d){return d;}
-        .sortBy(function (d) {
-            return d.dd;
-        })
-        // (optional) sort order, :default ascending
-        .order(d3.ascending)
-        // (optional) custom renderlet to post-process chart using D3
-        .renderlet(function (table) {
-            table.selectAll(".dc-table-group").classed("info", true);
-        });
-
-
-dc.renderAll();
-}
-});
+<script>]]
+print("var dc_url = '/lua/host_top_peers_protocols.lua?ifname=".._ifname.."&host="..host_info["host"])
+       if((host_info["vlan"] ~= nil) and ifstats.iface_vlan) then print("&vlan="..host_info["vlan"]) end
+  print("';\n")
+print [[</script>
+<script src="/js/vlan_charts.js"></script>
 </script>
 
    ]]
@@ -984,6 +897,8 @@ print [[
 preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
+print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
+
 print [[
          title: "Active Flows",]]
 
@@ -1003,6 +918,15 @@ print [[
          rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,
 	       title: "Active Flows",
+	       ]]
+	
+-- Set the preference table
+preference = tablePreferences("rows_number",_GET["perPage"])
+if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
+print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
+io.write('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
+print [[
 	        columns: [
            {
         title: "Key",
@@ -1074,7 +998,7 @@ print [[
 			       }
 			       },
 			     {
-			     title: "Throughput",
+			     title: "Actual Thpt",
 				 field: "column_thpt",
 				 sortable: true,
 	 	             css: {

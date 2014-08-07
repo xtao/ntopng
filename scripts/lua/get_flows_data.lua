@@ -48,6 +48,25 @@ if(network_id ~= nil) then
    network_id = tonumber(network_id)
 end
 
+if ((sortColumn == nil) or (sortColumn == "column_"))then
+  sortColumn = getDefaultTableSort("flows")
+else
+  if ((aggregated == nil) and (sortColumn ~= "column_")
+    and (sortColumn ~= "")) then  
+    tablePreferences("sort_flows",sortColumn)
+  end
+end
+
+if(sortOrder == nil) then
+  sortOrder = getDefaultTableSortOrder("flows")
+else
+  if ((aggregated == nil) and (sortColumn ~= "column_")
+    and (sortColumn ~= "")) then   
+    tablePreferences("sort_order_flows",sortOrder) 
+  end
+end
+
+
 if(currentPage == nil) then
    currentPage = 1
 else

@@ -32,9 +32,22 @@ client      = _GET["client"]
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
+if ((sortColumn == nil) or (sortColumn == "column_"))then
+  sortColumn = getDefaultTableSort("hosts")
+else
+  if ((aggregated == nil) and (sortColumn ~= "column_")
+    and (sortColumn ~= "")) then  
+      tablePreferences("sort_hosts",sortColumn) 
+  end
+end
 
-if(sortColumn == nil) then
-   sortColumn = "column_"
+if(sortOrder == nil) then
+  sortOrder = getDefaultTableSortOrder("hosts")
+else
+  if ((aggregated == nil) and (sortColumn ~= "column_")
+    and (sortColumn ~= "")) then  
+    tablePreferences("sort_order_hosts",sortOrder) 
+  end
 end
 
 if(currentPage == nil) then

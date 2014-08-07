@@ -1396,6 +1396,26 @@ function processColor(proc)
   end
 end
 
+-- Table preferences
+
+function getDefaultTableSort(table_type)
+  table_key = getRedisPrefix("ntopng.prefs.table")
+  if (table_type ~= nil) then
+    value = ntop.getHashCache(table_key, "sort_"..table_type)
+  end
+  if ((value == nil) or (value == "")) then value = 'column_' end
+  return(value)
+end
+
+function getDefaultTableSortOrder(table_type)
+  table_key = getRedisPrefix("ntopng.prefs.table")
+  if (table_type ~= nil) then
+    value = ntop.getHashCache(table_key, "sort_order_"..table_type)
+  end
+  if ((value == nil) or (value == "")) then value = 'desc' end
+  return(value)
+end
+
 function getDefaultTableSize()
   table_key = getRedisPrefix("ntopng.prefs.table")
   value = ntop.getHashCache(table_key, "rows_number")

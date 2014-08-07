@@ -102,5 +102,5 @@ Debugging ntopng
 handle SIGPIPE nostop noprint pass
 
 -------------------------------------
-Luca Deri <deri@ntop.org> - July 2013
+Luca Deri <deri@ntop.org> - July 2014
 
