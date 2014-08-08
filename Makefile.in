@@ -70,8 +70,9 @@ CPPFLAGS = -g @CFLAGS@ @HIREDIS_INC@ $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(L
 PLATFORM = `uname -p`
 REVISION = @SVN_RELEASE@
 PACKAGE_VERSION = @PACKAGE_VERSION@
-RPM_PKG = $(TARGET)-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
-RPM_DATA_PKG = $(TARGET)-data-$(PACKAGE_VERSION)-$(REVISION).$(PLATFORM).rpm
+NTOPNG_VERSION = @NTOPNG_VERSION@
+RPM_PKG = $(TARGET)-$(NTOPNG_VERSION)-$(REVISION).$(PLATFORM).rpm
+RPM_DATA_PKG = $(TARGET)-data-$(NTOPNG_VERSION)-$(REVISION).noarch.rpm
 ######
 
 ifeq ($(OS),Linux)
@@ -177,46 +178,46 @@ build-rpm: build-rpm-ntopng build-rpm-ntopng-data
 
 
 build-rpm-ntopng:
-	rm -rf ntopng-@PACKAGE_VERSION@
-	mkdir ntopng-@PACKAGE_VERSION@
-	cp -r doc *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party ntopng-@PACKAGE_VERSION@
-	find ntopng-@PACKAGE_VERSION@ -name ".svn" | xargs /bin/rm -rf
-	cd ntopng-@PACKAGE_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
-	tar cvfz ntopng-@PACKAGE_VERSION@.tgz ntopng-@PACKAGE_VERSION@
+	rm -rf ntopng-@NTOPNG_VERSION@
+	mkdir ntopng-@NTOPNG_VERSION@
+	cp -r doc *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party ntopng-@NTOPNG_VERSION@
+	find ntopng-@NTOPNG_VERSION@ -name ".svn" | xargs /bin/rm -rf
+	cd ntopng-@NTOPNG_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
+	tar cvfz ntopng-@NTOPNG_VERSION@.tgz ntopng-@NTOPNG_VERSION@
 	#
 	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
-	cp ntopng-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
+	cp ntopng-@NTOPNG_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
 	#
-	rpmbuild -bb ./packages/ntopng.spec --define "buildnumber $(REVISION)"
+	rpmbuild -bb ./packages/ntopng.spec
 	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	@echo ""
 	@echo "Package contents:"
 	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)
 	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_PKG)"
-	-rm -rf ntopng-@PACKAGE_VERSION@ ntopng_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
+	-rm -rf ntopng-@NTOPNG_VERSION@ ntopng_@NTOPNG_VERSION@.tgz
 	#
 
 build-rpm-ntopng-data:
-	rm -rf ntopng-data-@PACKAGE_VERSION@
-	mkdir -p ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/
+	rm -rf ntopng-data-@NTOPNG_VERSION@
+	mkdir -p ntopng-data-@NTOPNG_VERSION@/usr/share/ntopng/httpdocs/geoip/
 	@if test -d ~/dat_files ; then \
-	  cp ~/dat_files/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/; \
+	  cp ~/dat_files/* ntopng-data-@NTOPNG_VERSION@/usr/share/ntopng/httpdocs/geoip/; \
 	else \
-	  cp ./httpdocs/geoip/* ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/ ;\
+	  cp ./httpdocs/geoip/* ntopng-data-@NTOPNG_VERSION@/usr/share/ntopng/httpdocs/geoip/ ;\
 	fi
 	#gunzip ntopng-data-@PACKAGE_VERSION@/usr/local/share/ntopng/httpdocs/geoip/*.gz
-	tar cvfz ntopng-data-@PACKAGE_VERSION@.tgz ntopng-data-@PACKAGE_VERSION@
+	tar cvfz ntopng-data-@NTOPNG_VERSION@.tgz ntopng-data-@NTOPNG_VERSION@
 	#
-	rm -f $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
-	cp ntopng-data-@PACKAGE_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
-	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@PACKAGE_VERSION@.tgz
-	rpmbuild -bb ./packages/ntopng-data.spec --define "buildnumber $(REVISION)"
-	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
+	rm -f $(HOME)/rpmbuild/RPMS/noarch/$(RPM_DATA_PKG)
+	cp ntopng-data-@NTOPNG_VERSION@.tgz $(HOME)/rpmbuild/SOURCES/
+	cd $(HOME)/rpmbuild/SOURCES;tar xvfz $(HOME)/rpmbuild/SOURCES/ntopng-data-@NTOPNG_VERSION@.tgz
+	rpmbuild -bb ./packages/ntopng-data.spec
+	@./packages/rpm-sign.exp $(HOME)/rpmbuild/RPMS/noarch/$(RPM_DATA_PKG)
 	@echo ""
 	@echo "Package contents:"
-	@rpm -qpl $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)
-	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/$(PLATFORM)/$(RPM_DATA_PKG)"
-	-rm -rf ntopng-data-@PACKAGE_VERSION@ ntopng-data_@PACKAGE_VERSION@_@SVN_RELEASE@.tgz
+	@rpm -qpl $(HOME)/rpmbuild/RPMS/noarch/$(RPM_DATA_PKG)
+	@echo "The package is now available in $(HOME)/rpmbuild/RPMS/noarch/$(RPM_DATA_PKG)"
+	-rm -rf ntopng-data-@NTOPNG_VERSION@ ntopng-data_@NTOPNG_VERSION@.tgz
 
 docs:
 	cd doc && doxygen doxygen.conf

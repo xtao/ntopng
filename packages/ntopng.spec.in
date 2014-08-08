@@ -1,7 +1,7 @@
 Summary: Web-based traffic monitoring
 Name: ntopng
-Version: @PACKAGE_VERSION@
-Release: %{buildnumber}
+Version: @NTOPNG_VERSION@
+Release: @SVN_RELEASE@
 License: GPL
 Group: Networking/Utilities
 URL: http://www.ntop.org/
@@ -41,29 +41,29 @@ _EOT_
 cat >$RPM_BUILD_ROOT/etc/ntopng/ntopng.start <<_EOT_
 _EOT_
 
-mkdir -p $RPM_BUILD_ROOT/usr/local/bin $RPM_BUILD_ROOT/usr/local/share/ntopng $RPM_BUILD_ROOT/usr/local/man/man8 
-mkdir -p $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d
-cp ntopng $RPM_BUILD_ROOT/usr/local/bin
-cp ntopng.8 $RPM_BUILD_ROOT/usr/local/man/man8
-cp -r httpdocs scripts $RPM_BUILD_ROOT/usr/local/share/ntopng
-cp $HOME/ntopng/packages/etc/init/ntopng.conf $RPM_BUILD_ROOT/etc/init
-cp $HOME/ntopng/packages/etc/init.d/ntopng    $RPM_BUILD_ROOT/etc/init.d
+mkdir -p $RPM_BUILD_ROOT/usr/bin $RPM_BUILD_ROOT/usr/share/ntopng $RPM_BUILD_ROOT/usr/share/man/man8 
+mkdir -p $RPM_BUILD_ROOT/etc/init.d
+cp $RPM_BUILD_DIR/ntopng-%{version}/ntopng $RPM_BUILD_ROOT/usr/bin
+cp $RPM_BUILD_DIR/ntopng-%{version}/ntopng.8 $RPM_BUILD_ROOT/usr/share/man/man8/ 
+cp -r $RPM_BUILD_DIR/ntopng-%{version}/httpdocs $RPM_BUILD_DIR/ntopng-%{version}/scripts $RPM_BUILD_ROOT/usr/share/ntopng
+#cp $RPM_BUILD_DIR/ntopng-%{version}/packages/etc/init/ntopng.conf $RPM_BUILD_ROOT/etc/init
+cp $RPM_BUILD_DIR/ntopng-%{version}/packages/etc/init.d/ntopng    $RPM_BUILD_ROOT/etc/init.d
 find $RPM_BUILD_ROOT -name ".svn" | xargs /bin/rm -rf
 find $RPM_BUILD_ROOT -name "*~"   | xargs /bin/rm -f
 #
-DST=$RPM_BUILD_ROOT/usr/local/ntopng
+DST=$RPM_BUILD_ROOT/usr/ntopng
 SRC=$RPM_BUILD_DIR/%{name}-%{version}
-mkdir -p $DST/conf
+#mkdir -p $DST/conf
 # Clean out our build directory
 %clean
 rm -fr $RPM_BUILD_ROOT
 
 %files
-/usr/local/bin/ntopng
-/usr/local/man/man8/ntopng.8
-/etc/init/ntopng.conf
+/usr/bin/ntopng
+/usr/share/man/man8/ntopng.8.gz
+#/etc/init/ntopng.conf
 /etc/init.d/ntopng
-/usr/local/share/ntopng
+/usr/share/ntopng
 /etc/ntopng/ntopng.conf.sample
 /etc/ntopng/ntopng.start
 
