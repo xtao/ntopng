@@ -32,7 +32,7 @@ void sigproc(int sig) {
 
   if(called) {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Ok I am leaving now");
-    exit(0);
+    _exit(0);
   } else {
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Shutting down...");
     called = 1;
@@ -58,7 +58,7 @@ void sigproc(int sig) {
 #endif
 
   delete ntop;
-  exit(0);
+  _exit(0);
 }
 
 /* ******************************************* */
@@ -76,7 +76,7 @@ void initWinsock32() {
     /* Tell the user that we could not find a usable */
     /* WinSock DLL.                                  */
     printf("FATAL ERROR: unable to initialise Winsock 2.x.\n");
-    exit(-1);
+    _exit(-1);
   }
 }
 
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
   initWinsock32();
 #endif
 
-  if((ntop = new(std::nothrow)  Ntop(argv[0])) == NULL) exit(0);
-  if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)   exit(0);
+  if((ntop = new(std::nothrow)  Ntop(argv[0])) == NULL) _exit(0);
+  if((prefs = new(std::nothrow) Prefs(ntop)) == NULL)   _exit(0);
 
   if((argc == 2) && (argv[1][0] != '-'))
     rc = prefs->loadFromFile(argv[1]);
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
       ntop->getTrace()->traceEvent(TRACE_ERROR,
 				   "Unable to write on %s [%s]: please specify a different directory (-d)",
 				   ntop->get_working_dir(), path);
-      exit(0);
+      _exit(0);
     } else {
       fclose(fd); /* All right */
       unlink(path);

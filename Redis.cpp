@@ -67,7 +67,7 @@ void Redis::reconnectRedis() {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "ntopng requires redis server to be up and running");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Please start it and try again or use -r");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "to specify a redis server other than the default");
-    exit(-1);
+    _exit(-1);
   } else
     freeReplyObject(reply);
   

@@ -218,7 +218,7 @@ void usage() {
   printf("\n");
   n.printAvailableInterfaces(true, 0, NULL, 0);
 
-  exit(0);
+  _exit(0);
 }
 
 /* ******************************************* */
@@ -502,7 +502,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'V':
     printf("v.%s (%s)\n", PACKAGE_VERSION, NTOPNG_SVN_RELEASE);
-    exit(0);
+    _exit(0);
     break;
 
   case 'X':

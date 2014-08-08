@@ -93,7 +93,7 @@ NetworkInterface::NetworkInterface(const char *name) {
       ntop->getTrace()->traceEvent(TRACE_ERROR,
 				   "Unable to locate default interface (%s)\n",
 				   pcap_error_buffer);
-      exit(0);
+      _exit(0);
     }
   } else {
     if(isNumber(name)) {
@@ -106,7 +106,7 @@ NetworkInterface::NetworkInterface(const char *name) {
       if(_ifname[0] == '\0') {
 	ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to locate interface Id %d", id);
 	printAvailableInterfaces(false, 0, NULL, 0);
-	exit(0);
+	_exit(0);
       }
       name = _ifname;
     }
@@ -127,7 +127,7 @@ NetworkInterface::NetworkInterface(const char *name) {
 					     malloc_wrapper, free_wrapper, debug_printf);
     if(ndpi_struct == NULL) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
-      exit(-1);
+      _exit(-1);
     }
     
     if(ntop->getCustomnDPIProtos() != NULL)
@@ -1543,17 +1543,17 @@ u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *
 
   ebuf[0] = '\0';
 
-  if(ifname == NULL) {
-    if(printHelp)
-      printf("Available interfaces (-i <interface index>):\n");
-    else if(!help_printed)
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
-  }
-
   if(pcap_findalldevs(&devpointer, ebuf) < 0) {
     ;
   } else {
-    for(i = 0; devpointer != 0; i++) {
+    if(ifname == NULL) {
+      if(printHelp)
+	printf("Available interfaces (-i <interface index>):\n");
+      else if(!help_printed)
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
+    }
+    
+    for(i = 0; devpointer != NULL; i++) {
       if(validInterface(devpointer->description)) {
 	numInterfaces++;
 
