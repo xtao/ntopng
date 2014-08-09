@@ -12,8 +12,10 @@ sendHTTPHeader('text/html')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
+interface.find(ifname)
+ifstats = interface.getStats()
 
-print('<hr><h2>'..ifname..' Preferences</H2></br>\n')
+print('<hr><h2>'..ifstats.name..' Preferences</H2></br>\n')
 
 key = 'ntopng.prefs.'..ifname..'.name'
 if(_GET["ifName"] ~= nil) then
