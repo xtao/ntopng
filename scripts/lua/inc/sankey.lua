@@ -125,7 +125,7 @@ print [[
     else return color(d.target.name);
   }
 
-	var link = svg_sankey.append("g").selectAll(".link")
+     var link = svg_sankey.append("g").selectAll(".link")
 	  .data(hosts.links)
 	  .enter().append("path")
 	  .attr("class", "link")
@@ -189,13 +189,7 @@ print [[
 	  .attr("dy", ".35em")
 	  .attr("text-anchor", "end")
 	  .attr("transform", null)
-	  .text(function(d) {
-      if (d.vlan != 0) {
-        return (d.name);
-      } else {
-        return (d.host);
-      }
-     })
+	  .text(function(d) { return (d.name); })
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 6 + sankey.nodeWidth())
 	  .attr("text-anchor", "start");

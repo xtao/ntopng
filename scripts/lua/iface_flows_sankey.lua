@@ -50,17 +50,16 @@ while(num == 0) do
       if((last == 0) and (values.duration < 3)) then
 	 last = values["sent"] + values["rcvd"]
       end
-      if(last > threshold) then 
-	 
+      if(last > threshold) then
+
    if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
    if((debug) and (findString(key, tracked_host) ~= nil))then io.write("findString(key, tracked_host)==>"..findString(key, tracked_host)) end
    if((debug) and (findString(values["cli.ip"], tracked_host) ~= nil)) then io.write("findString(values[cli.ip], tracked_host)==>"..findString(values["cli.ip"], tracked_host)) end
    if((debug) and (findString(values["srv.ip"], tracked_host) ~= nil)) then io.write("findString(values[srv.ip], tracked_host)==>"..findString(values["srv.ip"], tracked_host)) end
-	 
-
 
    if((tracked_host == nil) or findString(key, tracked_host) or findString(values["cli.ip"], tracked_host) or findString(values["srv.ip"], tracked_host)) then
-	   -- print("[" .. key .. "][" .. tracked_host .. "]\n")
+      -- print("[" .. key .. "]")
+      -- print("[" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
 	       if(num >= max_num_hosts) then
@@ -69,15 +68,17 @@ while(num == 0) do
 
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
-        
+
 		  if(num > 0) then
 		     print ",\n"
 		  end
 
-      host_info = hostkey2hostinfo(word)
+		  host_info = hostkey2hostinfo(word)
 
 		  -- 3. print nodes
-		  print ("\t{\"name\": \"" ..word.. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
+		  name = shortHostName(ntop.getResolvedAddress(word))
+
+		  print ("\t{\"name\": \"" .. name .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
 		  num = num + 1
 	       end
 	    end
@@ -127,7 +128,7 @@ if ((num == 0) and (tracked_host == nil)) then
 		  hosts[word] = num
 
       host_info = hostkey2hostinfo(word)
-      
+
       -- 3. print nodes
       print ("{\"name\": \"" .. word .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
 		  num = num + 1
@@ -183,7 +184,7 @@ for key, values in pairs(peers) do
 
 	 sentv = values["sent.last"]
 	 recvv = values["rcvd.last"]
-	 
+
 	 if(val == 0) then
 	    val = 1
 	 end
