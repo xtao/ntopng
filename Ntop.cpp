@@ -579,10 +579,12 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
   if(strcmp(name, str) == 0) {
     /* name is a number */
 
-    if(if_id < num_defined_interfaces)
-      return(iface[if_id]);
-    else
-      return(NULL);
+    for(int i=0; i<num_defined_interfaces; i++) {
+      if(iface[i]->get_id() == if_id)
+	return(iface[i]);
+    }
+
+    return(NULL);
   }
 
   for(int i=0; i<num_defined_interfaces; i++) {

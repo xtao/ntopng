@@ -7,7 +7,7 @@
 Summary: A next generation network packet traffic probe used for high-speed web-based traffic analysis and flow collection.
 Name: ntopng
 Version: 1.1.99
-Release: 8064.44.nst20
+Release: 8082.44.nst20
 License: GPLv3
 Group: Applications/Internet
 URL: http://www.ntop.org/
@@ -72,6 +72,10 @@ ntopng feature highlights:
 #
 # ${RELEASE} = "SVNREV.NST_RELEASE", Ex "6728.15.nst18"
 pushd nDPI
+#
+# Generate a 'configure' file...
+./autogen.sh;
+#
 svnver="$(echo %{release} | cut -d . -f 1;)";
 #
 %{__sed} -i -e 's/^SVN_RELEASE=.*$/SVN_RELEASE='"${svnver}"'/' "configure";
@@ -247,6 +251,9 @@ fi
 
 
 %changelog
+* Sat Aug 09 2014 Ronald W. Henderson <rwhalb@verizon.net>
+- Next development release: v1.1.99, SVN: 8082
+
 * Wed Aug 06 2014 Ronald W. Henderson <rwhalb@verizon.net>
 - Next development release: v1.1.99, SVN: 8064
 
