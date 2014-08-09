@@ -79,10 +79,10 @@ static char* reverse_ipv4(char* numeric_ip) {
 
   len = 1 + strlen(numeric_ip);
 
-  if (len == 0)
+  if(len == 0)
     return NULL;
 
-  if ((reversed = (char*) malloc(len)) == NULL)
+  if((reversed = (char*) malloc(len)) == NULL)
     return NULL;
 
   memset(reversed, 0, len);
@@ -93,20 +93,20 @@ static char* reverse_ipv4(char* numeric_ip) {
 #endif
 
   curr_ptr = strtok_r(str, ".", &saveptr);
-  if (!curr_ptr)
+  if(!curr_ptr)
     goto clean;
 
   snprintf(&(b[idx][0]), 4, "%s", curr_ptr);
   while(saveptr) {
     curr_ptr = strtok_r(NULL, ".", &saveptr);
-    if (curr_ptr) {
+    if(curr_ptr) {
       idx++;
       snprintf(&(b[idx][0]), 4, "%s", curr_ptr);
     }
     else saveptr = NULL;
   }
 
-  if (idx != 3) 
+  if(idx != 3) 
     goto clean;
 
   snprintf(reversed, len, "%s.%s.%s.%s", b[3], b[2], b[1], b[0]);
@@ -124,7 +124,7 @@ clean:
 static int prepare_dns_query_string(char* key, char* numeric_ip, char* buf, u_int buf_len) {
   char* reversed_ip = reverse_ipv4(numeric_ip);
 
-  if (reversed_ip == NULL)
+  if(reversed_ip == NULL)
     return -1;
 
   snprintf(buf, buf_len, "%s.%s.%s", key, reversed_ip, HTTPBL_DOMAIN);
@@ -136,7 +136,7 @@ static int prepare_dns_query_string(char* key, char* numeric_ip, char* buf, u_in
 /* **************************************************** */
 
 static void *get_in_addr(struct sockaddr *sa) {
-  if (sa->sa_family == AF_INET)
+  if(sa->sa_family == AF_INET)
     return &(((struct sockaddr_in*)sa)->sin_addr);
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
@@ -156,9 +156,9 @@ static int dns_query_execute(char* query, char* resp, u_int resp_len) {
   // hint.ai_flags = AI_CANONNAME;
   rc = getaddrinfo(query, NULL /*service*/, &hint, &result);
 
-  if (rc) {
+  if(rc) {
     // The host is not blacklisted 
-    if (rc == EAI_NODATA || rc == EAI_NONAME)
+    if(rc == EAI_NONAME)
       return 1;
 
     // That's another error
@@ -175,7 +175,7 @@ static int dns_query_execute(char* query, char* resp, u_int resp_len) {
     snprintf(resp, resp_len, "%s", dotted);
 
     cur = cur->ai_next;
-    if (cur) {
+    if(cur) {
       snprintf(resp, resp_len, "Multiple address returned. Something is wrong!");
       return 0;
     }
@@ -199,7 +199,7 @@ void HTTPBL::queryHTTPBL(char* numeric_ip) {
   } else 
     iface = (char*)"";
 
-  if (prepare_dns_query_string(api_key, numeric_ip, dns_query_str, sizeof(dns_query_str)) < 0) {
+  if(prepare_dns_query_string(api_key, numeric_ip, dns_query_str, sizeof(dns_query_str)) < 0) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, 
         "HTTP:BL resolution: invalid query with [%s]", numeric_ip);
     num_httpblized_fails++;

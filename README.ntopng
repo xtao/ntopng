@@ -1,10 +1,5 @@
-For ntopng Developers
----------------------
-In case you want to add new protocols
-
-# ./autogen.sh
-# ./configure
-# make
+Prerequisites for Compilation
+-----------------------------
 
 Prerequisites
 - glib2
@@ -26,12 +21,27 @@ On Fedora
 - yum groupinstall "Development tools"
 - yum install autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget
 
+On FreeBSD
+- pkg install autoconf automake libtool wget pkgconf rrdtool gmake redis
+
+Note that you need to edit third-party/LuaJIT-2.0.3/src/Makefile and change "CC= gcc" into "CC= cc" prior to start the compilation.
+
 On Mac OSX please install macports and do
 - port install XXX
   Example: port install geoip
 
 On Windows you can download the redis server from
 - https://github.com/rgl/redis/downloads
+
+
+Compilation
+-----------
+Once you have installed all the prerequisites do
+
+# ./autogen.sh
+# ./configure
+# make
+
   
 Binary Packages
 ---------------
@@ -65,7 +75,7 @@ Creating Hierarchies of ntopng Instances
 You can create a hierarchy of ntopngs (e.g. on a star topology, where you have many
 ntopng processes on the edge of a network and a central collector) as follows:
 
-- Remote ntopngs
+- Remote ntopng's
   Host 1.2.3.4		ntopng -i ethX -I "tcp://*:3456"
   Host 1.2.3.5		ntopng -i ethX -I "tcp://*:3457"
   Host 1.2.3.6		ntopng -i ethX -I "tcp://*:3458"
