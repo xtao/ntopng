@@ -238,8 +238,8 @@ u_int32_t Prefs::getDefaultPrefsValue(const char *pref_key, u_int32_t default_va
 /* ******************************************* */
 
 void Prefs::loadIdleDefaults() {
-  local_host_max_idle = getDefaultPrefsValue(CONST_LOCAL_HOST_IDLE_PREFS, MAX_REMOTE_HOST_IDLE);
-  non_local_host_max_idle = getDefaultPrefsValue(CONST_REMOTE_HOST_IDLE_PREFS, MAX_LOCAL_HOST_IDLE);
+  local_host_max_idle = getDefaultPrefsValue(CONST_LOCAL_HOST_IDLE_PREFS, MAX_LOCAL_HOST_IDLE);
+  non_local_host_max_idle = getDefaultPrefsValue(CONST_REMOTE_HOST_IDLE_PREFS, MAX_REMOTE_HOST_IDLE);
   flow_max_idle = getDefaultPrefsValue(CONST_FLOW_MAX_IDLE_PREFS, MAX_FLOW_IDLE);
   host_max_new_flows_sec_threshold = getDefaultPrefsValue(CONST_MAX_NEW_FLOWS_PREFS, CONST_MAX_NEW_FLOWS_SECOND);
   host_max_num_syn_sec_threshold = getDefaultPrefsValue(CONST_MAX_NUM_SYN_PREFS, CONST_MAX_NUM_SYN_PER_SECOND);
