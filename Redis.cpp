@@ -1169,9 +1169,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   begin = time(NULL)-begin;
   if(begin == 0) begin = 1;
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
-			       "Processed %u hosts, %u contacts in %u sec [%.1f contacts/sec][%s]",
-			       num_hosts, contact_idx,
-			       begin, ((float)contact_idx)/((float)begin), day);
+			       "[%s] Processed %u hosts, %u contacts in %u sec [%.1f contacts/sec]",
+				   day, num_hosts, contact_idx,
+			       begin, (float)((float)contact_idx)/((float)begin));
 
   snprintf(buf, sizeof(buf), "%s.hostkeys", day);
   del(buf);

@@ -57,7 +57,11 @@
 /* ***************************************************** */
 
 #ifdef WIN32
+#ifdef _WIN64
+#define PACKAGE_OSNAME            "Win64"
+#else
 #define PACKAGE_OSNAME            "Win32"
+#endif
 #endif
 
 #define MSG_VERSION               0
@@ -222,7 +226,7 @@
 #define SZSERVICENAME        "ntopng"
 
 // displayed name of the service
-#define SZSERVICEDISPLAYNAME "ntopng Win32"
+#define SZSERVICEDISPLAYNAME "ntopng"
 
   // Service TYPE Permissable values:
   //		SERVICE_AUTO_START

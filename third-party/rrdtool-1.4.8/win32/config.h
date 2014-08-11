@@ -36,8 +36,10 @@
 #define PACKAGE_VERSION "1.4.5"
 #define PACKAGE_STRING PACKAGE_NAME " " PACKAGE_VERSION
 
+#ifndef WIN32
 #define isinf(a) (_fpclass(a) == _FPCLASS_NINF || _fpclass(a) == _FPCLASS_PINF)
 #define isnan _isnan
+#endif
 #define finite _finite
 #define snprintf _snprintf
 //#define vsnprintf _vsnprintf
@@ -57,6 +59,8 @@
 
 /* #define DEBUG 1 */
 
+#ifndef WIN32
 __inline int round(double a){int x = (a + 0.5); return x;}
+#endif
 
 #endif                          /* CONFIG_H */

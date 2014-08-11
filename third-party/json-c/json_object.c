@@ -592,7 +592,7 @@ union dbl {
 #define positive_infinity(x)	((x) == PlusInfinity)
 #define negative_infinity(x)	((x) == MinusInfinity)
 
-
+#ifndef WIN32
 int isinf(double value)
 {
     union dbl d;
@@ -604,6 +604,7 @@ int isinf(double value)
 	return -1;
     return 0;
 }
+#endif
 
 /* http://www.publicsource.apple.com/source/Libc/Libc-167/gen.subproj/isnan.c */
 typedef union
@@ -630,7 +631,7 @@ do {								\
   (ix1) = ew_u.parts.lsw;					\
 } while (0)
 
-
+#ifndef WIN32
 int isnan(double x) {
 	int32_t hx,lx;
 	EXTRACT_WORDS(hx,lx,x);
@@ -639,6 +640,7 @@ int isnan(double x) {
 	hx = 0x7ff00000 - hx;
 	return (int)((unsigned int)(hx))>>31;
 }
+#endif
 
 #endif
 
