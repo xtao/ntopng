@@ -85,7 +85,7 @@ else
 
    host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", hostinfo2hostkey(host_info))
 
-   rrdname = dirs.workingdir .. "/" .. getInterfaceId(ifname) .. "/rrd/" .. hostinfo2hostkey(host_info) .. "/bytes.rrd"
+   rrdname = dirs.workingdir .. "/" .. interface.name2id(ifname) .. "/rrd/" .. hostinfo2hostkey(host_info) .. "/bytes.rrd"
    -- print(rrdname)
 print [[
 <div class="bs-docs-example">
