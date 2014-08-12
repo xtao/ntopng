@@ -21,13 +21,7 @@ if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-   print("<div class=\"alert alert-success\">The selected interface <b>" .. ifname)
-   key = 'ntopng.prefs.'..ifname..'.name'
-   custom_name = ntop.getCache(key)
-
-   if((custom_name ~= nil) and (custom_name ~= "")) then
-      print(" (".. custom_name ..")")
-   end
+   print("<div class=\"alert alert-success\">The selected interface <b>" .. getHumanReadableInterfaceName(_GET["id"]))
 
    print("</b> is now active</div>")
 
