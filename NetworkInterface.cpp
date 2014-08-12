@@ -797,7 +797,9 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
 void NetworkInterface::startPacketPolling() {
   if(cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Started packet polling on interface %s...", get_name());
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+			       "Started packet polling on interface %s [id: %u]...", 
+			       get_name(), get_id());
   running = true;
 }
 

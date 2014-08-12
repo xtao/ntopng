@@ -84,7 +84,7 @@ static int ntop_lua_check(lua_State* vm, const char* func,
 static NetworkInterface* handle_null_interface(lua_State* vm) {
   ntop->getTrace()->traceEvent(TRACE_INFO, "Null interface: did you restart ntopng in the meantime?");
 
-  return(ntop->getInterfaceId(0));
+  return(ntop->getInterfaceAtId(0));
 }
 
 /* ****************************************** */
@@ -128,7 +128,7 @@ static int ntop_dump_file(lua_State* vm) {
  * @return @ref CONST_LUA_OK.
  */
 static int ntop_get_default_interface_name(lua_State* vm) {
-  lua_pushstring(vm, ntop->getInterfaceId(0)->get_name());
+  lua_pushstring(vm, ntop->getInterfaceAtId(0)->get_name());
   return(CONST_LUA_OK);
 }
 
@@ -147,7 +147,7 @@ static int ntop_set_active_interface_id(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   id = (u_int32_t)lua_tonumber(vm, 1);
 
-  iface = ntop->getInterfaceId(id);
+  iface = ntop->getInterfaceById(id);
 
   // ntop->getTrace()->traceEvent(TRACE_ERROR, "Index: %d, Name: %s", id, iface->get_name());
 
@@ -171,9 +171,12 @@ static int ntop_get_interface_names(lua_State* vm) {
 
   for(int i=0; i<ntop->get_num_interfaces(); i++) {
     char num[8];
+    NetworkInterface *iface =  ntop->getInterfaceAtId(i);
 
-    snprintf(num, sizeof(num), "%d", i);
-    lua_push_str_table_entry(vm, num, ntop->getInterfaceId(i)->get_name());
+    if(iface != NULL) {
+      snprintf(num, sizeof(num), "%d", i);
+      lua_push_str_table_entry(vm, num, iface->get_name());
+    }
   }
 
   return(CONST_LUA_OK);
@@ -2194,8 +2197,8 @@ static int set_historical_info(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
     iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
-  iface->setFromEpoch( (time_t) from_epoch);
-  iface->setToEpoch( (time_t) to_epoch);
+  iface->setFromEpoch((time_t) from_epoch);
+  iface->setToEpoch((time_t) to_epoch);
   iface->setDataIntrefaceId(iface_id);
 
   return(CONST_LUA_OK);
@@ -2229,10 +2232,10 @@ static int load_historical_interval(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
-  if (iface->is_on_load())
+  if(iface->is_on_load())
      lua_pushboolean(vm,false);
    else {
-    iface->startLoadData( (time_t) from_epoch, (time_t) to_epoch, iface_id);
+    iface->startLoadData((time_t) from_epoch, (time_t) to_epoch, iface_id);
     lua_pushboolean(vm,true);
    }
 
@@ -2254,10 +2257,11 @@ static int load_historical_file(lua_State* vm) {
   char *file_name;
   bool cleanup;
   HistoricalInterface *iface = NULL;
-  iface = (HistoricalInterface*) ntop->getHistoricalInterface();
+
+  iface = (HistoricalInterface*)ntop->getHistoricalInterface();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((file_name = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
+  if((file_name = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
   /* Optional */
   if(lua_type(vm, 2) != LUA_TBOOLEAN)
@@ -2265,9 +2269,8 @@ static int load_historical_file(lua_State* vm) {
   else
     cleanup = lua_toboolean(vm, 2) ? true : false;
 
-
-  if (cleanup) iface->cleanup();
-  lua_pushnumber(vm,   iface->loadData( file_name));
+  if(cleanup) iface->cleanup();
+  lua_pushnumber(vm, iface->loadData(file_name));
 
   return(CONST_LUA_OK);
 }
@@ -2672,7 +2675,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
     snprintf(key, sizeof(key), "ntopng.prefs.%s.ifname", user);
     if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
     set_default_if_name_in_session:
-      snprintf(val, sizeof(val), "%s", ntop->getInterfaceId(0)->get_name());
+      snprintf(val, sizeof(val), "%s", ntop->getInterfaceAtId(0)->get_name());
       lua_push_str_table_entry(L, "ifname", val);
       ntop->getRedis()->set(key, val, 3600 /* 1h */);
     } else {

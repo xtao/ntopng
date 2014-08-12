@@ -10,9 +10,12 @@ require "lua_utils"
 
 active_page = "if_stats"
 
--- First switch interfaces so the new cookie will have effect
-ifname = interface.setActiveInterfaceId(tonumber(_GET["id"]))
+id = _GET["id"]
 
+-- First switch interfaces so the new cookie will have effect
+ifname = interface.setActiveInterfaceId(tonumber(id))
+
+--print("@"..ifname.."="..id.."@")
 if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
    key = getRedisPrefix("ntopng.prefs") .. ".ifname"
    ntop.setCache(key, ifname)
@@ -21,11 +24,10 @@ if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-   print("<div class=\"alert alert-success\">The selected interface <b>" .. getHumanReadableInterfaceName(_GET["id"]))
+   print("<div class=\"alert alert-success\">The selected interface <b>" .. getHumanReadableInterfaceName(id))
+   print("</b> [id: ".. id .."] is now active</div>")
 
-   print("</b> is now active</div>")
-
-   ntop.setCache(getRedisPrefix("ntopng.prefs")..'.iface', _GET["id"])
+   ntop.setCache(getRedisPrefix("ntopng.prefs")..'.iface', id)
 
 print [[
 <script>

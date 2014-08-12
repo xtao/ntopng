@@ -3,7 +3,6 @@
 --
 require "lua_trace"
 
-
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
   ifname = _GET["ifname"]
@@ -19,6 +18,7 @@ if((ifname == nil) and (_GET ~= nil)) then
   end
 end
 
+--print("(((("..ifname.."))))")
 l4_keys = {
   { "TCP", "tcp" },
   { "UDP", "udp" },
@@ -1310,7 +1310,6 @@ end
 -- Runtime preference
 
 function prefsInputField(label, comment, key, value)
-
   if(_GET[key] ~= nil) then
     k = "ntopng.prefs."..key
     v = tonumber(_GET[key])

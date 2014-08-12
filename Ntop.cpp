@@ -608,6 +608,18 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
 
 /* ******************************************* */
 
+NetworkInterface* Ntop::getInterfaceById(u_int8_t id){
+  for(int i=0; i<num_defined_interfaces; i++) {
+    if(iface[i]->get_id() == id) {
+      return(iface[i]);
+    }
+  }
+
+  return(NULL);
+}
+
+/* ******************************************* */
+
 NetworkInterface* Ntop::getInterface(char *name) {
  /* This method accepts both interface names or Ids */
   u_int if_id = atoi(name);
@@ -617,10 +629,7 @@ NetworkInterface* Ntop::getInterface(char *name) {
   if(strcmp(name, str) == 0) {
     /* name is a number */
 
-    if(if_id < num_defined_interfaces)
-      return(iface[if_id]);
-    else
-      return(NULL);
+    return(getInterfaceById(if_id));
   }
 
   for(int i=0; i<num_defined_interfaces; i++) {
@@ -642,13 +651,13 @@ int Ntop::getInterfaceIdByName(char *name) {
   snprintf(str, sizeof(str), "%u", if_id);
   if(strcmp(name, str) == 0) {
     /* name is a number */
-
-    if(if_id < num_defined_interfaces)
-      return(if_id);
+    NetworkInterface *iface = getInterfaceById(if_id);
+    
+    if(iface != NULL)
+      return(iface->get_id());
     else
       return(-1);
   }
-
 
   for(int i=0; i<num_defined_interfaces; i++) {
     if(strcmp(iface[i]->get_name(), name) == 0) {

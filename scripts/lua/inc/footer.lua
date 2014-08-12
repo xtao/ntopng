@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 require "os"
@@ -22,6 +22,7 @@ iface_id = interface.name2id(ifname)
 
 is_historical = interface.isHistoricalInterface(iface_id)
 
+interface.find(ifname)
 ifstats = interface.getStats()
 
 print ("v."..info["version"].." </br>for user ")

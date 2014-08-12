@@ -24,6 +24,7 @@
 /* ******************************************* */
 
 IpAddress::IpAddress() {
+  ip_key = 0;
   memset(&addr, 0, sizeof(addr));
   compute_key();
 }
@@ -31,6 +32,7 @@ IpAddress::IpAddress() {
 /* ******************************************* */
 
 IpAddress::IpAddress(char *string) {
+  ip_key = 0;
   set_from_string(string);
   compute_key();
 }
@@ -38,12 +40,14 @@ IpAddress::IpAddress(char *string) {
 /* ******************************************* */
 
 IpAddress::IpAddress(IpAddress *ip) {
+  ip_key = 0;
   set(ip);
 }
 
 /* ******************************************* */
 
 IpAddress::IpAddress(u_int32_t _ipv4) {
+  ip_key = 0;
   set_ipv4(_ipv4);
   compute_key();
 }
@@ -51,6 +55,7 @@ IpAddress::IpAddress(u_int32_t _ipv4) {
 /* ******************************************* */
 
 IpAddress::IpAddress(struct ndpi_in6_addr *_ipv6) {
+  ip_key = 0;
   set_ipv6(_ipv6);
   addr.privateIP = false;
   compute_key();
@@ -66,11 +71,11 @@ void IpAddress::set(IpAddress *ip) {
 
 /* ******************************************* */
 
-void IpAddress::set_from_string(char *string) {
-  if(strchr(string, '.')) {
-    addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = inet_addr(string);
+void IpAddress::set_from_string(char *sym_addr) {
+  if(strchr(sym_addr, '.')) {
+    addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = inet_addr(sym_addr);
   } else {
-    if(inet_pton(AF_INET6, string, &addr.ipType.ipv6) <= 0) {
+    if(inet_pton(AF_INET6, sym_addr, &addr.ipType.ipv6) <= 0) {
       /* We failed */
       addr.ipVersion = 4, addr.localHost = 0, addr.ipType.ipv4 = 0;
     } else {
@@ -160,6 +165,8 @@ bool IpAddress::isLocalInterfaceAddress() {
 /* ******************************************* */
 
 void IpAddress::compute_key() {
+  if(ip_key != 0) return; /* Already computed */
+
   checkPrivate();
 
   if(addr.ipVersion == 4) {
@@ -260,7 +267,7 @@ bool IpAddress::isLocalHost(int16_t *network_id) {
 char* IpAddress::serialize() {
   json_object *my_object = getJSONObject();
   char *rsp = strdup(json_object_to_json_string(my_object));
-  
+
   /* Free memory */
   json_object_put(my_object);
 
@@ -276,13 +283,13 @@ void IpAddress::deserialize(json_object *o) {
 
   /* Reset all */
   memset(&addr, 0, sizeof(addr));
-  
+
   if(json_object_object_get_ex(o, "ipVersion", &obj))
     addr.ipVersion = json_object_get_int(obj);
-  
+
   if(json_object_object_get_ex(o, "localHost", &obj))
     addr.localHost = json_object_get_boolean(obj);
-  
+
   if(json_object_object_get_ex(o, "ip", &obj))
     set_from_string((char*)json_object_get_string(obj));
 }
@@ -294,10 +301,10 @@ json_object* IpAddress::getJSONObject() {
   char buf[64];
 
   my_object = json_object_new_object();
-  
+
   json_object_object_add(my_object, "ipVersion", json_object_new_int(addr.ipVersion));
   json_object_object_add(my_object, "localHost", json_object_new_boolean(addr.localHost));
   json_object_object_add(my_object, "ip", json_object_new_string(print(buf, sizeof(buf))));
-			 
+
   return(my_object);
 }

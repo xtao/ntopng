@@ -17,10 +17,7 @@ for k,v in pairs(names) do num_ifaces = num_ifaces+1 end
 
 print [[
       <div class="masthead">
-
-
         <ul class="nav nav-pills pull-right">
-
    ]]
 
 interface.find(ifname)
@@ -182,13 +179,19 @@ print [[
 ]]
 
 ifnames = {}
-for k,v in pairs(names) do
-   ifnames[v] = k
+for v,k in pairs(names) do
+   interface.find(k)
+   ifstats = interface.getStats()
+
+   ifnames[ifstats.id] = ifstats.name
+   --print(ifstats.name.."="..ifstats.id.." ")
 end
 
-for v,k in pairsByKeys(ifnames, asc) do
+for k,v in pairsByKeys(ifnames, asc) do
    print("      <li>")
    
+   --print(k.."="..v.." ")
+
    if(v == ifname) then
       print("<a href=\"/lua/if_stats.lua?if_name="..v.."\">")
    else
@@ -202,9 +205,9 @@ for v,k in pairsByKeys(ifnames, asc) do
    print("</a></li>\n")
 end
 
-print('<li class="divider"></li>')
 -- Historical interface disable
 if not (prefs.is_dump_flows_enabled) then
+   print('<li class="divider"></li>')
   print('      <li> <a data-toggle="tooltip" data-placement="bottom" title="In order to enable this interface, you have to start ntopng with -F option." >Historical</a></li>')
 end
 

@@ -207,7 +207,14 @@ class Ntop {
    * @param i Index of network interface.
    * @return The network interface instance if exists, NULL otherwise.
    */
-  inline NetworkInterface* getInterfaceId(u_int8_t i){ if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
+  NetworkInterface* getInterfaceById(u_int8_t i);
+  /**
+   * @brief Get the i-th network interface.
+   *
+   * @param i The i-th network interface.
+   * @return The network interface instance if exists, NULL otherwise.
+   */
+  NetworkInterface* getInterfaceAtId(u_int8_t i) { if(i<num_defined_interfaces) return(iface[i]); else return(NULL); }
   /**
    * @brief Get the network interface identified by name or Id.
    * @details This method accepts both interface names or Ids.
