@@ -159,9 +159,6 @@ int main(int argc, char *argv[])
 
   ntop->createExportInterface();
 
-   // Create empty and not running historical interface
-   // This interface must be create ad last interface, in order to be able to set the right
-   // interface id (not redis id but ntop.h id).
   if(prefs->do_dump_flows_on_db())
     ntop->createHistoricalInterface();
 

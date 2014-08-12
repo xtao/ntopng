@@ -301,7 +301,7 @@ class Ntop {
  * @details Use  @ref historical_interface_id to identify the Historical Interface
  * @return Pointer to Historical Interface instance
  */
-  inline NetworkInterface* getHistoricalInterface() {  return (historical_interface_id != -1)  ? getInterfaceId(historical_interface_id) : NULL; };
+  inline NetworkInterface* getHistoricalInterface() {  return (getInterface(get_if_name(historical_interface_id))); };
   /**
    * @brief Get Historical Interface index
    * @return index of current historical interface instance

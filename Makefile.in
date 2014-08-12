@@ -236,10 +236,9 @@ install: ntopng geoip
 	find $(INSTALL_DIR)/share/ntopng -name ".svn" | xargs /bin/rm -rf
 
 uninstall:
-	mkdir -p $(INSTALL_DIR)/share/ntopng $(MAN_DIR)/man/man8 $(INSTALL_DIR)/bin
-	rm $(INSTALL_DIR)/bin/ntopng
-	rm $(MAN_DIR)/man/man8/ntopng.
-	rm -r $(INSTALL_DIR)/share/ntopng	
+	if test -f $(INSTALL_DIR)/bin/ntopng; then rm $(INSTALL_DIR)/bin/ntopng; fi;
+	if test -f $(MAN_DIR)/man/man8/ntopng.8; then rm $(MAN_DIR)/man/man8/ntopng.8; fi;
+	if test -d $(INSTALL_DIR)/share/ntopng; then rm -r $(INSTALL_DIR)/share/ntopng; fi;
 
 Makefile: @SVN_WC_DB@
 	@echo ""

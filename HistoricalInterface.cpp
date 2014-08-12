@@ -25,6 +25,12 @@
 
 HistoricalInterface::HistoricalInterface(const char *_endpoint)
   : ParserInterface(_endpoint) {
+
+  if(ntop->getRedis())
+      id = Utils::ifname2id(_endpoint);
+    else
+      id = (u_int8_t)-1;
+
     resetStats();
     purge_idle_flows_hosts = false;
 }
@@ -108,20 +114,20 @@ int HistoricalInterface::loadData(char* p_file_name) {
 
 
 int HistoricalInterface::loadData() {
-  time_t actual_epoch;
+  time_t actual_epoch, adjust_to_epoch;
   char path[MAX_PATH];
   char db_path[MAX_PATH];
   int ret_state = CONST_HISTORICAL_OK;
   u_int8_t iface_dump_id;
 
-  NetworkInterface * iface = ntop->getInterfaceId(interface_id);
+  NetworkInterface * iface = ntop->getInterface(ntop->get_if_name(interface_id));
 
   if ((iface != NULL) && (from_epoch != 0) && (to_epoch != 0)) {
 
     iface_dump_id = iface->get_id();
     actual_epoch = from_epoch;
-    to_epoch -= 300; // Adjust to epoch each file contains 5 minute of data
-    while (actual_epoch <= to_epoch && isRunning()) {
+    adjust_to_epoch = to_epoch - 300; // Adjust to epoch each file contains 5 minute of data
+    while (actual_epoch <= adjust_to_epoch && isRunning()) {
 
       memset(path, 0, sizeof(path));
       memset(db_path, 0, sizeof(db_path));

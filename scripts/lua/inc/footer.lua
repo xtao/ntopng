@@ -19,6 +19,7 @@ print [[ - <A HREF="http://www.ntop.org">ntop.org</A> <br><font color=lightgray>
 
 info = ntop.getInfo()
 iface_id = interface.name2id(ifname)
+
 is_historical = interface.isHistoricalInterface(iface_id)
 
 ifstats = interface.getStats()
@@ -32,7 +33,6 @@ custom_name = ntop.getCache(key)
 if((custom_name ~= nil) and (custom_name ~= "")) then
    print(" (".. custom_name ..")")
 end
-
 
 print [[</font></div> <!-- End column 1 -->
   <div class="col-xs-6 col-sm-4">
@@ -213,11 +213,11 @@ setInterval(function() {
 	  /* error: function(content) { alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  }, */
 	  success: function(content) {
 	  var rsp;
-
+    
 	  try {
 	    rsp = jQuery.parseJSON(content);
-
-	    if(prev_bytes > 0) {
+      // is_historical, in order to show historical error
+	    if ((prev_bytes > 0) || ((is_historical) && (rsp.historical_tot_files)) ) {
 
 	      if (rsp.packets < prev_packets) {
 	        prev_bytes   = rsp.bytes;
@@ -251,16 +251,22 @@ setInterval(function() {
 		var alarm_threshold_low = 60;  /* 60% */
 		var alarm_threshold_high = 90; /* 90% */
 		var alert = 0;
-
+     
             if (is_historical) {
-
+            
+            var historical_alarm_threshold_low = 10;  /* 10% */
+            var historical_alarm_threshold_high = 40; /* 40% */
+              
               msg = ""; //Reset msg
+              if (rsp.historical_if_name)
+                msg += "<font color=lightgray>Loaded Interface: " + rsp.historical_if_name + " </font></br>";
+              
               if(rsp.on_load)
                 msg += "&nbsp;<i class=\"fa fa-cog fa-spin\"></i> Load in process ... </br>";
-
-              if(rsp.success_pctg < alarm_threshold_low) {
-              msg += "<span class=\"label label-default\">";
-              } else if(rsp.success_pctg < alarm_threshold_high) {
+              
+              if(rsp.success_pctg < historical_alarm_threshold_low) {
+              msg += "<span class=\"label label-danger\">";
+              } else if(rsp.success_pctg <= historical_alarm_threshold_high) {
               alert = 1;
               msg += "<span class=\"label label-warning\">";
               } else {
@@ -270,41 +276,43 @@ setInterval(function() {
 
               msg += rsp.success_file+" Loaded Files</span>&nbsp;";
 
-              if(rsp.file_pctg < alarm_threshold_low) {
-              msg += "<span class=\"label label-default\">";
-              } else if(rsp.file_pctg < alarm_threshold_high) {
+              
+              if(rsp.file_pctg > historical_alarm_threshold_high) {
+              msg += "<span class=\"label label-danger\">";
+              } else if(rsp.file_pctg > historical_alarm_threshold_low) {
               alert = 1;
               msg += "<span class=\"label label-warning\">";
               } else {
               alert = 1;
-              msg += "<span class=\"label label-danger\">";
+              msg += "<span class=\"label label-default\">";
               }
 
               msg += rsp.file_error+" Missing Files</span></br>";
-
+              
+              
               if(rsp.open_error > 0){
-                if(rsp.open_pctg < alarm_threshold_low) {
-                msg += "<span class=\"label label-default\">";
-                } else if(rsp.open_pctg < alarm_threshold_high) {
+                if(rsp.open_pctg > historical_alarm_threshold_high) {
+                msg += "<span class=\"label label-danger\">";
+                } else if(rsp.open_pctg > historical_alarm_threshold_low) {
                 alert = 1;
                 msg += "<span class=\"label label-warning\">";
                 } else {
                 alert = 1;
-                msg += "<span class=\"label label-danger\">";
+                msg += "<span class=\"label label-default\">";
                 }
 
                 msg += rsp.open_error+" Open Error</span>&nbsp;";
               }
 
               if(rsp.query_error > 0){
-                if(rsp.query_pctg < alarm_threshold_low) {
-                msg += "<span class=\"label label-default\">";
-                } else if(rsp.query_pctg < alarm_threshold_high) {
+                if(rsp.query_pctg > historical_alarm_threshold_high) {
+                msg += "<span class=\"label label-danger\">";
+                } else if(rsp.query_pctg > historical_alarm_threshold_low) {
                 alert = 1;
                 msg += "<span class=\"label label-warning\">";
                 } else {
                 alert = 1;
-                msg += "<span class=\"label label-danger\">";
+                msg += "<span class=\"label label-default\">";
                 }
 
                 msg += rsp.query_error+" Query Error</span></br>";

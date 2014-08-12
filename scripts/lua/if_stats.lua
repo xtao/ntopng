@@ -24,7 +24,6 @@ if(if_name == nil) then if_name = ifname end
 
 interface.find(if_name)
 is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
---print(if_name)
 ifstats = interface.getStats()
 
 if(_GET["custom_name"] ~=nil) then
@@ -295,15 +294,16 @@ if((custom_name ~= nil) and (custom_name ~= "")) then
 end
 
 
-print('<button id="interface_displayed"  value="' .. historical_info["interface_name"].. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
+print('<button id="interface_displayed"  value="' .. interface.name2id(historical_info["interface_name"]).. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
 
 print('    <ul class="dropdown-menu" id="interface_list">\n')
 
 for k,v in pairs(names) do
   key = 'ntopng.prefs.'..v..'.name'
   custom_name = ntop.getCache(key)
+--  io.write(v .. ' - ' ..interface.name2id(v).. '\n')
     if (v ~= "Historical") then
-      print('<li><a name="' ..v..'" >')
+      print('<li><a name="' ..interface.name2id(v)..'" >')
       if((custom_name ~= nil) and (custom_name ~= "")) then
         print(custom_name..'</a></li>')
       else

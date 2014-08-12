@@ -168,9 +168,9 @@ void Ntop::registerPrefs(Prefs *_prefs) {
 
 void Ntop::createHistoricalInterface() {
   HistoricalInterface *iface = new HistoricalInterface("Historical");
+  prefs->add_network_interface((char *)"Historical", NULL);
   ntop->registerInterface(iface);
-  //We have to create this interface as last interface
-  historical_interface_id = num_defined_interfaces -1 ;
+  historical_interface_id = iface->get_id();
 }
 
 /* ******************************************* */
