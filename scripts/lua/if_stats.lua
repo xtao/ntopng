@@ -289,15 +289,16 @@ current_name = historical_info["interface_name"]
 
 
 if(current_name ~= nil) then
-   key = 'ntopng.prefs.'..current_name..'.name'
+   v = interface.name2id(current_name)
 
+   key = 'ntopng.prefs.'..current_name..'.name'
    custom_name = ntop.getCache(key)
-   
+
    if((custom_name ~= nil) and (custom_name ~= "")) then
       current_name = custom_name
+   else
+      current_name = getHumanReadableInterfaceName(v)
    end
-
-   v = interface.name2id(current_name)
 else
    v = ""
 end
@@ -317,12 +318,13 @@ for k,v in pairs(names) do
   key = 'ntopng.prefs.'..v..'.name'
   custom_name = ntop.getCache(key)
 --  io.write(v .. ' - ' ..interface.name2id(v).. '\n')
-    if (v ~= "Historical") then
-      print('<li><a name="' ..interface.name2id(v)..'" >')
+  if (v ~= "Historical") then
+       print('<li><a name="' ..interface.name2id(v)..'" >')
       if((custom_name ~= nil) and (custom_name ~= "")) then
-        print(custom_name..'</a></li>')
-      else
-        print(v..'</a></li>')
+	 print(custom_name..'</a></li>')
+     else
+        --print(v..'</a></li>')
+	print(getHumanReadableInterfaceName(k)..'</a></li>')
       end
     end
 end

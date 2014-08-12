@@ -622,8 +622,12 @@ NetworkInterface* Ntop::getInterfaceById(u_int8_t id){
 
 NetworkInterface* Ntop::getInterface(char *name) {
  /* This method accepts both interface names or Ids */
-  u_int if_id = atoi(name);
+  u_int if_id;
   char str[8];
+  
+  if(name == NULL) return(NULL);
+
+  if_id = atoi(name);
 
   snprintf(str, sizeof(str), "%u", if_id);
   if(strcmp(name, str) == 0) {

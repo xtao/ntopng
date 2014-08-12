@@ -2232,7 +2232,7 @@ static int load_historical_interval(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
-  if(iface->is_on_load())
+  if((iface == NULL) || iface->is_on_load())
      lua_pushboolean(vm,false);
    else {
     iface->startLoadData((time_t) from_epoch, (time_t) to_epoch, iface_id);
