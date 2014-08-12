@@ -9,5 +9,4 @@ require "top_talkers"
 
 sendHTTPHeader('text/html')
 
-
 print(getTopTalkers(getInterfaceId(ifname), ifname, _GET["mode"], _GET["epoch"]))

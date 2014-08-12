@@ -46,7 +46,7 @@ print [[
     <ul class="nav navbar-nav">
 ]]
 
-short_name = string.sub(ifname, 1, 30)
+short_name = getHumanReadableInterfaceName(ifname)
 if(short_name ~= ifname) then
    short_name = short_name .. "..."
 end

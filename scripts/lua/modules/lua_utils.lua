@@ -873,8 +873,10 @@ end
 function getInterfaceId(interface_name)
   ifnames = interface.getIfNames()
 
-  for iface_id,_ifname in pairs(ifnames) do
-    if(_ifname == interface_name) then return(iface_id) end
+  for _,if_name in pairs(ifnames) do
+     interface.find(if_name)
+     ifstats = interface.getStats()
+    if(ifstats.name == interface_name) then return(ifstats.id) end
   end
 
   return(-1)
@@ -889,11 +891,13 @@ end
 
 -- Fix path format Unix <-> Windows
 function fixPath(path)
-  if(ntop.isWindows()) then
-    path = string.gsub(path, "/", "\\")
-    path = string.gsub(path, ":", "_")
-  end
-
+   if(ntop.isWindows() and (string.len(path) > 2)) then
+      path = string.gsub(path, "/", "\\")
+      -- Avoid changing c:\.... into c_\....
+      path = string.sub(path, 1, 2) .. string.gsub(string.sub(path, 3), ":", "_")
+      -- io.write("->"..path.."\n")
+   end
+   
   return(path)
 end
 
@@ -1432,5 +1436,24 @@ function tablePreferences(key, value)
     -- Set preferences
     ntop.setHashCache(table_key, key, value)
   end
+end
+
+
+function getHumanReadableInterfaceName(interface_id)
+   key = 'ntopng.prefs.'..interface_id..'.name'
+   custom_name = ntop.getCache(key)
+   
+   if((custom_name ~= nil) and (custom_name ~= "")) then
+      return(custom_name)
+   else
+      interface.find(interface_id)
+      ifstats = interface.getStats()
+      
+      if(interface_id ~= ifstats.description) then
+	 return(ifstats.description)
+      else
+	 return(ifstats.name)
+      end
+   end
 end
 

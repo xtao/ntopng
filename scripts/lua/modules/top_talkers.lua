@@ -10,6 +10,7 @@ require "persistence"
 function getTopTalkers(ifid, ifname, mode, epoch)
    -- if(ifname == nil) then ifname = "any" end
 
+
    if(epoch ~= nil) then
       rsp = getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    else
@@ -27,7 +28,7 @@ function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    dirs = ntop.getDirs()
    filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
 
-   -- print(filename)
+   --print(filename)
    if(ntop.exists(filename)) then
       f = io.open(filename, "r")
       if(f) then

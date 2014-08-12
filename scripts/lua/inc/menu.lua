@@ -7,24 +7,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
 require "lua_utils"
 
-function getHumanReadableInterfaceName(v)
-   key = 'ntopng.prefs.'..v..'.name'
-   custom_name = ntop.getCache(key)
-   
-   if((custom_name ~= nil) and (custom_name ~= "")) then
-      return(custom_name)
-   else
-      interface.find(v)
-      ifstats = interface.getStats()
-      
-      if(v ~= ifstats.description) then
-	 return(ifstats.description)
-      else
-	 return(ifstats.name)
-      end
-   end
-end
-
 
 ifstats = interface.getStats()
 prefs = ntop.getPrefs()
