@@ -7,6 +7,25 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
 require "lua_utils"
 
+function getHumanReadableInterfaceName(v)
+   key = 'ntopng.prefs.'..v..'.name'
+   custom_name = ntop.getCache(key)
+   
+   if((custom_name ~= nil) and (custom_name ~= "")) then
+      return(custom_name)
+   else
+      interface.find(v)
+      ifstats = interface.getStats()
+      
+      if(v ~= ifstats.description) then
+	 return(ifstats.description)
+      else
+	 return(ifstats.name)
+      end
+   end
+end
+
+
 ifstats = interface.getStats()
 prefs = ntop.getPrefs()
 names = interface.getIfNames()
@@ -180,69 +199,37 @@ print [[
       <ul class="dropdown-menu">
 ]]
 
-
+ifnames = {}
 for k,v in pairs(names) do
+   ifnames[v] = k
+end
+
+for v,k in pairsByKeys(ifnames, asc) do
+   print("      <li>")
+   
    if(v == ifname) then
-      print("<li")
-      key = 'ntopng.prefs.'..v..'.name'
-      custom_name = ntop.getCache(key)
-
-      print(">")
-      print("<a href=\"/lua/if_stats.lua?if_name="..v.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"Current ")
-      if (isPausedInterface(v)) then  print('and paused ') end
-      print("interface\"> ")
-      if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
-      if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
-      if((custom_name ~= nil) and (custom_name ~= "")) then
-	 print(custom_name)
-      else
-	 interface.find(v)
-	 ifstats = interface.getStats()
-
-	 if(v ~= ifstats.description) then
-	    print(ifstats.description)
-	 else
-	    print(ifstats.name)
-	 end
-      end
-
-      print("</a></li>")
+      print("<a href=\"/lua/if_stats.lua?if_name="..v.."\">")
+   else
+      print("<a href=\"/lua/set_active_interface.lua?id="..k.."\">")
    end
+   
+   if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
+   if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
+
+   print(getHumanReadableInterfaceName(v))
+   print("</a></li>\n")
 end
 
-
-for k,v in pairs(names) do
-    if(v ~= ifname) then
-    print("<li")
-    print("><a href=\"/lua/set_active_interface.lua?id="..k.."\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"")
-    if (isPausedInterface(v)) then  print('Paused interface') end
-    print("\"> ")
-    if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
-    key = 'ntopng.prefs.'..v..'.name'
-    custom_name = ntop.getCache(key)
-
-    if((custom_name ~= nil) and (custom_name ~= "")) then
-       print(custom_name)
-    else
-      print (v)
-    end
-
-    print(' </a></li>')
-    end
-
-print [[
-]]
-
-end
-
+print('<li class="divider"></li>')
 -- Historical interface disable
 if not (prefs.is_dump_flows_enabled) then
-  print('<li> <a data-toggle="tooltip" data-placement="bottom" title="In order to enable this interface, you have to start ntopng with -F option." >Historical</a></li>')
+  print('      <li> <a data-toggle="tooltip" data-placement="bottom" title="In order to enable this interface, you have to start ntopng with -F option." >Historical</a></li>')
 end
 
 print [[
-</ul>
-</li>
+
+      </ul>
+    </li>
 ]]
 end
 
