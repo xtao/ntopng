@@ -103,7 +103,7 @@ class HistoricalInterface : public ParserInterface {
    * @brief Get current interface index.
    * @return Data interface index if set, otherwise return zero.
    */
-  inline u_int8_t getDataIntrefaceId() { return interface_id;};
+  inline u_int8_t getDataInterfaceId() { return interface_id;};
   /**
    * @brief Get from epoch
    * @details Epoch of first loaded files.]

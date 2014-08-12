@@ -2157,8 +2157,8 @@ static int get_historical_info(lua_State* vm) {
     lua_push_int_table_entry(vm, "id", iface->get_id());
     lua_push_str_table_entry(vm, "name", iface->get_name());
     lua_push_bool_table_entry(vm, "on_load", iface->is_on_load());
-    lua_push_int_table_entry(vm, "interface_id", iface->getDataIntrefaceId());
-    lua_push_str_table_entry(vm, "interface_name", ntop->get_if_name(iface->getDataIntrefaceId()));
+    lua_push_int_table_entry(vm, "interface_id", iface->getDataInterfaceId());
+    lua_push_str_table_entry(vm, "interface_name", ntop->get_if_name(iface->getDataInterfaceId()));
     lua_push_int_table_entry(vm, "from_epoch", iface->getFromEpoch());
     lua_push_int_table_entry(vm, "to_epoch", iface->getToEpoch());
     lua_push_int32_table_entry(vm, "num_files", iface->getNumFiles());

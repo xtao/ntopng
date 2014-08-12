@@ -285,16 +285,31 @@ print("<tr><th >Source Interface</th><td colspan=2>")
 
 names = interface.getIfNames()
 
- key = 'ntopng.prefs.'..historical_info["interface_name"]..'.name'
-custom_name = ntop.getCache(key)
 current_name = historical_info["interface_name"]
 
-if((custom_name ~= nil) and (custom_name ~= "")) then
-  current_name = custom_name
+
+if(current_name ~= nil) then
+   key = 'ntopng.prefs.'..current_name..'.name'
+
+   custom_name = ntop.getCache(key)
+   
+   if((custom_name ~= nil) and (custom_name ~= "")) then
+      current_name = custom_name
+   end
+
+   v = interface.name2id(current_name)
+else
+   v = ""
 end
 
+if(current_name == nil) then
+   for k,v in pairs(names) do
+      if(current_name == nil) then current_name = v end
+      break
+   end
+end
 
-print('<button id="interface_displayed"  value="' .. interface.name2id(historical_info["interface_name"]).. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
+print('<button id="interface_displayed"  value="' .. v .. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
 
 print('    <ul class="dropdown-menu" id="interface_list">\n')
 
