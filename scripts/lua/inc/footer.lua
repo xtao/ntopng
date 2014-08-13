@@ -40,6 +40,7 @@ print [[</font></div> <!-- End column 1 -->
   <div class="row">
       <div class="col-xs-6 col-sm-4">
     ]]
+
 if not is_historical then
   key = 'ntopng.prefs.'..ifname..'.speed'
   maxSpeed = ntop.getCache(key)

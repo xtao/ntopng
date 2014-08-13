@@ -287,7 +287,6 @@ names = interface.getIfNames()
 
 current_name = historical_info["interface_name"]
 
-
 if(current_name ~= nil) then
    v = interface.name2id(current_name)
 
@@ -297,18 +296,22 @@ if(current_name ~= nil) then
    if((custom_name ~= nil) and (custom_name ~= "")) then
       current_name = custom_name
    else
-      current_name = getHumanReadableInterfaceName(v)
+      current_name = getHumanReadableInterfaceName(v.."")
    end
 else
    v = ""
 end
 
+
 if(current_name == nil) then
    for k,v in pairs(names) do
-      if(current_name == nil) then current_name = v end
-      break
+      if(v ~= "Historical") then 
+	 current_name = v 
+	 break
+      end      
    end
 end
+
 
 print('<button id="interface_displayed"  value="' .. v .. '" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">' .. current_name.. '<span class="caret"></span></button>\n')
 
@@ -323,8 +326,10 @@ for k,v in pairs(names) do
       if((custom_name ~= nil) and (custom_name ~= "")) then
 	 print(custom_name..'</a></li>')
      else
-        --print(v..'</a></li>')
-	print(getHumanReadableInterfaceName(k)..'</a></li>')
+	interface.find(v)
+	ifstats = interface.getStats()
+
+	print(getHumanReadableInterfaceName(ifstats.id)..'</a></li>')
       end
     end
 end

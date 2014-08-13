@@ -1448,6 +1448,8 @@ function getHumanReadableInterfaceName(interface_id)
       interface.find(interface_id)
       ifstats = interface.getStats()
       
+      -- print(interface_id.."="..ifstats.name)
+
       if(interface_id ~= ifstats.description) then
 	 return(ifstats.description)
       else
