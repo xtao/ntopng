@@ -250,7 +250,7 @@ elseif(page == "config_historical") then
 
   print ('<div id="alert_placeholder"></div>')
 
-   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_intreface.lua">')
+   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_interface.lua">')
    print[[
     <input type="hidden" name="from" value="" id="form_from">
     <input type="hidden" name="to" value="" id="form_to">
@@ -346,7 +346,7 @@ print [[
 ]]
 
 print [[
-<form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_intreface.lua">
+<form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_interface.lua">
   <input type="hidden" name="from" value="" id="form_from">
   <input type="hidden" name="to" value="" id="form_to">
   <input type="hidden" name="id" value="" id="form_interface_id">
