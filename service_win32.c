@@ -1204,6 +1204,8 @@ LPTSTR *convertArgStringToArgList(LPTSTR *lpszArgs, PDWORD pdwLen,
     return NULL;
   }
 
+ // printf("%s\n", lpszArgstring);
+
   if(NULL == (lpszArg = (LPTSTR)GlobalAlloc(GMEM_FIXED,strlen(lpszArgstring)+1))){
     *pdwLen = 0;
     //lpszArgs = NULL;

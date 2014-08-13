@@ -458,7 +458,7 @@ $( "#conf_historical_form" ).submit(function( event ) {
         if (response.result == "0") {
             $('#alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button><strong>Well Done!</strong> Data loading process started successfully</div>');
         } else {
-          $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning</strong> Please wait that the loading process will be complete.<br></div>');
+          $('#alert_placeholder').html('<div class="alert alert-warning"><button type="button" class="close" data-dismiss="alert">x</button><strong>Warning</strong> Please wait while loading data...<br></div>');
         }
       }
     });

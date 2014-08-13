@@ -112,7 +112,7 @@ void PeriodicActivities::secondActivitiesLoop() {
 
 void PeriodicActivities::minuteActivitiesLoop() {
   char script[MAX_PATH];
-  u_int32_t next_run = time(NULL);
+  u_int32_t next_run = (u_int32_t)time(NULL);
 
   next_run -= (next_run % 60);
   next_run += 60;
@@ -135,7 +135,7 @@ void PeriodicActivities::minuteActivitiesLoop() {
 
 void PeriodicActivities::hourActivitiesLoop() {
   char script[MAX_PATH];
-  u_int32_t next_run = time(NULL);
+  u_int32_t next_run = (u_int32_t)time(NULL);
 
   next_run -= (next_run % 3600);
   next_run += 3600;
@@ -158,7 +158,7 @@ void PeriodicActivities::hourActivitiesLoop() {
 
 void PeriodicActivities::dayActivitiesLoop() {
   char script[MAX_PATH];
-  u_int32_t next_run = time(NULL);
+  u_int32_t next_run = (u_int32_t)time(NULL);
 
   next_run -= (next_run % 86400);
   next_run -= ntop->get_time_offset();

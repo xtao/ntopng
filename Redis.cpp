@@ -317,7 +317,7 @@ int Redis::keys(const char *pattern, char ***keys_p) {
 
   if(reply && (reply->type == REDIS_REPLY_ARRAY)) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
-    rc = reply->elements;
+    rc = (int)reply->elements;
 
     for(i = 0; i < reply->elements; i++) {
       (*keys_p)[i] = strdup(reply->element[i]->str);
@@ -345,7 +345,7 @@ int Redis::hashKeys(const char *pattern, char ***keys_p) {
 
   if(reply && (reply->type == REDIS_REPLY_ARRAY)) {
     (*keys_p) = (char**) malloc(reply->elements * sizeof(char*));
-    rc = reply->elements;
+    rc = (int)reply->elements;
 
     for(i = 0; i < reply->elements; i++) {
       (*keys_p)[i] = strdup(reply->element[i]->str);
@@ -716,7 +716,7 @@ char* Redis::getVersion(char *str, u_int str_len) {
     if(reply->str) {
       char *buf, *line = strtok_r(reply->str, "\n", &buf);
       const char *tofind = "redis_version:";
-      u_int tofind_len = strlen(tofind);
+      u_int tofind_len = (u_int)strlen(tofind);
 
       while(line != NULL) {
 	if(!strncmp(line, tofind, tofind_len)) {

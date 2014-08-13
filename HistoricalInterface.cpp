@@ -120,7 +120,7 @@ int HistoricalInterface::loadData() {
   int ret_state = CONST_HISTORICAL_OK;
   u_int8_t iface_dump_id;
 
-  NetworkInterface * iface = ntop->getInterface(ntop->get_if_name(interface_id));
+  NetworkInterface * iface = ntop->getInterfaceById(interface_id);
 
   if ((iface != NULL) && (from_epoch != 0) && (to_epoch != 0)) {
 

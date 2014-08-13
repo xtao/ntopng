@@ -188,7 +188,7 @@ extern "C" {
  *	\li (1) uses no statics
  *	\li (2) takes a u_char* not an in_addr as input
  */
-static const char *inet_ntop4(const u_char *src, char *dst, socklen_t size)
+const char *inet_ntop4(const u_char *src, char *dst, socklen_t size)
 {
 	char tmp[sizeof ("255.255.255.255") + 1] = "\0";
 	int octet;
@@ -225,7 +225,7 @@ static const char *inet_ntop4(const u_char *src, char *dst, socklen_t size)
 /*!
  * \brief convert IPv6 binary address into presentation (printable) format
  */
-static const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
+const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
 {
 	/*
 	 * Note that int32_t and int16_t need only be "at least" large enough
@@ -316,7 +316,7 @@ static const char *inet_ntop6(const u_char *src, char *dst, socklen_t size)
  *
  * \note does not touch `dst' unless it's returning 1.
  */
-static int inet_pton4(const char *src,u_char *dst)
+int inet_pton4(const char *src,u_char *dst)
 {
 	int saw_digit, octets, ch;
 	u_char tmp[4], *tp;
@@ -359,16 +359,23 @@ static int inet_pton4(const char *src,u_char *dst)
  *	\li (1) does not touch `dst' unless it's returning 1.
  *	\li (2) :: in a full address is silently ignored.
  */
-static int inet_pton6(const char *src, u_char *dst)
-{
-	static const char xdigits[] = "0123456789abcdef";
-	u_char tmp[16], *tp, *endp, *colonp;
-	const char *curtok;
-	int ch, saw_xdigit;
-	u_int val;
 
-	tp = memset(tmp, '\0', 16);
-	endp = tp + 16;
+/* http://ftp.samba.org/pub/unpacked/replace/inet_pton.c */
+#define NS_INT16SZ	 2
+#define NS_INADDRSZ	 4
+#define NS_IN6ADDRSZ	16
+
+int inet_pton6(const char *src, u_char *dst)
+{
+	static const char xdigits_l[] = "0123456789abcdef",
+		xdigits_u[] = "0123456789ABCDEF";
+	unsigned char tmp[NS_IN6ADDRSZ], *tp, *endp, *colonp;
+	const char *xdigits, *curtok;
+	int ch, saw_xdigit;
+	unsigned int val;
+
+	memset((tp = tmp), '\0', NS_IN6ADDRSZ);
+	endp = tp + NS_IN6ADDRSZ;
 	colonp = NULL;
 	/* Leading :: requires some special handling. */
 	if (*src == ':')
@@ -377,10 +384,11 @@ static int inet_pton6(const char *src, u_char *dst)
 	curtok = src;
 	saw_xdigit = 0;
 	val = 0;
-	while ((ch = tolower (*src++)) != '\0') {
+	while ((ch = *src++) != '\0') {
 		const char *pch;
 
-		pch = strchr(xdigits, ch);
+		if ((pch = strchr((xdigits = xdigits_l), ch)) == NULL)
+			pch = strchr((xdigits = xdigits_u), ch);
 		if (pch != NULL) {
 			val <<= 4;
 			val |= (pch - xdigits);
@@ -396,48 +404,46 @@ static int inet_pton6(const char *src, u_char *dst)
 					return (0);
 				colonp = tp;
 				continue;
-			} else if (*src == '\0') {
-				return (0);
 			}
-			if (tp + 2 > endp)
+			if (tp + NS_INT16SZ > endp)
 				return (0);
-			*tp++ = (u_char) (val >8) & 0xff;
-			*tp++ = (u_char) val & 0xff;
+			*tp++ = (unsigned char)(val >> 8) & 0xff;
+			*tp++ = (unsigned char)val & 0xff;
 			saw_xdigit = 0;
 			val = 0;
 			continue;
 		}
-		if (ch == '.' && ((tp + 4) <= endp) &&
-		    inet_pton4(curtok, tp) > 0) {
-			tp += 4;
+		if (ch == '.' && ((tp + NS_INADDRSZ) <= endp) &&
+			inet_pton4(curtok, tp) > 0) {
+			tp += NS_INADDRSZ;
 			saw_xdigit = 0;
 			break;	/* '\0' was seen by inet_pton4(). */
 		}
 		return (0);
 	}
 	if (saw_xdigit) {
-		if (tp + 2 > endp)
+		if (tp + NS_INT16SZ > endp)
 			return (0);
-		*tp++ = (u_char) (val >8) & 0xff;
-		*tp++ = (u_char) val & 0xff;
+		*tp++ = (unsigned char)(val >> 8) & 0xff;
+		*tp++ = (unsigned char)val & 0xff;
 	}
 	if (colonp != NULL) {
-		/* Since some memmove()'s erroneously fail to handle
-		 * overlapping regions, we'll do the shift by hand. */
+		/*
+		* Since some memmove()'s erroneously fail to handle
+		* overlapping regions, we'll do the shift by hand.
+		*/
 		const int n = tp - colonp;
 		int i;
 
-		if (tp == endp)
-			return (0);
 		for (i = 1; i <= n; i++) {
-			endp[- i] = colonp[n - i];
+			endp[-i] = colonp[n - i];
 			colonp[n - i] = 0;
 		}
 		tp = endp;
 	}
 	if (tp != endp)
 		return (0);
-	memcpy(dst, tmp, 16);
+	memcpy(dst, tmp, NS_IN6ADDRSZ);
 	return (1);
 }
 #endif /* INET_IPV6 */

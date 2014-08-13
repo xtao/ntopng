@@ -117,7 +117,7 @@ static void* packetPollLoop(void* ptr) {
     
       while((fname = fgets(path, sizeof(path), pcap_list)) != NULL) {
 	char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-	int l = strlen(path)-1;
+	int l = (int)strlen(path)-1;
 
 	if((l <= 1) || (path[0] == '#')) continue;
 	path[l--] = '\0';

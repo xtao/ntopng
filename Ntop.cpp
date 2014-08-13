@@ -56,7 +56,7 @@ Ntop::Ntop(char *appName) {
   if(GetModuleFileName(NULL, startup_dir, sizeof(startup_dir)) == 0) {
     startup_dir[0] = '\0';
   } else {
-    for(int i=strlen(startup_dir)-1; i>0; i--)
+    for(int i=(int)strlen(startup_dir)-1; i>0; i--)
       if(startup_dir[i] == '\\') {
 	startup_dir[i] = '\0';
 	break;
@@ -184,6 +184,12 @@ void Ntop::createHistoricalInterface() {
 
 /* ******************************************* */
 
+NetworkInterface* Ntop::getHistoricalInterface() {
+	return (getInterface(get_if_name(historical_interface_id))); 
+};
+
+/* ******************************************* */
+
 void Ntop::createExportInterface() {
   if(prefs->get_export_endpoint())
     export_interface = new ExportInterface(prefs->get_export_endpoint());
@@ -307,7 +313,7 @@ void Ntop::setWorkingDir(char *dir) {
 /* ******************************************* */
 
 void Ntop::removeTrailingSlash(char *str) {
-  int len = strlen(str)-1;
+  int len = (int)strlen(str)-1;
 
   if((len > 0)
      && ((str[len] == '/') || (str[len] == '\\')))
@@ -561,7 +567,7 @@ void Ntop::setLocalNetworks(char *_nets) {
 
   if(_nets == NULL) return;
 
-  len = strlen(_nets);
+  len = (u_int)strlen(_nets);
 
   if((len > 2)
      && (_nets[0] == '"')

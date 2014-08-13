@@ -248,7 +248,7 @@ static void uri_encode(const char *src, char *dst, u_int dst_len) {
 
 static int handle_lua_request(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-  u_int len = strlen(request_info->uri);
+  u_int len = (u_int)strlen(request_info->uri);
 
   if((ntop->getGlobals()->isShutdown())
      //|| (strcmp(request_info->request_method, "GET"))

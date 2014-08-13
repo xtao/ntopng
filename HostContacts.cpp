@@ -118,7 +118,7 @@ void HostContacts::getContacts(lua_State* vm) {
       char *peer = clientContacts[i].host.print(buf, sizeof(buf));
       // Add the vlan id only if != 0
       if(host->get_vlan_id() != 0) {
-	int len = strlen(peer);
+	int len = (int)strlen(peer);
 
         snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
       }
@@ -139,7 +139,7 @@ void HostContacts::getContacts(lua_State* vm) {
 
       // Add the vlan id only if != 0
       if(host->get_vlan_id() != 0) {
-	int len = strlen(peer);
+	int len = (int)strlen(peer);
 
         snprintf(&peer[len], sizeof(buf)-len, "@%u", host->get_vlan_id());
       }
@@ -275,7 +275,7 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 /* *************************************** */
 
 u_int8_t HostContacts::get_queue_id(char *str) {
-  int id = 0, len = strlen(str);
+  int id = 0, len = (int)strlen(str);
 
   for(int i=0; i<len; i++) id += str[i];
   return(id % CONST_NUM_OPEN_DB_CACHE);
