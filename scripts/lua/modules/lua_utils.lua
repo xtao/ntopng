@@ -1243,7 +1243,7 @@ function version2int(v)
     if(minor == nil)     then minor = 0 end
     if(veryminor == nil) then veryminor = 0 end
 
-    version = tonumber(major)*100 + tonumber(minor)*10 + tonumber(veryminor)
+    version = tonumber(major)*1000 + tonumber(minor)*100 + tonumber(veryminor)
     return(version)
   else
     return(0)

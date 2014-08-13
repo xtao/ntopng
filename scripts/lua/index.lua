@@ -177,7 +177,6 @@ print [[
 else
 
   if (interface.isHistoricalInterface(iface_id)) then
-
     print [[
     <br>
     <div class="alert alert-info">
@@ -198,13 +197,14 @@ info = ntop.getInfo()
 if(page == "TopFlowTalkers") then
    rsp = ntop.httpGet("www.ntop.org", "/ntopng.version")
 
+
    version_elems = split(info["version"], " ");
 
    stable_version = version2int(rsp)
    this_version   = version2int(version_elems[1])
 
    if(stable_version > this_version) then
-      print("<p><div class=\"alert alert-ok\"><i class=\"fa fa-cloud-download fa-lg\"></i> A new ntopng version (v." .. rsp .. ") is available for <A HREF=http://www.ntop.org>download</A>: please upgrade.</div></p>")
+      print("<p><div class=\"alert alert-warning\"><font color=red><i class=\"fa fa-cloud-download fa-lg\"></i> A new ntopng version (v." .. rsp .. ") is available for <A HREF=http://www.ntop.org>download</A>: please upgrade.</font></div></p>")
    end
 end
 
