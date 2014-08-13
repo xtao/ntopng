@@ -154,6 +154,7 @@
 #define CONST_DEFAULT_USERS_FILE     "ntopng-users.conf"
 #define CONST_DEFAULT_WRITABLE_DIR   "/var/tmp"
 #define CONST_DEFAULT_INSTALL_DIR    "/usr/local/share/ntopng"
+#define CONST_ALT_INSTALL_DIR        "/usr/share/ntopng"
 #define CONST_DEFAULT_NTOP_USER      "nobody"
 #define CONST_TOO_EARLY              "(Too Early)"
 #define CONST_HTTP_CONN              "http.conn"

@@ -65,6 +65,7 @@ Ntop::Ntop(char *appName) {
   strcpy(install_dir, startup_dir);
 #else
   struct stat statbuf;
+  char tmp_path[MAX_PATH];
 
   snprintf(working_dir, sizeof(working_dir), "%s/ntopng", CONST_DEFAULT_WRITABLE_DIR);
 
@@ -74,11 +75,19 @@ Ntop::Ntop(char *appName) {
   if(getcwd(startup_dir, sizeof(startup_dir)) == NULL)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while checking the current directory (errno=%d)", errno);
 
-  if(stat(CONST_DEFAULT_INSTALL_DIR, &statbuf) == 0)
+  snprintf(tmp_path, sizeof(tmp_path), "%s/scripts", CONST_DEFAULT_INSTALL_DIR);
+
+  if(stat(tmp_path, &statbuf) == 0)
     strcpy(install_dir, CONST_DEFAULT_INSTALL_DIR);
   else {
-    if(getcwd(install_dir, sizeof(install_dir)) == NULL)
-      strcpy(install_dir, startup_dir);
+    snprintf(tmp_path, sizeof(tmp_path), "%s/scripts", CONST_ALT_INSTALL_DIR);
+    
+    if(stat(tmp_path, &statbuf) == 0)
+      strcpy(install_dir, CONST_ALT_INSTALL_DIR);
+    else {
+      if(getcwd(install_dir, sizeof(install_dir)) == NULL)
+	strcpy(install_dir, startup_dir);
+    }
   }
 #endif
 
@@ -450,7 +459,6 @@ char* Ntop::getValidPath(char *__path) {
   const char* dirs[] = {
     startup_dir,
 #ifndef WIN32
-    "/usr/local/share/ntopng",
     "/usr/share/ntopng",
     CONST_DEFAULT_INSTALL_DIR,
 #else
