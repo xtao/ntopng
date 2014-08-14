@@ -7,7 +7,9 @@ case "$1" in
 upgrade)
 	;;
 *)
-	/etc/init.d/ntopng stop
+         if [ `pidof ntopng|wc -l` -gt 0 ]; then
+            /etc/init.d/ntopng stop
+         fi
 	;;
 esac
 
