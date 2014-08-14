@@ -14,6 +14,7 @@ active_page = "flows"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 application = _GET["application"]
+application_filter = ""
 hosts = _GET["hosts"]
 aggregation = _GET["aggregation"]
 key = _GET["key"]
@@ -36,6 +37,7 @@ print [[
 if(application ~= nil) then
    print("?application="..application)
    num_param = num_param + 1
+   application_filter = '<span class="glyphicon glyphicon-filter"></span>'
 end
 
 if(host ~= nil) then
@@ -113,8 +115,7 @@ print [[",
 -- Automatic default sorted. NB: the column must be exists.
 print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
 
-print [[
-       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">]]
+print ('buttons: [ \'<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications ' .. application_filter .. '<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">')
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
