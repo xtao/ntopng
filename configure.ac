@@ -7,9 +7,18 @@ AC_PROG_CPP
 dnl> Add /usr/local/ /opt/local
 CFLAGS=""
 NTOPNG_VERSION=`cat ./configure.ac | head -2 | grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
-CFLAGS="${CFLAGS} -I/usr/local/include -I/opt/local/include"
-CPPFLAGS="${CPPFLAGS} -I/usr/local/include -I/opt/local/include"
-LDFLAGS="${LDFLAGS} -L/usr/local/lib -L/opt/local/lib"
+
+if test -d "/usr/local/include"; then
+CFLAGS="${CFLAGS} -I/usr/local/include"
+CPPFLAGS="${CPPFLAGS} -I/usr/local/include"
+LDFLAGS="${LDFLAGS} -L/usr/local/lib"
+fi
+
+if test -d "/opt/local/include"; then
+CFLAGS="${CFLAGS} -I/opt/local/include"
+CPPFLAGS="${CPPFLAGS} -I/opt/local/include"
+LDFLAGS="${LDFLAGS} -L/opt/local/lib"
+fi
 
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
