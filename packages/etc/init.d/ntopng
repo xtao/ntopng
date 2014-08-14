@@ -23,6 +23,7 @@ if [ -f /etc/init.d/functions ]; then
 fi
 
 ERROR=0
+NTOPNG_BINARY=/usr/bin/ntopng
 
 error_handler() {
    if [ ${ERROR} -gt 0 ]; then
@@ -87,9 +88,6 @@ start_ntopng() {
         RETVAL=1
 	error_handler
     fi
-
-    [ ${DISTRO} == "debian" ] && NTOPNG_BINARY=/usr/local/bin/ntopng
-    [ ${DISTRO} == "centos" ] && NTOPNG_BINARY=/usr/bin/ntopng
 
     if [ -f /etc/ntopng/ntopng.start ] || [ $FORCE -eq 1 ]; then
 	[ ${DISTRO} == "debian" ] && log_daemon_msg "Starting ntopng"

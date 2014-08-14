@@ -8,7 +8,7 @@ if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dir
 require "lua_utils"
 
 
-ifstats = interface.getStats()
+
 prefs = ntop.getPrefs()
 names = interface.getIfNames()
 is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
@@ -44,9 +44,9 @@ print [[
 
    ]]
 
-ifstats = interface.getStats()
+_ifstats = interface.getStats()
 
-if(ifstats.iface_sprobe) then
+if(_ifstats.iface_sprobe) then
    url = "/lua/sflows_stats.lua"
 else
    url = "/lua/flows_stats.lua"
@@ -75,7 +75,7 @@ print [[
 	 print('<li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
 
-if(ifstats.iface_sprobe) then
+if(_ifstats.iface_sprobe) then
    print('<li><a href="/lua/processes_stats.lua">Processes List</a></li>')
 end
 
@@ -90,7 +90,7 @@ print [[
       <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
 ]]
 
-if(ifstats.iface_sprobe) then
+if(_ifstats.iface_sprobe) then
    print('<li><a href="/lua/sprobe.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
 end
 
@@ -110,14 +110,12 @@ print [[
       <li><a href="/lua/hosts_matrix.lua"><i class="fa fa-th-large"></i> Local Matrix</a></li>
     </ul>
   </li>
-
    ]]
-
 
 -- Protocols
 
-if(ifstats.aggregations_enabled and (not(ifstats.iface_sprobe))) then
-if((ifstats["ndpi"]["EPP"] ~= nil) or (ifstats["ndpi"]["DNS"] ~= nil)) then
+if(_ifstats.aggregations_enabled and (not(_ifstats.iface_sprobe))) then
+if((_ifstats["ndpi"]["EPP"] ~= nil) or (_ifstats["ndpi"]["DNS"] ~= nil)) then
 
 if active_page == "protocols_stats" then
   print [[ <li class="dropdown active"> ]]
@@ -131,7 +129,7 @@ print [[
     <ul class="dropdown-menu">
    ]]
 
-if(ifstats["ndpi"]["EPP"] ~= nil) then
+if(_ifstats["ndpi"]["EPP"] ~= nil) then
 print [[
 
 
@@ -153,7 +151,7 @@ print [[
 end
 
 
-if(ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
+if(_ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
 
 print [[
     </ul>
@@ -181,10 +179,10 @@ print [[
 ifnames = {}
 for v,k in pairs(names) do
    interface.find(k)
-   ifstats = interface.getStats()
+   _ifstats = interface.getStats()
 
-   ifnames[ifstats.id] = ifstats.name
-   --print(ifstats.name.."="..ifstats.id.." ")
+   ifnames[_ifstats.id] = _ifstats.name
+   --print(_ifstats.name.."=".._ifstats.id.." ")
 end
 
 for k,v in pairsByKeys(ifnames, asc) do

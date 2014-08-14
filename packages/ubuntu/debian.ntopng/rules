@@ -43,6 +43,7 @@ binary-arch: build install
 	dh_installman
 # install the files into debian/tmp.
 	cp -r ../etc/ ./usr/ ./debian/tmp	
+	-rm ./debian/tmp/usr/share/ntopng/httpdocs/geoip/*.dat
 	-find ./debian/tmp -name .svn -exec /bin/rm -rf {} ';'
 	\rm -rf ./debian/tmp/etc/init.d/nprobe ./debian/tmp/etc/ld.so.conf.d
 	# Don't use upstart
