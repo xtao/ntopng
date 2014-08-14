@@ -9,17 +9,18 @@ require "lua_utils"
 
 sendHTTPHeader('text/html')
 
-interface.find(ifname)
-ifstats = interface.getStats()
-is_loopback = isLoopback(ifname)
-iface_id = interface.name2id(ifname)
-
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 -- NOTE: in the home page, footer.lua checks the ntopng version
 -- so in case we change it, footer.lua must also be updated
 active_page = "home"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+
+interface.find(ifname)
+ifstats = interface.getStats()
+is_loopback = isLoopback(ifname)
+iface_id = interface.name2id(ifname)
+
 
 -- Load from or set in redis the refresh frequency for the top flow sankey
 
@@ -44,6 +45,7 @@ if(page == nil) then
       page = "TopHosts"
    end
 end
+
 
 if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 -- Print tabbed header
