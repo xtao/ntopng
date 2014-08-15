@@ -74,7 +74,7 @@
 #define NDPI_MIN_NUM_PACKETS      10
 #define GTP_U_V1_PORT             2152
 #define MAX_NUM_INTERFACE_HOSTS   131072
-#define MAX_NUM_INTERFACES        16
+#define MAX_NUM_INTERFACES        48
 
 #define HOST_FAMILY_ID            ((u_int16_t)-1)
 #define FLOW_PURGE_FREQUENCY      1 /* sec */
