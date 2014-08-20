@@ -925,9 +925,6 @@ int Redis::id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len) {
 
 /* ******************************************* */
 
-#define MAX_NUM_INTERFACES      16
-#define MAX_INTERFACE_NAME_LEN   8
-
 bool Redis::dumpDailyStatsKeys(char *day) {
   bool rc = false;
   sqlite3 *db;
