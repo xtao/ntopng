@@ -28,7 +28,7 @@ ExportInterface::ExportInterface(const char *_endpoint, const char *_topic) {
   topic = strdup(_topic), endpoint = strdup(_endpoint);
 
   if((context = zmq_ctx_new()) == NULL) {
-    const char *msg = "Unable to initalize ZMQ context";
+    const char *msg = "Unable to initialize ZMQ context";
 
     ntop->getTrace()->traceEvent(TRACE_ERROR, msg);
     throw(msg);
@@ -46,7 +46,7 @@ ExportInterface::ExportInterface(const char *_endpoint, const char *_topic) {
 				 endpoint, strerror(errno));
   else
     ntop->getTrace()->traceEvent(TRACE_NORMAL,
-				 "Succesfully created ZMQ endpoint %s", endpoint);
+				 "Successfully created ZMQ endpoint %s", endpoint);
 }
 
 /* **************************************************** */

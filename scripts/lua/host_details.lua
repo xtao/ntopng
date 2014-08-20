@@ -132,11 +132,13 @@ else
    end
 end
 
-if(page == "peers") then
-   print("<li class=\"active\"><a href=\"#\">Peers</a></li>\n")
-else
-   if(host["ip"] ~= nil) then
-      print("<li><a href=\""..url.."&page=peers\">Peers</a></li>")
+if(not(isLoopback(ifname))) then
+   if(page == "peers") then
+      print("<li class=\"active\"><a href=\"#\">Peers</a></li>\n")
+   else
+      if(host["ip"] ~= nil) then
+	 print("<li><a href=\""..url.."&page=peers\">Peers</a></li>")
+      end
    end
 end
 
@@ -174,15 +176,13 @@ else
    end
 end
 
-if(page == "talkers") then
-  print("<li class=\"active\"><a href=\"#\">Talkers</a></li>\n")
-else
-   if(host["ip"] ~= nil) then
+if(not(isLoopback(ifname))) then
+   if(page == "talkers") then
+      print("<li class=\"active\"><a href=\"#\">Talkers</a></li>\n")
+   else
       print("<li><a href=\""..url.."&page=talkers\">Talkers</a></li>")
    end
-end
 
-if(not(isLoopback(ifname))) then
    if(page == "geomap") then
       print("<li class=\"active\"><a href=\"#\">Geomap</a></li>\n")
    else
@@ -194,33 +194,35 @@ else
 
 end
 
-if(page == "jaccard") then
-  print("<li class=\"active\"><a href=\"#\">Similarity</a></li>\n")
-else
-   if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
-      print("<li><a href=\""..url.."&page=jaccard\">Similarity</a></li>")
-   end
-end
-
-cnum = 0
-snum = 0
-if(host.contacts ~= nil) then
-   if(host["contacts"]["client"] ~= nil) then
-      for k,v in pairs(host["contacts"]["client"]) do cnum = cnum + 1 end
-   end
-
-   if(host["contacts"]["server"] ~= nil) then
-      for k,v in pairs(host["contacts"]["server"]) do snum = snum + 1 end
-   end
-end
-
-num = cnum + snum
-
-if(num > 0) then
-   if(page == "contacts") then
-      print("\n<li class=\"active\"><a href=\"#\">Current Contacts</a></li>\n")
+if(not(isLoopback(ifname))) then
+   if(page == "jaccard") then
+      print("<li class=\"active\"><a href=\"#\">Similarity</a></li>\n")
    else
-      print("\n<li><a href=\""..url.."&page=contacts\">Current Contacts</a></li>")
+      if((host["ip"] ~= nil) and (host["privatehost"] == false)) then
+	 print("<li><a href=\""..url.."&page=jaccard\">Similarity</a></li>")
+      end
+   end
+
+   cnum = 0
+   snum = 0
+   if(host.contacts ~= nil) then
+      if(host["contacts"]["client"] ~= nil) then
+	 for k,v in pairs(host["contacts"]["client"]) do cnum = cnum + 1 end
+      end
+
+      if(host["contacts"]["server"] ~= nil) then
+	 for k,v in pairs(host["contacts"]["server"]) do snum = snum + 1 end
+      end
+   end
+
+   num = cnum + snum
+
+   if(num > 0) then
+      if(page == "contacts") then
+	 print("\n<li class=\"active\"><a href=\"#\">Current Contacts</a></li>\n")
+      else
+	 print("\n<li><a href=\""..url.."&page=contacts\">Current Contacts</a></li>")
+      end
    end
 end
 
@@ -493,9 +495,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -522,9 +524,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   var refresh = 3000 /* ms */;
-		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -702,7 +704,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifId) print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
   print [[
 				}
 
@@ -749,7 +751,7 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   var refresh = 3000 /* ms */;
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId) print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
+				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
 				}
 
 	    </script><p>
@@ -1196,7 +1198,6 @@ print("<center>")
 
 
 print [[
-
      <style type="text/css">
      #map-canvas { width: 640px; height: 480px; }
    </style>
@@ -1796,7 +1797,7 @@ print [[
 
 -- Users graph javascript
 print [[
-      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(ifId) print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1811,7 +1812,7 @@ print [[
       users_type = "bytes";
     }
     if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
@@ -1819,14 +1820,14 @@ $("#show_users input:radio").change(function() {
     users_filter = this.value
     if (sprobe_debug) { alert("users_type: "+users_type+"\n users_filter: "+users_filter); }
     if (sprobe_debug) { alert("url: /lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
-    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
 -- Processes graph javascritp
 
 print [[
-processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId)print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId.."")print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1841,14 +1842,14 @@ print [[
       processes_type = "bytes";
     }
     if (sprobe_debug) { alert(this.innerHTML+"-"+processes_type); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
 print [[
 $("#show_processes input:radio").change(function() {
     processes_filter = this.value
     if (sprobe_debug) { alert("processes_type: "+processes_type+"\n processes_filter: "+processes_filter); }
-    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(ifId) print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
+    processes.setUrlParams({ type: processes_type, mode: "process", filter: processes_filter, ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
 
@@ -1916,7 +1917,7 @@ setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
-		    data: { ifname: "]] print(ifId)  print('", '..hostinfo2json(host_info)) print [[ },
+		    data: { ifname: "]] print(ifId.."")  print('", '..hostinfo2json(host_info)) print [[ },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {
 			var host = jQuery.parseJSON(content);

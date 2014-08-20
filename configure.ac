@@ -126,60 +126,12 @@ if test $SYSTEM = "Darwin"; then
    fi
 fi
 
-AC_MSG_CHECKING(for gnutls)
-AC_CHECK_LIB([gnutls], [gnutls_priority_set], gnutls=true)
-
-AC_DEFINE_UNQUOTED([HAVE_GNUTLS], $gnutls, [We have gnutls])
-if test x$gnutls = xtrue
- then
-  LIBGNUTLS="-lgnutls"
-
-  AC_MSG_CHECKING(for gcrypt)
-  AC_CHECK_LIB([gcrypt], [gcry_check_version], gcrypt=true)
-  if test x$gcrypt = xtrue
-  then
-    LIBGNUTLS="${LIBGNUTLS} -lgcrypt"
-  fi
-fi
-
-echo "Checking RRD prerequisites..."
-AC_CHECK_LIB([xml2], [xmlParseFile], xml2=true)
-if test x$xml2 = x
-then
-echo "Please install libxml2(-devel) package (RRD prerequisite)"
-exit
-fi
-
-AC_CHECK_LIB([glib-2.0], [glib_check_version], glib2=true)
-if test x$glib2 = x
-then
-echo "Please install libglib-2.0 (glib2-devel/libglib2.0-dev) package (RRD prerequisite)"
-exit
-fi
-
-dnl> zlib (used by edjdb)
-Z_LIB=""
-AC_CHECK_LIB([z], [zlibVersion], zlib=true)
-if test x$zlib = xtrue
-then
-  Z_LIB="-lz"
-fi
-
 dnl> ldl (used by edjdb)
 DL_LIB=""
 AC_CHECK_LIB([dl], [dlopen], ldl=true)
 if test x$ldl = xtrue
 then
   DL_LIB="-ldl"
-fi
-
-AC_CHECK_LIB([numa], [numa_available], AC_DEFINE_UNQUOTED(HAVE_LIBNUMA, 1, [libnuma is installed]))
-AC_MSG_CHECKING([if libnuma is present])
-if test "x$ac_cv_lib_numa_numa_available" = xyes; then :
-   NUMA_LIB="-lnuma"
-   AC_MSG_RESULT([yes])
-else
-   AC_MSG_RESULT(no)
 fi
 
 dnl> Check for package install
@@ -235,7 +187,6 @@ SVN=`which svn`
 if test x$SVN = x
 then
 	AC_MSG_RESULT(FATAL ERROR: svn is not installed on your host)
-	exit
 fi
 
 WGET=`which wget`
@@ -267,17 +218,15 @@ AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(LINK_OPTS)
-AC_SUBST(LIBGNUTLS)
-AC_SUBST(Z_LIB)
 AC_SUBST(GEOIP_LIB)
 AC_SUBST(SQLITE_LIB)
 AC_SUBST(GMAKE)
 AC_SUBST(GPP)
 AC_SUBST(SVN)
 AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(DL_LIB)
-AC_SUBST(NUMA_LIB)
 AC_SUBST(NL_LIB)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE_VERSION)

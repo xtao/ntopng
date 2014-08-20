@@ -163,6 +163,11 @@ int main(int argc, char *argv[])
 
   if(prefs->do_dump_flows_on_db())
     ntop->createHistoricalInterface();
+  
+  if(ntop->getInterfaceAtId(0) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Startup error: missing super-user privileges ?");
+    _exit(0);
+  }
 
   if(prefs->do_change_user())
     Utils::dropPrivileges();
@@ -209,8 +214,6 @@ int main(int argc, char *argv[])
       unlink(path);
     }
   }
-
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using RRD version %s", rrd_strversion());
 
   if(prefs->get_categorization_key() != NULL) {
     ntop->getTrace()->traceEvent(TRACE_WARNING,

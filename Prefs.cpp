@@ -192,7 +192,7 @@ void usage() {
 	 "                                    | all    - Dump all hosts\n"
 	 "                                    | local  - Dump only local hosts\n"
 	 "                                    | remote - Dump only remote hosts\n"
-	 "[--sticky-hosts|-S] <mode>          | Dont flush hosts (default: none).\n"
+	 "[--sticky-hosts|-S] <mode>          | Don't flush hosts (default: none).\n"
 	 "                                    | Values:\n"
 	 "                                    | all    - Keep all hosts in memory\n"
 	 "                                    | local  - Keep only local hosts\n"

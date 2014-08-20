@@ -1,11 +1,21 @@
+prefix = @prefix@
+datadir = @datadir@
 SHELL=/bin/sh
 OS := $(shell uname -s)
 GPP=@GPP@
 INSTALL_DIR=@INSTALL_DIR@
 MAN_DIR=@MAN_DIR@
 ######
-NDPI_INC=-I./nDPI/src/include
-NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a
+HAS_NDPI=$(shell pkg-config --exists libndpi; echo $$?)
+ifeq ($(HAS_NDPI), 0)
+    NDPI_INC = $(shell pkg-config --cflags libndpi | sed -e 's/\(-I[^ \t]*\)/\1\/libndpi/g')
+    NDPI_LIB = $(shell pkg-config --libs libndpi)
+    NDPI_LIB_DEP =
+else
+    NDPI_INC=-I./nDPI/src/include
+    NDPI_LIB=./nDPI/src/lib/.libs/libndpi.a
+    NDPI_LIB_DEP=$(NDPI_LIB)
+endif
 ######
 LIBPCAP=-lpcap
 ######
@@ -64,7 +74,7 @@ EWH_INC=$(EWH_HOME)/headers
 ######
 TARGET = ntopng
 LIBS = @LDFLAGS@ $(NDPI_LIB) $(LIBPCAP) $(LUAJIT_LIB) $(LIBRRDTOOL_LIB) $(ZEROMQ_LIB) $(JSON_LIB) @HIREDIS_LIB@ @SQLITE_LIB@ @LINK_OPTS@ @GEOIP_LIB@ @DL_LIB@ @NL_LIB@ -lm -lpthread
-CPPFLAGS = -g @CFLAGS@ @HIREDIS_INC@ $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) # -D_GLIBCXX_DEBUG
+CPPFLAGS = -g @CFLAGS@ @HIREDIS_INC@ $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) @CPPFLAGS@ -I$(HTTPCLIENT_INC) -I$(EWH_INC) -DDATA_DIR='"$(datadir)"'  # -D_GLIBCXX_DEBUG
 ######
 # ntopng-1.0_1234.x86_64.rpm
 PLATFORM = `uname -p`
@@ -74,10 +84,6 @@ NTOPNG_VERSION = @NTOPNG_VERSION@
 RPM_PKG = $(TARGET)-$(NTOPNG_VERSION)-$(REVISION).$(PLATFORM).rpm
 RPM_DATA_PKG = $(TARGET)-data-$(NTOPNG_VERSION)-$(REVISION).noarch.rpm
 ######
-
-ifeq ($(OS),Linux)
-LIBS += -lrt
-endif
 
 ifeq ($(OS),Darwin)
 LIBS += -lstdc++.6
@@ -105,7 +111,7 @@ endif
 
 .NOTPARALLEL: default all
 
-default: $(NDPI_LIB) $(LIB_TARGETS) $(TARGET)
+default: $(NDPI_LIB_DEP) $(LIB_TARGETS) $(TARGET)
 
 all: default
 
@@ -113,7 +119,7 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS) Makefile
-	$(GPP) $(CPPFLAGS) -c $< -o $@
+	$(GPP) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp $(HEADERS) Makefile
 	$(GPP) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

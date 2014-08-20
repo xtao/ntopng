@@ -663,10 +663,12 @@
     if(o.filterModal)     _initFilterModal.call(this);
 
     // handle the column management
-    if(o.toggleColumns)   _initColumnModal.call(this);
+    // ntop - disabled
+    //if(o.toggleColumns)   _initColumnModal.call(this);
 
     // handle the overflow option
-    if(o.allowOverflow)   _initOverflowToggle.call(this);
+    // ntop - disabled
+    // if(o.allowOverflow)   _initOverflowToggle.call(this);
 
     // initialize the table info
     if(o.allowTableinfo)   _initTableInfo.call(this);
