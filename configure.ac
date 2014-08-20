@@ -113,6 +113,9 @@ else
   fi
 fi
 
+AC_CHECK_LIB([nl], [nl_handle_alloc], [LDFLAGS="${LDFLAGS} -lnl"])
+AC_CHECK_LIB([rt], [clock_gettime],   [LDFLAGS="${LDFLAGS} -lrt"])
+
 CFLAGS="-Wall $CFLAGS"
 
 dnl> http://luajit.org/install.html
@@ -124,14 +127,6 @@ if test $SYSTEM = "Darwin"; then
             CFLAGS="-fno-color-diagnostics $CFLAGS"
       fi
    fi
-fi
-
-dnl> ldl (used by edjdb)
-DL_LIB=""
-AC_CHECK_LIB([dl], [dlopen], ldl=true)
-if test x$ldl = xtrue
-then
-  DL_LIB="-ldl"
 fi
 
 dnl> Check for package install
@@ -156,8 +151,6 @@ else
 AC_MSG_RESULT(Build ntop without geolocation - GeoIP (http://www.maxmind.com/))
 GEOIP_DEP=""
 fi
-
-AC_CHECK_LIB([nl], [nl_handle_alloc], [NL_LIB="-lnl"])
 
 AC_CHECK_LIB([sqlite3], [sqlite3_open], sqlite=true)
 if test x$sqlite = xtrue
@@ -226,8 +219,6 @@ AC_SUBST(SVN)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CPPFLAGS)
-AC_SUBST(DL_LIB)
-AC_SUBST(NL_LIB)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(NTOPNG_VERSION)
