@@ -116,6 +116,9 @@ fi
 AC_CHECK_LIB([nl], [nl_handle_alloc], [LDFLAGS="${LDFLAGS} -lnl"])
 AC_CHECK_LIB([rt], [clock_gettime],   [LDFLAGS="${LDFLAGS} -lrt"])
 
+dnl> ldl (used by edjdb)
+AC_CHECK_LIB([dl], [dlopen], [LDFLAGS="${LDFLAGS} -ldl"])
+
 CFLAGS="-Wall $CFLAGS"
 
 dnl> http://luajit.org/install.html
