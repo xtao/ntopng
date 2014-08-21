@@ -585,7 +585,7 @@ $.ajax({
       print("',\n")
 print [[
       data: { },
-      error: function(content) { alert("Parse error"); },
+      error: function(content) { console.log("Host Top Peers: Parse error"); },
       success: function(content) {
    var rsp;
 

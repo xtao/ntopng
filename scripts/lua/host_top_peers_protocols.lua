@@ -22,9 +22,9 @@ for key, value in pairs(flows) do
    flow = flows[key]
 
    if(flow.client == _GET["host"]) then
-      peer = flow.server
+      peer = flow.server .. '@' .. flow['server.vlan']
    else
-      peer = flow.client
+      peer = flow.client .. '@' .. flow['client.vlan']
    end
 
    v = flow.rcvd + flow.sent
@@ -67,10 +67,10 @@ for value,peer in pairsByKeys(_peers, rev) do
 	    if((n+num) > 0) then
 	       print ",\n"
 	    end
-
+      
 	    host = interface.getHostInfo(peer)
-	    if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
-	    print("\t { \"host\": \"" .. peer .."\", \"name\": \"".. host.name.."\", \"url\": \"<A HREF='/lua/host_details.lua?host=".. host.ip.."'>"..host.name .."</A>\", \"l7proto\": \"".. proto .."\", \"l7proto_url\": \"<A HREF=/lua/flows_stats.lua?host=".. host.ip .."&application="..proto..">"..proto.."</A>\", \"traffic\": ".. math.log10(peers_proto[peer][proto]) .. " }")
+	    if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(hostinfo2hostkey(host)) end
+	    print("\t { \"host\": \"" .. peer .."\", \"name\": \"".. host.name.."\", \"url\": \"<A HREF='/lua/host_details.lua?host=".. hostinfo2hostkey(host) .."'>"..host.name .."</A>\", \"l7proto\": \"".. proto .."\", \"l7proto_url\": \"<A HREF=/lua/flows_stats.lua?host=".. hostinfo2hostkey(host) .."&application="..proto..">"..proto.."</A>\", \"traffic\": ".. math.log10(peers_proto[peer][proto]) .. " }")
 	    n = n + 1
 	 end
       end
