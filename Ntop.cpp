@@ -469,6 +469,7 @@ char* Ntop::getValidPath(char *__path) {
 #else
     install_dir,
 #endif
+    CONST_ALT_INSTALL_DIR,
     NULL
   };
 
