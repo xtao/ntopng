@@ -180,7 +180,7 @@ httpdocs/geoip/GeoIPASNumv6.dat:
 #	mkdir -p $(HOME)/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 #	echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 
-build-rpm: build-rpm-ntopng build-rpm-ntopng-data
+build-rpm: geoip build-rpm-ntopng build-rpm-ntopng-data
 
 
 build-rpm-ntopng:
@@ -188,6 +188,7 @@ build-rpm-ntopng:
 	mkdir ntopng-@NTOPNG_VERSION@
 	cp -r doc *.cpp *.h configure COPYING README.* *.in ntopng.8 httpdocs scripts packages third-party ntopng-@NTOPNG_VERSION@
 	find ntopng-@NTOPNG_VERSION@ -name ".svn" | xargs /bin/rm -rf
+	-rm ntopng-@NTOPNG_VERSION@/httpdocs/geoip/*
 	cd ntopng-@NTOPNG_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..
 	tar cvfz ntopng-@NTOPNG_VERSION@.tgz ntopng-@NTOPNG_VERSION@
 	#
