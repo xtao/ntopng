@@ -24,9 +24,10 @@ host = _GET["host"]
 network_id=_GET["network_id"]
 
 prefs = ntop.getPrefs()
+interface.find(ifname)
 ifstats = interface.getStats()
+ndpistats = interface.getNdpiStats()
 
-stats = interface.getNdpiStats()
 num_param = 0
 print [[
       <hr>
@@ -118,7 +119,7 @@ print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSo
 print ('buttons: [ \'<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications ' .. application_filter .. '<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">')
 
 print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
-for key, value in pairsByKeys(stats["ndpi"], asc) do
+for key, value in pairsByKeys(ndpistats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
