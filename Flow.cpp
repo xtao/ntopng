@@ -235,6 +235,9 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
 void Flow::processDetectedProtocol() {
   if(protocol_processed || (ndpi_flow == NULL)) return;
 
+  if(ndpi_flow->host_server_name[0] != '\0')
+    Utils::sanitizeHostName((char*)ndpi_flow->host_server_name);
+
   switch(ndpi_detected_protocol) {
   case NDPI_PROTOCOL_DNS:
     if(ntop->getPrefs()->decode_dns_responses()) {
@@ -272,8 +275,10 @@ void Flow::processDetectedProtocol() {
     break;
 
   case NDPI_PROTOCOL_NETBIOS:
-    if(ndpi_flow->host_server_name[0] != '\0')
+    if(ndpi_flow->host_server_name[0] != '\0') {
       get_cli_host()->set_alternate_name((char*)ndpi_flow->host_server_name);
+      protocol_processed = true;
+    }
     break;
 
   case NDPI_PROTOCOL_WHOIS_DAS:

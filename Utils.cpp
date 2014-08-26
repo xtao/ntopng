@@ -479,3 +479,31 @@ u_int8_t Utils::ifname2id(const char *name) {
   return(DUMMY_IFACE_ID); /* This can't happen, hopefully */
 }
 
+/* **************************************************** */
+
+/* http://en.wikipedia.org/wiki/Hostname */
+
+char* Utils::sanitizeHostName(char *str) {
+  int i;
+
+  for(i=0; str[i] != '\0'; i++) {
+    if(((str[i] >= 'a') && (str[i] <= 'z'))
+       || ((str[i] >= 'A') && (str[i] <= 'Z'))
+       || ((str[i] >= '0') && (str[i] <= '9'))
+       || (str[i] == '-')
+       || (str[i] == '_')
+       || (str[i] == '.')
+       || (str[i] == ':') /* Used in HTTP host:port */
+       || (str[i] == '@') /* Used by DNS but not a valid char */)
+      ;
+    else if(str[i] == '_') {
+      str[i] = '\0';
+      break;
+    } else
+      str[i] = '_';
+  }
+
+  return(str);
+}
+
+/* **************************************************** */
