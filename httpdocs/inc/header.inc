@@ -17,7 +17,7 @@
     <link type="text/css" rel="stylesheet" href="/css/rickshaw.css">
 
     <script src="/js/jquery-ui.js"></script>
-    <script src="/js/Rickshaw/rickshaw.js"></script>
+    <script src="/js/Rickshaw/Rickshaw.js"></script>
 
     <script src="/js/pie-chart.js"></script>
     <script src="/js/gauge.js"></script>
