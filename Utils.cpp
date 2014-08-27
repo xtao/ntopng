@@ -507,3 +507,35 @@ char* Utils::sanitizeHostName(char *str) {
 }
 
 /* **************************************************** */
+
+char* Utils::urlDecode(const char *src, char *dst, u_int dst_len) {
+  char a, b, *ret = dst;
+  u_int i = 0;
+
+  dst_len--; /* Leave room for \0 */
+  dst[dst_len] = 0;
+
+  while((*src) && (i < dst_len)) {
+    if((*src == '%') &&
+       ((a = src[1]) &&(b = src[2])) &&
+       (isxdigit(a) && isxdigit(b))) {
+      if(a >= 'a') a -= 'a'-'A';
+      if(a >= 'A') a -=('A' - 10);
+      else         a -= '0';
+
+      if(b >= 'a') b -= 'a'-'A';
+      if(b >= 'A') b -=('A' - 10);
+      else         b -= '0';
+
+      *dst++ = 16*a+b;
+
+      src += 3;
+    } else
+      *dst++ = *src++;
+
+    i++;
+  }
+
+  *dst++ = '\0';
+  return(ret);
+}

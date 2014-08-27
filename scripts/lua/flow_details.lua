@@ -12,7 +12,7 @@ require "sqlite_utils"
 
 local json = require ("dkjson")
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 

@@ -9,7 +9,7 @@ require "lua_utils"
 require "graph_utils"
 
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 
 interface.find(ifname)
 ifstats = interface.getStats()

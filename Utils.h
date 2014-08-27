@@ -49,6 +49,7 @@ class Utils {
   static double JaccardSimilarity(u_int8_t *x, u_int8_t *y);
   static u_int8_t ifname2id(const char *name);
   static char* sanitizeHostName(char *str);
+  static char* urlDecode(const char *src, char *dst, u_int dst_len);
 };
 
 

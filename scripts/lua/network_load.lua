@@ -11,7 +11,7 @@ interface.find(ifname)
 ifstats = interface.getStats()
 is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
 if(ifstats ~= nil) then

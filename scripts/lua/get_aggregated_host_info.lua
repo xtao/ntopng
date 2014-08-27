@@ -12,7 +12,7 @@ hostname = _GET["name"]
 interface.find(ifname)
 host = interface.getAggregatedHostInfo(hostname)
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
 if(host == nil) then

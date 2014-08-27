@@ -12,7 +12,7 @@ host_name = _GET["name"]
 host_id   = _GET["id"]
 
 if(mode ~= "embed") then
-   sendHTTPHeader('text/html')
+   sendHTTPHeader('text/html; charset=iso-8859-1')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    active_page = "hosts"
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")

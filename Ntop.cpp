@@ -448,10 +448,16 @@ int Ntop::deleteUser(char *username) {
 /* ******************************************* */
 
 void Ntop::fixPath(char *str) {
+  for(int i=0; str[i] != '\0'; i++) {
 #ifdef WIN32
-  for(int i=0; str[i] != '\0'; i++)
     if(str[i] == '/') str[i] = '\\';
 #endif
+    
+    if((i > 0) && (str[i] == '.') && (str[i-1] == '.')) {
+      // ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid path detected %s", str);
+      str[i-1] = '_', str[i] = '_'; /* Invalidate the path */
+    }
+  }
 }
 
 /* ******************************************* */

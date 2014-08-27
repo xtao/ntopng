@@ -7,6 +7,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "top_talkers"
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 
 print(getTopTalkers(getInterfaceId(ifname), ifname, _GET["mode"], _GET["epoch"]))

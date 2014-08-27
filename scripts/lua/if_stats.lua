@@ -9,7 +9,7 @@ if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dir
 require "lua_utils"
 require "graph_utils"
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 print("<link href=\"/css/tablesorted.css\" rel=\"stylesheet\">")

@@ -18,7 +18,7 @@ end
 
 throughput_type = getThroughputType()
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
 if(flow == nil) then

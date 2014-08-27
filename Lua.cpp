@@ -2585,8 +2585,9 @@ static char* http_decode(char *str) {
 /* ****************************************** */
 
 int Lua::handle_script_request(struct mg_connection *conn,
-			       const struct mg_request_info *request_info, char *script_path) {
-  char buf[64], key[64], val[64], *_cookies, user[64];
+			       const struct mg_request_info *request_info,
+			       char *script_path) {
+  char buf[64], key[64], val[64], *_cookies, user[64], outbuf[FILENAME_MAX];
 
   luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
@@ -2597,44 +2598,73 @@ int Lua::handle_script_request(struct mg_connection *conn,
   /* Put the GET params into the environment */
   lua_newtable(L);
   if(request_info->query_string != NULL) {
-    char *query_string = strdup(request_info->query_string);
+    char *_query_string = strdup(request_info->query_string);
 
-    if(query_string) {
-      char *tok, *where;
+    if(_query_string) {
+      char *tok, *where, *query_string;
+      FILE *fd;
+      int len = strlen(_query_string)+1;
 
-      tok = strtok_r(query_string, "&", &where);
+      if((query_string = (char*)malloc(len)) != NULL) {
+	Utils::urlDecode(_query_string, query_string, len);
 
-      while(tok != NULL) {
-	/* key=val */
-	char *equal = strchr(tok, '=');
+	tok = strtok_r(query_string, "&", &where);
 
-	if(equal) {
-	  char *decoded_buf;
+	while(tok != NULL) {
+	  /* key=val */
+	  char *equal = strchr(tok, '=');
 
-	  equal[0] = '\0';
-	  if((decoded_buf = http_decode(&equal[1])) != NULL) {
-	    int i;
+	  if(equal) {
+	    char *decoded_buf;
 
-	    for(i=0; decoded_buf[i] != '\0'; i++) {
-	      switch(decoded_buf[i]) {
-	      case '<':
-	      case '>':
-		decoded_buf[i] = '_';
-		break;
+	    equal[0] = '\0';
+	    if((decoded_buf = http_decode(&equal[1])) != NULL) {
+	      int i;
+
+	      for(i=0; decoded_buf[i] != '\0'; i++) {
+		/* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
+		switch(decoded_buf[i]) {
+		case '<':
+		case '>':
+		case ';':
+		  decoded_buf[i] = '_';
+		  break;
+		}
+	      
+		if((i > 0) 
+		   && (((decoded_buf[i] == '.') && (decoded_buf[i-1] == '.'))
+		       || ((decoded_buf[i] == '/') && (decoded_buf[i-1] == '/'))
+		       || ((decoded_buf[i] == '\\') && (decoded_buf[i-1] == '\\'))
+		       )) {
+		  /* Make sure we do not have .. in the variable that can be used for future hacking */
+		  decoded_buf[i-1] = '_', decoded_buf[i] = '_'; /* Invalidate the path */
+		}
 	      }
+    
+	      /* Now make sure that decoded_buf is not a file path */
+	      if((fd = fopen(decoded_buf, "r"))
+		 || (fd = fopen(realpath(decoded_buf, outbuf), "r"))) {
+		ntop->getTrace()->traceEvent(TRACE_WARNING, "Discarded '%s'='%s' as argument is a valid file path",
+					     tok, decoded_buf);
+
+		decoded_buf[0] = '\0';
+		fclose(fd);
+	      }
+
+	      // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+	    	   
+	      lua_push_str_table_entry(L, tok, decoded_buf);
+	      free(decoded_buf);
 	    }
-
-	    // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
-
-	    lua_push_str_table_entry(L, tok, decoded_buf);
-	    free(decoded_buf);
 	  }
-	}
 
-	tok = strtok_r(NULL, "&", &where);
+	  tok = strtok_r(NULL, "&", &where);
+	} /* while */
+
+	free(query_string);
       }
 
-      free(query_string);
+      free(_query_string);
     }
   }
   lua_setglobal(L, "_GET"); /* Like in php */

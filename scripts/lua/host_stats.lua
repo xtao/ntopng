@@ -20,7 +20,7 @@ else
 end
 
 
-sendHTTPHeader('text/html')
+sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
 print(json.encode(host, { indent = true }))

@@ -17,7 +17,7 @@ host_vlan = host_info["vlan"]
 active_page = "hosts"
 
 if(host_ip == nil) then
-   sendHTTPHeader('text/html')
+   sendHTTPHeader('text/html; charset=iso-8859-1')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
    print("<div class=\"alert alert alert-danger\"><img src=/img/warning.png> Host parameter is missing (internal error ?)</div>")
@@ -53,7 +53,7 @@ if(host == nil) then
    if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated Host Info\n") end
    if(host == nil) then
       if(not(restoreFailed)) then json = ntop.getCache(host_info["host"].. "." .. ifId .. ".json") end
-      sendHTTPHeader('text/html')
+      sendHTTPHeader('text/html; charset=iso-8859-1')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
       print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Host ".. hostinfo2hostkey(host_info) .. " cannot be found.")
@@ -70,7 +70,7 @@ if(host == nil) then
    end
    return
 else
-   sendHTTPHeader('text/html')
+   sendHTTPHeader('text/html; charset=iso-8859-1')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
