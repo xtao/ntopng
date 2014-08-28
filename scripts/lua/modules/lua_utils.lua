@@ -37,6 +37,7 @@ function sendHTTPHeaderIfName(mime, ifname, maxage)
   print('Server: ntopng '..info["version"]..' ['.. info["platform"]..']\r\n')
   print('Pragma: no-cache\r\n')
   print('X-Frame-Options: DENY\r\n')
+  print('X-Content-Type-Options: nosniff\r\n')
   if(_SESSION ~= nil) then print('Set-Cookie: session='.._SESSION["session"]..'; max-age=' .. maxage .. '; path=/; HttpOnly\r\n') end  
   if(ifname ~= nil) then print('Set-Cookie: ifname=' .. ifname .. '; path=/\r\n') end
   print('Content-Type: '.. mime ..'\r\n')

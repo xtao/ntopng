@@ -1648,9 +1648,9 @@ static int ntop_get_resolved_address(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   getHostVlanInfo((char*)lua_tostring(vm, 1), &key, &vlan_id, buf, sizeof(buf));
 
-  if(key == NULL) 
+  if(key == NULL)
 	  return(CONST_LUA_ERROR);
-  
+
   if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0)
     tmp = rsp;
   else
@@ -2623,15 +2623,19 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
 	      for(i=0; decoded_buf[i] != '\0'; i++) {
 		/* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
-		switch(decoded_buf[i]) {
-		case '<':
-		case '>':
-		case ';':
-		  decoded_buf[i] = '_';
-		  break;
-		}
-	      
-		if((i > 0) 
+
+		if(((decoded_buf[i] >= 'a') && (decoded_buf[i] <= 'z'))
+		   || ((decoded_buf[i] >= 'A') && (decoded_buf[i] <= 'Z'))
+		   || ((decoded_buf[i] >= '0') && (decoded_buf[i] <= '9'))
+		   || (decoded_buf[i] == ':')
+		   || (decoded_buf[i] == '-')
+		   || (decoded_buf[i] == '_')
+		   || (decoded_buf[i] == '.'))
+		  ; /* Good: we're on the whitelist */
+		else
+		  decoded_buf[i] = '_'; /* Invalid char: we discard it */
+
+		if((i > 0)
 		   && (((decoded_buf[i] == '.') && (decoded_buf[i-1] == '.'))
 		       || ((decoded_buf[i] == '/') && (decoded_buf[i-1] == '/'))
 		       || ((decoded_buf[i] == '\\') && (decoded_buf[i-1] == '\\'))
@@ -2640,7 +2644,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 		  decoded_buf[i-1] = '_', decoded_buf[i] = '_'; /* Invalidate the path */
 		}
 	      }
-    
+
 	      /* Now make sure that decoded_buf is not a file path */
 	      if((fd = fopen(decoded_buf, "r"))
 		 || (fd = fopen(realpath(decoded_buf, outbuf), "r"))) {
@@ -2652,7 +2656,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	      }
 
 	      // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
-	    	   
+
 	      lua_push_str_table_entry(L, tok, decoded_buf);
 	      free(decoded_buf);
 	    }
