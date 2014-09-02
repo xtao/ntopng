@@ -988,7 +988,7 @@ char* Flow::serialize() {
   if(((cli2srv_packets+srv2cli_packets) > NDPI_MIN_NUM_PACKETS)
      || (ndpi_detected_protocol != NDPI_PROTOCOL_UNKNOWN))
     json_object_object_add(my_object, Utils::jsonLabel(L7_PROTO, "L7_PROTO", jsonbuf, sizeof(jsonbuf)),
-			   json_object_new_string(get_detected_protocol_name()));
+			   json_object_new_int(get_detected_protocol()));
 
   if(protocol == IPPROTO_TCP)
     json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS, "TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
