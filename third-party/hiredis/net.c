@@ -129,6 +129,8 @@ int redisKeepAlive(redisContext *c, int interval) {
         __redisSetError(c,REDIS_ERR_OTHER,strerror(errno));
         return REDIS_ERR;
     }
+#elif defined (__OpenBSD__)
+    /* DO NOTHING */
 #else
     val = interval;
     if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &val, sizeof(val)) < 0) {

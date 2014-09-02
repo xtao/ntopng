@@ -196,7 +196,11 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     fd_t sock = ::accept (s, NULL, NULL);
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
+#if defined (__OpenBSD__)
+            errno == EINTR || errno == ECONNABORTED || errno == EOPNOTSUPP ||
+#else
             errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+#endif
             errno == ENFILE);
         return retired_fd;
     }

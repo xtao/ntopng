@@ -205,6 +205,11 @@ else
   MAN_DIR=$INSTALL_DIR
 fi
 
+if test $SYSTEM = "OpenBSD"; then
+INSTALL_DIR=${prefix}
+MAN_DIR=${prefix}
+fi
+
 AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, "r$SVN_RELEASE", [SVN release of this package])
 AC_DEFINE_UNQUOTED(PACKAGE_MACHINE, "$MACHINE", [Architecture of this host])
 AC_SUBST(MACHINE)
