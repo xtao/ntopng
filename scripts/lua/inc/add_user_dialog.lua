@@ -1,4 +1,4 @@
-
+print [[
 <div id="add_user_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="add_user_dialog_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -19,7 +19,9 @@
 </script>
 
   <form id="form_add_user" class="form-horizontal" method="get" action="add_user.lua">
-
+			   ]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
   <div class="control-group"> 
     <label class="control-label">Username</label>
     <div class="controls">
@@ -89,3 +91,4 @@ $('#add_user_submit').click(function() {
 </div>
 </div> <!-- add_user_dialog -->
 
+		      ]]

@@ -1703,6 +1703,29 @@ static int ntop_syslog(lua_State* vm) {
 
 /* ****************************************** */
 
+/**
+ * @brief Generate a random value to prevent CSRF and XSRF attacks
+ * @details See http://blog.codinghorror.com/preventing-csrf-and-xsrf-attacks/
+ *
+ * @param vm The lua state.
+ * @return The random value just generated
+ */
+static int ntop_generate_csrf_value(lua_State* vm) {
+  char random_a[32], random_b[32], csrf[32];
+  Redis *redis = ntop->getRedis();
+
+  snprintf(random_a, sizeof(random_a), "%d", rand());
+  snprintf(random_b, sizeof(random_b), "%lu", time(NULL)*rand());
+
+  mg_md5(csrf, random_a, random_b, NULL);
+
+  redis->set(csrf, (char*)"1", MAX_CSRF_DURATION);
+  lua_pushfstring(vm, "%s", csrf);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 struct ntopng_sqlite_state {
   lua_State* vm;
   u_int num_rows;
@@ -2390,6 +2413,9 @@ static const luaL_Reg ntop_reg[] = {
   { "addUser",        ntop_add_user },
   { "deleteUser",     ntop_delete_user },
 
+  /* Security */
+  { "getRandomCSRFValue",     ntop_generate_csrf_value },
+
   /* Address Resolution */
   { "resolveAddress",     ntop_resolve_address },
   { "getResolvedAddress", ntop_get_resolved_address },
@@ -2656,6 +2682,14 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	      }
 
 	      // ntop->getTrace()->traceEvent(TRACE_WARNING, "'%s'='%s'", tok, decoded_buf);
+
+	      if(strcmp(tok, "csrf") == 0) {
+		char rsp[32];
+		if(ntop->getRedis()->get(decoded_buf, rsp, sizeof(rsp)) == -1) {
+		  ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid CSRF parameter specified [%s]", decoded_buf);
+		  return(send_error(conn, 500 /* Internal server error */, "Internal server error: CSRF attack?", PAGE_ERROR, tok, rsp));
+		}
+	      }
 
 	      lua_push_str_table_entry(L, tok, decoded_buf);
 	      free(decoded_buf);

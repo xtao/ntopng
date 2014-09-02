@@ -341,6 +341,7 @@ print [[
 
       print(host_info["host"])
       print('"><input type="hidden" name="trigger_alerts" value="'..value..'"><input type="checkbox" value="1" '..checked..' onclick="this.form.submit();"> Trigger Host Alerts</input>')
+      print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
       print('</form></td></tr>')
    end
 
@@ -391,8 +392,9 @@ print [[">
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
       if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
 print [["></input>
-  <button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
-</form>
+	 <button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[</form>
 </td></tr>
    ]]
 end
@@ -1519,6 +1521,7 @@ print [[
  <input type=hidden name=page value=alerts>
 ]]
 
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print("<input type=hidden name=host value=\""..hostinfo2hostkey(host_info).."\">\n")
 print("<input type=hidden name=tab value="..tab..">\n")
 
@@ -1560,7 +1563,9 @@ print [[
   </div>
   <div class="modal-footer">
     <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=to_delete value="__all__">
-    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
+]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
     <button class="btn btn-primary" type="submit">Delete All</button>
 
   </div>

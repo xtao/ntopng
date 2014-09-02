@@ -51,7 +51,11 @@ ifSpeed = math.floor(ifSpeed+0.5)
 print [[
 
 <form class="form-horizontal" method="GET" >
+   ]]
 
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+
+print [[
 <div class="container"> 
 <div class="form-group">
     <label class="control-label" for="ifSpeed">Interface Speed (Mbit):</label>

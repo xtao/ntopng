@@ -9,6 +9,7 @@ require "lua_utils"
 
 sendHTTPHeader('application/json')
 
+if(_GET["csrf"] ~= nil) then
 
 interface.find(ifname)
 if((_GET["hostIP"] ~= nil) and (_GET["hostIP"] ~= "")) then
@@ -47,4 +48,5 @@ else
    end
 
    print("\n]\n")
+end
 end

@@ -1,3 +1,4 @@
+print [[
 <div id="password_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="password_dialog_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -18,6 +19,9 @@
 </script>
 
   <form id="form_password_reset" class="form-horizontal" method="get" action="password_reset.lua">
+			   ]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
     <input id="password_dialog_username" type="hidden" name="username" value="" />
 
   <div class="control-group"> 
@@ -81,3 +85,4 @@ $('#password_reset_submit').click(function() {
 </div>
 </div> <!-- password_dialog -->
 
+			    ]]

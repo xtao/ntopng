@@ -9,6 +9,7 @@ require "lua_utils"
 
 sendHTTPHeader('application/html')
 
+if(_GET["csrf"] ~= nil) then
 interface_id = tonumber(_GET["id"])
 from = tonumber(_GET["from"])
 to = tonumber(_GET["to"])
@@ -25,4 +26,5 @@ if (ret)  then
   print "{ \"result\" : \"0\"}";
 else
   print ( "{ \"result\" : \"-1\"}" );
+end
 end

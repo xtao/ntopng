@@ -1324,7 +1324,9 @@ function prefsInputField(label, comment, key, value)
   print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td>')
 
   print [[
-<td class="input-group col-lg-3" align=right><form class="navbar-form navbar-left">
+	   <td class="input-group col-lg-3" align=right><form class="navbar-form navbar-left">]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
  <div class="input-group" >
       <input type="text" class="form-control" name="]] print(key) print [[" value="]] print(value.."") print [[">
       <span class="input-group-btn">
@@ -1357,6 +1359,7 @@ function toggleTableButton(label, comment, on_label, on_value, on_color , off_la
 
   if(label ~= "") then print('<tr><td><strong>'..label..'</strong><p><small>'..comment..'</small></td><td with=250 align=right>\n') end
   print('<form>\n<div class="btn-group btn-toggle">')
+  print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
   print('<input type=hidden name='..submit_field..' value='..rev_value..'>\n')
   print('<button type="submit" class="btn btn-sm  '..on_active..'">'..on_label..'</button>')
   print('<button class="btn btn-sm  '..off_active..'">'..off_label..'</button></div>\n')

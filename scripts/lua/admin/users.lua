@@ -13,9 +13,9 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 active_page = "admin"
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/users.inc")
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/password_dialog.inc")
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/add_user_dialog.inc")
-ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/delete_user_dialog.inc")
+dofile(dirs.installdir .. "/scripts/lua/inc/users.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/password_dialog.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/add_user_dialog.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/delete_user_dialog.lua")
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

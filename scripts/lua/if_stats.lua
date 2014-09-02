@@ -27,7 +27,9 @@ is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 ifstats = interface.getStats()
 
 if(_GET["custom_name"] ~=nil) then
+if(_GET["csrf"] ~= nil) then
       ntop.setCache('ntopng.prefs.'..ifstats.name..'.name',_GET["custom_name"])
+end
 end
 
 rrdname = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/rrd/bytes.rrd")
@@ -128,7 +130,9 @@ if((page == "overview") or (page == nil)) then
     <form class="form-inline" style="margin-bottom: 0px;">
        <input type="hidden" name="if_name" value="]]
           print(ifstats.name)
-    print [[">
+	  print [[">]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
        <input type="text" name="custom_name" placeholder="Custom Name" value="]]
           if(alternate_name ~= nil) then print(alternate_name) end
     print [["></input>
@@ -251,6 +255,7 @@ elseif(page == "config_historical") then
   print ('<div id="alert_placeholder"></div>')
 
    print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_interface.lua">')
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
    print[[
     <input type="hidden" name="from" value="" id="form_from">
     <input type="hidden" name="to" value="" id="form_to">
@@ -351,7 +356,9 @@ print [[
 ]]
 
 print [[
-<form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_interface.lua">
+	 <form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_interface.lua">]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
   <input type="hidden" name="from" value="" id="form_from">
   <input type="hidden" name="to" value="" id="form_to">
   <input type="hidden" name="id" value="" id="form_interface_id">

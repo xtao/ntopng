@@ -1,4 +1,4 @@
-
+print [[
 <div id="delete_user_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="delete_user_dialog_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -20,6 +20,9 @@
 </script>
 
   <form id="form_delete_user" class="form-horizontal" method="get" action="delete_user.lua">
+			      ]]
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+print [[
     <input id="delete_dialog_username" type="hidden" name="username" value="" />
   </form>
 
@@ -61,3 +64,4 @@ $('#delete_user_submit').click(function() {
 </div>
 </div> <!-- delete_user_dialog -->
 
+			 ]]

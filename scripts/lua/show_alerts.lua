@@ -10,6 +10,7 @@ require "lua_utils"
 sendHTTPHeader('text/html; charset=iso-8859-1')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
+if(_GET["csrf"] ~= nil) then
 if(_GET["id_to_delete"] ~= nil) then
    if(_GET["id_to_delete"] == "__all__") then
       ntop.flushAllQueuedAlerts()
@@ -100,6 +101,11 @@ if(ntop.getNumQueuedAlerts() > 0) then
   <div class="modal-footer">
 
     <form class=form-inline style="margin-bottom: 0px;" method=get action="#"><input type=hidden name=id_to_delete value="__all__">
+      ]]
+
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+
+print [[
     <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
     <button class="btn btn-primary" type="submit">Purge All</button>
 </form>
@@ -112,3 +118,4 @@ if(ntop.getNumQueuedAlerts() > 0) then
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
+end

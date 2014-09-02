@@ -100,7 +100,7 @@
 #define HOST_ALTERNATE_NAME     "ntop.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntop.host_serial"
 #define DUMMY_IFACE_ID          ((u_int8_t)-1)
-
+#define MAX_CSRF_DURATION       120 /* 2 mins */
 #ifndef TH_FIN
 #define	TH_FIN	0x01
 #endif

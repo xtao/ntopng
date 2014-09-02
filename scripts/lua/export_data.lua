@@ -25,7 +25,12 @@ print [[
 <p>&nbsp;<p>
 
 <form class="form-horizontal" action="/lua/do_export_data.lua" method="GET">
+]]
 
+print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
+
+
+print [[
 
 <div class="control-group">
     <label class="control-label" for="hostIP">Host:</label>
