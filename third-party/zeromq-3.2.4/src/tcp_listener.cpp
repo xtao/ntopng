@@ -262,11 +262,8 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #else
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
-#if defined (__OpenBSD__)
             errno == EINTR || errno == ECONNABORTED || errno == EOPNOTSUPP ||
-#else
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
-#endif
+		      //            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
             errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
             errno == ENFILE);
         return retired_fd;
