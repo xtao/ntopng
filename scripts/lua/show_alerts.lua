@@ -11,12 +11,13 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 if(_GET["csrf"] ~= nil) then
-if(_GET["id_to_delete"] ~= nil) then
-   if(_GET["id_to_delete"] == "__all__") then
-      ntop.flushAllQueuedAlerts()
-      print("")
-   else
-      ntop.deleteQueuedAlert(tonumber(_GET["id_to_delete"]))
+   if(_GET["id_to_delete"] ~= nil) then
+      if(_GET["id_to_delete"] == "__all__") then
+	 ntop.flushAllQueuedAlerts()
+	 print("")
+      else
+	 ntop.deleteQueuedAlert(tonumber(_GET["id_to_delete"]))
+      end
    end
 end
 
@@ -118,4 +119,3 @@ print [[
 end
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
-end
