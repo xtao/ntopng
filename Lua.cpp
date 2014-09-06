@@ -744,7 +744,7 @@ static void getHostVlanInfo(char* lua_ip, char** host_ip,
   snprintf(buf, buf_len, "%s", lua_ip);
 
   if(((*host_ip) = strtok_r(buf, "@", &where)) != NULL)
-	 vlan = strtok_r(NULL, "@", &where);
+    vlan = strtok_r(NULL, "@", &where);
 
   if(vlan)
     (*vlan_id) = (u_int16_t)atoi(vlan);
@@ -1649,7 +1649,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
   getHostVlanInfo((char*)lua_tostring(vm, 1), &key, &vlan_id, buf, sizeof(buf));
 
   if(key == NULL)
-	  return(CONST_LUA_ERROR);
+    return(CONST_LUA_ERROR);
 
   if(redis->getAddress(key, rsp, sizeof(rsp), true) == 0)
     tmp = rsp;
@@ -2212,13 +2212,13 @@ static int set_historical_info(lua_State* vm) {
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-    from_epoch = (u_int32_t)lua_tonumber(vm, 1);
+  from_epoch = (u_int32_t)lua_tonumber(vm, 1);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-    to_epoch = (u_int32_t)lua_tonumber(vm, 2);
+  to_epoch = (u_int32_t)lua_tonumber(vm, 2);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-    iface_id = (u_int8_t)lua_tonumber(vm, 3);
+  iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
   iface->setFromEpoch((time_t) from_epoch);
   iface->setToEpoch((time_t) to_epoch);
@@ -2256,11 +2256,11 @@ static int load_historical_interval(lua_State* vm) {
   iface_id = (u_int8_t)lua_tonumber(vm, 3);
 
   if((iface == NULL) || iface->is_on_load())
-     lua_pushboolean(vm,false);
-   else {
+    lua_pushboolean(vm,false);
+  else {
     iface->startLoadData((time_t) from_epoch, (time_t) to_epoch, iface_id);
     lua_pushboolean(vm,true);
-   }
+  }
 
   return(CONST_LUA_OK);
 }
@@ -2340,7 +2340,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "isIdle",                 ntop_interface_is_idle },
   { "setInterfaceIdleState",  ntop_interface_set_idle },
   { "name2id",                ntop_interface_name2id },
-   /* Historical Interface */
+  /* Historical Interface */
   { "getHistorical",      get_historical_info },
   { "setHistorical",      set_historical_info },
   { "loadHistoricalInterval",      load_historical_interval },

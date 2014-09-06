@@ -979,15 +979,16 @@ end
 
 -- Flow Utils --
 
-function flowinfo2hostname(flow_info,host_type,show_vlan)
+function flowinfo2hostname(flow_info, host_type, show_vlan)
   local name = ""
 
   name = flow_info[host_type..".host"]
   if((name == "") or (name == nil)) then
     name = flow_info[host_type..".ip"]
+    name = ntop.getResolvedAddress(name)
   end
 
-  name = ntop.getResolvedAddress(name)
+  -- io.write(host_type.. " / " .. flow_info[host_type..".host"].." / "..name.."\n")
 
   if(show_vlan and (flow_info["vlan"] > 0)) then
     name = name .. '@' .. flow_info["vlan"]
@@ -1136,6 +1137,7 @@ function hostinfo2url(host_info,host_type)
       rsp = rsp..'@'..tostring(host_info["vlan"])
     end
   end
+
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
 

@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -124,7 +124,7 @@ end
 if(flow == nil) then
    print("<div class=\"alert alert-danger\"><img src=/img/warning.png> This flow cannot be found (expired ?)</div>")
 else
-
+   ifstats = interface.getStats()
    print("<table class=\"table table-bordered table-striped\">\n")
    if (ifstats.iface_vlan and (flow["vlan"] ~= nil)) then
       print("<tr><th width=30%>")
@@ -173,6 +173,11 @@ else
 
    cli_name = shortHostName(ntop.getResolvedAddress(flow["cli.ip"]))
    srv_name = shortHostName(ntop.getResolvedAddress(flow["srv.ip"]))
+
+   if(flow["cli.port"] > 0) then
+      cli_name = cli_name .. ":" .. flow["cli.port"]
+      srv_name = srv_name .. ":" .. flow["srv.port"]
+   end
    print('<div class="progress"><div class="progress-bar progress-bar-warning" style="width: ' .. cli2srv.. '%;">'.. cli_name..'</div><div class="progress-bar progress-bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. srv_name .. '</div></div>')
    print("</td></tr>\n")
 
