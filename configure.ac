@@ -18,12 +18,12 @@ if test -d ".svn"; then :
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 SVN_DATE=`svn info . | grep "^Last Changed Date"|cut -d " " -f 4-`
 else
-SVN_RELEASE=""
-SVN_DATE=""
+SVN_RELEASE="${PACKAGE_VERSION}"
+SVN_DATE=`date`
 fi
 
-AC_DEFINE_UNQUOTED(NDPI_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
-AC_DEFINE_UNQUOTED(NDPI_SVN_DATE, "${SVN_DATE}", [Last SVN change])
+AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
+AC_DEFINE_UNQUOTED(NTOPNG_SVN_DATE, "${SVN_DATE}", [Last SVN change])
 
 if test -z `which pkg-config`; then
    echo "#!/bin/sh\n" > pkg-config
