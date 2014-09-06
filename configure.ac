@@ -14,17 +14,16 @@ CPPFLAGS="${CPPFLAGS} -I/usr/local/include"
 LDFLAGS="${LDFLAGS} -L/usr/local/lib"
 fi
 
-if test -d "/opt/local/include"; then
-CFLAGS="${CFLAGS} -I/opt/local/include"
-CPPFLAGS="${CPPFLAGS} -I/opt/local/include"
-LDFLAGS="${LDFLAGS} -L/opt/local/lib"
+if test -d ".svn"; then :
+SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
+SVN_DATE=`svn info . | grep "^Last Changed Date"|cut -d " " -f 4-`
+else
+SVN_RELEASE=""
+SVN_DATE=""
 fi
 
-SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
-AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
-SVN_DATE=`svn info . | grep "^Last Changed Date"|cut -d " " -f 4-`
-AC_DEFINE_UNQUOTED(NTOPNG_SVN_DATE, "${SVN_DATE}", [Last SVN change])
-PACKAGE_VERSION="${NTOPNG_VERSION}_${SVN_RELEASE}"
+AC_DEFINE_UNQUOTED(NDPI_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
+AC_DEFINE_UNQUOTED(NDPI_SVN_DATE, "${SVN_DATE}", [Last SVN change])
 
 if test -z `which pkg-config`; then
    echo "#!/bin/sh\n" > pkg-config

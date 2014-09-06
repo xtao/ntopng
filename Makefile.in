@@ -232,7 +232,7 @@ docs:
 dist:
 	rm -rf ntopng-@NTOPNG_VERSION@
 	mkdir ntopng-@NTOPNG_VERSION@
-	cd ntopng-@NTOPNG_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/ntopng/; cd ntopng; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..; mv ntopng ntopng-@NTOPNG_VERSION@; tar cvfz ../ntopng-@NTOPNG_VERSION@.tgz ntopng-@NTOPNG_VERSION@
+	cd ntopng-@NTOPNG_VERSION@; svn co https://svn.ntop.org/svn/ntop/trunk/ntopng/; cd ntopng; svn co https://svn.ntop.org/svn/ntop/trunk/nDPI/; cd ..; find ntopng -name .svn | xargs rm -rf ; mv ntopng ntopng-@NTOPNG_VERSION@; tar cvfz ../ntopng-@NTOPNG_VERSION@.tgz ntopng-@NTOPNG_VERSION@
 
 install: ntopng
 	@echo "Make sure you have already run 'make geoip' to also install geoip dat files"
