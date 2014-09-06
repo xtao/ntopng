@@ -65,6 +65,8 @@ const char *win_inet_ntop(int af, const void *src, char *dst,socklen_t size);
 /* Damn XP */
 #define inet_ntop win_inet_ntop
 
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+
 typedef HANDLE pthread_mutex_t;
 typedef HANDLE pthread_t;
 
