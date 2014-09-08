@@ -3,8 +3,8 @@ datadir = @datadir@
 SHELL=/bin/sh
 OS := $(shell uname -s)
 GPP=@GPP@
-INSTALL_DIR=@INSTALL_DIR@
-MAN_DIR=@MAN_DIR@
+INSTALL_DIR=$(DESTDIR)@INSTALL_DIR@
+MAN_DIR=$(DESTDIR)@MAN_DIR@
 ######
 HAS_NDPI=$(shell pkg-config --exists libndpi; echo $$?)
 ifeq ($(HAS_NDPI), 0)
