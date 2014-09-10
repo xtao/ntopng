@@ -160,21 +160,17 @@ veryclean:
 	-rm -rf nDPI
 
 
-geoip: httpdocs/geoip/GeoLiteCity.dat httpdocs/geoip/GeoLiteCityv6.dat httpdocs/geoip/GeoIPASNum.dat httpdocs/geoip/GeoIPASNumv6.dat
-
-httpdocs/geoip/GeoLiteCity.dat:
-	cd httpdocs/geoip; wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz; gunzip -f GeoLiteCity.dat.gz
-
-httpdocs/geoip/GeoLiteCityv6.dat:
-	cd httpdocs/geoip; wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz; gunzip -f GeoLiteCityv6.dat.gz
-
-httpdocs/geoip/GeoIPASNum.dat:
-	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip -f GeoIPASNum.dat.gz
-
-httpdocs/geoip/GeoIPASNumv6.dat:
-	cd httpdocs/geoip; wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; gunzip -f GeoIPASNumv6.dat.gz
-
-
+geoip:
+	@if test -d ~/dat_files ; then \
+	  cp ~/dat_files/* httpdocs/geoip; gunzip -f httpdocs/geoip/*.dat.gz ; \
+	else \
+	  cd httpdocs/geoip; \
+	  wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz; \
+	  wget -nc http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz; \
+	  wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; \
+	  wget -nc http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz; \
+	  gunzip -f *.dat.gz ; \
+	fi
 
 # Do NOT build package as root (http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment)
 #	mkdir -p $(HOME)/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
