@@ -59,8 +59,10 @@ check_ntopng() {
        RETVAL=1
    elif [ $1 == "stop" ] && [ ${IS_EXISTING} -le 0 ]; then
        MSG="ntopng not running. Exiting"
-       ERROR=1
-       RETVAL=1
+       ERROR=0
+       [ ${DISTRO} == "debian" ] && log_end_msg $ERROR
+       [ ${DISTRO} == "centos" ] && echo_success && echo
+       exit 0
    fi
 
    error_handler
@@ -82,8 +84,7 @@ start_ntopng() {
     fi
 
     if [ ! -f "/etc/ntopng/ntopng.conf" ]; then
-	echo "Configuration file /etc/ntopng/ntopng.conf does not exist: quitting..."
-        MSG="Default configuration file is missing. Exiting"
+        MSG="Default configuration file is missing /etc/ntopng/ntopng.conf. Exiting"
         ERROR=1
         RETVAL=1
 	error_handler
@@ -95,6 +96,11 @@ start_ntopng() {
 
 	check_ntopng start
 	$NTOPNG_BINARY /etc/ntopng/ntopng.conf > /dev/null &
+    else
+        MSG="Missing /etc/ntopng/ntopng.start. Exiting"
+        ERROR=1
+        RETVAL=1
+	error_handler
     fi
     [ ${DISTRO} == "debian" ] && log_end_msg $ERROR
     [ ${DISTRO} == "centos" ] && echo_success && echo
@@ -109,9 +115,10 @@ stop_ntopng() {
 
     if [ ! -d "/etc/ntopng" ]; then
         MSG="Default directory is missing. Exiting"
-        ERROR=1
-        RETVAL=1
         error_handler
+    	[ ${DISTRO} == "debian" ] && log_end_msg $ERROR
+    	[ ${DISTRO} == "centos" ] && echo_success && echo
+	return 0
     fi
 
     if [ -f /etc/ntopng/ntopng.conf ]; then
@@ -150,6 +157,13 @@ stop_ntopng() {
 status_ntopng() {
     if [ ! -d "/etc/ntopng" ]; then
         MSG="Default directory is missing. Exiting"
+        ERROR=1
+        RETVAL=1
+        error_handler
+    fi
+
+    if [ ! -f "/etc/ntopng/ntopng.conf" ]; then
+        MSG="Configuration file is missing. Exiting"
         ERROR=1
         RETVAL=1
         error_handler
