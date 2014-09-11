@@ -349,7 +349,6 @@ function update () {
 
 if not is_historical then
    print ("setInterval(update,3000);\n")
-   io.write("Set Interval \n")
 end
 
 print [[
