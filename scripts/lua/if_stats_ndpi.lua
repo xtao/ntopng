@@ -12,6 +12,7 @@ require "graph_utils"
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
 interface.find(ifname)
+is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 ifstats = interface.getStats()
 
 total = ifstats["stats_bytes"]
@@ -30,7 +31,7 @@ for _k in pairsByKeys(vals , desc) do
   print('<th style="width: 33%;">')
 
   fname = getRRDName(ifstats.id, nil, k..".rrd")
-  if(ntop.exists(fname)) then
+  if(ntop.exists(fname) and not is_historical) then
     print("<A HREF=\"/lua/if_stats.lua?if_name=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
   else
     print(k)

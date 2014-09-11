@@ -42,6 +42,14 @@ end
 
 url= '/lua/if_stats.lua?if_name=' .. _ifname
 
+--   Added global javascript variable, in order to disable the refresh of pie chart in case 
+--  of historical interface
+if not is_historical then
+ print('\n<script>var refresh = 3000 /* ms */;</script>\n')
+else
+ print('\n<script>var refresh = null /* ms */;</script>\n')
+end
+
 print [[
   <nav class="navbar navbar-default" role="navigation">
   <div class="navbar-collapse collapse">
@@ -87,12 +95,8 @@ if (is_historical) then
 
 else
 
-  if(ntop.exists(rrdname)) then
-    if(page == "historical") then
-      print("<li class=\"active\"><a href=\"#\">Historical Activity</a></li>\n")
-    else
-      print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
-    end
+  if(ntop.exists(rrdname) and not is_historical) then
+    print("<li><a href=\""..url.."&page=historical\">Historical Activity</a></li>")
   end
 
 end
@@ -186,7 +190,7 @@ elseif((page == "packets")) then
 
         <script type='text/javascript'>
          window.onload=function() {
-       var refresh = 3000 /* ms */;
+       
        do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(_ifname.."\"")
   print [[
            }, "", refresh);
@@ -203,7 +207,7 @@ elseif(page == "ndpi") then
 
         <script type='text/javascript'>
          window.onload=function() {
-       var refresh = 3000 /* ms */;
+       
        do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
     }
 
@@ -233,7 +237,13 @@ function update_ndpi_table() {
   });
 }
 update_ndpi_table();
-setInterval(update_ndpi_table, 5000);
+]]
+
+--  Update interval ndpi table
+if not is_historical then print("setInterval(update_ndpi_table, 5000);") end
+
+print [[
+
 </script>
 
 ]]
@@ -294,14 +304,14 @@ current_name = historical_info["interface_name"]
 
 if(current_name ~= nil) then
    v = interface.name2id(current_name)
-
+   
    key = 'ntopng.prefs.'..current_name..'.name'
    custom_name = ntop.getCache(key)
 
    if((custom_name ~= nil) and (custom_name ~= "")) then
       current_name = custom_name
    else
-      current_name = getHumanReadableInterfaceName(v.."")
+      current_name = getHumanReadableInterfaceName(tostring(v))
    end
 else
    v = ""
@@ -329,14 +339,14 @@ for k,v in pairs(names) do
   if (v ~= "Historical") then
        print('<li><a name="' ..interface.name2id(v)..'" >')
       if((custom_name ~= nil) and (custom_name ~= "")) then
-	 print(custom_name..'</a></li>')
-     else
-	interface.find(v)
-	ifstats = interface.getStats()
+	       print(custom_name..'</a></li>')
+      else
+	     interface.find(v)
+	     ifstats = interface.getStats()
 
-	print(getHumanReadableInterfaceName(ifstats.id)..'</a></li>')
+	     print(getHumanReadableInterfaceName(tostring(ifstats.id))..'</a></li>')
       end
-    end
+   end
 end
 
 print [[

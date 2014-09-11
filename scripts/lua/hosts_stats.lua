@@ -46,6 +46,7 @@ if ((ifstats.iface_vlan)) then show_vlan = true else show_vlan = false end
 if(prefs.is_categorization_enabled) then print ('host_rows_option["categorization"] = true;\n') end
 if(prefs.is_httpbl_enabled) then print ('host_rows_option["httpbl"] = true;\n') end
 if(show_vlan) then print ('host_rows_option["vlan"] = true;\n') end
+if(is_historical) then print ('clearInterval(host_table_interval);\n') end
 
 print [[
 	 host_rows_option["ip"] = true;

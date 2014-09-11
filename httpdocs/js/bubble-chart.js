@@ -1,7 +1,8 @@
 // Wrapper function
 function do_bubble_chart(contanerId,update_url,url_params,refresh) {
   var bubble = new BubbleChart(contanerId,update_url,url_params);
-  bubble.setInterval(setInterval(function(){bubble.update();}, refresh));
+  if (refresh)
+    bubble.setInterval(setInterval(function(){bubble.update();}, refresh));
   
   // Return new class instance, with
   return bubble;

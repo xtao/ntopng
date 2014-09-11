@@ -3,7 +3,8 @@
 // Wrapper function
 function do_pie(name, update_url, url_params, units, refresh) {
   var pie = new PieChart(name, update_url, url_params, units, refresh);
-  pie.setInterval(setInterval(function(){pie.update();}, refresh));
+  if (refresh)
+    pie.setInterval(setInterval(function(){pie.update();}, refresh));
 
   // Return new class instance, with
   return pie;

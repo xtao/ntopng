@@ -27,7 +27,7 @@ end
 if(protocol_id == nil) then protocol_id = "" end
 
 interface.find(ifname)
-
+is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 ifstats = interface.getStats()
 ifId = ifstats.id
 
@@ -73,6 +73,14 @@ else
    sendHTTPHeader('text/html; charset=iso-8859-1')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+   
+--   Added global javascript variable, in order to disable the refresh of pie chart in case 
+--  of historical interface
+   if not is_historical then
+    print('\n<script>var refresh = 3000 /* ms */;</script>\n')
+   else
+    print('\n<script>var refresh = null /* ms */;</script>\n')
+   end
 
    if(host["ip"] ~= nil) then
       host_ip = hostinfo2hostkey(host)
@@ -272,7 +280,7 @@ if(host["ip"] ~= nil) then
    end
 end
 
-if(ntop.exists(rrdname)) then
+if(ntop.exists(rrdname) and not is_historical) then
 if(page == "historical") then
   print("\n<li class=\"active\"><a href=\"#\">Historical</a></li>\n")
 else
@@ -496,7 +504,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-		   var refresh = 3000 /* ms */;
+		   
 		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
@@ -525,7 +533,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-		   var refresh = 3000 /* ms */;
+		   
 		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
@@ -705,7 +713,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-				   var refresh = 3000 /* ms */;
+				   
 				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
   print [[
 				}
@@ -752,7 +760,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-				   var refresh = 3000 /* ms */;
+				   
 				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
 				}
 
@@ -815,7 +823,7 @@ end
 		     <tr><th>DNS Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
-					 var refresh = 3000 /* ms */;
+					 
 					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
@@ -834,7 +842,7 @@ print [[
 	 <tr><th>DNS Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
-         var refresh = 3000 /* ms */;
+         
 	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
@@ -863,7 +871,7 @@ end
 		     <tr><th>EPP Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
-					 var refresh = 3000 /* ms */;
+					 
 					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifname) print [[", mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
@@ -882,7 +890,7 @@ print [[
 	 <tr><th>EPP Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
-         var refresh = 3000 /* ms */;
+         
 	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifname) print [[", mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
@@ -966,6 +974,7 @@ if (ifstats.iface_vlan)   then show_vlan = true else show_vlan = false end
 -- Set the host table option
 if(show_sprobe) then print ('flow_rows_option["sprobe"] = true;\n') end
 if(show_vlan) then print ('flow_rows_option["vlan"] = true;\n') end
+if(is_historical) then print ('clearInterval(flow_table_interval);\n') end
 
 if (show_sprobe) then
 print [[
@@ -983,8 +992,13 @@ if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
 
-print [[
+if not is_historical then
+  print [[
          title: "Active Flows",]]
+else
+  print [[
+         title: "All Flows",]]
+end
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sflows_stats_top.inc")
 
@@ -1001,12 +1015,20 @@ print [[
          url: url_update,
          rowCallback: function ( row ) { return flow_table_setID(row); },
 	       showPagination: true,
-	       title: "Active Flows",
 	       ]]
+
+if not is_historical then
+  print [[
+         title: "Active Flows",]]
+else
+  print [[
+         title: "All Flows",]]
+end
 
 -- Set the preference table
 preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
+
 
 print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSortOrder("flows").. '"] ],\n')
 
@@ -1797,7 +1819,7 @@ print [[
         var tree_type = "bytes";
         var tree_filter = "All";
 
-       var refresh = 3000 /* ms */;
+       
 ]]
 
 -- Users graph javascript
@@ -1918,7 +1940,7 @@ if(host["epp"] ~= nil) then
 end
 
 print [[
-setInterval(function() {
+var host_detalis_interval = window.setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
 		    url: '/lua/host_stats.lua',
@@ -2104,6 +2126,7 @@ print [[
 
 </script>
  ]]
+if(is_historical) then print ('\n<script>clearInterval(host_detalis_interval);</script>\n') end
 
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

@@ -8,14 +8,13 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "flow_utils"
 require "voip_utils"
-require "sqlite_utils"
 
 local json = require ("dkjson")
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-
+is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 warn_shown = 0
 
 function displayProc(proc)
@@ -99,26 +98,12 @@ print [[
 throughput_type = getThroughputType()
 
 flow_key = _GET["flow_key"]
-sqlite = _GET["sqlite"]
-sqlite_ID = _GET["ID"]
 
 if(flow_key == nil) then
    flow = nil
 else
    interface.find(ifname)
-   if (sqlite == nil) then
-      flow = interface.findFlowByKey(tonumber(flow_key))
-   else
-      flow = nil
-      if (sqlite_ID ~= nil) then
-         query = "SELECT * FROM flows WHERE ID = "..sqlite_ID
-         Sqlite:execQuery(sqlite, query)
-         flows = Sqlite:getFlows()
-         if (flows ~= nil) then
-            flow = flows[0]
-         end
-      end
-   end
+   flow = interface.findFlowByKey(tonumber(flow_key))
 end
 
 if(flow == nil) then
@@ -159,12 +144,8 @@ else
    print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/lua/")
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
-   if (sqlite == nil) then
-      print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
-
+   print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
    print("<td nowrap><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
-
-   end
 
    print("<tr><th width=30%>Total Traffic Volume</th><td colspan=2><span id=volume>" .. bytesToSize(flow["bytes"]) .. "</span> <span id=volume_trend></span></td></tr>\n")
 
@@ -209,7 +190,7 @@ else
       print("</td></tr>\n")
    end
 
-   if((flow.client_process == nil) and (flow.server_process == nil) and (sqlite == nil)) then
+   if((flow.client_process == nil) and (flow.server_process == nil) and (not is_historical)) then
       print("<tr><th width=30%>Actual / Peak Throughput</th><td width=20%>")
       if (throughput_type == "bps") then
          print("<span id=throughput>" .. bitsToSize(8*flow["throughput_bps"]) .. "</span> <span id=throughput_trend></span>")
@@ -366,8 +347,9 @@ function update () {
 
 ]]
 
-if (sqlite == nil) then
+if not is_historical then
    print ("setInterval(update,3000);\n")
+   io.write("Set Interval \n")
 end
 
 print [[
