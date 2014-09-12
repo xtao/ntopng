@@ -313,8 +313,11 @@ static int handle_lua_request(struct mg_connection *conn) {
     uri_encode(request_info->uri, uri, sizeof(uri)-1);
 
     return(send_error(conn, 404, "Not Found", PAGE_NOT_FOUND, uri));
-  } else
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s%s", 
+				 ntop->get_HTTPserver()->get_docs_dir(), request_info->uri);
     return(0); /* This is a static document so let mongoose handle it */
+  }
 }
 
 /* ****************************************** */

@@ -107,6 +107,8 @@ static int ntop_dump_file(lua_State* vm) {
   if((fd = fopen(fname, "r")) != NULL) {
     char tmp[1024];
 
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s", tmp);
+
     while((fgets(tmp, sizeof(tmp), fd)) != NULL)
       mg_printf(conn, "%s", tmp);
 
