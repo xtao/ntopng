@@ -2656,6 +2656,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 		   || (decoded_buf[i] == ':')
 		   || (decoded_buf[i] == '-')
 		   || (decoded_buf[i] == '_')
+		   || (decoded_buf[i] == '/')
 		   || (decoded_buf[i] == '.'))
 		  ; /* Good: we're on the whitelist */
 		else

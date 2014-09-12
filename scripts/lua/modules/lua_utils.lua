@@ -1464,3 +1464,19 @@ function getHumanReadableInterfaceName(interface_id)
    end
 end
 
+
+function escapeHTML(s)
+   s = string.gsub(s, "([&=+%c])", function (c)
+				      return string.format("%%%02X", string.byte(c))
+				   end)
+   s = string.gsub(s, " ", "+")
+   return s
+end
+
+function unescapeHTML (s)
+   s = string.gsub(s, "+", " ")
+   s = string.gsub(s, "%%(%x%x)", function (h)
+				     return string.char(tonumber(h, 16))
+				  end)
+   return s
+end

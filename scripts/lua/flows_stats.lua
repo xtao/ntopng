@@ -88,7 +88,6 @@ if(network_id ~= nil) then
   num_param = num_param + 1
 end
 
-
 print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_id.inc")
@@ -111,7 +110,7 @@ else
   print(" title: \"All Flows")
 end
 if(_GET["network_name"] ~= nil) then
-  print(" [".._GET["network_name"].."]")
+   print(" [".._GET["network_name"].."]")
 end
 
 print [[",
