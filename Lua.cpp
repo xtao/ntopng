@@ -1421,6 +1421,13 @@ static int ntop_http_get(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_http_get_prefix(lua_State* vm) {
+  lua_pushstring(vm, "");
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_prefs(lua_State* vm) {
   ntop->getPrefs()->lua(vm);
 
@@ -2408,6 +2415,7 @@ static const luaL_Reg ntop_reg[] = {
   /* HTTP */
   { "httpRedirect",   ntop_http_redirect },
   { "httpGet",        ntop_http_get },
+  { "getHttpPrefix",  ntop_http_get_prefix },
 
   /* Admin */
   { "getUsers",       ntop_get_users },
@@ -2628,10 +2636,13 @@ int Lua::handle_script_request(struct mg_connection *conn,
   if(request_info->query_string != NULL) {
     char *_query_string = strdup(request_info->query_string);
 
+
     if(_query_string) {
       char *tok, *where, *query_string;
       FILE *fd;
       int len = strlen(_query_string)+1;
+
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s", _query_string);
 
       if((query_string = (char*)malloc(len)) != NULL) {
 	Utils::urlDecode(_query_string, query_string, len);

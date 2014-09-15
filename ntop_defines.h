@@ -89,16 +89,16 @@
 #define MAX_NUM_QUEUED_CONTACTS 25000
 #define NTOP_COPYRIGHT          "(C) 1998-14 ntop.org"
 #define DEFAULT_PID_PATH        "/var/tmp/ntopng.pid"
-#define DOMAIN_CATEGORY         "domain.category"
-#define DOMAIN_TO_CATEGORIZE    "domain.tocategorize"
-#define DNS_CACHE               "dns.cache"
-#define DNS_TO_RESOLVE          "dns.toresolve"
-#define HTTPBL_CACHE            "httpbl.cache"
-#define HTTPBL_TO_RESOLVE       "httpbl.toresolve"
+#define DOMAIN_CATEGORY         "ntopng.domain.category"
+#define DOMAIN_TO_CATEGORIZE    "ntopng.domain.tocategorize"
+#define DNS_CACHE               "ntopng.dns.cache"
+#define DNS_TO_RESOLVE          "ntopng.dns.toresolve"
+#define HTTPBL_CACHE            "ntopng.httpbl.cache"
+#define HTTPBL_TO_RESOLVE       "ntopng.httpbl.toresolve"
 #define HTTPBL_CACHE_DURATIION  43200 /* 12 h */
 #define DNS_CACHE_DURATION      3600  /*  1 h */
-#define HOST_ALTERNATE_NAME     "ntop.alternate_names"
-#define NTOP_HOSTS_SERIAL       "ntop.host_serial"
+#define HOST_ALTERNATE_NAME     "ntopng.alternate_names"
+#define NTOP_HOSTS_SERIAL       "ntopng.host_serial"
 #define DUMMY_IFACE_ID          ((u_int8_t)-1)
 #define MAX_CSRF_DURATION       120 /* 2 mins */
 #ifndef TH_FIN

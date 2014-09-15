@@ -34,7 +34,11 @@ print [[
       <hr>
       <div id="table-flows"></div>
 	 <script>
-   var url_update = "/lua/get_flows_data.lua]]
+   var url_update = "]] 
+
+print(ntop.getHttpPrefix()) 
+
+print [[/lua/get_flows_data.lua]]
 
 if(application ~= nil) then
    print("?application="..application)
@@ -123,13 +127,13 @@ print ('sort: [ ["' .. getDefaultTableSort("flows") ..'","' .. getDefaultTableSo
 
 print ('buttons: [ \'<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications ' .. application_filter .. '<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" id="flow_dropdown">')
 
-print('<li><a href="/lua/flows_stats.lua">All Proto</a></li>')
+print('<li><a href='..ntop.getHttpPrefix()..'"/lua/flows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(ndpistats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/flows_stats.lua?application=' .. key)
+   print('<li '..class_active..'><a href="'..ntop.getHttpPrefix()..'/lua/flows_stats.lua?application=' .. key)
    if(host ~= nil) then print('&host='..host) end
    print('">'..key..'</a></li>')
 end
@@ -153,10 +157,7 @@ print [[
 ]]
 end
 
-
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/flows_stats_middle.inc")
-
-
 
 if(prefs.is_categorization_enabled) then
 print [[
