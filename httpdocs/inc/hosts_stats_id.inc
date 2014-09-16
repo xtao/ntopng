@@ -53,7 +53,7 @@ function hostkey2hostInfo(host_key) {
 
 function row_update(host_key) {
    var hostInfo = hostkey2hostInfo(host_key);
-   var url = "/lua/get_host_data.lua?host="+hostInfo[0]+"&vlan=" + hostInfo[1];
+   var url = "@HTTP_PREFIX@/lua/get_host_data.lua?host="+hostInfo[0]+"&vlan=" + hostInfo[1];
 
   $.ajax({
     type: 'GET',

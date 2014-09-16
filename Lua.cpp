@@ -109,8 +109,29 @@ static int ntop_dump_file(lua_State* vm) {
 
     ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s", tmp);
 
-    while((fgets(tmp, sizeof(tmp), fd)) != NULL)
-      mg_printf(conn, "%s", tmp);
+    while((fgets(tmp, sizeof(tmp), fd)) != NULL) {
+      char *http_prefix = strstr(tmp, CONST_HTTP_PREFIX_STRING);
+
+      if(http_prefix == NULL) {
+	mg_printf(conn, "%s", tmp);	      
+      } else {
+	char *begin = tmp;
+	int len = strlen(CONST_HTTP_PREFIX_STRING);
+
+	/* Replace CONST_HTTP_PREFIX_STRING with value specified with -Z */
+      handle_http_prefix:
+	http_prefix[0] = '\0';
+	mg_printf(conn, "%s", begin);
+	mg_printf(conn, "%s", ntop->getPrefs()->get_http_prefix());
+	begin = &http_prefix[len];
+	http_prefix = strstr(begin, CONST_HTTP_PREFIX_STRING);
+	
+	if(http_prefix != NULL)
+	  goto handle_http_prefix;
+	else
+	  mg_printf(conn, "%s", begin);
+      }
+    }
 
     fclose(fd);
     return(CONST_LUA_OK);
@@ -1422,7 +1443,7 @@ static int ntop_http_get(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_http_get_prefix(lua_State* vm) {
-  lua_pushstring(vm, "");
+  lua_pushstring(vm, ntop->getPrefs()->get_http_prefix());
   return(CONST_LUA_OK);
 }
 
@@ -2687,8 +2708,9 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	      }
 
 	      /* Now make sure that decoded_buf is not a file path */
-	      if((fd = fopen(decoded_buf, "r"))
-		 || (fd = fopen(realpath(decoded_buf, outbuf), "r"))) {
+	      if((decoded_buf[0] == '.')
+		 && ((fd = fopen(decoded_buf, "r"))
+		     || (fd = fopen(realpath(decoded_buf, outbuf), "r")))) {
 		ntop->getTrace()->traceEvent(TRACE_WARNING, "Discarded '%s'='%s' as argument is a valid file path",
 					     tok, decoded_buf);
 

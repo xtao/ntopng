@@ -37,6 +37,7 @@ Prefs::Prefs(Ntop *_ntop) {
   callbacks_dir = strdup(CONST_DEFAULT_CALLBACKS_DIR);
   config_file_path = ndpi_proto_path = NULL;
   http_port = CONST_DEFAULT_NTOP_PORT;
+  http_prefix = strdup("");
   https_port = CONST_DEFAULT_NTOP_PORT+1;
   change_user = true, daemonize = false;
   user = strdup(CONST_DEFAULT_NTOP_USER);
@@ -88,6 +89,7 @@ Prefs::~Prefs() {
   if(user) free(user);
   if(pid_path) free(pid_path);
   if(packet_filter) free(packet_filter);
+  free(http_prefix);
 }
 
 /* ******************************************* */
@@ -98,22 +100,9 @@ void usage() {
 
   printf("ntopng %s v.%s (%s) - "NTOP_COPYRIGHT"\n\n"
 	 "Usage:\n"
-	 "  ntopng <configuration file>\n"
+	 "  ntopng <configuration file path>\n"
 	 "  or\n"
-	 "  ntopng [-m <local nets>] "
-#ifndef WIN32
-	 "[-d <data dir>] [-e] "
-#endif
-#ifdef linux
-	 "[-g <core>] "
-#endif
-	 "[-n mode] [-i <iface|pcap file>]\n"
-	 "         [-w <http port>] [-W <https port>] [-p <protos>] [-P] [-d <path>]\n"
-	 "         [-c <categorization key>] [-k <httpbl key>] [-r <redis>]\n"
-	 "         [-l] [-U <sys user>] [-s] [-v] [-C]\n"
-	 "         [-F] [-D <mode>] [-E <mode>]\n"
-	 "         [-B <filter>] [-A <mode>]\n"
-	 "\n"
+	 "  ntopng <command line options> \n\n"
 	 "Options:\n"
 	 "[--dns-mode|-n] <mode>              | DNS address resolution mode\n"
 	 "                                    | 0 - Decode DNS responses and resolve\n"
@@ -205,6 +194,8 @@ void usage() {
 	 "                                    | Supported TS modes are:\n"
 	 "                                    | ixia - Timestamped packets by ixiacom.com\n"
 	 "                                    |        hardware devices\n"
+	 "[--http-prefix|-Z] <prefix>         | HTTP prefix to be prepended to URLs. This is\n"
+	 "                                    | useful when using ntopng behind a proxy.\n"
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--version|-V]                      | Print version and quit\n"
 	 "[--help|-h]                         | Help\n"
@@ -287,6 +278,7 @@ static const struct option long_options[] = {
   { "version",                           no_argument,       NULL, 'V' },
   { "max-num-flows",                     required_argument, NULL, 'X' },
   { "https-port",                        required_argument, NULL, 'W' },
+  { "http-prefix",                       required_argument, NULL, 'Z' },
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
@@ -433,6 +425,23 @@ int Prefs::setOption(int optkey, char *optarg) {
     https_port = atoi(optarg);
     break;
 
+  case 'Z':
+    if(optarg[0] != '/') {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "-Z argument (%s) must begin with '/' (example /ntopng): skipped", optarg);
+    } else {
+      int len = strlen(optarg);
+
+      if(len > 0) {
+	if(optarg[len-1] == '/') {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "-Z argument (%s) cannot end with '/' (example /ntopng): skipped", optarg);
+	} else {
+	  free(http_prefix);
+	  http_prefix = strdup(optarg);
+	}
+      }
+    }
+    break;
+
   case 'r':
     {
       char buf[64], *r;
@@ -574,7 +583,7 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
   while((c = getopt_long(argc, argv,
-			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HLI:S:U:X:W:V",
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HLI:S:U:X:W:VZ:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

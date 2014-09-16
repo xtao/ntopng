@@ -62,7 +62,7 @@ function flow_table_setID (row) {
 
 
 function row_update(flow_key) {
-   var url = "/lua/get_flow_data.lua?flow_key="+flow_key;
+   var url = "@HTTP_PREFIX@/lua/get_flow_data.lua?flow_key="+flow_key;
 
   $.ajax({
     type: 'GET',

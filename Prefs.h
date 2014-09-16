@@ -54,6 +54,7 @@ class Prefs {
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir, *export_endpoint;
   char *categorization_key;
   char *httpbl_key;
+  char *http_prefix;
   char *config_file_path, *ndpi_proto_path;
   char *packet_filter;
   char *user;
@@ -102,7 +103,8 @@ class Prefs {
   inline char* get_callbacks_dir()                      { return(callbacks_dir);  };
   inline char* get_export_endpoint()                    { return(export_endpoint);};
   inline char* get_categorization_key()                 { return(categorization_key); };
-  inline char* get_httpbl_key()                         { return(httpbl_key); };
+  inline char* get_httpbl_key()                         { return(httpbl_key);  };
+  inline char* get_http_prefix()                        { return(http_prefix); };
   inline bool  are_alerts_disabled()                    { return(disable_alerts);     };
   inline bool  is_host_persistency_enabled()            { return(disable_host_persistency ? false : true); };
   inline bool  use_short_aggregation_names()            { return(shorten_aggregation_names); };

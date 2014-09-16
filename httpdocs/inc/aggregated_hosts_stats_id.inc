@@ -35,7 +35,7 @@ function hostkey2hostInfo(aggregated_host_key) {
 function row_update(aggregated_host_key) {
    // custom script to update a single row
    var host = hostkey2hostInfo(aggregated_host_key);
-   var url = "/lua/get_host_data.lua?aggregated=1&host="+host;
+   var url = "@HTTP_PREFIX@/lua/get_host_data.lua?aggregated=1&host="+host;
    if (aggregated_host_debug) console.log(url);
   $.ajax({
     type: 'GET',
