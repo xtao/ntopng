@@ -474,7 +474,7 @@ static int ntop_get_file_last_change(lua_State* vm) {
   path = (char*)lua_tostring(vm, 1);
   
   if(stat(path, &buf) == 0)
-    lua_pushnumber(vm, buf.st_mtimespec.tv_sec);
+    lua_pushnumber(vm, buf.st_mtime);
   else
     lua_pushnumber(vm, -1); /* not found */
 
