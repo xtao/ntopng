@@ -9,6 +9,10 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 require "alert_utils"
 
+-- Delete JSON files older than a 30 days
+-- TODO: make 30 configurable
+harvestJSONTopTalkers(30)
+
 -- Scan "day" alerts
 scanAlerts("day")
 

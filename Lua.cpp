@@ -437,7 +437,7 @@ static int ntop_is_dir(lua_State* vm) {
 
 /**
  * @brief Check if the file or directory exists.
- * @details Get the path of file/direcrotry from to lua stack and push true into lua stack if it exists, false otherwise.
+ * @details Get the path of file/directory from to lua stack and push true into lua stack if it exists, false otherwise.
  *
  * @param vm The lua state.
  * @return CONST_LUA_OK
@@ -453,6 +453,30 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
   rc = (stat(path, &buf) != 0) ? 0 : 1;
   //   ntop->getTrace()->traceEvent(TRACE_ERROR, "%s: %d", path, rc);
   lua_pushboolean(vm, rc);
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+/**
+ * @brief Return the epoch of the file last change
+ * @details This function return that time (epoch) of the last chnge on a file, or -1 if the file does not exist.
+ *
+ * @param vm The lua state.
+ * @return CONST_LUA_OK
+ */
+static int ntop_get_file_last_change(lua_State* vm) {
+  char *path;
+  struct stat buf;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  path = (char*)lua_tostring(vm, 1);
+  
+  if(stat(path, &buf) == 0)
+    lua_pushnumber(vm, buf.st_mtimespec.tv_sec);
+  else
+    lua_pushnumber(vm, -1); /* not found */
 
   return(CONST_LUA_OK);
 }
@@ -2403,6 +2427,7 @@ static const luaL_Reg ntop_reg[] = {
   { "isdir",          ntop_is_dir },
   { "mkdir",          ntop_mkdir_tree },
   { "exists",         ntop_get_file_dir_exists },
+  { "fileLastChange", ntop_get_file_last_change }, 
   { "readdir",        ntop_list_dir_files },
   { "zmq_connect",    ntop_zmq_connect },
   { "zmq_disconnect", ntop_zmq_disconnect },

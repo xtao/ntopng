@@ -1480,3 +1480,43 @@ function unescapeHTML (s)
 				  end)
    return s
 end
+
+-- ##############################################
+
+function harvestUnusedDir(path, min_epoch)
+   local files = ntop.readdir(path)   
+
+   -- print("Reading "..path.."<br>\n")
+
+   for k,v in pairs(files) do
+      if(v ~= nil) then
+	 local p = fixPath(path .. "/" .. v)
+	 if(ntop.isdir(p)) then
+	    harvestUnusedDir(p, min_epoch)
+	 else
+	    local when = ntop.fileLastChange(path)
+
+	    if((when ~= -1) and (when < min_epoch)) then
+	       os.remove(p)
+	    end
+	 end
+      end
+   end
+end
+
+-- ############################################## 
+
+function harvestJSONTopTalkers(days)
+   local when = os.time() - 86400 * days
+
+   ifnames = interface.getIfNames()
+   for _,ifname in pairs(ifnames) do
+      interface.find(ifname)
+      local ifstats = interface.getStats()
+      local dirs = ntop.getDirs()
+      local basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id)
+
+      harvestUnusedDir(fixPath(basedir .. "/top_talkers"), when)
+      harvestUnusedDir(fixPath(basedir .. "/flows"), when)
+   end
+end
