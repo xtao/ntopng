@@ -1765,7 +1765,7 @@ static int ntop_syslog(lua_State* vm) {
  * @return The random value just generated
  */
 static int ntop_generate_csrf_value(lua_State* vm) {
-  char random_a[32], random_b[32], csrf[32];
+  char random_a[32], random_b[32], csrf[33];
   Redis *redis = ntop->getRedis();
 
   snprintf(random_a, sizeof(random_a), "%d", rand());
