@@ -1,6 +1,8 @@
 AC_INIT([Makefile.in], 1.0)
 
 NTOPNG_VERS=`cat ../../configure.ac | head -2|grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
+PFRING_VERS=`cat $HOME/PF_RING/kernel/linux/pf_ring.h | grep RING_VERSION | head -1 | cut -d '"' -f 2`
+PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 
@@ -19,6 +21,8 @@ AC_SUBST(EXTN)
 AC_SUBST(DATE)
 AC_SUBST(KERNEL)
 AC_SUBST(SVN_RELEASE)
+AC_SUBST(PFRING_VERS)
+AC_SUBST(PFRING_SVN_RELEASE)
 
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(debian.ntopng/changelog)
