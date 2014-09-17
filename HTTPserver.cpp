@@ -101,7 +101,7 @@ static int is_authorized(const struct mg_connection *conn,
 
   // Always authorize accesses to login page and to authorize URI
   if(!strcmp(request_info->uri, LOGIN_URL) ||
-      !strcmp(request_info->uri, AUTHORIZE_URL)) {
+     !strcmp(request_info->uri, AUTHORIZE_URL)) {
     return 1;
   }
 
@@ -149,8 +149,8 @@ static void redirect_to_login(struct mg_connection *conn,
 
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
-	    "Location: %s\r\n\r\n",
-	    session_id, LOGIN_URL);
+	    "Location: %s%s\r\n\r\n",
+	    session_id, ntop->getPrefs()->get_http_prefix(), LOGIN_URL);
 }
 
 /* ****************************************** */

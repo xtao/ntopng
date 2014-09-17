@@ -75,12 +75,12 @@ Ntop::Ntop(char *appName) {
   if(getcwd(startup_dir, sizeof(startup_dir)) == NULL)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while checking the current directory (errno=%d)", errno);
 
-  snprintf(tmp_path, sizeof(tmp_path), "%s/scripts", CONST_DEFAULT_INSTALL_DIR);
+  snprintf(tmp_path, sizeof(tmp_path), "%s/scripts/lua/index.lua", CONST_DEFAULT_INSTALL_DIR);
 
   if(stat(tmp_path, &statbuf) == 0)
     strcpy(install_dir, CONST_DEFAULT_INSTALL_DIR);
   else {
-    snprintf(tmp_path, sizeof(tmp_path), "%s/scripts", CONST_ALT_INSTALL_DIR);
+    snprintf(tmp_path, sizeof(tmp_path), "%s/scripts/lua/index.lua", CONST_ALT_INSTALL_DIR);
     
     if(stat(tmp_path, &statbuf) == 0)
       strcpy(install_dir, CONST_ALT_INSTALL_DIR);

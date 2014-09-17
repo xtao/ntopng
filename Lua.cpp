@@ -107,7 +107,7 @@ static int ntop_dump_file(lua_State* vm) {
   if((fd = fopen(fname, "r")) != NULL) {
     char tmp[1024];
 
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s", tmp);
+    ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s", fname);
 
     while((fgets(tmp, sizeof(tmp), fd)) != NULL) {
       char *http_prefix = strstr(tmp, CONST_HTTP_PREFIX_STRING);
