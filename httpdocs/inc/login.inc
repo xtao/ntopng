@@ -3,20 +3,20 @@
   <head>
     <title>Welcome to ntopng</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="/js/jquery.js"></script>
-    <script src="/bootstrap/js/bootstrap.js"></script>
-    <script src="/js/bootstrap-datatable.js"></script>
-    <script charset="utf-8" src="/js/d3.v3.js"></script>
-    <script src="/js/jquery.peity.js"></script>
-    <script src="/js/pie-chart.js"></script>
-    <link href="/css/flags.css" rel="stylesheet">
-    <link href="/css/pie-chart.css" rel="stylesheet">
-    <link href="/css/rickshaw.css" rel="stylesheet">
+    <link href="@HTTP_PREFIX@/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="@HTTP_PREFIX@/js/jquery.js"></script>
+    <script src="@HTTP_PREFIX@/bootstrap/js/bootstrap.js"></script>
+    <script src="@HTTP_PREFIX@/js/bootstrap-datatable.js"></script>
+    <script charset="utf-8" src="@HTTP_PREFIX@/js/d3.v3.js"></script>
+    <script src="@HTTP_PREFIX@/js/jquery.peity.js"></script>
+    <script src="@HTTP_PREFIX@/js/pie-chart.js"></script>
+    <link href="@HTTP_PREFIX@/css/flags.css" rel="stylesheet">
+    <link href="@HTTP_PREFIX@/css/pie-chart.css" rel="stylesheet">
+    <link href="@HTTP_PREFIX@/css/rickshaw.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
-      <script src="/js/html5shiv.js"></script>
+      <script src="@HTTP_PREFIX@/js/html5shiv.js"></script>
     <![endif]-->
 
 
@@ -65,7 +65,7 @@
 
 <div class="container">
 
-  <form class="form-signin" action="/authorize.html" method="POST">
+  <form class="form-signin" action="@HTTP_PREFIX@/authorize.html" method="POST">
     <h2 class="form-signin-heading" style="font-weight: bold;">Welcome to ntopng</h2>
     <input type="text" class="form-control" name="user" placeholder="Username">
     <input type="password" class="form-control" name="password" placeholder="Password">

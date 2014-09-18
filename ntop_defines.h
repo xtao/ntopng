@@ -65,7 +65,7 @@
 #endif
 
 #define MSG_VERSION               0
-#define LOGIN_URL                 "/login.html"
+#define LOGIN_URL                 "/lua/login.lua"
 #define AUTHORIZE_URL             "/authorize.html"
 #define HTTP_SESSION_DURATION     3600
 #define CONST_HTTPS_CERT_NAME     "ntopng-cert.pem"
