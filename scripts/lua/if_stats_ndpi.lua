@@ -37,8 +37,11 @@ for _k in pairsByKeys(vals , desc) do
     print(k)
   end
 
+  print(" <A HREF="..ntop.getHttpPrefix().."/lua/flows_stats.lua?application="..k.."><i class=\"fa fa-search-plus\"></i></A></th>")
+
   t = ifstats["ndpi"][k]["bytes.sent"]+ifstats["ndpi"][k]["bytes.rcvd"]
-  print("</th><td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
+
+  print("<td class=\"text-right\" style=\"width: 20%;\">" .. bytesToSize(t).. "</td>")
   print("<td ><span style=\"width: 60%; float: left;\">")
   percentageBar(total, ifstats["ndpi"][k]["bytes.rcvd"], "") -- k
   --         print("</td>\n")
