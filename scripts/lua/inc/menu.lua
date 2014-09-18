@@ -38,7 +38,6 @@ print [[
       <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
       <li class="divider"></li>
       <li><a href="/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-      <li><a href="/lua/logout.lua"><i class="fa fa-off"></i> Logout</a></li>
     </ul>
   </li>
 
@@ -236,7 +235,18 @@ print [[
       <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>
     </li>
+
+
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+	 <i class="fa fa-user fa-lg"></i> <b class="caret"></b>
+      </a>
+    <ul class="dropdown-menu">
+	 <li><a href="/lua/logout.lua"><i class="fa fa-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
+    </ul>
+    </li>
    ]]
+
 
 if(ntop.getNumQueuedAlerts() > 0) then
 print [[
