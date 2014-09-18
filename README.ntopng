@@ -51,7 +51,7 @@ Binary Packages
                   Homebrew
                     brew update
                     brew install ntopng
-- Windows         http://shop.ntop.org or build it from source
+- Windows         http://shop.ntop.org or build it from source using the code in SVN
 
 Using ntopng as a flow collector
 --------------------------------
@@ -105,6 +105,13 @@ Defaults
 --------
 The ntopng default user is 'admin' (without ') and the default
 passoword is also 'admin' (without ').
+
+
+Resetting admin user password
+-----------------------------
+1. shutdown ntopng
+2. redis-cli del user.admin.password
+3. restart ntopng and not the admin password has been reset
 
 
 Debugging ntopng
