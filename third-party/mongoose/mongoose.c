@@ -552,7 +552,9 @@ struct mg_connection {
   int64_t last_throttle_bytes;// Bytes sent this second
 };
 
+char* http_prefix = NULL; /* ntop */
 u_int http_prefix_len = 0; /* ntop */
+
 
 const char **mg_get_valid_option_names(void) {
   return config_options;
@@ -1796,8 +1798,9 @@ static void convert_uri_to_file_name(struct mg_connection *conn, char *buf,
   const char *rewrite, *uri;
   char *p;
   int match_len;
-
-  if(strlen(conn->request_info.uri) > http_prefix_len)
+  
+  if((strlen(conn->request_info.uri) > http_prefix_len)
+     && (strncmp(conn->request_info.uri, http_prefix, http_prefix_len) == 0))
     conn->request_info.uri = &conn->request_info.uri[http_prefix_len];
 
   uri = conn->request_info.uri;

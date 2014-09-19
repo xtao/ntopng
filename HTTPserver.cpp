@@ -377,7 +377,8 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   callbacks.begin_request = handle_lua_request;
 
   /* mongoose */
-  http_prefix_len = strlen(ntop->getPrefs()->get_http_prefix());
+  http_prefix = ntop->getPrefs()->get_http_prefix(),
+    http_prefix_len = strlen(ntop->getPrefs()->get_http_prefix());
 
   httpd_v4 = mg_start(&callbacks, NULL, (const char**)http_options);
 
