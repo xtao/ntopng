@@ -65,7 +65,9 @@ print [[
 <script type='text/javascript'>
 window.onload=function() {
    var refresh = 3000 /* ms */;
-		    do_pie("#topApps", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "apps" ]] 
+		    do_pie("#topApps", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "apps" ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
@@ -117,11 +119,15 @@ print [[
 <script type='text/javascript'>
 window.onload=function() {
    var refresh = 3000 /* ms */;
-		    do_pie("#topL7", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l7" ]] 
+		    do_pie("#topL7", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l7" ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
-		    do_pie("#topL4", '/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l4" ]] 
+		    do_pie("#topL4", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/user_stats.lua', { user: "]] print(user_key) print [[", mode: "l4" ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
@@ -138,7 +144,9 @@ print [[
       <div id="table-hosts"></div>
    <script>
    $("#table-hosts").datatable({
-      url: "/lua/get_flows_data.lua]] 
+      url: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_flows_data.lua]] 
 if(application ~= nil) then
    print("?application="..application)
    num_param = num_param + 1
@@ -168,13 +176,13 @@ print [[",
          showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
-print('<li><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+print('<li><a href="'..ntop.getHttpPrefix()..'/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+   print('<li '..class_active..'><a href="'..ntop.getHttpPrefix()..'/lua/get_user_info.lua?user='.. user_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
 end
 
 

@@ -10,7 +10,6 @@ require "persistence"
 function getTopTalkers(ifid, ifname, mode, epoch)
    -- if(ifname == nil) then ifname = "any" end
 
-
    if(epoch ~= nil) then
       rsp = getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    else

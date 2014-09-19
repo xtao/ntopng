@@ -51,7 +51,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
       print ",\n"
    end
    
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(value).."\" }")
+   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(value).."\" }")
    accumulate = accumulate + key
    num = num + 1
 
@@ -61,7 +61,7 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
 end
 
 if((num == 0) and (top_key ~= nil)) then
-   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?"..hostinfo2url(top_key).."\" }")
+   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(top_key).."\" }")
    accumulate = accumulate + top_value
 end
 

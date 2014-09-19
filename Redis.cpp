@@ -613,10 +613,10 @@ void Redis::setDefaults() {
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
   setResolvedAddress((char*)"0.0.0.0", (char*)"NoIP");
 
-  if(get((char*)"user.admin.password", value, sizeof(value)) < 0) {
-    set((char*)"user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");
-    set((char*)"user.admin.full_name", (char*)"ntopng Administrator");
-    set((char*)"user.admin.group", (char*)"administrator");
+  if(get((char*)"ntopng.user.admin.password", value, sizeof(value)) < 0) {
+    set((char*)"ntopng.user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");
+    set((char*)"ntopng.user.admin.full_name", (char*)"ntopng Administrator");
+    set((char*)"ntopng.user.admin.group", (char*)"administrator");
   }
 }
 

@@ -32,7 +32,7 @@ for _k in pairsByKeys(vals , desc) do
 
   fname = getRRDName(ifstats.id, nil, k..".rrd")
   if(ntop.exists(fname) and not is_historical) then
-    print("<A HREF=\"/lua/if_stats.lua?if_name=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
+    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/if_stats.lua?if_name=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
   else
     print(k)
   end

@@ -73,7 +73,7 @@ else
 
    for row_key, row_value in pairs(localhosts) do
       if(localhosts[row_key]["ip"] ~= nil) then
-	 print("<tr><th><A HREF=\"/lua/host_details.lua?host="..row_key.."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
+	 print("<tr><th><A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?host="..row_key.."\">"..shortHostName(localhosts[row_key]["name"]).."</A></th>\n")
 	 for column_key, column_value in pairs(localhosts) do	
 	    val = "&nbsp;"
 	    if(row_key ~= column_key) then

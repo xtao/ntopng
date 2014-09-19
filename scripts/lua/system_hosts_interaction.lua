@@ -155,7 +155,9 @@ function refreshGraph() {
   var filtered_links = [];
   var systems = {};
 
-  var links = getJSONData("/lua/get_system_hosts_interaction.lua");
+  var links = getJSONData("]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_system_hosts_interaction.lua");
   
   function addNode(node_id, id, name, bytes, type, process_name, icon_url, exploded) {
     var description;

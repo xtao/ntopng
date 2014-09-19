@@ -204,9 +204,9 @@ static void authorize(struct mg_connection *conn,
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	      "Set-Cookie: session=%s; path=/; max-age=%u; HttpOnly\r\n"  // Session ID
 	      "Set-Cookie: user=%s; path=/; max-age=%u; HttpOnly\r\n"  // Set user, needed by Javascript code
-	      "Location: /\r\n\r\n",
+	      "Location: %s/\r\n\r\n",
 	      session_id, HTTP_SESSION_DURATION,
-	      user, HTTP_SESSION_DURATION);
+	      user, HTTP_SESSION_DURATION, ntop->getPrefs()->get_http_prefix());
 
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
@@ -247,7 +247,7 @@ static void uri_encode(const char *src, char *dst, u_int dst_len) {
 /* ****************************************** */
 
 static int handle_lua_request(struct mg_connection *conn) {
-  const struct mg_request_info *request_info = mg_get_request_info(conn);
+  struct mg_request_info *request_info = mg_get_request_info(conn);
   u_int len = (u_int)strlen(request_info->uri);
 
   if((ntop->getGlobals()->isShutdown())
@@ -375,6 +375,9 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
 
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.begin_request = handle_lua_request;
+
+  /* mongoose */
+  http_prefix_len = strlen(ntop->getPrefs()->get_http_prefix());
 
   httpd_v4 = mg_start(&callbacks, NULL, (const char**)http_options);
 

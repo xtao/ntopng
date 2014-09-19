@@ -18,11 +18,11 @@ if(mode ~= "embed") then
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 end
 
-print("<hr><h2><A HREF=/lua/host_details.lua?host="..host_ip..">"..host_name.."</A> Processes Interaction</H2>")
+print("<hr><h2><A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?host="..host_ip..">"..host_name.."</A> Processes Interaction</H2>")
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sprobe_process_header.inc")
 
-print('d3.json("/lua/sprobe_host_process_data.lua?host='..host_ip..'&id='..host_id..'",')
+print('d3.json("'..ntop.getHttpPrefix()..'/lua/sprobe_host_process_data.lua?host='..host_ip..'&id='..host_id..'",')
 
 
 print [[
@@ -34,19 +34,27 @@ print [[
 	    links.forEach(function(link) {
 		if(link.source_pid == -1) {
 		   /* IP Address -> PID */
-		   _link = "/lua/sprobe_host_process.lua?host="+link.source+"&name="+link.source_name+"&id=0";
+		   _link = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_host_process.lua?host="+link.source+"&name="+link.source_name+"&id=0";
 		} else {
 		   /* PID -> IP Address */
-		   _link = "/lua/get_process_info.lua?pid="+link.source_pid+"&name="+link.source_name+"&host=]] print(host_ip) print [[&page=Flows";
+		   _link = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_process_info.lua?pid="+link.source_pid+"&name="+link.source_name+"&host=]] print(host_ip) print [[&page=Flows";
 		}
 		link.source = nodes[link.source] || (nodes[link.source] = {name: link.source_name, num:link.source, link: _link, type: link.source_type, pid: link.source_pid });
 
 		if(link.target_pid == -1) {
 		   /* IP Address -> PID */
-		   _link = "/lua/sprobe_host_process.lua?host="+link.target+"&name="+link.target_name+"&id=0";
+		   _link = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_host_process.lua?host="+link.target+"&name="+link.target_name+"&id=0";
 		} else {
 		   /* PID -> IP Address */
-		   _link = "/lua/get_process_info.lua?pid="+link.target_pid+"&name="+link.target_name+"&host=]] print(host_ip) print [[&page=Flows";
+		   _link = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_process_info.lua?pid="+link.target_pid+"&name="+link.target_name+"&host=]] print(host_ip) print [[&page=Flows";
 		}
 
 		link.target = nodes[link.target] || (nodes[link.target] = {name: link.target_name, num: link.target, link: _link, type: link.target_type, pid: link.target_pid });

@@ -144,7 +144,9 @@ var svg = d3.select(".gr").append("svg")
   	.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.json("/lua/get_host_traffic_matrix.lua]]
+    d3.json("]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_host_traffic_matrix.lua]]
 
 	    if(_GET["host"] ~= nil) then
 	       print("?host=".._GET["host"])

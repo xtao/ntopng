@@ -121,7 +121,9 @@ function refreshGraph() {
   var filtered_links = [];
   var systems = {};
 
-  var links = getJSONData("/lua/sprobe_hosts_interactions_data.lua");
+  var links = getJSONData("]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_hosts_interactions_data.lua");
   
   function addNode(node_id, name, system_id, num_procs, bytes, type, icon_url) {
     if (!nodes[node_id]) nodes[node_id] = { id: node_id, name: name, system_id: system_id, num_procs: num_procs, bytes: 0, type: type, icon_url: icon_url };

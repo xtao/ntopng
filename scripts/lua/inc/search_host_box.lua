@@ -17,7 +17,9 @@ print [[
 	 <script type='text/javascript'>
 	 $('#search_typeahead').typeahead({
 	     source: function (query, process) {
-	             return $.get('/lua/find_host.lua', { query: query }, function (data) {
+	             return $.get(']]
+print (ntop.getHttpPrefix())
+print [[/lua/find_host.lua', { query: query }, function (data) {
 		                 return process(data.results);
 		});
 	 }

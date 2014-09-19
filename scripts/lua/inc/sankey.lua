@@ -38,7 +38,7 @@ print [[
 </style>
 
 <div id="chart"></div>
-<script src="/js/sankey.js"></script>
+<script src="]] print(ntop.getHttpPrefix()) print[[/js/sankey.js"></script>
 
 <script>
 ]]
@@ -69,18 +69,18 @@ active_sankey = "host"
 local debug = false
 
 if(_GET["sprobe"] ~= nil) then
-   print('d3.json("/lua/sprobe_hosts_data.lua"');
+   print('d3.json("'..ntop.getHttpPrefix()..'/lua/sprobe_hosts_data.lua"');
 else
    if(_GET["host"] ~= nil) then
-      print('d3.json("/lua/iface_flows_sankey.lua?ifname='..ifname..'&' ..hostinfo2url(host_info).. '"')
+      print('d3.json("'..ntop.getHttpPrefix()..'/lua/iface_flows_sankey.lua?ifname='..ifname..'&' ..hostinfo2url(host_info).. '"')
    elseif((_GET["hosts"] ~= nil) and (_GET["aggregation"] ~= nil)) then
-      print('d3.json("/lua/hosts_comparison_sankey.lua?ifname='..ifname..'&'..'hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
+      print('d3.json("'..ntop.getHttpPrefix()..'/lua/hosts_comparison_sankey.lua?ifname='..ifname..'&'..'hosts='.._GET["hosts"] .. '&aggregation='.._GET["aggregation"] ..'"')
       active_sankey = "comparison"
    elseif(_GET["hosts"] ~= nil) then
-      print('d3.json("/lua/hosts_comparison_sankey.lua?ifname='..ifname..'&'..'hosts='.._GET["hosts"] ..'"')
+      print('d3.json("'..ntop.getHttpPrefix()..'/lua/hosts_comparison_sankey.lua?ifname='..ifname..'&'..'hosts='.._GET["hosts"] ..'"')
       active_sankey = "comparison"
    else
-      print('d3.json("/lua/iface_flows_sankey.lua"')
+      print('d3.json("'..ntop.getHttpPrefix()..'/lua/iface_flows_sankey.lua"')
    end
 end
 
@@ -134,7 +134,9 @@ print [[
 	  .style("stroke", function(d){ return d.color = colorlink(d); })
 	  .sort(function(a, b) { return b.dy - a.dy; })
     .on("dblclick", function(d) {
-        url_ref = "/lua/hosts_comparison.lua?hosts="+escape(d.source.host);
+        url_ref = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_comparison.lua?hosts="+escape(d.source.host);
 
         if(iface_vlan )
           url_ref  += "@"+escape(d.source.vlan);
@@ -176,7 +178,9 @@ print [[
 	  .attr("height", 12)
 	  .attr("width", 150)
 	  .style("opacity", "0")
-	  .on("click", function(d) { window.location.href = "/lua/host_details.lua?host="+escape(d.host)+"@"+escape(d.vlan);  })
+	  .on("click", function(d) { window.location.href = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/host_details.lua?host="+escape(d.host)+"@"+escape(d.vlan);  })
 	  .attr("transform", null)
 	  .filter(function(d) { return d.x < width / 2; })
 	  .attr("x", 4 + sankey.nodeWidth())
@@ -201,9 +205,9 @@ elseif(active_sankey == "comparison") then
 ifstats = interface.getStats()
 
 if(ifstats.iface_sprobe) then
-   url = "/lua/sflows_stats.lua?"
+   url = ntop.getHttpPrefix().."/lua/sflows_stats.lua?"
 else
-   url = "/lua/flows_stats.lua?"
+   url = ntop.getHttpPrefix().."/lua/flows_stats.lua?"
 end
 
 print [[

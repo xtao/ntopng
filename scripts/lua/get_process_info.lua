@@ -156,22 +156,30 @@ window.onload=function() {
 ]]
 if(pid_key ~= nil)then
    print [[ 
-  do_pie("#topL7", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l7" ]] 
+  do_pie("#topL7", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l7" ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
- do_pie("#topL4", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l4"  ]] 
+ do_pie("#topL4", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[, "mode": "l4"  ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
   ]]
 elseif (name_key ~= nil)then
     print [[ 
-    do_pie("#topL7", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l7" ]] 
+    do_pie("#topL7", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l7" ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh);
-    do_pie("#topL4", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l4"  ]] 
+    do_pie("#topL4", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "l4"  ]] 
 if (host_key ~= nil) then print(", host: \""..host_key.."\"") end
 print [[
  }, "", refresh); ]]
@@ -192,7 +200,9 @@ print [[
 
    <script>
    $("#table-hosts").datatable({
-      url: "/lua/get_flows_data.lua]] 
+      url: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_flows_data.lua]] 
 if(application ~= nil) then
    print("?application="..application)
    num_param = num_param + 1
@@ -237,10 +247,10 @@ print [[ showPagination: true,
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
 if (pid_key ~= nil) then
-  print('<li><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+  print('<li><a href="'..ntop.getHttpPrefix()..'/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 end
 if (name_key ~= nil) then
-  print('<li><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
+  print('<li><a href="'..ntop.getHttpPrefix()..'/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows">All Proto</a></li>')
 end
 
 for key, value in pairsByKeys(stats["ndpi"], asc) do
@@ -251,11 +261,11 @@ for key, value in pairsByKeys(stats["ndpi"], asc) do
 
 
    if (pid_key ~= nil) then
-    print('<li '..class_active..'><a href="/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    print('<li '..class_active..'><a href="'..ntop.getHttpPrefix()..'/lua/get_process_info.lua?pid='.. pid_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
     end
 
     if (name_key ~= nil) then
-    print('<li '..class_active..'><a href="/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
+    print('<li '..class_active..'><a href="'..ntop.getHttpPrefix()..'/lua/get_process_info.lua?name='.. name_key) if(host_key ~= nil) then print("&host="..host_key) end print('&page=Flows&application=' .. key..'">'..key..'</a></li>')
     end
 
 
@@ -317,11 +327,15 @@ window.onload=function() {
 
 if(pid_key ~= nil)then
   print [[ 
-    do_pie("#topHosts", '/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[", "mode": "host" }, "", refresh);
+    do_pie("#topHosts", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "pid": ]] print(pid_key) print [[", "mode": "host" }, "", refresh);
   ]]
 elseif (name_key ~= nil)then
   print [[ 
-    do_pie("#topHosts", '/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "host" }, "", refresh); 
+    do_pie("#topHosts", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/pid_stats.lua', { "name": "]] print(name_key) print [[", "mode": "host" }, "", refresh); 
     ]]
 end
 

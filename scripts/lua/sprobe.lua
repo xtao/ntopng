@@ -19,8 +19,8 @@ print [[   <div id="sprobe"></div> ]]
 
 width = 1024
 height = 768
-url = "/lua/sprobe_data.lua"
--- url = "/lua/sprobe_flow_data.lua?flow_key=4261522881"
+url = ntop.getHttpPrefix().."/lua/sprobe_data.lua"
+-- url = ntop.getHttpPrefix().."/lua/sprobe_flow_data.lua?flow_key=4261522881"
 dofile(dirs.installdir .. "/scripts/lua/inc/sprobe.lua")
 
 if(mode ~= "embed") then

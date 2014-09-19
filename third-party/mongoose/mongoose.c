@@ -552,6 +552,8 @@ struct mg_connection {
   int64_t last_throttle_bytes;// Bytes sent this second
 };
 
+u_int http_prefix_len = 0; /* ntop */
+
 const char **mg_get_valid_option_names(void) {
   return config_options;
 }
@@ -1791,9 +1793,14 @@ int mg_get_cookie(const struct mg_connection *conn, const char *cookie_name,
 static void convert_uri_to_file_name(struct mg_connection *conn, char *buf,
                                      size_t buf_len, struct file *filep) {
   struct vec a, b;
-  const char *rewrite, *uri = conn->request_info.uri;
+  const char *rewrite, *uri;
   char *p;
   int match_len;
+
+  if(strlen(conn->request_info.uri) > http_prefix_len)
+    conn->request_info.uri = &conn->request_info.uri[http_prefix_len];
+
+  uri = conn->request_info.uri;
 
   // Using buf_len - 1 because memmove() for PATH_INFO may shift part
   // of the path one byte on the right.
@@ -2919,7 +2926,7 @@ static int parse_http_message(char *buf, int len, struct mg_request_info *ri) {
   int is_request, request_length = get_request_len(buf, len);
   if (request_length > 0) {
     // Reset attributes. DO NOT TOUCH is_ssl, remote_ip, remote_port
-    ri->remote_user = ri->request_method = ri->uri = ri->http_version = NULL;
+    ri->remote_user = ri->request_method = ri->http_version = ri->uri = NULL;
     ri->num_headers = 0;
 
     buf[request_length - 1] = '\0';

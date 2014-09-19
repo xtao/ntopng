@@ -25,7 +25,9 @@ print [[
       <hr>
       <div id="table-flows"></div>
    <script>
-   var url_update = "/lua/get_flows_data.lua]]
+   var url_update = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_flows_data.lua]]
 
    if(application ~= nil) then
    print("?application="..application)
@@ -79,13 +81,13 @@ print [[
 	       showPagination: true,
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Applications<span class="caret"></span></button> <ul class="dropdown-menu" id="flow_dropdown">]]
 
-print('<li><a href="/lua/sflows_stats.lua">All Proto</a></li>')
+print('<li><a href="'..ntop.getHttpPrefix()..'/lua/sflows_stats.lua">All Proto</a></li>')
 for key, value in pairsByKeys(stats["ndpi"], asc) do
    class_active = ''
    if(key == application) then
       class_active = ' class="active"'
    end
-   print('<li '..class_active..'><a href="/lua/sflows_stats.lua?application=' .. key..'">'..key..'</a></li>')
+   print('<li '..class_active..'><a href="'..ntop.getHttpPrefix()..'/lua/sflows_stats.lua?application=' .. key..'">'..key..'</a></li>')
 end
 
 

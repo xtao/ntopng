@@ -369,7 +369,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    if(cli_name == nil) then cli_name = "???" end
    if(srv_name == nil) then srv_name = "???" end
 
-   src_key="<A HREF='/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
+   src_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
    if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
 
    -- Flow username
@@ -385,17 +385,17 @@ for _key, _value in pairsByKeys(vals, funct) do
    src_key = src_key .. "</A>"
 
    if(value["cli.port"] > 0) then
-      src_port=":<A HREF='/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
+      src_port=":<A HREF='"..ntop.getHttpPrefix().."/lua/port_details.lua?port=" .. value["cli.port"] .. "'>"..value["cli.port"].."</A>"
          else
       src_port=""
          end
 
-   dst_key="<A HREF='/lua/host_details.lua?".. hostinfo2url(value,"srv").. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
+   dst_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?".. hostinfo2url(value,"srv").. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
    if(value["srv.systemhost"] == true) then dst_key = dst_key .. "&nbsp;<i class='fa fa-flag'></i>" end
    dst_key = dst_key .. "</A>"
 
    if(value["srv.port"] > 0) then
-      dst_port=":<A HREF='/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
+      dst_port=":<A HREF='"..ntop.getHttpPrefix().."/lua/port_details.lua?port=" .. value["srv.port"] .. "'>"..value["srv.port"].."</A>"
          else
       dst_port=""
          end
@@ -403,7 +403,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    print ("{ \"key\" : \"" .. key..'\"')
 
    descr=cli_name..":"..value["cli.port"].." &lt;-&gt; "..srv_name..":"..value["srv.port"]
-   print (", \"column_key\" : \"<A HREF='/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr)
+   print (", \"column_key\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/flow_details.lua?flow_key=" .. key .. "&label=" .. descr)
    if (sqlite ~= nil) then
       print ("&sqlite="..sqlite.."&ID="..value["ID"])
    end
@@ -444,13 +444,13 @@ for _key, _value in pairsByKeys(vals, funct) do
    print ("\", \"column_ndpi\" : \"<A HREF=".. ntop.getHttpPrefix().."/lua/hosts_stats.lua?protocol=" .. value["proto.ndpi"] ..">"..app.."</A>")
    if(value["client_process"] ~= nil) then
       print ("\", \"column_client_process\" : \"")
-      print("<A HREF=/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. processColor(value["client_process"]).."</A>")
-      print ("\", \"column_client_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["user_name"].."</A>")
+      print("<A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. processColor(value["client_process"]).."</A>")
+      print ("\", \"column_client_user_name\" : \"<A HREF="..ntop.getHttpPrefix().."/lua/get_user_info.lua?user=" .. value["client_process"]["user_name"] .."&host="..value["cli.ip"]..">" .. value["client_process"]["user_name"].."</A>")
    end
    if(value["server_process"] ~= nil) then
       print ("\", \"column_server_process\" : \"")
-      print("<A HREF=/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&name="..value["server_process"]["name"].."&host="..value["srv.ip"]..">" .. processColor(value["server_process"]).."</A>")
-      print ("\", \"column_server_user_name\" : \"<A HREF=/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["user_name"].."</A>")
+      print("<A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. value["server_process"]["pid"] .."&name="..value["server_process"]["name"].."&host="..value["srv.ip"]..">" .. processColor(value["server_process"]).."</A>")
+      print ("\", \"column_server_user_name\" : \"<A HREF="..ntop.getHttpPrefix().."/lua/get_user_info.lua?user=" .. value["server_process"]["user_name"] .."&host="..value["srv.ip"]..">" .. value["server_process"]["user_name"].."</A>")
    end
 
    print ("\", \"column_duration\" : \"" .. secondsToTime(value["duration"]))

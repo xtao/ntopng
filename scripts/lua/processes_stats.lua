@@ -43,7 +43,9 @@ if(ifstats.iface_vlan) then print ('processes_rows_option["source_id"] = true;\n
 print [[
    $("#table-processes").datatable({
           title: "Active Processes",
-          url: "/lua/get_processes_data.lua",
+          url: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_processes_data.lua",
           ]]
 print ('rowCallback: function ( row ) { return processes_table_setID(row); },')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/processes_stats_top.inc")
@@ -118,7 +120,9 @@ print [[
 
 
 <script>
-  do_timeline("/lua/get_processes_data.lua",{ mode: "timeline" }, "name" ,2,300,2000);
+  do_timeline("]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_processes_data.lua",{ mode: "timeline" }, "name" ,2,300,2000);
 </script>
 
 </div>

@@ -29,7 +29,9 @@ print [[
       <div id="table-alerts"></div>
 	 <script>
 	 $("#table-alerts").datatable({
-			url: "/lua/get_alerts_data.lua",
+			url: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_alerts_data.lua",
 	       showPagination: true,
 ]]
 

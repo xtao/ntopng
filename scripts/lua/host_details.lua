@@ -68,7 +68,7 @@ if(host == nil) then
       print("</div>")
       dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")
    else
-      print(ntop.httpRedirect("/lua/aggregated_host_details.lua?ifname=".. ifId.."&"..hostinfo2url(host_info)))
+      print(ntop.httpRedirect(ntop.getHttpPrefix().."/lua/aggregated_host_details.lua?ifname=".. ifId.."&"..hostinfo2url(host_info)))
    end
    return
 else
@@ -104,7 +104,7 @@ print [[
 <ul class="nav navbar-nav">
 ]]
 if ((debug_hosts) and (host["ip"] ~= nil)) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host["ip"] .. ", Vlan: "..host["vlan"].."\n") end
-url="/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info)
+url=ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info)
 
 print("<li><a href=\"#\">Host: "..host_info["host"].." </a></li>\n")
 
@@ -310,7 +310,7 @@ if((page == "overview") or (page == nil)) then
       print("<tr><th>IP Address</th><td colspan=1>" .. host["ip"])
 
       if(host["local_network_name"] ~= nil) then
-	 print(" [ <A HREF=/lua/flows_stats.lua?network_id="..host["local_network_id"].."&network_name="..escapeHTML(host["local_network_name"])..">".. host["local_network_name"].."</A> ]")
+	 print(" [ <A HREF="..ntop.getHttpPrefix().."/lua/flows_stats.lua?network_id="..host["local_network_id"].."&network_name="..escapeHTML(host["local_network_name"])..">".. host["local_network_name"].."</A> ]")
       end
    else
       if(host["mac"] ~= nil) then
@@ -411,7 +411,7 @@ end
 
 
 if(host["num_alerts"] > 0) then
-   print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF=/lua/show_alerts.lua>Alerts</A></th><td colspan=2></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
+   print("<tr><th><i class=\"fa fa-warning fa-lg\" style='color: #B94A48;'></i>  <A HREF="..ntop.getHttpPrefix().."/lua/show_alerts.lua>Alerts</A></th><td colspan=2></li> <span id=num_alerts>"..host["num_alerts"] .. "</span> <span id=alerts_trend></span></td></tr>\n")
 end
 
    print("<tr><th>First / Last Seen</th><td nowrap><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td>\n")
@@ -428,7 +428,7 @@ end
 
    print("<tr><th>Flows 'As Client' / 'As Server'</th><td><span id=flows_as_client>" .. formatValue(host["flows.as_client"]) .. "</span> <span id=as_client_trend></span></td><td><span id=flows_as_server>" .. formatValue(host["flows.as_server"]) .. "</span> <span id=as_server_trend></td></tr>\n")
 
-   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF=/lua/host_get_json.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..">Download<A></td></tr>\n") end
+   if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF="..ntop.getHttpPrefix().."/lua/host_get_json.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..">Download<A></td></tr>\n") end
 
    print [[
 	    <tr><th>Activity Map</th><td colspan=2>
@@ -444,7 +444,7 @@ end
         sent_calendar.init({
 		       itemSelector: "#sentHeatmap",
 		       data: "]]
-     print("/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..'",\n')
+     print(ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..'",\n')
 
      timezone = get_timezone()
 
@@ -475,7 +475,7 @@ end
 	    $(document).ready(function(){
 			    $('#heatmap-refresh').click(function(){
 							      sent_calendar.update(]]
-									     print("\"/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..'\");\n')
+									     print("\""..ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..'\");\n')
 									     print [[
 						    });
 				      });
@@ -507,9 +507,13 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   
-		   do_pie("#sizeSentDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeSentDistro", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#sizeRecvDistro", '/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#sizeRecvDistro", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -536,9 +540,13 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 		   
-		   do_pie("#clientPortsDistro", '/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#clientPortsDistro", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
-		   do_pie("#serverPortsDistro", '/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+		   do_pie("#serverPortsDistro", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ports_list.lua', { mode: "server", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
 	print [[
 
 		}
@@ -592,7 +600,7 @@ var hostChart     = dc.rowChart("#chart-row-hosts");
 
 $.ajax({
       type: 'GET',]]
-      print("url: '/lua/host_top_peers_protocols.lua?ifname="..ifId.."&host="..host_info["host"])
+      print("url: '"..ntop.getHttpPrefix().."/lua/host_top_peers_protocols.lua?ifname="..ifId.."&host="..host_info["host"])
       if((host_info["vlan"] ~= nil) and ifstats.iface_vlan) then print("&vlan="..host_info["vlan"]) end
       print("',\n")
 print [[
@@ -707,7 +715,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   
-				   do_pie("#topApplicationProtocols", '/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
+				   do_pie("#topApplicationProtocols", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
   print [[
 				}
 
@@ -728,7 +738,7 @@ end
 	    print("<tr><th>")
 	    fname = getRRDName(ifname, hostinfo2hostkey(host_info), k)
 	    if(ntop.exists(fname)) then
-	       print("<A HREF=\"/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
+	       print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">".. label .."</A>")
 	    else
 	       print(label)
 	    end
@@ -754,7 +764,9 @@ end
         <script type='text/javascript'>
 	       window.onload=function() {
 				   
-				   do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
+				   do_pie("#topApplicationProtocols", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
 				}
 
 	    </script><p>
@@ -784,7 +796,7 @@ end
 	 print("<tr><th>")
 	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
 	 if(ntop.exists(fname)) then
-	    print("<A HREF=\"/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
 	 else
 	    print(k)
 	 end
@@ -817,7 +829,9 @@ end
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
 					 
-					 do_pie("#dnsSent", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
+					 do_pie("#dnsSent", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
            ]]
@@ -836,7 +850,9 @@ print [[
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
          
-	     do_pie("#dnsRcvd", '/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
+	     do_pie("#dnsRcvd", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
 ]]
@@ -865,7 +881,9 @@ end
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
 					 
-					 do_pie("#eppSent", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "sent" }, "", refresh);
+					 do_pie("#eppSent", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "sent" }, "", refresh);
 				      </script>
 					 </td></tr>
            ]]
@@ -884,7 +902,9 @@ print [[
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
          
-	     do_pie("#eppRcvd", '/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "rcvd" }, "", refresh);
+	     do_pie("#eppRcvd", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "rcvd" }, "", refresh);
          </script>
          </td></tr>
 ]]
@@ -926,7 +946,7 @@ for k,_ in pairsByKeys(names, rev) do
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifname, host_info["host"], sbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
-      print(" <A HREF=/lua/host_details.lua?ifname="..ifname.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..sbase.. k .."><i class='fa fa-search'></i></A></td>")
+      print(" <A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifname.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..sbase.. k .."><i class='fa fa-search'></i></A></td>")
    else
       print("<td colspan=3>&nbsp;</td>")
    end
@@ -935,7 +955,7 @@ for k,_ in pairsByKeys(names, rev) do
    if(ntop.exists(path)) then
       print("<th>"..mapEppRRDName(k).."</th>")
       drawPeity(ifId, host_info["host"], rbase.."/"..k, _GET["graph_zoom"], _GET["epoch"])
-      print(" <A HREF=/lua/host_details.lua?ifname="..ifId.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..rbase.. k .."><i class='fa fa-search'></i></A></td>")
+      print(" <A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&host="..host_info["host"].."&vlan="..host_vlan.."&page=historical&graph_zoom=1h&epoch=&rrd_file="..rbase.. k .."><i class='fa fa-search'></i></A></td>")
    else
       print("<td colspan=3>&nbsp;</td>")
    end
@@ -957,7 +977,9 @@ end
 print [[
       <div id="table-flows"></div>
 	 <script>
-   var url_update = "/lua/get_flows_data.lua?ifname=]]
+   var url_update = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_flows_data.lua?ifname=]]
 print(ifId.."&")
 print (hostinfo2url(host_info)..'";')
 
@@ -1150,10 +1172,10 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/lua/get_host_contacts.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&protocol="..protocol_id.."\",\n")
+				  print("url: \""..ntop.getHttpPrefix().."/lua/get_host_contacts.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&protocol="..protocol_id.."\",\n")
 print [[
 	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Type/Protocol<span class="caret"></span></button> <ul class="dropdown-menu" rule="menu" id="host_dropdown">]]
-url = "/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&page=todays_contacts"
+url = ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&page=todays_contacts"
 print('<li><a href="'.. url ..'">All</a></li>')
 
 for key,v in pairs(protocols) do
@@ -1204,7 +1226,7 @@ print [[
 
    ]]
 
-print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='/lua/get_host_contacts.lua?format=json&ifname="..ifId.."&"..hostinfo2url(host_info).."'>Download "..host_info["host"].." contacts as JSON<A>\n")
+print("<i class=\"fa fa-download fa-lg\"></i> <A HREF='"..ntop.getHttpPrefix().."/lua/get_host_contacts.lua?format=json&ifname="..ifId.."&"..hostinfo2url(host_info).."'>Download "..host_info["host"].." contacts as JSON<A>\n")
 elseif(page == "talkers") then
 print("<center>")
 print('<div class="row">')
@@ -1290,8 +1312,8 @@ for v,k in pairsByKeys(vals, rev) do
 
          -- print the host row together with the Jaccard coefficient
 	 print("<tr>")
-   -- print("<th align=left><A HREF=/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th>")
-	 print("<th align=left><A HREF=/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..">"..hostinfo2hostkey(correlated_host).."</a></th>")
+   -- print("<th align=left><A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?host="..k..">"..correlated_host["name"].."</a></th>")
+	 print("<th align=left><A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..">"..hostinfo2hostkey(correlated_host).."</a></th>")
 	 print("<th>"..round(v,2).."</th>");
 
 	 -- print the activity map row
@@ -1303,8 +1325,8 @@ for v,k in pairsByKeys(vals, rev) do
 		 sent_calendar.init({
 	 ]]
 	print("itemSelector: \"#sentHeatmap"..n.."\",data: \"");
-  print("/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..'",\n')
-  -- print("/lua/get_host_activitymap.lua?host="..k..'",\n')
+  print(ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..'",\n')
+  -- print(ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?host="..k..'",\n')
 
 	timezone = get_timezone()
 
@@ -1327,7 +1349,7 @@ for v,k in pairsByKeys(vals, rev) do
 	    $(document).ready(function(){
 			    $('#heatmap-refresh').click(function(){
 				    sent_calendar.update(]]
-					    print("\"/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..'\");\n')
+					    print("\""..ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?ifname="..ifId.."&"..hostinfo2url(correlated_host)..'\");\n')
 				    print [[
 				    });
 			    });
@@ -1356,7 +1378,9 @@ end
 print [[
 <b>Note</b>:
 <ul>
-	 <li>Jaccard Similarity considers only activity map as shown in the <A HREF=/lua/host_details.lua?ifname="]] print(ifId.."&"..hostinfo2url(host_info)) print [[>host overview</A>.
+	 <li>Jaccard Similarity considers only activity map as shown in the <A HREF=]]
+print (ntop.getHttpPrefix())
+print [[/lua/host_details.lua?ifname="]] print(ifId.."&"..hostinfo2url(host_info)) print [[>host overview</A>.
 <li>Two hosts are similar according to the Jaccard coefficient when their activity tends to overlap. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Jaccard_index>Jaccard similarity coefficient</A> is a number between +1 and 0.
 </ul>
 ]]
@@ -1403,7 +1427,7 @@ if(num > 0) then
 
    if(info ~= nil) then
       if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(info).."\">"..n.."</A>"
+      url = "<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(info).."\">"..n.."</A>"
    else
       url = k
    end
@@ -1435,7 +1459,7 @@ if(num > 0) then
    info = interface.getHostInfo(k)
 	 if(info ~= nil) then
 	    if(info["name"] ~= nil) then n = info["name"] else n = ntop.getResolvedAddress(info["ip"]) end
-	    url = "<A HREF=\"/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(info).."\">"..n.."</A>"
+	    url = "<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(info).."\">"..n.."</A>"
 	 else
 	    url = k
 	 end
@@ -1471,7 +1495,7 @@ for _,e in pairs(alerts_granularity) do
    l = e[2]
 
    if(k == tab) then print("\t<li class=active>") else print("\t<li>") end
-   print("<a href=\"/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&page=alerts&tab="..k.."\">"..l.."</a></li>\n")
+   print("<a href=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info).."&page=alerts&tab="..k.."\">"..l.."</a></li>\n")
 end
 
 -- Before doing anything we need to check if we need to save values
@@ -1603,14 +1627,16 @@ else
    rrdfile=_GET["rrd_file"]
 end
 
-drawRRD(ifId, hostinfo2hostkey(host_info), rrdfile, _GET["graph_zoom"], '/lua/host_details.lua?ifname='..ifId..'&'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
+drawRRD(ifId, hostinfo2hostkey(host_info), rrdfile, _GET["graph_zoom"], ntop.getHttpPrefix()..'/lua/host_details.lua?ifname='..ifId..'&'..hostinfo2url(host_info)..'&page=historical', 1, _GET["epoch"])
 
 
 elseif(page == "aggregations") then
 print [[
       <div id="table-hosts"></div>
 	 <script>
-   var url_update = "/lua/get_hosts_data.lua?aggregated=1]]
+   var url_update = ]]
+print (ntop.getHttpPrefix())
+print [["/lua/get_hosts_data.lua?aggregated=1]]
    print("&protocol="..protocol_id.."&client="..host_info["host"]) print ('";')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/aggregated_hosts_stats_id.inc")
@@ -1624,11 +1650,13 @@ print ('rowCallback: function ( row ) { return aggregated_host_table_setID(row);
 
 print [[
       showPagination: true,
-      buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;"><li><a href="/lua/aggregated_hosts_stats.lua">All</a></li> ]]
+      buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;"><li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/aggregated_hosts_stats.lua">All</a></li> ]]
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
-   print('<li><a href="/lua/host_details.lua?ifname='..ifId..'&'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
+   print('<li><a href="'..ntop.getHttpPrefix()..'/lua/host_details.lua?ifname='..ifId..'&'..hostinfo2url(host_info) ..'&page=aggregations&protocol=' .. v..'">'..key..'</a></li>')
 end
 
 print("</ul> </div>' ],")
@@ -1792,7 +1820,9 @@ print [[
 
 -- Users graph javascript
 print [[
-      users = do_pie("#topUsers", '/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+      users = do_pie("#topUsers", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_sflow_distro.lua', { type: users_type, mode: "user", filter: users_filter , ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1806,7 +1836,9 @@ print [[
     } else  {
       users_type = "bytes";
     }
-    if (sprobe_debug) { alert("/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
+    if (sprobe_debug) { alert("]]
+print (ntop.getHttpPrefix())
+print [[/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
     }); ]]
 
@@ -1814,7 +1846,9 @@ print [[
 $("#show_users input:radio").change(function() {
     users_filter = this.value
     if (sprobe_debug) { alert("users_type: "+users_type+"\n users_filter: "+users_filter); }
-    if (sprobe_debug) { alert("url: /lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
+    if (sprobe_debug) { alert("url: ]]
+print (ntop.getHttpPrefix())
+print [[/lua/host_sflow_distro.lua?host=..&type="+users_type+"&mode=user&filter="+users_filter); }
     users.setUrlParams({ type: users_type, mode: "user", filter: users_filter, ifname: "]] print(ifId.."") print ('",'.. hostinfo2json(host_info) .. "}") print [[ );
 });]]
 
@@ -1822,7 +1856,9 @@ $("#show_users input:radio").change(function() {
 -- Processes graph javascritp
 
 print [[
-processes = do_pie("#topProcess", '/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId.."")print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
+processes = do_pie("#topProcess", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_sflow_distro.lua', { type: processes_type, mode: "process", filter: processes_filter , ifname: "]] print(ifId.."")print ('", '..hostinfo2json(host_info).." }, \"\", refresh); \n")
 
 print [[
 
@@ -1850,7 +1886,9 @@ $("#show_processes input:radio").change(function() {
 
 -- Processes Tree graph javascript
 print [[
-  tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,'/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (','.. hostinfo2json(host_info)) print [[ },"","Bytes"); ]]
+  tree = do_sequence_sunburst("chart_processTree","sequence_processTree",refresh,']]
+print (ntop.getHttpPrefix())
+print [[/lua/sflow_tree.lua',{type: "bytes" , filter: tree_filter ]] print (','.. hostinfo2json(host_info)) print [[ },"","Bytes"); ]]
 
 print [[
 
@@ -1911,7 +1949,9 @@ print [[
 var host_detalis_interval = window.setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
-		    url: '/lua/host_stats.lua',
+		    url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_stats.lua',
 		    data: { ifname: "]] print(ifId.."")  print('", '..hostinfo2json(host_info)) print [[ },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {

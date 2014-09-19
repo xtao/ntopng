@@ -26,7 +26,7 @@ interface.find(ifname)
 ifstats = interface.getStats()
 
 print ("v."..info["version"].." </br>for user ")
-print('<a href="/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="/lua/if_stats.lua?if_name='.. ifname..'">' .. ifstats.description..'</a>')
+print('<a href="'..ntop.getHttpPrefix()..'/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="'..ntop.getHttpPrefix()..'/lua/if_stats.lua?if_name='.. ifname..'">' .. ifstats.description..'</a>')
 
 key = 'ntopng.prefs.'..ifname..'.name'
 custom_name = ntop.getCache(key)
@@ -51,13 +51,15 @@ if not is_historical then
      maxSpeed = tonumber(maxSpeed)*1000000
   end
 
-  addGauge('gauge', '/lua/set_if_prefs.lua', maxSpeed, 100, 50)
+  addGauge('gauge', ntop.getHttpPrefix()..'/lua/set_if_prefs.lua', maxSpeed, 100, 50)
 end
 print [[
       </div>
       <div class="col-xs-6 col-sm-4">]]
 if not is_historical then
- print [[  <A href="/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a> ]]
+ print [[  <A href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/if_stats.lua"><span class="network-load-chart">0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span></a> ]]
 end
 print [[
       </div>
@@ -210,9 +212,13 @@ function epoch2Seen(epoch) {
 setInterval(function() {
     $.ajax({
       type: 'GET',
-	  url: '/lua/network_load.lua',
+	  url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/network_load.lua',
 	  data: { },
-	  /* error: function(content) { alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  }, */
+	  /* error: function(content) { alert("JSON Error (session expired?): logging out"); window.location.replace("]]
+print (ntop.getHttpPrefix())
+print [[/lua/logout.lua");  }, */
 	  success: function(content) {
 	  var rsp;
     
@@ -244,7 +250,9 @@ setInterval(function() {
 		msg += "<i class=\"fa fa-time fa-lg\"></i>Uptime: "+rsp.uptime+"<br>";
 
 		if(rsp.alerts > 0) {
-		   msg += "&nbsp;<a href=/lua/show_alerts.lua><i class=\"fa fa-warning fa-lg\" style=\"color: #B94A48;\"></i> <span class=\"label label-danger\">"+rsp.alerts+" Alert";
+		   msg += "&nbsp;<a href=]]
+print (ntop.getHttpPrefix())
+print [[/lua/show_alerts.lua><i class=\"fa fa-warning fa-lg\" style=\"color: #B94A48;\"></i> <span class=\"label label-danger\">"+rsp.alerts+" Alert";
 		   if(rsp.alerts > 1) msg += "s";
 
 		   msg += "</span></A><br>";
@@ -322,7 +330,9 @@ setInterval(function() {
 
           } // End is_historical
 
-            msg += "<a href=/lua/hosts_stats.lua>";
+            msg += "<a href=]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua>";
 		if(rsp.hosts_pctg < alarm_threshold_low) {
 		  msg += "<span class=\"label label-default\">";
 		} else if(rsp.hosts_pctg < alarm_threshold_high) {
@@ -335,7 +345,9 @@ setInterval(function() {
 
 		msg += addCommas(rsp.num_hosts)+" Hosts</span></a> ";
 
-    msg += "<a href=/lua/aggregated_hosts_stats.lua>";
+    msg += "<a href=]]
+print (ntop.getHttpPrefix())
+print [[/lua/aggregated_hosts_stats.lua>";
 		if(rsp.num_aggregations > 0) {
 		   if(rsp.aggregations_pctg < alarm_threshold_low) {
 		      msg += "<span class=\"label label-default\">";
@@ -350,7 +362,9 @@ setInterval(function() {
 		   msg += addCommas(rsp.num_aggregations)+" Aggregations</span></a>";
 		}
 
-    msg += "&nbsp;<a href=/lua/flows_stats.lua>";
+    msg += "&nbsp;<a href=]]
+print (ntop.getHttpPrefix())
+print [[/lua/flows_stats.lua>";
 		if(rsp.flows_pctg < alarm_threshold_low) {
 		  msg += "<span class=\"label label-default\">";
 		} else if(rsp.flows_pctg < alarm_threshold_high) {
@@ -380,7 +394,9 @@ setInterval(function() {
 
 	  } catch(e) {
 	     console.log(e);
-	     /* alert("JSON Error (session expired?): logging out"); window.location.replace("/lua/logout.lua");  */
+	     /* alert("JSON Error (session expired?): logging out"); window.location.replace("]]
+print (ntop.getHttpPrefix())
+print [[/lua/logout.lua");  */
 	  }
 	}
       });

@@ -17,7 +17,9 @@ print [[
 
 
 <ul class="breadcrumb">
-  <li><A HREF=/lua/flows_stats.lua>Flows</A> <span class="divider">/</span></li>
+  <li><A HREF=]]
+print (ntop.getHttpPrefix())
+print [[/lua/flows_stats.lua>Flows</A> <span class="divider">/</span></li>
 ]]
 
 
@@ -28,7 +30,7 @@ print [[
 	 <script>
 	 $("#table-hosts").datatable({
 				  ]]
-				  print("url: \"/lua/get_flows_data.lua?port=" .. _GET["port"])
+				  print("url: \""..ntop.getHttpPrefix().."/lua/get_flows_data.lua?port=" .. _GET["port"])
 				  if(_GET["host"] ~= nil) then print("&host=".._GET["host"]) end
 				  print("\",\n")
 

@@ -98,7 +98,7 @@ end
 end
 
 if((num == 0) and (top_key ~= nil)) then
- print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \"/lua/host_details.lua?host=".. top_key .."\" }")
+ print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?host=".. top_key .."\" }")
  accumulate = accumulate + top_value
 end
 

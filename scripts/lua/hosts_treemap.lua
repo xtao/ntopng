@@ -66,7 +66,9 @@ var treemap = d3.layout.treemap()
        .style("left", margin.left + "px")
        .style("top", margin.top + "px");
 
-       d3.json("/lua/get_treemap.lua", function(error, root) {
+       d3.json("]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_treemap.lua", function(error, root) {
 				   var node = div.datum(root).selectAll(".node")
 				   .data(treemap.nodes)
 				   .enter().append("div")
@@ -77,7 +79,9 @@ var treemap = d3.layout.treemap()
 						      if(d.children) return(null);
 						   else {
 							 if(d.name != "Other Hosts") {
-							    return("<A HREF=\"/lua/host_details.lua?host="+d.name+"\">"+d.name+"</A>");
+							    return("<A HREF=\"]]
+print (ntop.getHttpPrefix())
+print [[/lua/host_details.lua?host="+d.name+"\">"+d.name+"</A>");
 							 } else 
 							 return(d.name);
 						      }

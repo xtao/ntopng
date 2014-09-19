@@ -86,10 +86,10 @@ end
 function setMode(p_mode)
   if((p_mode == nil) or (p_mode == "process")) then
     what = "name"
-    url = "/lua/get_process_info.lua?host="..host.."&pid="
+    url = ntop.getHttpPrefix().."/lua/get_process_info.lua?host="..host.."&pid="
   elseif (p_mode == "user") then -- TODO
     what = "user_name"
-     url = "/lua/get_user_info.lua?user="
+     url = ntop.getHttpPrefix().."/lua/get_user_info.lua?user="
   end
   if (debug) then io.write("what:"..what..",url:"..url.."\n"); end
 end

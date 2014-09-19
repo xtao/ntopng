@@ -20,7 +20,9 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/sprobe_process_header.inc")
 
 print [[
 
-d3.json("/lua/sprobe_hosts_data.lua", function(error, json) {
+d3.json("]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_hosts_data.lua", function(error, json) {
     if (error) return console.warn(error);
     links = json;
     
@@ -33,9 +35,13 @@ d3.json("/lua/sprobe_hosts_data.lua", function(error, json) {
 			link.target = t[0];
 			link.targetId = t[1];
 			link.source = nodes[link.source] || (nodes[link.source] = {name: link.source_name, num:link.source, num_procs: link.source_num,
-										   link: "/lua/sprobe_host_process.lua?host="+link.source+"&id="+link.sourceId+"&name="+link.source_name });
+										   link: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_host_process.lua?host="+link.source+"&id="+link.sourceId+"&name="+link.source_name });
 			link.target = nodes[link.target] || (nodes[link.target] = { name: link.target_name, num: link.target, num_procs: link.target_num,
-										    link: "/lua/sprobe_host_process.lua?host="+link.target+"&id="+link.targetId+"&name="+link.target_name});
+										    link: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/sprobe_host_process.lua?host="+link.target+"&id="+link.targetId+"&name="+link.target_name});
 		     });
 ]]
 

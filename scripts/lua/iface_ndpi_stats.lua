@@ -52,7 +52,7 @@ if(stats ~= nil) then
       end
 
       if(host_info["host"] == nil) then
-         print("\t { \"label\": \"" .. value .."\", \"url\": \"/lua/flows_stats.lua?application="..value.."\", \"value\": ".. key .." }")
+         print("\t { \"label\": \"" .. value .."\", \"url\": \""..ntop.getHttpPrefix().."/lua/flows_stats.lua?application="..value.."\", \"value\": ".. key .." }")
       else
          print("\t { \"label\": \"" .. value .."\", \"value\": ".. key .." }")
       end

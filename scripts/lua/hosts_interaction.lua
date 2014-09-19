@@ -485,14 +485,14 @@ for i=0,tot_hosts-1 do
   if(target_host ~= nil) then
     -- Host still in memory      
     if((host_info["host"] == nil) or (k_info["host"] ~= host_info["host"])) then
-      print(', "link": "/lua/hosts_interaction.lua?"}')
+      print(', "link": "'..ntop.getHttpPrefix()..'/lua/hosts_interaction.lua?"}')
     else
-      print(', "link": "/lua/host_details.lua?host='.. k.. '"}')
+      print(', "link": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='.. k.. '"}')
     end
   else
     -- print('->>'..k..'<<-\n')
     if(aggregations[k] ~= nil) then
-      print(', "link": "/lua/aggregated_host_details.lua?host='.. k .. '"}')
+      print(', "link": "'..ntop.getHttpPrefix()..'/lua/aggregated_host_details.lua?host='.. k .. '"}')
     else
     -- Host purged ?
       print(', "link": ""}')
@@ -507,7 +507,7 @@ if ((num == 0) and (host_info["host"] ~= nil)) then
    tot = 1
    label = ""
    name = host_info["host"]
-   print('\n{"name":"'.. name ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "/lua/host_details.lua?host='.. hostinfo2hostkey(host_info).. '"}')
+   print('\n{"name":"'.. name ..'","count":'.. tot ..',"group":"' .. label .. '","linkCount": '.. tot .. ',"label":"'.. name..'", "link": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='.. hostinfo2hostkey(host_info).. '"}')
 end
 
 print [[

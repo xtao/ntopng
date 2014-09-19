@@ -19,7 +19,9 @@ print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-   var url_update = "/lua/get_hosts_data.lua?aggregated=1]]
+   var url_update =]]
+print(ntop.getHttpPrefix())
+print[["/lua/get_hosts_data.lua?aggregated=1]]
           if(_GET["protocol"]) then print("&protocol=".._GET["protocol"]) end
           if(_GET["client"]) then print("&client=".._GET["client"]) end
           if(_GET["aggregation"] ~= nil) then print("&aggregation=".._GET["aggregation"]) end
@@ -44,14 +46,14 @@ if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 print [[
          buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Aggregations<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 110px;">]]
 
-print('<li><a href="/lua/aggregated_hosts_stats.lua">All</a></li>')
+print('<li><a href='..ntop.getHttpPrefix()..'"/lua/aggregated_hosts_stats.lua">All</a></li>')
 
 families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
-   print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..'</a></li>')
+   print('<li><a href='..ntop.getHttpPrefix()..'"/lua/aggregated_hosts_stats.lua?protocol=' .. v..'">'..key..'</a></li>')
 
 --   for key1,v1 in pairs(families["aggregations"]) do
---      print('<li><a href="/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
+--      print('<li><a href="'..ntop.getHttpPrefix()..'/lua/aggregated_hosts_stats.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
 --   end
 end
 

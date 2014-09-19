@@ -39,7 +39,7 @@ print [[
     <ul class="nav navbar-nav">
 ]]
 
-url="/lua/hosts_comparison.lua?hosts="..hosts_ip
+url=ntop.getHttpPrefix().."/lua/hosts_comparison.lua?hosts="..hosts_ip
 
 hosts_ip_tab_name = string.gsub(hosts_ip, ',', " <i class=\"fa fa-exchange fa-lg\"></i> ")
 
@@ -185,7 +185,9 @@ print [[
   <script src="/js/bubble-chart.js"></script>
 
 <script>
-  var bubble = do_bubble_chart("bubble_chart", '/lua/hosts_comparison_bubble.lua', { hosts:]]
+  var bubble = do_bubble_chart("bubble_chart", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_comparison_bubble.lua', { hosts:]]
   print("\""..hosts_ip.."\" }, 10); \n")
 
 print [[

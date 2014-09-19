@@ -57,9 +57,9 @@ compared_hosts_size = 0;
 ifstats = interface.getStats()
 
 if(ifstats.iface_sprobe) then
-   base_url = "/lua/sflows_stats.lua?"
+   base_url = ntop.getHttpPrefix().."/lua/sflows_stats.lua?"
 else
-   base_url = "/lua/flows_stats.lua?"
+   base_url = ntop.getHttpPrefix().."/lua/flows_stats.lua?"
 end
 
 hosts = _GET["hosts"]

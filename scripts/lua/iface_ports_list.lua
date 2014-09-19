@@ -60,7 +60,7 @@ for key, value in pairsByKeys(_ports, rev) do
 	 print ",\n"
       end
 
-      print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \"/lua/port_details.lua?port="..value)
+      print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \""..ntop.getHttpPrefix().."/lua/port_details.lua?port="..value)
 
       if(host ~= nil) then 
       print("&host="..host)

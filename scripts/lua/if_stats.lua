@@ -40,7 +40,7 @@ else
   _ifname = if_name
 end
 
-url= '/lua/if_stats.lua?if_name=' .. _ifname
+url= ntop.getHttpPrefix()..'/lua/if_stats.lua?if_name=' .. _ifname
 
 --   Added global javascript variable, in order to disable the refresh of pie chart in case 
 --  of historical interface
@@ -191,7 +191,9 @@ elseif((page == "packets")) then
         <script type='text/javascript'>
          window.onload=function() {
        
-       do_pie("#sizeDistro", '/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(_ifname.."\"")
+       do_pie("#sizeDistro", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/if_pkt_distro.lua', { type: "size", ifname: "]] print(_ifname.."\"")
   print [[
            }, "", refresh);
     }
@@ -208,7 +210,9 @@ elseif(page == "ndpi") then
         <script type='text/javascript'>
          window.onload=function() {
        
-       do_pie("#topApplicationProtocols", '/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
+       do_pie("#topApplicationProtocols", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
     }
 
       </script><p>
@@ -229,7 +233,9 @@ elseif(page == "ndpi") then
 function update_ndpi_table() {
   $.ajax({
     type: 'GET',
-    url: '/lua/if_stats_ndpi.lua',
+    url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/if_stats_ndpi.lua',
     data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
     success: function(content) {
       $('#if_stats_ndpi_tbody').html(content);
@@ -251,7 +257,7 @@ print [[
 elseif(page == "historical") then
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
-   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], "/lua/top_talkers.lua")
+   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], ntop.getHttpPrefix().."/lua/top_talkers.lua")
 
 
 
@@ -264,7 +270,7 @@ elseif(page == "config_historical") then
 
   print ('<div id="alert_placeholder"></div>')
 
-   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="/lua/config_historical_interface.lua">')
+   print('<form class="form-horizontal" role="form" method="get" id="conf_historical_form" action="'..ntop.getHttpPrefix()..'/lua/config_historical_interface.lua">')
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
    print[[
     <input type="hidden" name="from" value="" id="form_from">
@@ -366,7 +372,9 @@ print [[
 ]]
 
 print [[
-	 <form id="start_historical" class="form-horizontal" method="get" action="/lua/config_historical_interface.lua">]]
+	 <form id="start_historical" class="form-horizontal" method="get" action="]]
+print (ntop.getHttpPrefix())
+print [[/lua/config_historical_interface.lua">]]
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[
   <input type="hidden" name="from" value="" id="form_from">
@@ -504,7 +512,9 @@ print [[
 setInterval(function() {
       $.ajax({
           type: 'GET',
-          url: '/lua/network_load.lua',
+          url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/network_load.lua',
           data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
           success: function(content) {
         var rsp = jQuery.parseJSON(content);

@@ -45,7 +45,7 @@ else
 
       if(add_host) then
 	 nest2tab(nest)
-	 link = "/lua/host_details.lua?host=".. host .."&page=flows"
+	 link = ntop.getHttpPrefix().."/lua/host_details.lua?host=".. host .."&page=flows"
 	 print('{ "name": "'..host_name..'", "type": "host", "link": "'..link..'", "children": [ ')
 	 nest = nest + 1
       end
@@ -66,14 +66,14 @@ else
 	 if(add_init or (proc.father_pid ~= 1)) then
 	    -- print("***") print(add_init) print("***")
 	    -- No link for father
-	    -- link = "/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. host .."&page=flows"
+	    -- link = ntop.getHttpPrefix().."/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. host .."&page=flows"
 	    nest2tab(nest)
 	    print('{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "type": "proc", "children": [ ')
 	    nest = nest + 1
 	 end
       end
 
-      link = "/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. host .."&page=Flows"
+      link = ntop.getHttpPrefix().."/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. host .."&page=Flows"
       nest2tab(nest)
       print('{ "name": "'..proc.name..' (pid '.. proc.pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ] }')
 

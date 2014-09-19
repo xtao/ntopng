@@ -57,24 +57,24 @@ if((ifstats ~= nil) and (ifstats.stats_packets > 0)) then
 
    if(not(is_loopback)) then
       if(page == "TopFlowTalkers") then active=' class="active"' else active = "" end
-      print('<li'..active..'><a href="/?page=TopFlowTalkers">Talkers</a></li>\n')
+      print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopFlowTalkers">Talkers</a></li>\n')
    end
 
    if((page == "TopHosts")) then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopHosts">Hosts</a></li>\n')
+   print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopHosts">Hosts</a></li>\n')
 
    if((page == "TopPorts")) then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopPorts">Ports</a></li>\n')
+   print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopPorts">Ports</a></li>\n')
 
    if((page == "TopApplications")) then active=' class="active"' else active = "" end
-   print('<li'..active..'><a href="/?page=TopApplications">Applications</a></li>\n')
+   print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopApplications">Applications</a></li>\n')
 
    if(not(is_loopback)) then
       if((page == "TopASNs")) then active=' class="active"' else active = "" end
-      print('<li'..active..'><a href="/?page=TopASNs">ASNs</a></li>\n')
+      print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopASNs">ASNs</a></li>\n')
       if not (interface.isHistoricalInterface(iface_id)) then
         if((page == "TopFlowSenders")) then active=' class="active"' else active = "" end
-        print('<li'..active..'><a href="/?page=TopFlowSenders">Senders</a></li>\n')
+        print('<li'..active..'><a href="'..ntop.getHttpPrefix()..'/?page=TopFlowSenders">Senders</a></li>\n')
       end
    end
 
@@ -105,11 +105,11 @@ end
 print [[<span class="caret"></span></button>
   <ul class="dropdown-menu ">
 ]]
-print('<li style="text-align: left;"> <a href="?refresh=5000" >5 Seconds</a></li>\n')
-print('<li style="text-align: left;"> <a href="?refresh=10000" >10 Seconds</a></li>\n')
-print('<li style="text-align: left;"> <a href="?refresh=30000" >30 Seconds</a></li>\n')
-print('<li style="text-align: left;"> <a href="?refresh=60000" >1 Minute</a></li>\n')
-print('<li style="text-align: left;"> <a href="?refresh=0" >Never</a></li>\n')
+print('<li style="text-align: left;"> <a href="'..ntop.getHttpPrefix()..'?refresh=5000" >5 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="'..ntop.getHttpPrefix()..'?refresh=10000" >10 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="'..ntop.getHttpPrefix()..'?refresh=30000" >30 Seconds</a></li>\n')
+print('<li style="text-align: left;"> <a href="'..ntop.getHttpPrefix()..'?refresh=60000" >1 Minute</a></li>\n')
+print('<li style="text-align: left;"> <a href="'..ntop.getHttpPrefix()..'?refresh=0" >Never</a></li>\n')
 print [[
   </ul>
 </div><!-- /btn-group -->
@@ -184,7 +184,8 @@ else
     <br>
     <div class="alert alert-info">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the  <a href="/lua/if_stats.lua?if_name=Historical&page=config_historical">configuration page</a>, the interface, for which you want to load the historical data, and the time interval to be loaded.
+      <strong>Welcome to the Historical Interface</strong><br>In order to use this interface you must specify, via the  <a href="'..ntop.getHttpPrefix()..']]
+print [[/lua/if_stats.lua?if_name=Historical&page=config_historical">configuration page</a>, the interface, for which you want to load the historical data, and the time interval to be loaded.
     </div>
 
     ]]

@@ -18,9 +18,9 @@ is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 warn_shown = 0
 
 function displayProc(proc)
-   print("<tr><th width=30%>User Name</th><td colspan=2><A HREF=/lua/get_user_info.lua?user=".. proc.user_name .."&".. hostinfo2url(flow,"cli")..">".. proc.user_name .."</A></td></tr>\n")
-   print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF=/lua/get_process_info.lua?pid=".. proc.pid .."&".. hostinfo2url(flow,"srv").. ">".. proc.pid .. "/" .. proc.name .. "</A>")
-   print(" [son of <A HREF=/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
+   print("<tr><th width=30%>User Name</th><td colspan=2><A HREF="..ntop.getHttpPrefix().."/lua/get_user_info.lua?user=".. proc.user_name .."&".. hostinfo2url(flow,"cli")..">".. proc.user_name .."</A></td></tr>\n")
+   print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF="..ntop.getPrefix().."/lua/get_process_info.lua?pid=".. proc.pid .."&".. hostinfo2url(flow,"srv").. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+   print(" [son of <A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
 
    if(proc.actual_memory > 0) then
       print("<tr><th width=30%>Average CPU Load</th><td colspan=2><span id=average_cpu_load_"..proc.pid..">")
@@ -121,27 +121,27 @@ else
 
       print("</th><td colspan=2>" .. flow["vlan"].. "</td></tr>\n")
    end
-     print("<tr><th width=30%>Flow Peers</th><td colspan=2><A HREF=\"/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
+     print("<tr><th width=30%>Flow Peers</th><td colspan=2><A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(flow,"cli") .. "\">")
      print(flowinfo2hostname(flow,"cli",ifstats.iface_vlan))
    if(flow["cli.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["cli.port"] > 0) then
-      print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"])
+      print(":<A HREF=\""..ntop.getHttpPrefix().."/lua/port_details.lua?port=" .. flow["cli.port"].. "\">" .. flow["cli.port"])
    end
    print("</A> <i class=\"fa fa-exchange fa-lg\"></i> \n")
-   print("<A HREF=\"/lua/host_details.lua?" .. hostinfo2url(flow,"srv") .. "\">")
+   print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?" .. hostinfo2url(flow,"srv") .. "\">")
    print(flowinfo2hostname(flow,"srv",ifstats.iface_vlan))
    if(flow["srv.systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
    print("</A>")
    if(flow["srv.port"] > 0) then
-      print(":<A HREF=\"/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A>")
+      print(":<A HREF=\""..ntop.getHttpPrefix().."/lua/port_details.lua?port=" .. flow["srv.port"].. "\">" .. flow["srv.port"].. "</A>")
    end
    print("</td></tr>\n")
    if ((flow["category"] ~= "") and (flow["category"] ~= nil))then
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end
 
-   print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/lua/")
+   print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/"..ntop.getHttpPrefix().."lua/")
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
    print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
@@ -212,7 +212,7 @@ else
 	 print('<tr><th colspan=3><div id="sprobe"></div>')
 	 width  = 1024
 	 height = 200
-	 url = "/lua/sprobe_flow_data.lua?flow_key="..flow_key
+	 url = ntop.getHttpPrefix().."/lua/sprobe_flow_data.lua?flow_key="..flow_key
 	 dofile(dirs.installdir .. "/scripts/lua/inc/sprobe.lua")
 	 print('</th></tr>\n')
       end
@@ -277,7 +277,9 @@ print [[
 function update () {
 	  $.ajax({
 		    type: 'GET',
-		    url: '/lua/flow_stats.lua',
+		    url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/flow_stats.lua',
 		    data: { ifname: "]] print(tostring(interface.name2id(ifname))) print [[", flow_key: "]] print(flow_key) print [[" },
 		    success: function(content) {
 			var rsp = jQuery.parseJSON(content);

@@ -24,7 +24,9 @@ print [[
 <h2>Export Data</H2>
 <p>&nbsp;<p>
 
-<form class="form-horizontal" action="/lua/do_export_data.lua" method="GET">
+<form class="form-horizontal" action="]]
+print (ntop.getHttpPrefix())
+print [[/lua/do_export_data.lua" method="GET">
 ]]
 
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
@@ -61,7 +63,9 @@ print [[
   function auto_ip_mac () {
    $('#hostIP').typeahead({
        source: function (query, process) {
-               return $.get('/lua/find_host.lua', { query: query }, function (data) {
+               return $.get(']]
+print (ntop.getHttpPrefix())
+print [[/lua/find_host.lua', { query: query }, function (data) {
                      return process(data.results);
       });
       }

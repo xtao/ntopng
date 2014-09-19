@@ -226,7 +226,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    end
       print ('{ ')
       print ('\"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\",')
-	    print ("\"column_ip\" : \"<A HREF='/lua/")
+	    print ("\"column_ip\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
 	    if((aggregation ~= nil) or (aggregated ~= nil)) then print("aggregated_") end
 	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
 	    if((aggregation == nil) and (aggregated == nil)) then

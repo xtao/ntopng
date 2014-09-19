@@ -60,7 +60,9 @@ function fetchData(name, symname) {
 		value = 0;
 	      values.push(value);
 	      } else {
-		d3.json("/lua/get_host_traffic.lua?host="+name, function(data) {
+		d3.json("]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_host_traffic.lua?host="+name, function(data) {
 		    if(!data) return callback(new Error("unable to load data"));
 		    if(prev[name] != undefined) {
 		      values.push(data.value - prev[name]);

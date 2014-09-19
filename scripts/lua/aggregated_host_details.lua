@@ -37,7 +37,7 @@ print [[
 ]]
 
 
-url="/lua/aggregated_host_details.lua?host="..host_ip
+url=ntop.getHttpPrefix().."/lua/aggregated_host_details.lua?host="..host_ip
 
 print("<li><a href=\"#\">"..host_ip.." </a></li>\n")
 
@@ -109,7 +109,7 @@ if(page == "overview") then
         sent_calendar.init({
 		       itemSelector: "#sentHeatmap",
 		       data: "]]
-     print("/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'",\n')
+     print(ntop.getHttpPrefix().."/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'",\n')
 
      timezone = get_timezone()
 
@@ -139,7 +139,7 @@ if(page == "overview") then
 	    $(document).ready(function(){
 			    $('#heatmap-refresh').click(function(){
 							      sent_calendar.update(]]
-									     print("\"/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'\");\n')
+									     print(ntop.getHttpPrefix().."\"/lua/get_host_activitymap.lua?aggregated=1&host="..host_ip..'\");\n')
 									     print [[
 						    });
 				      });
@@ -170,7 +170,7 @@ for _v,k in pairsByKeys(sortTable, rev) do
    v = host["contacts"]["client"][k]
    if(name ~= nil) then
       if(name["name"] == nil) then name["name"] = ntop.getResolvedAddress(name["ip"]) end
-      url = "<A HREF=\"/lua/host_details.lua?host="..k.."\">"..name["name"].."</A>"
+      url = "<A HREF=\""..ntop.getHttpPrefix().."/lua/hiioset_details.lua?host="..k.."\">"..name["name"].."</A>"
    else
       url = k
    end
@@ -197,7 +197,9 @@ print [[
 setInterval(function() {
 	  $.ajax({
 		    type: 'GET',
-		    url: '/lua/get_aggregated_host_info.lua',
+		    url: ']]
+print(ntop.getHttpPrefix())
+print [[/lua/get_aggregated_host_info.lua',
 		    data: { ifname: "]] print(ifname) print [[", name: "]] print(host_ip) print [[" },
 		    /* error: function(content) { alert("JSON Error: inactive host purged or ntopng terminated?"); }, */
 		    success: function(content) {

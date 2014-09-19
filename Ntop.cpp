@@ -339,7 +339,7 @@ void Ntop::getUsers(lua_State* vm) {
 
   lua_newtable(vm);
 
-  if((rc = ntop->getRedis()->keys("user.*.password", &usernames)) <= 0) {
+  if((rc = ntop->getRedis()->keys("ntopng.user.*.password", &usernames)) <= 0) {
     return;
   }
 
@@ -350,13 +350,13 @@ void Ntop::getUsers(lua_State* vm) {
 
     lua_newtable(vm);
 
-    snprintf(key, sizeof(key), "user.%s.full_name", username);
+    snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "full_name", val);
     else
       lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
 
-    snprintf(key, sizeof(key), "user.%s.group", username);
+    snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "group", val);
     else
@@ -382,7 +382,7 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
   if((user == NULL) || (user[0] == '\0'))
     return(false);
 
-  snprintf(key, sizeof(key), "user.%s.password", user);
+  snprintf(key, sizeof(key), "ntopng.user.%s.password", user);
 
   if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
     return(false);
@@ -401,7 +401,7 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
   if (!checkUserPassword(username, old_password))
     return(false);
 
-  snprintf(key, sizeof(key), "user.%s.password", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
 
   mg_md5(password_hash, new_password, NULL);
 
@@ -420,13 +420,13 @@ int Ntop::addUser(char *username, char *full_name, char *password) {
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
 
-  snprintf(key, sizeof(key), "user.%s.full_name", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
   ntop->getRedis()->set(key, full_name, 0);
 
-  snprintf(key, sizeof(key), "user.%s.group", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
   ntop->getRedis()->set(key, (char*) "administrator" /* TODO */, 0);
 
-  snprintf(key, sizeof(key), "user.%s.password", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
   return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
 }
 
@@ -435,13 +435,13 @@ int Ntop::addUser(char *username, char *full_name, char *password) {
 int Ntop::deleteUser(char *username) {
   char key[64];
 
-  snprintf(key, sizeof(key), "user.%s.full_name", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
   ntop->getRedis()->del(key);
 
-  snprintf(key, sizeof(key), "user.%s.group", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
   ntop->getRedis()->del(key);
 
-  snprintf(key, sizeof(key), "user.%s.password", username);
+  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
   return(ntop->getRedis()->del(key) >= 0);
 }
 

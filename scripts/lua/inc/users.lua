@@ -6,7 +6,9 @@ print [[
       <div id="table-users"></div>
 	 <script>
 	 $("#table-users").datatable({
-	 	url: "/lua/admin/get_users.lua",
+	 	url: "]]
+print (ntop.getHttpPrefix())
+print [[/lua/admin/get_users.lua",
 	 	showPagination: true,
 	 	title: "Users",
 		buttons: [

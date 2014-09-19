@@ -33,11 +33,15 @@ print [[
         Home <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></li>
       <li><a href="http://blog.ntop.org/"><i class="fa fa-globe"></i> ntop Blog</a></li>
       <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
       <li class="divider"></li>
-      <li><a href="/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
     </ul>
   </li>
 
@@ -46,9 +50,9 @@ print [[
 _ifstats = interface.getStats()
 
 if(_ifstats.iface_sprobe) then
-   url = "/lua/sflows_stats.lua"
+   url = ntop.getHttpPrefix().."/lua/sflows_stats.lua"
 else
-   url = "/lua/flows_stats.lua"
+   url = ntop.getHttpPrefix().."/lua/flows_stats.lua"
 end
 
 if(active_page == "flows") then
@@ -68,45 +72,57 @@ print [[
         Hosts <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/hosts_stats.lua">Hosts List</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua">Hosts List</a></li>
       ]]
   if not (is_historical) then
-	 print('<li><a href="/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
+	 print('<li><a href="'..ntop.getHttpPrefix()..'/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
 
 if(_ifstats.iface_sprobe) then
-   print('<li><a href="/lua/processes_stats.lua">Processes List</a></li>')
+   print('<li><a href="'..ntop.getHttpPrefix()..'/lua/processes_stats.lua">Processes List</a></li>')
 end
 
 agg = interface.getNumAggregatedHosts()
 
 if((agg ~= nil) and (agg > 0)) then
-   print("<li><a href=\"/lua/aggregated_hosts_stats.lua\"><i class=\"fa fa-group\"></i> Aggregations</a></li>\n")
+   print("<li><a href=\""..ntop.getHttpPrefix().."/lua/aggregated_hosts_stats.lua\"><i class=\"fa fa-group\"></i> Aggregations</a></li>\n")
 end
 
 print [[
       <li class="divider"></li>
-      <li><a href="/lua/hosts_interaction.lua">Interactions</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_interaction.lua">Interactions</a></li>
 ]]
 
 if(_ifstats.iface_sprobe) then
-   print('<li><a href="/lua/sprobe.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
+   print('<li><a href="'..ntop.getHttpPrefix()..'/lua/sprobe.lua"><i class="fa fa-flag"></i> System Interactions</a></li>\n')
 end
 
 
 print [[
-      <li><a href="/lua/hosts_flows_matrix.lua">Top Hosts Traffic</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_flows_matrix.lua">Top Hosts Traffic</a></li>
    ]]
 
 if(not(isLoopback(ifname))) then
    print [[
-	    <li><a href="/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
-	    <li><a href="/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
+	    <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
+	    <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
       ]]
 end
 
 print [[
-      <li><a href="/lua/hosts_matrix.lua"><i class="fa fa-th-large"></i> Local Matrix</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_matrix.lua"><i class="fa fa-th-large"></i> Local Matrix</a></li>
     </ul>
   </li>
    ]]
@@ -136,11 +152,21 @@ print [[
 <li class="dropdown-submenu">
     <a tabindex="-1" href="#">EPP</a>
     <ul class="dropdown-menu">
-   <li><a tabindex="-1" href="/lua/hosts_stats.lua?mode=local&protocol=EPP"> Hosts </a></li>
-   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=1"> Server </a></li>
-   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=4"> Registrar </a></li>
-   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=1"> Existing Domains </a></li>
-   <li><a tabindex="-1" href="/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=0"> Unknown Domains </a></li>
+   <li><a tabindex="-1" href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua?mode=local&protocol=EPP"> Hosts </a></li>
+   <li><a tabindex="-1" href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=1"> Server </a></li>
+   <li><a tabindex="-1" href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=4"> Registrar </a></li>
+   <li><a tabindex="-1" href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=1"> Existing Domains </a></li>
+   <li><a tabindex="-1" href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=0"> Unknown Domains </a></li>
 
   </ul>
 
@@ -150,7 +176,7 @@ print [[
 end
 
 
-if(_ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="/lua/protocols/dns_aggregations.lua">DNS</A>') end
+if(_ifstats["ndpi"]["DNS"] ~= nil) then print('<li><A href="'..ntop.getHttpPrefix()..'/lua/protocols/dns_aggregations.lua">DNS</A>') end
 
 print [[
     </ul>
@@ -190,9 +216,9 @@ for k,v in pairsByKeys(ifnames, asc) do
    --print(k.."="..v.." ")
 
    if(v == ifname) then
-      print("<a href=\"/lua/if_stats.lua?if_name="..v.."\">")
+      print("<a href=\""..ntop.getHttpPrefix().."/lua/if_stats.lua?if_name="..v.."\">")
    else
-      print("<a href=\"/lua/set_active_interface.lua?id="..k.."\">")
+      print("<a href=\""..ntop.getHttpPrefix().."/lua/set_active_interface.lua?id="..k.."\">")
    end
    
    if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
@@ -229,10 +255,16 @@ print [[
         <i class="fa fa-cog fa-lg"></i> <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-      <li><a href="/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
-      <li><a href="/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
       <li class="divider"></li>
-      <li><a href="/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
+      <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>
     </li>
 
@@ -242,7 +274,9 @@ print [[
 	 <i class="fa fa-user fa-lg"></i> <b class="caret"></b>
       </a>
     <ul class="dropdown-menu">
-	 <li><a href="/lua/logout.lua"><i class="fa fa-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
+	 <li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/logout.lua"><i class="fa fa-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
     </ul>
     </li>
    ]]
@@ -251,7 +285,9 @@ print [[
 if(ntop.getNumQueuedAlerts() > 0) then
 print [[
 <li>
-<a  href="/lua/show_alerts.lua">
+<a  href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/show_alerts.lua">
 <i class="fa fa-warning fa-lg" style="color: #B94A48;"></i>
 </a>
 </li>
@@ -267,9 +303,9 @@ function file_exists(name)
 end
 
 if(file_exists(dirs.installdir .. "/httpdocs/img/custom_logo.jpg")) then
-   logo_path = "/img/custom_logo.jpg"
+   logo_path = ntop.getHttpPrefix().."/img/custom_logo.jpg"
 else
-   logo_path = "/img/logo.png"
+   logo_path = ntop.getHttpPrefix().."/img/logo.png"
 end
 
 print ("</ul>\n<h3 class=\"muted\"><A href=http://www.ntop.org><img src=\""..logo_path.."\"></A></h3>\n</div>\n")

@@ -209,7 +209,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print("{ \"column_ip\" : ")
 	    info = interface.getHostInfo(key)
 	    if(info ~= nil) then
-	       print(" \"<A HREF='/lua/")
+	       print(" \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
 	       print("host_details.lua?host=" .. key .. "'>")
 	       print(mapOS2Icon(key))
 	       print(" </A> ".. getOSIcon(value["os"]))

@@ -29,7 +29,9 @@ print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-	 var url_update = "/lua/get_hosts_data.lua?mode=]]
+	 var url_update = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_hosts_data.lua?mode=]]
 print(mode)
 
 if(protocol ~= nil) then
@@ -76,7 +78,13 @@ print ('sort: [ ["' .. getDefaultTableSort("hosts") ..'","' .. getDefaultTableSo
 
 print [[
 	       showPagination: true,
-	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 90px;"><li><a href="/lua/hosts_stats.lua">All Hosts</a></li><li><a href="/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
+	       buttons: [ '<div class="btn-group"><button class="btn btn-link dropdown-toggle" data-toggle="dropdown">Filter Hosts<span class="caret"></span></button> <ul class="dropdown-menu" role="menu" style="min-width: 90px;"><li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua">All Hosts</a></li><li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
 	        columns: [
 	        	{
 	        		title: "Key",
