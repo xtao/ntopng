@@ -37,7 +37,6 @@ print("<tr><th><a href=http://www.luajit.org>LuaJIT</A></th><td>"..info["version
 print("<tr><th><a href=http://www.zeromq.org>ØMQ</A></th><td>"..info["version.zmq"].."</td></tr>\n")
 if(info["version.geoip"] ~= nil) then
 print("<tr><th><a href=http://www.maxmind.com>GeoIP</A></th><td>"..info["version.geoip"])
-end
 
 print [[ <p><small>
          <p><span class="alert alert-info">This product includes GeoLite data created by MaxMind, available from
@@ -45,6 +44,7 @@ print [[ <p><small>
 ]]
 
 print("</td></tr>\n")
+end
 print("<tr><th><a href=http://www.d3js.org>Data-Driven Documents (d3js)</A></th><td>2.9.1 / 3.0</td></tr>\n")
 print("<tr><th><a href=https://github.com/lemire/EWAHBoolArray>Compressed Bitmap (EWAHBoolArray)</A></th><td>0.4.0</td></tr>\n")
 
