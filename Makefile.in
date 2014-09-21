@@ -255,6 +255,10 @@ Makefile: @SVN_WC_DB@
 	@echo ""
 	./configure
 
+changelog:
+	echo "Generating changelog for recent activites..."
+	@./tools/svn2changelog.py > Changelog
+	echo "Changelog file is ready"
 
 test: test_version
 
