@@ -346,6 +346,7 @@ void Ntop::getUsers(lua_State* vm) {
   for (i = 0; i < rc; i++) {
     if (usernames[i] == NULL) continue; /* safety check */
     if (strtok_r(usernames[i], ".", &holder) == NULL) continue;
+    if (strtok_r(NULL, ".", &holder) == NULL) continue;
     if ((username = strtok_r(NULL, ".", &holder)) == NULL) continue;
 
     lua_newtable(vm);
