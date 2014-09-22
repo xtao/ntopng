@@ -24,6 +24,7 @@
 
 #include "ntop_includes.h"
 
+
 class Flow : public GenericHashEntry {
  private:
   Host *cli_host, *srv_host;  
@@ -52,6 +53,13 @@ class Flow : public GenericHashEntry {
   } aggregationInfo;
 
   /* Counter values at last host update */
+  struct {
+    u_int8_t tcp_flags;
+    u_int32_t cli2srv_packets, srv2cli_packets;
+    u_int64_t cli2srv_bytes, srv2cli_bytes;
+    u_int32_t last_dump;
+  } last_db_dump;
+
   struct timeval last_update_time;
   float bytes_thpt, top_bytes_thpt, pkts_thpt, top_pkts_thpt;
   ValueTrend bytes_thpt_trend,pkts_thpt_trend;
@@ -80,7 +88,7 @@ class Flow : public GenericHashEntry {
   char *getDomainCategory();
   void allocFlowMemory();
   void deleteFlowMemory();
-  char* serialize();
+  char* serialize(bool partial_dump = false);
   inline u_int8_t getTcpFlags() { return(tcp_flags);  };
   u_int32_t getPid(bool client);
   u_int32_t getFatherPid(bool client);
@@ -132,6 +140,7 @@ class Flow : public GenericHashEntry {
 	     bool *src2srv_direction);
   void sumStats(NdpiStats *stats);
   void guessProtocol();
+  void dumpFlow(bool partial_dump);
 };
 
 #endif /* _FLOW_H_ */

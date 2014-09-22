@@ -39,6 +39,9 @@ Flow::Flow(NetworkInterface *_iface,
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
   cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
+  last_db_dump.tcp_flags = 0,  last_db_dump.cli2srv_packets = 0,  last_db_dump.srv2cli_packets = 0,
+    last_db_dump.cli2srv_bytes = 0,  last_db_dump.srv2cli_bytes = 0,  last_db_dump.last_dump = 0;
+  
   iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
   if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
   if(srv_host) { srv_host->incUses(); if(cli_host) srv_host->incrContact(cli_host, false); }
@@ -102,19 +105,7 @@ void Flow::deleteFlowMemory() {
 Flow::~Flow() {
   checkBlacklistedFlow();
 
-  if(ntop->getPrefs()->do_dump_flows_on_db()
-     || ntop->get_export_interface()) {
-    char *json;
-
-    json = serialize();
-    cli_host->getInterface()->dumpFlow(last_seen, this, json);
-
-    if(ntop->get_export_interface())
-      ntop->get_export_interface()->export_data(json);
-
-    if(json) free(json);
-  }
-
+  dumpFlow(true /* Dump only the last part of the flow */);
   if(cli_host) cli_host->decUses();
   if(srv_host) srv_host->decUses();
   if(categorization.category != NULL) free(categorization.category);
@@ -623,6 +614,29 @@ char* Flow::print(char *buf, u_int buf_len) {
 
 /* *************************************** */
 
+void Flow::dumpFlow(bool partial_dump) {
+  if(ntop->getPrefs()->do_dump_flows_on_db()
+     || ntop->get_export_interface()) {
+    char *json;
+
+    if(partial_dump) {
+      time_t now = time(NULL);
+
+      if((now - last_db_dump.last_dump) < CONST_DB_DUMP_FREQUENCY)
+	return;
+    }
+    json = serialize(partial_dump);
+    cli_host->getInterface()->dumpFlow(last_seen, this, json);
+
+    if(ntop->get_export_interface())
+      ntop->get_export_interface()->export_data(json);
+
+    if(json) free(json);
+  }
+}
+
+/* *************************************** */
+
 void Flow::update_hosts_stats(struct timeval *tv) {
   u_int64_t sent_packets, sent_bytes, rcvd_packets, rcvd_bytes;
   u_int64_t diff_sent_packets, diff_sent_bytes, diff_rcvd_packets, diff_rcvd_bytes;
@@ -700,6 +714,8 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 
   if(updated)
     memcpy(&last_update_time, tv, sizeof(struct timeval));
+
+  dumpFlow(true);
 
   checkBlacklistedFlow();
 }
@@ -962,7 +978,7 @@ void Flow::sumStats(NdpiStats *stats) {
 
 /* *************************************** */
 
-char* Flow::serialize() {
+char* Flow::serialize(bool partial_dump) {
   json_object *my_object;
   char *rsp, buf[64], jsonbuf[64];
 
@@ -992,20 +1008,20 @@ char* Flow::serialize() {
 
   if(protocol == IPPROTO_TCP)
     json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS, "TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
-			   json_object_new_int(tcp_flags));
+			   json_object_new_int(partial_dump ? last_db_dump.tcp_flags : tcp_flags & last_db_dump.tcp_flags));
 
   json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS, "OUT_PKTS", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(cli2srv_packets));
+			 json_object_new_int64(partial_dump ? last_db_dump.cli2srv_packets : cli2srv_packets - last_db_dump.cli2srv_packets));
   json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES, "OUT_BYTES", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(cli2srv_bytes));
+			 json_object_new_int64(partial_dump ? last_db_dump.cli2srv_bytes : cli2srv_bytes - last_db_dump.cli2srv_bytes));
 
   json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS, "IN_PKTS", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(srv2cli_packets));
+			 json_object_new_int64(partial_dump ? last_db_dump.srv2cli_packets : srv2cli_packets - last_db_dump.srv2cli_packets));
   json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES, "IN_BYTES", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(srv2cli_bytes));
+			 json_object_new_int64(partial_dump ? last_db_dump.srv2cli_bytes : srv2cli_bytes - last_db_dump.srv2cli_bytes));
 
   json_object_object_add(my_object, Utils::jsonLabel(FIRST_SWITCHED, "FIRST_SWITCHED", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int((u_int32_t)first_seen));
+			 json_object_new_int((u_int32_t)(partial_dump && last_db_dump.last_dump) ? last_db_dump.last_dump : first_seen));
   json_object_object_add(my_object, Utils::jsonLabel(LAST_SWITCHED, "LAST_SWITCHED", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int((u_int32_t)last_seen));
 
@@ -1026,6 +1042,12 @@ char* Flow::serialize() {
     json_object_object_add(my_object, "throughput_trend_pps", json_object_new_string(Utils::trend2str(pkts_thpt_trend)));
 
     if(categorization.flow_categorized) json_object_object_add(my_object, "category", json_object_new_string(categorization.category));
+  }
+
+  if(partial_dump) {
+    last_db_dump.tcp_flags = tcp_flags,  last_db_dump.cli2srv_packets = cli2srv_packets,
+      last_db_dump.srv2cli_packets = srv2cli_packets, last_db_dump.cli2srv_bytes = cli2srv_bytes,
+      last_db_dump.srv2cli_bytes = srv2cli_bytes,  last_db_dump.last_dump = last_seen;
   }
 
   /* JSON string */

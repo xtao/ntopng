@@ -49,7 +49,7 @@ class DB {
 
  public:
   DB(NetworkInterface *_iface = NULL,
-     u_int32_t _dir_duration = 300 /* 5 minutes */,
+     u_int32_t _dir_duration = CONST_DB_DUMP_FREQUENCY,
      u_int8_t _db_id = 0);
   ~DB();
 

@@ -127,12 +127,12 @@
 #define MAX_PATH                  256
 #endif
 
-//#define DEMO_WIN32                1
-#define MAX_NUM_PACKETS           5000
+//#define DEMO_WIN32                   1
+#define MAX_NUM_PACKETS             5000
 
-#define MAX_NUM_HOST_CONTACTS     16
-#define CONST_DEFAULT_NTOP_PORT   3000
-
+#define MAX_NUM_HOST_CONTACTS         16
+#define CONST_DEFAULT_NTOP_PORT     3000
+#define CONST_DB_DUMP_FREQUENCY      300
 #define CONST_MAX_NUM_NETWORKS        64
 #define CONST_NUM_OPEN_DB_CACHE        8
 #define CONST_NUM_CONTACT_DBS          8
