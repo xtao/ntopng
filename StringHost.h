@@ -30,8 +30,6 @@ class StringHost : public GenericHost {
   u_int16_t family_id;
   bool tracked_host;
   /* Throughput */
-  float bytes_thpt;
-  ValueTrend bytes_thpt_trend;
   u_int64_t queriesReceived;
   AggregationType mode;
   void computeHostSerial();

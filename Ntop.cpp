@@ -45,7 +45,8 @@ Ntop::Ntop(char *appName) {
   export_interface = NULL;
   historical_interface_id = -1;
   start_time = 0; /* It will be initialized by start() */
-
+  memset(iface, 0, sizeof(iface));
+  httpd = NULL, runtimeprefs = NULL, geo = NULL;
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
 		     SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
@@ -137,7 +138,6 @@ Ntop::~Ntop() {
 
 void Ntop::registerPrefs(Prefs *_prefs) {
   struct stat statbuf;
-  char *local_nets, buf[512];
 
   prefs = _prefs;
 
@@ -162,6 +162,8 @@ void Ntop::registerPrefs(Prefs *_prefs) {
   } else {
     /* Add defaults */
     /* http://www.networksorcery.com/enp/protocol/ip/multicast.htm */
+    char *local_nets, buf[512];
+
     snprintf(buf, sizeof(buf), "%s,%s", CONST_DEFAULT_PRIVATE_NETS,
 	     CONST_DEFAULT_LOCAL_NETS);
     local_nets = strdup(buf);
@@ -300,6 +302,7 @@ void Ntop::loadLocalInterfaceAddress() {
 /* ******************************************* */
 
 void Ntop::loadGeolocation(char *dir) {
+  if(geo != NULL) delete geo;
   geo = new Geolocation(dir);
 }
 
@@ -378,7 +381,6 @@ void Ntop::getUsers(lua_State* vm) {
 // Return 1 if username/password is allowed, 0 otherwise.
 int Ntop::checkUserPassword(const char *user, const char *password) {
   char key[64], val[64];
-  char password_hash[33];
 
   if((user == NULL) || (user[0] == '\0'))
     return(false);
@@ -388,6 +390,8 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
   if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
     return(false);
   } else {
+    char password_hash[33];
+
     mg_md5(password_hash, password, NULL);
     return(strcmp(password_hash, val) == 0);
   }
