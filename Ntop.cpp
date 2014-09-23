@@ -347,10 +347,10 @@ void Ntop::getUsers(lua_State* vm) {
   }
 
   for (i = 0; i < rc; i++) {
-    if (usernames[i] == NULL) continue; /* safety check */
-    if (strtok_r(usernames[i], ".", &holder) == NULL) continue;
-    if (strtok_r(NULL, ".", &holder) == NULL) continue;
-    if ((username = strtok_r(NULL, ".", &holder)) == NULL) continue;
+    if(usernames[i] == NULL) continue; /* safety check */
+    if(strtok_r(usernames[i], ".", &holder) == NULL) continue;
+    if(strtok_r(NULL, ".", &holder) == NULL) continue;
+    if((username = strtok_r(NULL, ".", &holder)) == NULL) continue;
 
     lua_newtable(vm);
 
@@ -403,7 +403,7 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
   char key[64];
   char password_hash[33];
 
-  if (!checkUserPassword(username, old_password))
+  if(!checkUserPassword(username, old_password))
     return(false);
 
   snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
@@ -412,6 +412,36 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
 
   if(ntop->getRedis()->set(key, password_hash, 0) < 0)
     return(false);
+
+  return(true);
+}
+
+/* ******************************************* */
+
+int Ntop::changeUserType(char *username, char *usertype) const {
+  char key[64];
+  
+  if(usertype && usertype) {
+    snprintf(key, sizeof(key), "ntopng.user.%s.type", username);
+
+    if(ntop->getRedis()->set(key, usertype, 0) < 0)
+      return(false);
+  }  
+  
+  return(true);
+}
+
+/* ******************************************* */
+
+int  Ntop::changeAlloweNets(char *username, char *allowed_nets) const {
+  char key[64];
+
+  if( allowed_nets != NULL) {
+    snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+
+    if(ntop->getRedis()->set(key, allowed_nets, 0) < 0)
+      return(false);
+  }
 
   return(true);
 }
