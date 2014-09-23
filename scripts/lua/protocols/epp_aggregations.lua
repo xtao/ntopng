@@ -25,7 +25,9 @@ print [[
       <hr>
       <div id="table-hosts"></div>
     <script>
-   var url_update = "/lua/get_hosts_data.lua?aggregation=1&protocol=38]] -- 38 == EPP
+   var url_update = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_hosts_data.lua?aggregation=1&protocol=38]] -- 38 == EPP
    if(_GET["client"]) then print("&client=".._GET["client"]) end
    if(_GET["tracked"]) then print("&tracked=".._GET["tracked"]) end
    print("&aggregation="..aggregation)
@@ -55,7 +57,7 @@ families = interface.getAggregationFamilies()
 for key,v in pairs(families["families"]) do
 
    for key1,v1 in pairs(families["aggregations"]) do
-      print('<li><a href="/lua/protocols/epp_aggregations.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
+      print('<li><a href="'..ntop.getHttpPrefix()..'/lua/protocols/epp_aggregations.lua?protocol=' .. v..'&aggregation='..v1..'">- '..key..' ('..key1..')</a></li>')
    end
 end
 

@@ -147,7 +147,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
 	 if((value == 0) or (value <  low_threshold) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key .. '", "url": "/lua/host_details.lua?host='..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..key .. '", "url": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='..key..'", "value": '..value
 	 num = num + 1
 
 	 if(num == max_num_entries) then
@@ -207,7 +207,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
 	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key.. '", "url": "/lua/host_details.lua?host='..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..key.. '", "url": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='..key..'", "value": '..value
 	 num = num + 1
 
 	 if(num == max_num_entries) then

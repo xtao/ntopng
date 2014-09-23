@@ -54,7 +54,7 @@ function spiltSipID( id )
   sip_party = split(port[1],"@")
   host = interface.getHostInfo(sip_party[2])
   if (host ~= nil) then
-    return('<A HREF="/lua/host_details.lua?host='.. sip_party[2]..'">'.. id.. '</A>')
+    return('<A HREF="'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='.. sip_party[2]..'">'.. id.. '</A>')
   end
   return(id)
 end

@@ -22,7 +22,9 @@ print [[
       <hr>
       <div id="table-hosts"></div>
 	 <script>
-   var url_update = "/lua/get_hosts_data.lua?aggregated=1&protocol=5]] -- 5 == DNS
+   var url_update = "]]
+print (ntop.getHttpPrefix())
+print [[/lua/get_hosts_data.lua?aggregated=1&protocol=5]] -- 5 == DNS
    if(_GET["client"]) then print("&client=".._GET["client"]) end
    print ('";')
 

@@ -99,7 +99,7 @@ end
 	
 
 	 if(rc) then
-	    local alert_msg = "Threshold <b>"..t[1].."</b> crossed by host <A HREF=/lua/host_details.lua?host="..key..">"..key.."</A> [".. val .." ".. op .. " " .. t[3].."]"
+	    local alert_msg = "Threshold <b>"..t[1].."</b> crossed by host <A HREF="..ntop.getHttpPrefix().."/lua/host_details.lua?host="..key..">"..key.."</A> [".. val .." ".. op .. " " .. t[3].."]"
 	    local alert_level = 1 -- alert_level_warning
 	    local alert_type = 2 -- alert_threshold_exceeded
 
