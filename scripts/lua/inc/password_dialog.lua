@@ -1,10 +1,16 @@
 print [[
+
+ <style type='text/css'>
+.largegroup {
+    width:500px
+}
+</style>
 <div id="password_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="password_dialog_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-  <h3 id="password_dialog_label">Reset <span id="password_dialog_title"></span> Password</h3>
+  <h3 id="password_dialog_label">Manage User <span id="password_dialog_title"></span></h3>
 </div>
 
 <div class="modal-body">
@@ -24,27 +30,63 @@ print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFVa
 print [[
     <input id="password_dialog_username" type="hidden" name="username" value="" />
 
-  <div class="control-group"> 
-    <label class="control-label">Old Password</label>
+<div class="input-group">
+<div class="input-group">
+<label for="" class="control-label">Old User Password</label>
+<div class="input-group"><span class="input-group-addon"><i class="fa fa-lock"></i></span>  
+  <input id="old_password_input" type="password" name="old_password" value="" class="form-control">
+</div>
+</div>
+
+<div class="input-group">
+  <label for="" class="control-label">New User Password</label>
+<div class="input-group"><span class="input-group-addon"><i class="fa fa-lock"></i></span>  
+  <input id="new_password_input" type="password" name="new_password" value="" class="form-control">
+</div>
+</div>
+
+<div class="input-group">
+  <label for="" class="control-label">Confirm New User Password</label>
+<div class="input-group"><span class="input-group-addon"><i class="fa fa-lock"></i></span>  
+  <input id="confirm_new_password_input" type="password" name="confirm_new_password" value="" class="form-control">
+</div>
+</div>
+
+<div class="input-group">&nbsp;</div>
+  <button id="password_reset_submit" class="btn btn-primary btn-block">Change User Password</button>
+</div>
+
+  </form>
+
+<hr>
+
+  <form id="form_pref_change" class="form-horizontal" method="get" action="change_user_prefs.lua" role="form">
+  <input id="form_pref_username" type="hidden" name="username" value="" />
+<div class="input-group">
+
+  <div class="input-group">
+    <label class="input-label">User Role</label>
     <div class="controls">
-      <input id="old_password_input" type="password" name="old_password" value="" class="span4">
+      <select id="host_role_select" name="host_role">
+                <option value="Standard User">Non Privileged User</option>
+                <option value="Admin">Administrator</option>
+      </select>
     </div>
   </div>
 
-  <div class="control-group"> 
-    <label class="control-label">New Password</label>
-    <div class="controls">
-      <input id="new_password_input" type="password" name="new_password" value="" class="span4">
-    </div>
+
+ <div class="largegroup input-group">
+  <label for="" class="control-label">Allowed Networks</label>
+<div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-tasks"></span></span>  
+  <input id="allowed_networks_input" type="text" name="allowed_networks" value="" class="form-control">
+</div>
+<small>Comma separated list of networks this user can view. Example: 192.168.1.0/24,172.16.0.0/16</small>
   </div>
 
-  <div class="control-group"> 
-    <label class="control-label">Confirm New Password</label>
-    <div class="controls">
-      <input id="confirm_new_password_input" type="password" name="confirm_new_password" value="" class="span4">
-    </div>
-  </div>
+<div class="input-group">&nbsp;</div> 
+  <button id="pref_change" class="btn btn-primary btn-block">Change User Preferences</button>
 
+</div>
   </form>
 
 <script>
@@ -67,13 +109,30 @@ print [[
     });
     return false;
   });
+
+  var frmprefchange = $('#form_pref_change');
+  frmprefchange.submit(function () {
+    $.ajax({
+      type: frmprefchange.attr('method'),
+      url: frmprefchange.attr('action'),
+      data: frmprefchange.serialize(),
+      success: function (data) {
+        var response = jQuery.parseJSON(data);
+        if (response.result == 0)
+          password_alert.success(response.message); 
+        else
+          password_alert.error(response.message);
+      }
+    });
+    return false;
+  });
+
 </script>
 
 </div> <!-- modal-body -->
 
 <div class="modal-footer">
   <button class="btn btn-default btn-sm" data-dismiss="modal" aria-hidden="true">Close</button>
-  <button id="password_reset_submit" class="btn btn-primary btn-sm">Change Password</button>
 </div>
 
 <script>
