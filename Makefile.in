@@ -261,7 +261,7 @@ changelog:
 	echo "Changelog file is ready"
 
 cppcheck:
-	cppcheck --quiet --enable=all --force @HIREDIS_INC@ $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) -I$(EWH_INC) *.cpp
+	cppcheck --template='{file}:{line}:{severity}:{message}' --quiet --enable=all --force @HIREDIS_INC@ $(MONGOOSE_INC) $(JSON_INC) $(NDPI_INC) $(LUAJIT_INC) $(LIBRRDTOOL_INC) $(ZEROMQ_INC) -I$(EWH_INC) *.cpp
 
 test: test_version
 
