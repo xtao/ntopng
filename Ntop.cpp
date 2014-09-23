@@ -433,7 +433,7 @@ int Ntop::changeUserType(char *username, char *usertype) const {
 
 /* ******************************************* */
 
-int  Ntop::changeAlloweNets(char *username, char *allowed_nets) const {
+int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
   char key[64];
 
   if( allowed_nets != NULL) {

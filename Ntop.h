@@ -291,7 +291,7 @@ class Ntop {
   int  checkUserPassword(const char *user, const char *password);
   int  resetUserPassword(char *username, char *old_password, char *new_password);
   int  changeUserType(char *username, char *usertype) const;
-  int  changeAlloweNets(char *username, char *allowed_nets) const;
+  int  changeAllowedNets(char *username, char *allowed_nets) const;
   int  addUser(char *username, char *full_name, char *password);
   int  deleteUser(char *username);
   void setWorkingDir(char *dir);
