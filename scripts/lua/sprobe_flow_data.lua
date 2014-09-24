@@ -40,12 +40,13 @@ else
    -- ====================================
 
    function displayProc(nest, proc, host, host_name,
-			add_host, add_father, add_init, first_element, last_element)
+			add_host, add_father, add_init, first_element, last_element, add_comma)
       -- if(num > 0) then print(',') end
 
       if(add_host) then
 	 nest2tab(nest)
 	 link = ntop.getHttpPrefix().."/lua/host_details.lua?host=".. host .."&page=flows"
+	 if(add_comma) then print(',') add_comma = false end
 	 print('{ "name": "'..host_name..'", "type": "host", "link": "'..link..'", "children": [ ')
 	 nest = nest + 1
       end
@@ -58,17 +59,18 @@ else
 	 else
 	    if(not(first_element) and (proc.father_pid ~= 1)) then
 	       nest2tab(nest)
-	       print('] },')
+	       print('] }')
 	       nest = nest -1
+	       add_comma = true
 	    end
 	 end
 	 
 	 if(add_init or (proc.father_pid ~= 1)) then
-	    -- print("***") print(add_init) print("***")
 	    -- No link for father
 	    -- link = ntop.getHttpPrefix().."/lua/get_process_info.lua?pid="..proc.father_pid.."&name="..proc.father_name.."&host=".. host .."&page=flows"
 	    nest2tab(nest)
-	    print('{ "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "type": "proc", "children": [ ')
+	    if(add_comma) then print(',') add_comma = false end
+	    print(' { "name": "'..proc.father_name..' (pid '.. proc.father_pid..')", "type": "proc", "children": [ ')
 	    nest = nest + 1
 	 end
       end
@@ -90,6 +92,7 @@ else
 
 -- ================================================
 
+
    nest = 0
 
    if((flow.client_process ~= nil) and (flow.server_process ~= nil)) then
@@ -103,41 +106,25 @@ else
       nest = displayProc(nest, flow.client_process, 
 			 flow["cli.ip"], 
 			 flowinfo2hostname(flow, "cli", flow["vlan"]),
-			 true,  true, true, true, last)
+			 true,  true, true, true, last, false)
       
-      print(",\n")
-
       displayProc(nest, flow.server_process, 
 		  flow["srv.ip"], 
 		  flowinfo2hostname(flow, "srv", flow["vlan"]),
 		  (flow["cli.ip"] ~= flow["srv.ip"]), 
 		  ((flow.client_process.father_pid ~= flow.server_process.father_pid) or (flow["cli.ip"] ~= flow["srv.ip"])),
 		  false,
-		  (flow["cli.ip"] ~= flow["srv.ip"]), true)
+		  (flow["cli.ip"] ~= flow["srv.ip"]), true, true)
       if(flow["cli.ip"] ~= flow["srv.ip"]) then
 	 print("] }\n")
       end
    elseif(flow.client_process ~= nil) then
       nest = displayProc(nest, flow.client_process, 
 			 flow["cli.ip"], flowinfo2hostname(flow, "cli", flow["vlan"]),
-			 true, true, true, true, true)
+			 true, true, true, true, true, false)
    elseif(flow.server_process ~= nil) then
       nest = displayProc(nest, flow.server_process,
 			 flow["srv.ip"], flowinfo2hostname(flow, "srv", flow["vlan"]),
-			 true, true, true, true, true)
-   end
-
-   if(false) then 
-      if(flow["cli.ip"] == flow["srv.ip"]) then
-	 print [[
-	    {
-	       "name": "init (pid 1)",
-	       "type": "proc",
-	       "children": [ ]]
-      else
-	 print('{  "name": "", "type": "root", "children": [\n')
-      end
-      
-      print(']\n}')
+			 true, true, true, true, true, false)
    end
 end

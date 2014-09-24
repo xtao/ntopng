@@ -19,7 +19,7 @@ warn_shown = 0
 
 function displayProc(proc)
    print("<tr><th width=30%>User Name</th><td colspan=2><A HREF="..ntop.getHttpPrefix().."/lua/get_user_info.lua?user=".. proc.user_name .."&".. hostinfo2url(flow,"cli")..">".. proc.user_name .."</A></td></tr>\n")
-   print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF="..ntop.getPrefix().."/lua/get_process_info.lua?pid=".. proc.pid .."&".. hostinfo2url(flow,"srv").. ">".. proc.pid .. "/" .. proc.name .. "</A>")
+   print("<tr><th width=30%>Process PID/Name</th><td colspan=2><A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. proc.pid .."&".. hostinfo2url(flow,"srv").. ">".. proc.pid .. "/" .. proc.name .. "</A>")
    print(" [son of <A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. proc.father_pid .. ">" .. proc.father_pid .. "/" .. proc.father_name .."</A>]</td></tr>\n")
 
    if(proc.actual_memory > 0) then
