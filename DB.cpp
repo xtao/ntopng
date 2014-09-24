@@ -24,6 +24,9 @@
 /* ******************************************* */
 
 DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
+  if((m = new(std::nothrow) Mutex()) == NULL)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
+
   dir_duration = max_val(_dir_duration, 300); /* 5 min is the minimum duration */
 
   // sqlite3_config(SQLITE_CONFIG_SERIALIZED);
@@ -42,6 +45,7 @@ DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
 
 DB::~DB() {
   termDB();
+  if(m) delete m;
 }
 
 /* **************************************************** */
@@ -61,8 +65,8 @@ int DB::get_open_db_contacts_connection(char *path, int *db_to_purge) {
     }
   }
 
-   return(-1);
- }
+  return(-1);
+}
 
 /* ******************************************* */
 
@@ -136,9 +140,6 @@ bool DB::dumpFlow(time_t when, Flow *f, char *json) {
     "srv_ip string KEY, srv_port number, proto number, bytes number, first_seen number, last_seen number, duration number, json string);";
   char sql[4096], cli_str[64], srv_str[64];
 
-  initDB(when, create_flows_db);
-
-
   snprintf(sql, sizeof(sql),
 	   "INSERT INTO flows VALUES (NULL, %u, '%s', %u, '%s', %u, %u, %lu, %u, %u, %u, '%s');",
 	   f->get_vlan_id(),
@@ -146,15 +147,19 @@ bool DB::dumpFlow(time_t when, Flow *f, char *json) {
 	   f->get_cli_port(),
 	   f->get_srv_host()->get_ip()->print(srv_str, sizeof(srv_str)),
 	   f->get_srv_port(),
-     f->get_protocol(),
+	   f->get_protocol(),
 	   (unsigned long)f->get_bytes(),
-     (unsigned) f->get_first_seen(),
-     (unsigned) f->get_last_seen(),
-     f->get_duration(), json ? json : "");
+	   (unsigned) f->get_first_seen(),
+	   (unsigned) f->get_last_seen(),
+	   f->get_duration(), json ? json : "");
 
   ntop->getTrace()->traceEvent(TRACE_DEBUG, "Dump Flow: %s", json);
 
+  if(m) m->lock(__FILE__, __LINE__);
+  initDB(when, create_flows_db);
   execSQL(db, sql);
+  if(m) m->unlock(__FILE__, __LINE__);
+
   return(true);
 }
 

@@ -33,6 +33,7 @@ typedef struct {
 
 class DB {
  private:
+  Mutex *m;
   u_int32_t contacts_cache_idx;
   db_cache contacts_cache[CONST_NUM_OPEN_DB_CACHE];
   sqlite3 *db;
