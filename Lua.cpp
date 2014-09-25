@@ -1530,6 +1530,16 @@ static int ntop_get_user_group(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+
+/* ****************************************** */
+
+static int ntop_get_allowed_networks(lua_State* vm) {
+
+  ntop->getAllowedNetworks(vm);
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_reset_user_password(lua_State* vm) {
@@ -1580,7 +1590,7 @@ static int ntop_change_allowed_nets(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_add_user(lua_State* vm) {
-  char *username, *full_name, *password;
+  char *username, *full_name, *password, *host_role, *allowed_networks;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
@@ -1591,7 +1601,13 @@ static int ntop_add_user(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((password = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
-  return ntop->addUser(username, full_name, password);
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((host_role = (char*)lua_tostring(vm, 4)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 5, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((allowed_networks = (char*)lua_tostring(vm, 5)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  return ntop->addUser(username, full_name, password, host_role, allowed_networks);
 }
 
 /* ****************************************** */
@@ -2510,6 +2526,7 @@ static const luaL_Reg ntop_reg[] = {
   /* Admin */
   { "getUsers",           ntop_get_users },
   { "getUserGroup",       ntop_get_user_group },
+  { "getAllowedNetworks", ntop_get_allowed_networks },
   { "resetUserPassword",  ntop_reset_user_password },
   { "changeUserRole",     ntop_change_user_role },
   { "changeAllowedNets",  ntop_change_allowed_nets },

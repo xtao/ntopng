@@ -366,6 +366,12 @@ void Ntop::getUsers(lua_State* vm) {
     else
       lua_push_str_table_entry(vm, "group", (char*)"unknown");
 
+    snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
+      lua_push_str_table_entry(vm, "allowed_nets", val);
+    else
+      lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+
     lua_pushstring(vm, username);
     lua_insert(vm, -2);
     lua_settable(vm, -3);
@@ -401,6 +407,29 @@ void Ntop::getUserGroup(lua_State* vm) {
     lua_push_str_table_entry(vm, "group", (char*)"unknown");
 }
 
+/* ******************************************* */
+void Ntop::getAllowedNetworks(lua_State* vm) {
+  char key[64], val[64];
+  char username[33];
+  struct mg_connection *conn;
+
+  lua_getglobal(vm, CONST_HTTP_CONN);
+  if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
+    lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+    return;
+  }
+
+  mg_get_cookie(conn, "user", username, sizeof(username));
+
+  lua_newtable(vm);
+
+  snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
+    lua_push_str_table_entry(vm, "allowed_nets", val);
+  else
+    lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+}
 /* ******************************************* */
 
 // Return 1 if username/password is allowed, 0 otherwise.
@@ -472,21 +501,30 @@ int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
 
 /* ******************************************* */
 
-int Ntop::addUser(char *username, char *full_name, char *password) {
+int Ntop::addUser(char *username, char *full_name, char *password, char *host_role, char *allowed_networks) {
   char key[64];
   char password_hash[33];
 
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
 
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "group = %s", host_role);
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "allowed networks = %s", allowed_networks);
+
   snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
   ntop->getRedis()->set(key, full_name, 0);
 
   snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
-  ntop->getRedis()->set(key, (char*) "administrator" /* TODO */, 0);
+  ntop->getRedis()->set(key, (char*) host_role /* TODO: done Paola */, 0);
 
   snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
-  return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
+  ntop->getRedis()->set(key, password_hash, 0);
+
+  snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+  ntop->getRedis()->set(key, allowed_networks, 0);
+
+  return (true);
+// tODO inserire controllo return return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
 }
 
 /* ******************************************* */

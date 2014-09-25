@@ -50,6 +50,24 @@ print [[
     </div>
   </div>
 
+  <div class="control-group">
+    <label class="control-label">User Role</label>
+    <div class="controls">
+      <select id="host_role_select" name="host_role">
+        <option value="standard">Non Privileged User</option>
+        <option value="administrator">Administrator</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="largegroup control-group">
+    <label for="" class="control-label">Allowed Networks</label>
+    <div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-tasks"></span></span>  
+      <input id="allowed_networks_input" type="text" name="allowed_networks" value="" class="form-control" />
+    </div>
+    <small>Comma separated list of networks this user can view. Example: 192.168.1.0/24,172.16.0.0/16</small>
+ </div>
+
   </form>
 
 <script>

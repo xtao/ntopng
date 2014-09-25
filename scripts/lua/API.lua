@@ -470,7 +470,9 @@ function changeAllowedNets(username,allowed_nets)
 --! @tparam string username The username.
 --! @tparam string full_name The name of users.
 --! @tparam string password The user password.
-function addUser(username,full_name,password)
+--! @tparam string host_role The group of user.
+--! @tparam string allowed_networks The networks that the user can view.
+function addUser(username,full_name,password,host_role,allowed_networks)
 
 --! @memberof ntop
 --! @brief Delete an existing user.

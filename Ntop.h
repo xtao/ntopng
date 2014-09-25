@@ -289,11 +289,12 @@ class Ntop {
 
   void getUsers(lua_State* vm); 
   void getUserGroup(lua_State* vm);  
+  void getAllowedNetworks(lua_State* vm);  
   int  checkUserPassword(const char *user, const char *password);
   int  resetUserPassword(char *username, char *old_password, char *new_password);
   int  changeUserRole(char *username, char *user_role) const;
   int  changeAllowedNets(char *username, char *allowed_nets) const;
-  int  addUser(char *username, char *full_name, char *password);
+  int  addUser(char *username, char *full_name, char *password, char *host_role, char *allowed_networks);
   int  deleteUser(char *username);
   void setWorkingDir(char *dir);
   void fixPath(char *str);
