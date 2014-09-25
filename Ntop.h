@@ -287,10 +287,11 @@ class Ntop {
   inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
   inline ExportInterface* get_export_interface()              { return(export_interface);         };
 
-  void getUsers(lua_State* vm);
+  void getUsers(lua_State* vm); 
+  void getUserGroup(lua_State* vm);  
   int  checkUserPassword(const char *user, const char *password);
   int  resetUserPassword(char *username, char *old_password, char *new_password);
-  int  changeUserType(char *username, char *usertype) const;
+  int  changeUserRole(char *username, char *user_role) const;
   int  changeAllowedNets(char *username, char *allowed_nets) const;
   int  addUser(char *username, char *full_name, char *password);
   int  deleteUser(char *username);

@@ -1516,6 +1516,16 @@ static int ntop_get_users(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+
+/* ****************************************** */
+
+static int ntop_get_user_group(lua_State* vm) {
+
+  ntop->getUserGroup(vm);
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_reset_user_password(lua_State* vm) {
@@ -1531,6 +1541,36 @@ static int ntop_reset_user_password(lua_State* vm) {
   if((new_password = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
   return ntop->resetUserPassword(username, old_password, new_password);
+}
+
+
+/* ****************************************** */
+
+static int ntop_change_user_role(lua_State* vm) {
+  char *username, *user_role;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((user_role = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  return ntop->changeUserRole(username, user_role);
+}
+
+
+/* ****************************************** */
+
+static int ntop_change_allowed_nets(lua_State* vm) {
+  char *username, *allowed_nets;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((allowed_nets = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  return ntop->changeAllowedNets(username, allowed_nets);
 }
 
 /* ****************************************** */
@@ -2464,10 +2504,13 @@ static const luaL_Reg ntop_reg[] = {
   { "getHttpPrefix",  ntop_http_get_prefix },
 
   /* Admin */
-  { "getUsers",       ntop_get_users },
-  { "resetUserPassword", ntop_reset_user_password },
-  { "addUser",        ntop_add_user },
-  { "deleteUser",     ntop_delete_user },
+  { "getUsers",           ntop_get_users },
+  { "getUserGroup",       ntop_get_user_group },
+  { "resetUserPassword",  ntop_reset_user_password },
+  { "changeUserRole",     ntop_change_user_role },
+  { "changeAllowedNets",  ntop_change_allowed_nets },
+  { "addUser",            ntop_add_user },
+  { "deleteUser",         ntop_delete_user },
 
   /* Security */
   { "getRandomCSRFValue",     ntop_generate_csrf_value },

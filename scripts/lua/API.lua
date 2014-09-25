@@ -437,12 +437,32 @@ function getPrefs()
 function getUsers()
 
 --! @memberof ntop
+--! @brief Get the user group.
+--! @details For more information please read the @ref ntop_get_user_group documentation.TODO: 
+--! @return An hashtable containing the user group.
+function getUserGroup()
+
+--! @memberof ntop
 --! @brief Reset the user password.
 --! @details Check the old password and update the user info with the new password.For more information please read the @ref ntop_reset_user_password documentation.
 --! @tparam string username The username.
 --! @tparam string old_password The hold password.
 --! @tparam string new_password The new password.
 function resetUserPassword(username,old_password,new_password)
+
+--! @memberof ntop
+--! @brief Change the user role.
+--! @details Set if the user is a standard one or an Admin. TODO: documentation 
+--! @tparam string username The username.
+--! @tparam string user_role The user role
+function changeUserRole(username,user_role)
+
+--! @memberof ntop
+--! @brief Change the list of allowed networks
+--! @details Set the networks that the user is allowed to inspect. TODO: documentation
+--! @tparam string username The username.
+--! @tparam string allowed_nets: comma separated list of networks
+function changeAllowedNets(username,allowed_nets)
 
 --! @memberof ntop
 --! @brief Add new user.

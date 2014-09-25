@@ -58,18 +58,22 @@ print [[
 
   </form>
 
-<hr>
+]]
 
-  <form id="form_pref_change" class="form-horizontal" method="get" action="change_user_prefs.lua" role="form">
-  <input id="form_pref_username" type="hidden" name="username" value="" />
+user_group = ntop.getUserGroup()
+if(user_group["group"]=="administrator") then
+print [[
+<hr>
+<form id="form_pref_change" class="form-horizontal" method="get" action="change_user_prefs.lua" role="form">
+  <input id="pref_dialog_username" type="hidden" name="username" value="" />
 <div class="input-group">
 
   <div class="input-group">
     <label class="input-label">User Role</label>
     <div class="controls">
       <select id="host_role_select" name="host_role">
-                <option value="Standard User">Non Privileged User</option>
-                <option value="Admin">Administrator</option>
+                <option value="standard">Non Privileged User</option>
+                <option value="administrator">Administrator</option>
       </select>
     </div>
   </div>
@@ -78,7 +82,7 @@ print [[
  <div class="largegroup input-group">
   <label for="" class="control-label">Allowed Networks</label>
 <div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-tasks"></span></span>  
-  <input id="allowed_networks_input" type="text" name="allowed_networks" value="" class="form-control">
+  <input id="allowed_networks_input" type="text" name="allowed_networks" value="" class="form-control" />
 </div>
 <small>Comma separated list of networks this user can view. Example: 192.168.1.0/24,172.16.0.0/16</small>
   </div>
@@ -88,8 +92,10 @@ print [[
 
 </div>
   </form>
+]]
+end
 
-<script>
+print [[<script>
   var frmpassreset = $('#form_password_reset');
   frmpassreset.submit(function () {
     $.ajax({

@@ -376,6 +376,29 @@ void Ntop::getUsers(lua_State* vm) {
   free(usernames);
 }
 
+void Ntop::getUserGroup(lua_State* vm) {
+  char key[64], val[64];
+  char username[33];
+  struct mg_connection *conn;
+
+  lua_getglobal(vm, CONST_HTTP_CONN);
+  if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
+    lua_push_str_table_entry(vm, "group", (char*)"unknown");
+    return;
+  }
+
+  mg_get_cookie(conn, "user", username, sizeof(username));
+
+  lua_newtable(vm);
+
+  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
+    lua_push_str_table_entry(vm, "group", val);
+  else
+    lua_push_str_table_entry(vm, "group", (char*)"unknown");
+}
+
 /* ******************************************* */
 
 // Return 1 if username/password is allowed, 0 otherwise.
@@ -418,11 +441,10 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
 
 /* ******************************************* */
 
-int Ntop::changeUserType(char *username, char *usertype) const {
+int Ntop::changeUserRole(char *username, char *usertype) const {
   char key[64];
-  
-  if(usertype && usertype) {
-    snprintf(key, sizeof(key), "ntopng.user.%s.type", username);
+  if(usertype != NULL) {
+    snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
 
     if(ntop->getRedis()->set(key, usertype, 0) < 0)
       return(false);
