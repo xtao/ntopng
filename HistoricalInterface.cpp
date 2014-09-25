@@ -46,7 +46,7 @@ void HistoricalInterface::resetStats() {
 /* **************************************************** */
 
 void HistoricalInterface::cleanup() {
-  if (!on_load) {
+  if(!on_load) {
     NetworkInterface::cleanup();
     resetStats();
   }
@@ -58,7 +58,7 @@ int HistoricalInterface::sqlite_callback(void *data, int argc,
            char **argv, char **azColName) {
   for(int i=0; i<argc; i++) {
     // Inject only the json information
-    if ( (strcmp( (const char*)azColName[i], "json") == 0 ) &&
+    if( (strcmp( (const char*)azColName[i], "json") == 0 ) &&
          (char*)(argv[i]) ) {
 
       parse_flows( (char*)(argv[i]) , sizeof((char*)(argv[i])) , 0, data);
@@ -74,9 +74,9 @@ int HistoricalInterface::loadData(char* p_file_name) {
   char *zErrMsg = 0;
   sqlite3 *db;
 
-  if (p_file_name && isRunning()){
+  if(p_file_name && isRunning()){
 
-    // if (running == false)
+    // if(running == false)
     //   NetworkInterface::startPacketPolling();
 
     if(stat(p_file_name, &buf) != 0) {
@@ -115,20 +115,19 @@ int HistoricalInterface::loadData(char* p_file_name) {
 
 int HistoricalInterface::loadData() {
   time_t actual_epoch, adjust_to_epoch;
-  char path[MAX_PATH];
-  char db_path[MAX_PATH];
   int ret_state = CONST_HISTORICAL_OK;
-  u_int8_t iface_dump_id;
-
   NetworkInterface * iface = ntop->getInterfaceById(interface_id);
 
-  if ((iface != NULL) && (from_epoch != 0) && (to_epoch != 0)) {
+  if((iface != NULL) && (from_epoch != 0) && (to_epoch != 0)) {
+    u_int8_t iface_dump_id;
 
     iface_dump_id = iface->get_id();
     actual_epoch = from_epoch;
     adjust_to_epoch = to_epoch - 300; // Adjust to epoch each file contains 5 minute of data
     while (actual_epoch <= adjust_to_epoch && isRunning()) {
-
+      char path[MAX_PATH];
+      char db_path[MAX_PATH];
+  
       memset(path, 0, sizeof(path));
       memset(db_path, 0, sizeof(db_path));
 
@@ -141,8 +140,8 @@ int HistoricalInterface::loadData() {
       num_historicals++;
       actual_epoch += 300; // 5 minute steps
     }
-
   }
+
   on_load = false;
 
   return ret_state;
@@ -163,8 +162,7 @@ static void* packetPollLoop(void* ptr) {
 /* **************************************************** */
 
 void HistoricalInterface::startLoadData(time_t  p_from_epoch, time_t p_to_epoch, u_int8_t p_interface_id) {
-
-  if (!on_load) {
+  if(!on_load) {
     cleanup();
     on_load = true;
 
@@ -175,7 +173,6 @@ void HistoricalInterface::startLoadData(time_t  p_from_epoch, time_t p_to_epoch,
     pthread_create(&pollLoop, NULL, packetPollLoop, (void*)this);
     NetworkInterface::startPacketPolling();
   }
-
 }
 
 /* **************************************************** */

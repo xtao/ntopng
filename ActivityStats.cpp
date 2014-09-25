@@ -20,15 +20,12 @@
  */
 
 #include "ntop_includes.h"
-#include "ewah.h"
-
-typedef EWAHBoolArray<u_int32_t> Uint32EWAHBoolArray;
 
 /* *************************************** */
 
 /* Daily duration */
 ActivityStats::ActivityStats(time_t when) {
-  _bitset = new Uint32EWAHBoolArray;
+  bitset = new Uint32EWAHBoolArray;
 
   begin_time  = (when == 0) ? time(NULL) : when;
   begin_time += ntop->get_time_offset();
@@ -45,16 +42,12 @@ ActivityStats::ActivityStats(time_t when) {
 /* *************************************** */
 
 ActivityStats::~ActivityStats() {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-
   delete bitset;
 }
 
 /* *************************************** */
 
 void ActivityStats::reset() {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-
   m.lock(__FILE__, __LINE__);
   bitset->reset();
   last_set_time = 0;
@@ -66,7 +59,6 @@ void ActivityStats::reset() {
 /* when comes from time() and thus is in UTC whereas we must wrap in localtime */
 void ActivityStats::set(time_t when) {
   if((last_set_requested != when) && (when >= begin_time)) {
-    Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
     time_t w;
 
     last_set_requested = when;
@@ -96,8 +88,6 @@ void ActivityStats::set(time_t when) {
 /* *************************************** */
 
 void ActivityStats::setDump(stringstream* dump) {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-
   m.lock(__FILE__, __LINE__);
   bitset->read(*dump);
   m.unlock(__FILE__, __LINE__);
@@ -106,7 +96,6 @@ void ActivityStats::setDump(stringstream* dump) {
 /* *************************************** */
 
 bool ActivityStats::writeDump(char* path) {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   stringstream ss;
   time_t now = time(NULL);
   time_t expire_time = now+((now+CONST_MAX_ACTIVITY_DURATION-1) % CONST_MAX_ACTIVITY_DURATION);
@@ -137,7 +126,6 @@ bool ActivityStats::writeDump(char* path) {
 /* *************************************** */
 
 bool ActivityStats::readDump(char* path) {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   char rsp[4096];
 
   if(ntop->getRedis()->get(path, rsp, sizeof(rsp)) == 0) {
@@ -178,8 +166,8 @@ bool ActivityStats::readDump(char* path) {
 json_object* ActivityStats::getJSONObject() {
   json_object *my_object;
   char buf[32];
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   u_int num = 0, last_dump = 0;
+
   my_object = json_object_new_object();
 
   m.lock(__FILE__, __LINE__);
@@ -227,7 +215,6 @@ char* ActivityStats::serialize() {
 /* *************************************** */
 
 void ActivityStats::deserialize(json_object *o) {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
   struct json_object_iterator it, itEnd;
 
   if(!o) return;
@@ -254,8 +241,6 @@ void ActivityStats::deserialize(json_object *o) {
 /* *************************************** */
 
 void ActivityStats::extractPoints(u_int8_t *elems) {
-  Uint32EWAHBoolArray *bitset = (Uint32EWAHBoolArray*)_bitset;
-
   m.lock(__FILE__, __LINE__);
 
  for(Uint32EWAHBoolArray::const_iterator i = bitset->begin(); i != bitset->end(); ++i) {

@@ -23,6 +23,9 @@
 #define _ACTIVITY_STATS_H_
 
 #include "ntop_includes.h"
+#include "ewah.h"
+
+typedef EWAHBoolArray<u_int32_t> Uint32EWAHBoolArray;
 
 /*
   Statistics for 1 day (86400 sec) 
@@ -31,7 +34,7 @@
 class ActivityStats {
  private:
   time_t begin_time, wrap_time, last_set_time, last_set_requested;
-  void *_bitset;
+  Uint32EWAHBoolArray *bitset;
   Mutex m;
 
  public:
