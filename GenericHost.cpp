@@ -86,12 +86,14 @@ void GenericHost::dumpStats(bool forceDump) {
 
   if(localHost || forceDump) {
     /* (Daily) Wrap */
-    char buf[64], *host_key, dump_path[MAX_PATH], daybuf[64];
+    char buf[64], *host_key;
     time_t when = activityStats.get_wrap_time()-(86400/2) /* sec */;
 
     host_key = get_string_key(buf, sizeof(buf));
 
     if(strcmp(host_key, "00:00:00:00:00:00")) {
+      char dump_path[MAX_PATH], daybuf[64];
+
       strftime(daybuf, sizeof(daybuf), CONST_DB_DAY_FORMAT, localtime(&when));
       snprintf(dump_path, sizeof(dump_path), "%s/%s/activities/%s",
 	       ntop->get_working_dir(), iface->get_name(), daybuf);

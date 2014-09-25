@@ -376,6 +376,8 @@ void Ntop::getUsers(lua_State* vm) {
   free(usernames);
 }
 
+/* ******************************************* */
+
 void Ntop::getUserGroup(lua_State* vm) {
   char key[64], val[64];
   char username[33];
@@ -458,7 +460,7 @@ int Ntop::changeUserRole(char *username, char *usertype) const {
 int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
   char key[64];
 
-  if( allowed_nets != NULL) {
+  if(allowed_nets != NULL) {
     snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
 
     if(ntop->getRedis()->set(key, allowed_nets, 0) < 0)

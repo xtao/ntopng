@@ -183,7 +183,6 @@ void IpAddress::compute_key() {
 
 char* IpAddress::_intoaV4(unsigned int addr, char* buf, u_short bufLen) {
   char *cp, *retStr;
-  uint byte;
   int n;
 
   cp = &buf[bufLen];
@@ -191,7 +190,8 @@ char* IpAddress::_intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
   n = 4;
   do {
-    byte = addr & 0xff;
+    u_int byte = addr & 0xff;
+
     *--cp = byte % 10 + '0';
     byte /= 10;
     if(byte > 0) {
@@ -231,23 +231,6 @@ char* IpAddress::_intoa(char* buf, u_short bufLen) {
 
 char* IpAddress::print(char *str, u_int str_len) {
   return(_intoa(str, str_len));
-}
-
-/* ******************************************* */
-
-void IpAddress::dump(struct sockaddr *sa) {
-  memset(sa, 0, sizeof(struct sockaddr));
-
-  if(addr.ipVersion == 4) {
-    struct sockaddr_in *in4 = (struct sockaddr_in*)sa;
-
-    in4->sin_family = AF_INET, in4->sin_addr.s_addr = addr.ipType.ipv4;
-  } else {
-    struct sockaddr_in6 *in6 = (struct sockaddr_in6*)sa;
-
-    memcpy(&in6->sin6_addr, &addr.ipType.ipv6, sizeof(struct ndpi_in6_addr));
-    in6->sin6_family = AF_INET6;
-  }
 }
 
 /* ******************************************* */

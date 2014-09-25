@@ -168,7 +168,7 @@ void Host::flushContacts(bool freeHost) {
 /* *************************************** */
 
 void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
-  char key[64], redis_key[128], json[4096], *k;
+  char key[64], redis_key[128], *k;
 
   if(mac) memcpy(mac_address, mac, 6); else memset(mac_address, 0, 6);
 
@@ -189,7 +189,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   if(init_all) {
     if(ip) {
-      char buf[64], rsp[256], *host = ip->print(buf, sizeof(buf));
+      char buf[64], *host = ip->print(buf, sizeof(buf)), json[4096];
 
       updateLocal();
       systemHost = ip->isLocalInterfaceAddress();
@@ -206,6 +206,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
       if(localHost || systemHost
 	 || ntop->getPrefs()->is_dns_resolution_enabled_for_all_hosts()) {
+	char rsp[256];
+
 	if(ntop->getRedis()->getAddress(host, rsp, sizeof(rsp), true) == 0) {
 	  if(symbolic_name) free(symbolic_name);
 	  symbolic_name = strdup(rsp);
@@ -412,11 +414,12 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
     }
   } else {
     lua_newtable(vm);
-     char *ipaddr = NULL;
+
     if(ip)
-      lua_push_str_table_entry(vm, "ip", (ipaddr = ip->print(buf, sizeof(buf))));
+      lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
     else
       lua_push_nil_table_entry(vm, "ip");
+
     lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
     lua_push_int_table_entry(vm, "vlan", vlan_id);
     lua_push_int_table_entry(vm, "traffic",  (lua_Integer)(sent.getNumBytes()+rcvd.getNumBytes()));

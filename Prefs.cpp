@@ -608,7 +608,7 @@ int Prefs::loadFromFile(const char *path) {
     return(-1);
   }
 
-  while(fd) {
+  while(true) {
     if(!(line = fgets(buffer, sizeof(buffer), fd)))
       break;
 

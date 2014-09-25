@@ -73,10 +73,10 @@ Flow::Flow(NetworkInterface *_iface,
 	   u_int16_t _vlanId, u_int8_t _protocol,
 	   u_int8_t cli_mac[6], IpAddress *_cli_ip, u_int16_t _cli_port,
 	   u_int8_t srv_mac[6], IpAddress *_srv_ip, u_int16_t _srv_port) : GenericHashEntry(_iface) {
-  time_t last_recvd = iface->getTimeLastPktRcvd();
+  time_t now = iface->getTimeLastPktRcvd();
 
   Flow(_iface, _vlanId, _protocol, cli_mac, _cli_ip, _cli_port,
-       srv_mac, _srv_ip, _srv_port, last_recvd, last_recvd);
+       srv_mac, _srv_ip, _srv_port, now, now);
 }
 
 /* *************************************** */
@@ -290,7 +290,7 @@ void Flow::processDetectedProtocol() {
     }
 
     if(ndpi_flow->host_server_name[0] != '\0') {
-      char buf[64], *doublecol, delimiter = ':';
+      char *doublecol, delimiter = ':';
       u_int16_t sport = htons(cli_port), dport = htons(srv_port);
       Host *svr = (sport < dport) ? cli_host : srv_host;
 
@@ -301,6 +301,8 @@ void Flow::processDetectedProtocol() {
 	doublecol[0] = '\0';
 
       if(svr) {
+	char buf[64];
+
 	aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
 
 	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
@@ -395,7 +397,6 @@ int Flow::compare(Flow *fb) {
  */
 char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
   char *cp, *retStr;
-  uint byte;
   int n;
 
   cp = &buf[bufLen];
@@ -403,7 +404,8 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
   n = 4;
   do {
-    byte = addr & 0xff;
+    u_int byte = addr & 0xff;
+
     *--cp = byte % 10 + '0';
     byte /= 10;
     if (byte > 0) {

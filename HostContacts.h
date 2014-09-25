@@ -42,7 +42,6 @@ class HostContacts {
   void dbDumpHost(char *daybuf, NetworkInterface *iface, u_int32_t host_id,
 		  u_int32_t peer_id, bool client_mode, u_int family_id,
 		  u_int32_t num_contacts);
-  u_int8_t get_queue_id(char *str);
 
  public:
   HostContacts(GenericHost *h);

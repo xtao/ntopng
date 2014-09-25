@@ -28,6 +28,7 @@
 AddressResolution::AddressResolution() {
   num_resolved_addresses = num_resolved_fails = 0, num_local_networks = 0;
   ptree = New_Patricia(128);
+  memset(local_networks, 0, sizeof(local_networks));
 }
 
 /* *********************************************** */
@@ -138,7 +139,8 @@ patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Error parsing IPv6 %s\n", ip);
   } else { /* IPv4 */
     /* inet_aton(ip, &addr4) fails parsing subnets */
-    int num_octets, ip4_0 = 0, ip4_1 = 0, ip4_2 = 0, ip4_3 = 0;
+    int num_octets;
+    u_int ip4_0 = 0, ip4_1 = 0, ip4_2 = 0, ip4_3 = 0;
     u_char *ip4 = (u_char *) &addr4;
 
     if((num_octets = sscanf(ip, "%u.%u.%u.%u", &ip4_0, &ip4_1, &ip4_2, &ip4_3)) >= 1) {

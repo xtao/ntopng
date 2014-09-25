@@ -72,6 +72,7 @@ class Flow : public GenericHashEntry {
   void processLua(lua_State* vm, ProcessInfo *proc, bool client);
   void processJson(bool is_src, json_object *my_object, ProcessInfo *proc);
   void checkBlacklistedFlow();
+  void allocFlowMemory();
 
  public:
   Flow(NetworkInterface *_iface,
@@ -86,7 +87,6 @@ class Flow : public GenericHashEntry {
   ~Flow();
 
   char *getDomainCategory();
-  void allocFlowMemory();
   void deleteFlowMemory();
   char* serialize(bool partial_dump = false);
   inline u_int8_t getTcpFlags() { return(tcp_flags);  };

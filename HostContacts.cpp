@@ -274,15 +274,6 @@ u_int HostContacts::get_num_contacts_by(IpAddress* host_ip) {
 
 /* *************************************** */
 
-u_int8_t HostContacts::get_queue_id(char *str) {
-  int id = 0, len = (int)strlen(str);
-
-  for(int i=0; i<len; i++) id += str[i];
-  return(id % CONST_NUM_OPEN_DB_CACHE);
-}
-
-/* *************************************** */
-
 void HostContacts::dbDumpHost(char *daybuf, NetworkInterface *iface,
 			      u_int32_t host_id, u_int32_t peer_id, 
 			      bool client_mode, u_int family_id,

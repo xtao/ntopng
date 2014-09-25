@@ -55,8 +55,9 @@ NetworkInterface::NetworkInterface() {
   ifname = NULL, flows_hash = NULL, hosts_hash = NULL,
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true, id = (u_int8_t)-1,
-    sprobe_interface = false, has_vlan_packets = false;
-
+    sprobe_interface = false, has_vlan_packets = false,
+    pcap_datalink_type = 0, cpu_affinity = 0, sprobe_interface = false, 
+    running = false;
   db = new DB(this);
 
   checkIdle();
@@ -65,9 +66,7 @@ NetworkInterface::NetworkInterface() {
 /* **************************************************** */
 
 NetworkInterface::NetworkInterface(const char *name) {
-  char pcap_error_buffer[PCAP_ERRBUF_SIZE];
   NDPI_PROTOCOL_BITMASK all;
-  u_int32_t num_hashes;
   char _ifname[64];
 
 #ifdef WIN32
@@ -82,6 +81,8 @@ NetworkInterface::NetworkInterface(const char *name) {
   purge_idle_flows_hosts = true;
 
   if(name == NULL) {
+    char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+
     if(!help_printed)
       ntop->getTrace()->traceEvent(TRACE_WARNING, "No capture interface specified");
 
@@ -115,6 +116,8 @@ NetworkInterface::NetworkInterface(const char *name) {
   ifname = strdup(name);
 
   if(id != DUMMY_IFACE_ID) {
+    u_int32_t num_hashes;
+
     num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
     flows_hash = new FlowHash(this, num_hashes, ntop->getPrefs()->get_max_num_flows());
     
@@ -302,12 +305,14 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
 			aggregation_server_name, true);
 
   if(zflow->epp_cmd_args[0] != '\0') {
-    char *domain, *status, *pos;
+    char *domain, *pos;
     bool next_break = false;
 
     domain = strtok_r(zflow->epp_cmd_args, "=", &pos);
 
     while((domain != NULL) && strcmp(domain, "null")) {
+      char *status;
+      
       if((status = strtok_r(NULL, ",", &pos)) == NULL) {
 	status = (char*)"true";
 	next_break = true;
@@ -624,7 +629,6 @@ void NetworkInterface::purgeIdle(time_t when) {
 
 void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
   struct ndpi_ethhdr *ethernet, dummy_ethernet;
-  struct ndpi_iphdr *iph;
   u_int64_t time;
   static u_int64_t lasttime = 0;
   u_int16_t eth_type, ip_offset, vlan_id = 0;
@@ -697,8 +701,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   case ETHERTYPE_IP:
     if(h->caplen >= ip_offset) {
       u_int16_t frag_off;
-
-      iph = (struct ndpi_iphdr *) &packet[ip_offset];
+      struct ndpi_iphdr *iph = (struct ndpi_iphdr *) &packet[ip_offset];
 
       if(iph->version != 4) {
 	/* This is not IPv4 */
@@ -1322,14 +1325,6 @@ void NetworkInterface::getFlowPeersList(lua_State* vm, char *numIP, u_int16_t vl
 
 /* **************************************************** */
 
-int ptr_compare(const void *a, const void *b) {
-  if(a == b)
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flow found");
-  return((a == b) ? 0 : 1);
-}
-
-/* **************************************************** */
-
 u_int NetworkInterface::purgeIdleFlows() {
   if(!purge_idle_flows_hosts) return(0);
 
@@ -1537,7 +1532,7 @@ bool NetworkInterface::validInterface(char *name) {
 
 u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len) {
   char ebuf[256];
-  int i, numInterfaces = 0;
+  int numInterfaces = 0;
   pcap_if_t *devpointer;
 
   if(printHelp && help_printed)
@@ -1555,7 +1550,7 @@ u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
     }
     
-    for(i = 0; devpointer != NULL; i++) {
+    for(int i = 0; devpointer != NULL; i++) {
       if(validInterface(devpointer->description)) {
 	numInterfaces++;
 
@@ -1661,12 +1656,12 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
 static bool similarity_walker(GenericHashEntry *node, void *user_data) {
   Host *h = (Host*)node;
   struct correlator_host_info *info = (struct correlator_host_info*)user_data;
-  char buf[32], name[64];
-
+  
   if(h
      // && h->isLocalHost() /* Consider only local hosts */
      && h->get_ip()
      && (h != info->h)) {
+    char buf[32], name[64];
 
     if (h->get_vlan_id() == 0) {
       sprintf(name, "%s",h->get_ip()->print(buf, sizeof(buf)));

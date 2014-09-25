@@ -79,7 +79,7 @@ char* http_get(char *host, u_int port, char *page, char* rsp, u_int rsp_len) {
   while((tmpres = recv(sock, buf, sizeof(buf)-1, 0)) > 0) {
     buf[tmpres] = '\0';
     
-    if(debug) fprintf(stderr, "Received %u bytes\n", tmpres);
+    if(debug) fprintf(stderr, "Received %d bytes\n", tmpres);
 
     if(htmlstart == 0) {
       /* Under certain conditions this will not work.

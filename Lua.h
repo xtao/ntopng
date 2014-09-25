@@ -74,7 +74,9 @@ class Lua {
    * @param script_path Full path of lua script.
    * @return The result of the execution of the script.
    */
-  int handle_script_request(struct mg_connection *conn, const struct mg_request_info *request_info, char *script_path);
+  int handle_script_request(struct mg_connection *conn,
+			    const struct mg_request_info *request_info, 
+			    char *script_path);
 };
 
 /**

@@ -28,6 +28,7 @@ DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
 
   dir_duration = max_val(_dir_duration, 300); /* 5 min is the minimum duration */
+  db_path[0] = '\0';
 
   // sqlite3_config(SQLITE_CONFIG_SERIALIZED);
   db = NULL, end_dump = 0, iface = _iface, db_id = _db_id;
@@ -46,26 +47,6 @@ DB::DB(NetworkInterface *_iface, u_int32_t _dir_duration, u_int8_t _db_id) {
 DB::~DB() {
   termDB();
   if(m) delete m;
-}
-
-/* **************************************************** */
-
-int DB::get_open_db_contacts_connection(char *path, int *db_to_purge) {
-  *db_to_purge = 0;
-
-  for(int cached_id=0; cached_id<CONST_NUM_OPEN_DB_CACHE; cached_id++) {
-    if(contacts_cache[cached_id].db == NULL) {
-      *db_to_purge = cached_id;
-      break;
-    } else if(strcmp(contacts_cache[cached_id].last_open_contacts_db_path, path) == 0)
-      return(cached_id);
-    else {
-      if(contacts_cache[cached_id].last_insert < contacts_cache[*db_to_purge].last_insert)
-	*db_to_purge = cached_id;
-    }
-  }
-
-  return(-1);
 }
 
 /* ******************************************* */
@@ -190,121 +171,5 @@ bool DB::execSQL(sqlite3 *_db, char* sql) {
 
 /* ******************************************* */
 
-bool DB::execContactsSQLStatement(char* _sql) {
-  if(ntop->getPrefs()->do_dump_flows_on_db()) {
-    char *zErrMsg = NULL, *path, *filename, *sql, *where, db_path[MAX_PATH];
-    int rc, num_spins, cached_id, db_to_purge;
-
-    /* PATH|key|SQL */
-    ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] %s", _sql);
-
-    if((path = strtok_r(_sql, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR,
-				   "[DB] Invalid SQL statement [%s]", _sql);
-      return(false);
-    }
-
-    if((filename = strtok_r(NULL, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR,
-				   "[DB] Invalid SQL statement [%s]",
-				   path);
-      return(false);
-    }
-
-    if((sql = strtok_r(NULL, "|", &where)) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR,
-				   "[DB] Invalid SQL statement [%s][%s]",
-				   path, filename);
-      return(false);
-    }
-
-    snprintf(db_path, sizeof(db_path), "%s/%s.sqlite", path, filename);
-    ntop->fixPath(db_path);
-
-    cached_id = get_open_db_contacts_connection(db_path, &db_to_purge);
-
-    if(cached_id == -1) {
-      /* The DB is the not last we have used */
-
-      cached_id = db_to_purge;
-
-      if(contacts_cache[cached_id].db) {
-	ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] [%u] Closing (%d) %s [%u operations]",
-				     db_id, cached_id,
-				     contacts_cache[cached_id].last_open_contacts_db_path,
-				     contacts_cache[cached_id].num_contacts_db_insert);
-
-	rc = sqlite3_exec(contacts_cache[cached_id].db, "COMMIT;", NULL, 0, &zErrMsg);
-	if(rc != SQLITE_OK) {
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]", sql, zErrMsg);
-	  sqlite3_free(zErrMsg);
-	}
-
-	sqlite3_close(contacts_cache[cached_id].db);
-	contacts_cache[cached_id].db = NULL, contacts_cache[cached_id].last_open_contacts_db_path[0] = 0;
-      }
-
-      contacts_cache[cached_id].num_contacts_db_insert = 0, contacts_cache[cached_id].last_insert = 0;
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[DB] [%d] Opening (%d) %s",
-				   db_id, cached_id, db_path);
-
-      if(Utils::mkdir_tree(path)) {
-	char *cmd;
-	struct stat buf;
-	int rc = stat(db_path, &buf);
-
-	if(sqlite3_open(db_path, &contacts_cache[cached_id].db) != 0) {
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] [%d] Unable to open/create DB %s [%s]",
-				       db_id, db_path, sqlite3_errmsg(db));
-	  return(false);
-	}
-
-	cmd = (char*)"BEGIN; CREATE TABLE IF NOT EXISTS "CONST_CONTACTS" (key string, family number, contacts number, PRIMARY KEY (key, family));"
-	  "CREATE TABLE IF NOT EXISTS "CONST_CONTACTED_BY" (key string, family number, contacts number, PRIMARY KEY (key, family));";
-
-	/* DB did not exist */
-	rc = sqlite3_exec(contacts_cache[cached_id].db, cmd, NULL, 0, &zErrMsg);
-	if(rc != SQLITE_OK) {
-	  ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error: %s [%s]",
-				       sql, zErrMsg);
-	  sqlite3_free(zErrMsg);
-	  sqlite3_close(contacts_cache[cached_id].db);
-	  contacts_cache[cached_id].db = NULL,
-	    contacts_cache[cached_id].last_open_contacts_db_path[0] = 0;
-	  return(false);
-	} else
-	  ntop->getTrace()->traceEvent(TRACE_INFO, "%s", cmd);
-
-	strcpy(contacts_cache[cached_id].last_open_contacts_db_path, db_path);
-      } else
-	ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] Unable to create dir %s", path);
-    }
-
-    /* If the DB is busy we spin */
-    num_spins = 0, contacts_cache[cached_id].num_contacts_db_insert++,
-      contacts_cache[cached_id].last_insert = ++contacts_cache_idx;
-    while(num_spins < MAX_NUM_DB_SPINS) {
-      rc = sqlite3_exec(contacts_cache[cached_id].db, sql, NULL, 0, &zErrMsg);
-      if((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)) {
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "[DB] [%u] DB %s is locked: waiting [%s]",
-				     db_id, contacts_cache[cached_id].last_open_contacts_db_path,
-				     zErrMsg);
-	sqlite3_free(zErrMsg);
-	num_spins++;
-	sleep(1);
-      } else
-	break;
-    }
-
-    if(rc != SQLITE_OK) {
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] [%u] SQL error: %s [%s][rc: %u][%s]",
-				   db_id, sql, zErrMsg, rc,
-				   contacts_cache[cached_id].last_open_contacts_db_path);
-      sqlite3_free(zErrMsg);
-    }
-  }
-
-  return(false);
-}
 
 

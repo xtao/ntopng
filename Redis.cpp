@@ -140,29 +140,6 @@ int Redis::hashGet(char *key, char *field, char *rsp, u_int rsp_len) {
 
 /* **************************************** */
 
-int Redis::hashLen(char *key) {
-  int rc;
-  redisReply *reply;
-
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "HLEN %s", key);
-  if(!reply) reconnectRedis();
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-
-  if(reply && (reply->type == REDIS_REPLY_INTEGER))
-    rc = (int)reply->integer;
-  else
-    rc = -1;
-
-  if(reply) freeReplyObject(reply);
-  l->unlock(__FILE__, __LINE__);
-
-  return(rc);
-}
-
-/* **************************************** */
-
 int Redis::hashSet(char *key, char *field, char *value) {
   int rc = 0;
   redisReply *reply;
@@ -397,7 +374,7 @@ int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool
 
 int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
 		    bool dont_check_for_existance, bool localHost) {
-  int rc;
+  int rc = 0;
   char key[128];
   bool found;
   redisReply *reply;
@@ -424,7 +401,10 @@ int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
     else
       found = false;
 
-    if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+    if(reply)
+      freeReplyObject(reply);
+    else
+      rc = -1;
   }
 
   if(!found) {
@@ -515,7 +495,7 @@ char* Redis::getHTTPBLCategory(char *numeric_ip, char *buf,
 
   if(reply && reply->str) {
     snprintf(buf, buf_len, "%s", reply->str);
-    if(reply) freeReplyObject(reply);
+    freeReplyObject(reply);
   } else {
     buf[0] = '\0';
 
@@ -563,7 +543,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
 
   if(reply && reply->str) {
     snprintf(buf, buf_len, "%s", reply->str);
-    if(reply) freeReplyObject(reply);
+    freeReplyObject(reply);
   } else {
     buf[0] = 0;
 
@@ -897,7 +877,7 @@ void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_
 u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
-  char buf[32], keybuf[384], rsp[32], host_id[16];
+  char buf[32], keybuf[384], rsp[32];
 
   snprintf(keybuf, sizeof(keybuf), "%s|%s", iface->get_name(), host_name);
 
@@ -907,6 +887,8 @@ u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_na
 
   if(rc == -1) {
     /* Not found */
+    char host_id[16];
+
     snprintf(host_id, sizeof(host_id), "%u", id = incrKey((char*)NTOP_HOSTS_SERIAL));
     setHostId(iface, daybuf, host_name, id);
     *new_key = true;
@@ -937,7 +919,6 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   char path[MAX_PATH];
   time_t begin = time(NULL);
   u_int num_interfaces = 0, num_hosts = 0, num_activities = 0;
-  u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];
 
   snprintf(path, sizeof(path), "%s/datadump",
 	   ntop->get_working_dir());
@@ -977,9 +958,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
   if(kreply && (kreply->type == REDIS_REPLY_ARRAY)) {
     for(u_int kid = 0; kid < kreply->elements; kid++) {
       char *_key = (char*)kreply->element[kid]->str, key[256];
-      char hash_key[512], buf[512], ifname[32];
-      redisReply *r, *r1, *r2;
-      char *iface, *host, *token, *pipe;
+      char ifname[32];
+      char *host, *token, *pipe;
 
       snprintf(ifname, sizeof(ifname), "%s", _key);
       pipe = strchr(ifname, '|');
@@ -999,11 +979,14 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
       // key = ethX|mail.xxxxxx.com
       if(strtok_r(key, "|", &token) != NULL) {
+	char *iface;
+
 	if((iface = strtok_r(NULL, "|", &token)) != NULL) {
 	  if((host = strtok_r(NULL, "|", &token)) != NULL) {
 	    u_int32_t host_index = atol(host);
 	    u_int32_t interface_idx = (u_int32_t)-1;
 	    char host_buf[256];
+	    u_char ifnames[MAX_NUM_INTERFACES][MAX_INTERFACE_NAME_LEN];
 
 	    /* Compute interface id */
 	    for(u_int i=0; i<num_interfaces; i++) {
@@ -1035,10 +1018,11 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to find host hash entry %s", host);
 	    } else {
 	      char *zErrMsg, *pipe = strchr(host_buf,'|');
-	      char buf[256];
-	      int rc;
 
 	      if(pipe) {
+		char buf[256];
+		int rc;
+
 		snprintf(buf, sizeof(buf), "INSERT INTO hosts VALUES (%u,%u,'%s');",
 			 host_index, interface_idx, &pipe[1]);
 
@@ -1046,7 +1030,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 		if((rc = sqlite3_exec(db, buf, NULL, 0, &zErrMsg)) != SQLITE_OK) {
 		  if(rc != SQLITE_CONSTRAINT /* Key already existing */)
-		    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s][%d/%d]", zErrMsg, buf, rc, SQLITE_MISMATCH);
+		    ntop->getTrace()->traceEvent(TRACE_ERROR, "[DB] SQL error [%s][%s][%d/%d]", zErrMsg,
+						 buf, rc, SQLITE_MISMATCH);
 
 		  sqlite3_free(zErrMsg);
 		}
@@ -1064,6 +1049,9 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      But on the DB we need just one of them and not both
 	    */
 	    for(u_int32_t loop=0; loop<2; loop++) {
+	      char hash_key[512];
+	      redisReply *r;
+
 	      snprintf(hash_key, sizeof(hash_key), "%s|%s|%s", day, _key,
 		       (loop == 0) ? CONST_CONTACTED_BY : CONST_CONTACTS);
 
@@ -1080,6 +1068,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	      if(r) {
 		if(r->type == REDIS_REPLY_ARRAY) {
 		  for(u_int32_t j = 0; j < r->elements; j++) {
+		    redisReply *r1, *r2;
+
 		    l->lock(__FILE__, __LINE__);
 		    r1 = (redisReply*)redisCommand(redis, "HGET %s %s", hash_key, r->element[j]->str);
 		    if(!r1) reconnectRedis();
@@ -1088,11 +1078,13 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 		    l->unlock(__FILE__, __LINE__);
 
 		    if(r1 && r1->str) {
-		      char *contact_host, *contact_family, *subtoken;
+		      char *contact_host, *subtoken;
 
-		      if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL){
+		      if((contact_host = strtok_r(r->element[j]->str, "@", &subtoken)) != NULL) {
+			char *contact_family;
+
 			if((contact_family = strtok_r(NULL, "@", &subtoken)) != NULL) {
-			  char *client_idx, *server_idx;
+			  char *client_idx, *server_idx, buf[512];
 
 			  if(loop == 0)
 			    client_idx = contact_host, server_idx = host; /* contacted_by */
@@ -1147,7 +1139,8 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 	}
 
 	l->lock(__FILE__, __LINE__);
-	r = (redisReply*)redisCommand(redis, "DEL %s", _key);
+	redisReply *r = (redisReply*)redisCommand(redis, "DEL %s", _key);
+
 	if(!r) reconnectRedis();
 	if(r && (r->type == REDIS_REPLY_ERROR))
 	  ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", r->str);
@@ -1196,7 +1189,7 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
 
 #ifndef WIN32
   // Print alerts into syslog
-  if(ntop->getRuntimePrefs()->are_alerts_syslog_enable()){
+  if(ntop->getRuntimePrefs()->are_alerts_syslog_enable()) {
     if( alert_level_info == level) syslog(LOG_INFO, "%s", what);
     else if ( alert_level_warning == level) syslog(LOG_WARNING, "%s", what);
     else if ( alert_level_error == level) syslog(LOG_ALERT, "%s", what);
@@ -1231,7 +1224,8 @@ u_int Redis::getNumQueuedAlerts() {
   if(!reply) reconnectRedis();
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-  else num = (u_int)reply->integer;
+  else
+    num = (u_int)reply->integer;
   l->unlock(__FILE__, __LINE__);
   if(reply) freeReplyObject(reply);
 
@@ -1275,10 +1269,8 @@ u_int Redis::getQueuedAlerts(char **alerts, u_int start_idx, u_int num) {
 
     if(reply && reply->str) {
       alerts[i++] = strdup(reply->str);
-      if(reply) {
-	freeReplyObject(reply);
-	reply = NULL;
-      }
+      freeReplyObject(reply);
+      reply = NULL;
     } else
       break;
   }

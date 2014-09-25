@@ -25,7 +25,7 @@
 
 char* Utils::jsonLabel(int label, const char *label_str,char *buf, u_int buf_len){
 
-  if (ntop->getPrefs()->get_json_symbolic_labels()) {
+  if(ntop->getPrefs()->get_json_symbolic_labels()) {
     snprintf(buf, buf_len, "%s", label_str);
   }else
     snprintf(buf, buf_len, "%d", label);
@@ -130,7 +130,7 @@ void Utils::setThreadAffinity(pthread_t thread, int core_id) {
   u_long core = core_id % num_cores;
   cpu_set_t cpu_set;
 
-  if (num_cores > 1) {
+  if(num_cores > 1) {
     CPU_ZERO(&cpu_set);
     CPU_SET(core, &cpu_set);
     pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpu_set);
@@ -173,14 +173,14 @@ float Utils::timeval2ms(struct timeval *tv) {
 /* ****************************************************** */
 
 bool Utils::mkdir_tree(char *path) {
-  int permission = 0777, i, rc;
+  int permission = 0777, rc;
   struct stat s;
 
   ntop->fixPath(path);
 
   if(stat(path, &s) != 0) {
     /* Start at 1 to skip the root */
-    for(i=1; path[i] != '\0'; i++)
+    for(int i=1; path[i] != '\0'; i++)
       if(path[i] == CONST_PATH_SEP) {
 #ifdef WIN32
 	/* Do not create devices directory */
@@ -276,13 +276,12 @@ static inline bool is_base64(unsigned char c) {
 std::string Utils::base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len) {
   std::string ret;
   int i = 0;
-  int j = 0;
   unsigned char char_array_3[3];
   unsigned char char_array_4[4];
 
   while (in_len--) {
     char_array_3[i++] = *(bytes_to_encode++);
-    if (i == 3) {
+    if(i == 3) {
       char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
       char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
       char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
@@ -294,9 +293,8 @@ std::string Utils::base64_encode(unsigned char const* bytes_to_encode, unsigned 
     }
   }
 
-  if (i)
-    {
-      for(j = i; j < 3; j++)
+  if(i) {
+      for(int j = i; j < 3; j++)
 	char_array_3[j] = '\0';
 
       char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
@@ -304,7 +302,7 @@ std::string Utils::base64_encode(unsigned char const* bytes_to_encode, unsigned 
       char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
       char_array_4[3] = char_array_3[2] & 0x3f;
 
-      for (j = 0; (j < i + 1); j++)
+      for(int j = 0; (j < i + 1); j++)
 	ret += base64_chars[char_array_4[j]];
 
       while((i++ < 3))
@@ -319,40 +317,41 @@ std::string Utils::base64_encode(unsigned char const* bytes_to_encode, unsigned 
 
 std::string Utils::base64_decode(std::string const& encoded_string) {
   int in_len = encoded_string.size();
-  int i = 0;
-  int j = 0;
-  int in_ = 0;
+  int i = 0, in_ = 0;
   unsigned char char_array_4[4], char_array_3[3];
   std::string ret;
 
   while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
     char_array_4[i++] = encoded_string[in_]; in_++;
-    if (i ==4) {
-      for (i = 0; i <4; i++)
+
+    if(i == 4) {
+      for(i = 0; i <4; i++)
         char_array_4[i] = base64_chars.find(char_array_4[i]);
 
       char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
       char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-      for (i = 0; (i < 3); i++)
+      for(i = 0; (i < 3); i++)
         ret += char_array_3[i];
       i = 0;
     }
   }
 
-  if (i) {
-    for (j = i; j <4; j++)
+  if(i) {
+    int j;
+
+    for(j = i; j <4; j++)
       char_array_4[j] = 0;
 
-    for (j = 0; j <4; j++)
+    for(j = 0; j <4; j++)
       char_array_4[j] = base64_chars.find(char_array_4[j]);
 
     char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
     char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
     char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+    for(j = 0; (j < i - 1); j++) ret += char_array_3[j];
   }
 
   return ret;
@@ -394,7 +393,7 @@ double Utils::pearsonValueCorrelation(u_int8_t *x, u_int8_t *y) {
 
   ex /= CONST_MAX_ACTIVITY_DURATION, ey /= CONST_MAX_ACTIVITY_DURATION;
 
-  for (size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
+  for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
     /* Compute the correlation coefficient */
     double xt = x[i] - ex, yt = y[i] - ey;
 
@@ -406,8 +405,7 @@ double Utils::pearsonValueCorrelation(u_int8_t *x, u_int8_t *y) {
 
 /* *************************************** */
 /* XXX: it assumes that the vectors are bitmaps */
-double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) {
-  double tiny_value = 1e-2;
+double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) { 
   size_t inter_card = 0, union_card = 0;
 
   for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
@@ -415,8 +413,9 @@ double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) {
     inter_card += x[i] & y[i];
   }
 
-  if (union_card == 0)
-	return tiny_value;
+  if(union_card == 0)
+    return(1e-2);
+
   return ((double)inter_card/union_card);
 }
 
@@ -427,19 +426,19 @@ const char *strcasestr(const char *haystack, const char *needle) {
   int i=-1;
 
   while (haystack[++i] != '\0') {
-    if (tolower(haystack[i]) == tolower(needle[0])) {
+    if(tolower(haystack[i]) == tolower(needle[0])) {
       int j=i, k=0, match=0;
       while (tolower(haystack[++j]) == tolower(needle[++k])) {
 	match=1;
 	// Catch case when they match at the end
 	//printf("j:%d, k:%d\n",j,k);
-	if (haystack[j] == '\0' && needle[k] == '\0') {
+	if(haystack[j] == '\0' && needle[k] == '\0') {
 	  //printf("Mj:%d, k:%d\n",j,k);
 	  return &haystack[i];
 	}
       }
       // Catch normal case
-      if (match && needle[k] == '\0'){
+      if(match && needle[k] == '\0'){
 	// printf("Norm j:%d, k:%d\n",j,k);
 	return &haystack[i];
       }
@@ -509,16 +508,18 @@ char* Utils::sanitizeHostName(char *str) {
 /* **************************************************** */
 
 char* Utils::urlDecode(const char *src, char *dst, u_int dst_len) {
-  char a, b, *ret = dst;
+  char *ret = dst;
   u_int i = 0;
 
   dst_len--; /* Leave room for \0 */
   dst[dst_len] = 0;
 
   while((*src) && (i < dst_len)) {
+    char a, b;
+
     if((*src == '%') &&
-       ((a = src[1]) &&(b = src[2])) &&
-       (isxdigit(a) && isxdigit(b))) {
+       ((a = src[1]) && (b = src[2]))
+       && (isxdigit(a) && isxdigit(b))) {
       if(a >= 'a') a -= 'a'-'A';
       if(a >= 'A') a -=('A' - 10);
       else         a -= '0';

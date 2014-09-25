@@ -110,15 +110,14 @@ static void* packetPollLoop(void* ptr) {
   while(!iface->isRunning()) sleep(1);
 
   do {
-    pcap_t *pcap_handle;
-
     if(pcap_list != NULL) {
       char path[256], *fname;
-    
+      pcap_t *pcap_handle;
+
       while((fname = fgets(path, sizeof(path), pcap_list)) != NULL) {
 	char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 	int l = (int)strlen(path)-1;
-
+	
 	if((l <= 1) || (path[0] == '#')) continue;
 	path[l--] = '\0';
 

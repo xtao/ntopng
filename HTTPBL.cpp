@@ -46,9 +46,7 @@ HTTPBL::~HTTPBL() {
 /* **************************************************** */
 
 static void* httpblThreadInfiniteLoop(void* ptr) {
-  HTTPBL *a = (HTTPBL*)ptr;
-
-  return(a->httpblLoop(ptr));
+  return(((HTTPBL*)ptr)->httpblLoop(ptr));
 }
 
 /* **************************************************** */

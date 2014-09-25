@@ -86,7 +86,6 @@ int ntop_main(int argc, char *argv[])
 int main(int argc, char *argv[])
 #endif
 {
-  HTTPserver *httpd = NULL;
   Prefs *prefs = NULL;
   char *ifName;
   int rc;
@@ -190,9 +189,9 @@ int main(int argc, char *argv[])
 #endif
 
   ntop->loadGeolocation(prefs->get_docs_dir());
-  ntop->registerHTTPserver(httpd = new HTTPserver(prefs->get_http_port(),
-						  prefs->get_docs_dir(),
-						  prefs->get_scripts_dir()));
+  ntop->registerHTTPserver( new HTTPserver(prefs->get_http_port(),
+					   prefs->get_docs_dir(),
+					   prefs->get_scripts_dir()));
   /*
     We have created the network interface and thus changed user. Let's not check
     if we can write on the data directory

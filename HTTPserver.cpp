@@ -41,9 +41,7 @@ bool enable_users_login = true;
  * Send error message back to a client.
  */
 int send_error(struct mg_connection *conn, int status, const char *reason, const char *fmt, ...) {
-  char		buf[BUFSIZ];
-  va_list		ap;
-  int		len;
+  va_list	ap;
 
   conn->status_code = status;
 
@@ -55,6 +53,9 @@ int send_error(struct mg_connection *conn, int status, const char *reason, const
 
   /* Errors 1xx, 204 and 304 MUST NOT send a body */
   if(status > 199 && status != 204 && status != 304) {
+    char buf[BUFSIZ];
+    int  len;
+
     conn->num_bytes_sent = 0;
     va_start(ap, fmt);
     len = mg_vsnprintf(conn, buf, sizeof(buf), fmt, ap);
@@ -95,9 +96,9 @@ static void generate_session_id(char *buf, const char *random, const char *user)
 
 // Return 1 if request is authorized, 0 otherwise.
 static int is_authorized(const struct mg_connection *conn,
-                         const struct mg_request_info *request_info) {
-  char key[64], user[32];
-  char session_id[33], username[33];
+                         const struct mg_request_info *request_info,
+			 char *username) {
+  char session_id[33];
 
   // Always authorize accesses to login page and to authorize URI
   if(!strcmp(request_info->uri, LOGIN_URL) ||
@@ -110,6 +111,7 @@ static int is_authorized(const struct mg_connection *conn,
 
   if(session_id[0] == '\0') {
     char password[32];
+
     /* Last resort: see if we have a user and password matching */
     mg_get_cookie(conn, "password", password, sizeof(password));
 
@@ -119,6 +121,8 @@ static int is_authorized(const struct mg_connection *conn,
   // ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] Received session %s/%s", session_id, username);
 
   if(ntop->getPrefs()->do_auto_logout()) {
+    char key[64], user[32];
+
     snprintf(key, sizeof(key), "sessions.%s", session_id);
     if((ntop->getRedis()->get(key, user, sizeof(user)) < 0)
        || strcmp(user, username) /* Users don't match */) {
@@ -249,6 +253,7 @@ static void uri_encode(const char *src, char *dst, u_int dst_len) {
 static int handle_lua_request(struct mg_connection *conn) {
   struct mg_request_info *request_info = mg_get_request_info(conn);
   u_int len = (u_int)strlen(request_info->uri);
+  char username[33] = { 0 };
 
   if((ntop->getGlobals()->isShutdown())
      //|| (strcmp(request_info->request_method, "GET"))
@@ -263,7 +268,7 @@ static int handle_lua_request(struct mg_connection *conn) {
        && ((strcmp(&request_info->uri[len-4], ".css") == 0)
 	   || (strcmp(&request_info->uri[len-3], ".js")) == 0))
       ;
-    else if(!is_authorized(conn, request_info)) {
+    else if(!is_authorized(conn, request_info, username)) {
       redirect_to_login(conn, request_info);
       return(1);
     } else if(strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
@@ -355,7 +360,7 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read https://svn.ntop.org/svn/ntop/trunk/ntopng/README.SSL if you want to enable SSL.");
     ssl_enabled = false;
   }
-  if ((!use_http) && (!use_ssl & !ssl_enabled)) {
+  if ((!use_http) && (!use_ssl) & (!ssl_enabled)) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disabled and the SSL certificate is missing.");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Starting the HTTP server on the default port");
     port = CONST_DEFAULT_NTOP_PORT;

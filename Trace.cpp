@@ -55,7 +55,6 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
     const char *extra_msg = "";
     time_t theTime = time(NULL);
     char *syslogMsg;
-
 #ifdef WIN32
     char filebuf[MAX_PATH];
     const char *backslash = strrchr(_file, '\\');
@@ -99,8 +98,8 @@ void Trace::traceEvent(int eventTraceLevel, const char* _file,
 
     // trace_mutex.unlock();
 
-    syslogMsg = &out_buf[strlen(theDate)+1];
 #ifndef WIN32
+    syslogMsg = &out_buf[strlen(theDate)+1];
     if(eventTraceLevel == 0 /* TRACE_ERROR */)
       syslog(LOG_ERR, "%s", syslogMsg);
     else if(eventTraceLevel == 1 /* TRACE_WARNING */)
@@ -123,8 +122,8 @@ extern "C" {
 
 /* ******************************* */
 
-VOID Trace::AddToMessageLog(LPTSTR lpszMsg)
-{
+#if 0
+VOID Trace::AddToMessageLog(LPTSTR lpszMsg) {
   HANDLE  hEventSource;
   TCHAR	szMsg[4096];
 
@@ -166,3 +165,7 @@ VOID Trace::AddToMessageLog(LPTSTR lpszMsg)
     } 
 }
 #endif
+
+/* ******************************* */
+
+#endif /* WIN32 */

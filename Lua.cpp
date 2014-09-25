@@ -193,10 +193,11 @@ static int ntop_get_interface_names(lua_State* vm) {
   lua_newtable(vm);
 
   for(int i=0; i<ntop->get_num_interfaces(); i++) {
-    char num[8];
     NetworkInterface *iface =  ntop->getInterfaceAtId(i);
 
     if(iface != NULL) {
+      char num[8];
+
       snprintf(num, sizeof(num), "%d", i);
       lua_push_str_table_entry(vm, num, iface->get_name());
     }
@@ -514,7 +515,6 @@ static int ntop_is_windows(lua_State* vm) {
 static int ntop_list_dir_files(lua_State* vm) {
   char *path;
   DIR *dirp;
-  struct dirent *dp;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   path = (char*)lua_tostring(vm, 1);
@@ -523,6 +523,8 @@ static int ntop_list_dir_files(lua_State* vm) {
   lua_newtable(vm);
 
   if((dirp = opendir(path)) != NULL) {
+    struct dirent *dp;
+
     while ((dp = readdir(dirp)) != NULL)
       if(dp->d_name && (dp->d_name[0] != '.')) {
 	lua_push_str_table_entry(vm, dp->d_name, dp->d_name);
@@ -810,9 +812,10 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_ip = NULL;
   u_int16_t vlan_id = 0;
-  char buf[64];
 
   if(lua_type(vm, 1) == LUA_TSTRING) {
+    char buf[64];
+
     getHostVlanInfo((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
     /* Optional VLAN id */
@@ -1055,11 +1058,12 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface;
   char *host_name;
   u_int16_t vlan_id = 0;
-  char buf[64];
 
-  if(lua_type(vm, 1) == LUA_TSTRING)
+  if(lua_type(vm, 1) == LUA_TSTRING) {
+    char buf[64];
+    
     getHostVlanInfo((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
-  else
+  } else
     host_name = NULL;
 
   /* Optional VLAN id */
@@ -1206,7 +1210,6 @@ static int ntop_get_interface_find_host(lua_State* vm) {
 
 static int ntop_get_interface_endpoint(lua_State* vm) {
   NetworkInterface *ntop_interface;
-  char *endpoint;
   u_int8_t id;
 
   lua_getglobal(vm, "ntop_interface");
@@ -1220,7 +1223,8 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
     id = (u_int8_t)lua_tonumber(vm, 1);
 
   if(ntop_interface) {
-    endpoint = ntop_interface->getEndpoint(id);
+    char *endpoint = ntop_interface->getEndpoint(id);
+
     lua_pushfstring(vm, "%s", endpoint ? endpoint : "");
   }
 
@@ -1779,6 +1783,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
  * @return @ref CONST_LUA_ERROR if the expected type is equal to function type, @ref CONST_LUA_PARAM_ERROR otherwise.
  */
 static int ntop_syslog(lua_State* vm) {
+#ifndef WIN32
   char *msg;
   bool is_error;
 
@@ -1788,7 +1793,6 @@ static int ntop_syslog(lua_State* vm) {
   is_error = lua_toboolean(vm, 1) ? true : false;
   msg = (char*)lua_tostring(vm, 2);
 
-#ifndef WIN32
   syslog(is_error ? LOG_ERR : LOG_INFO, "%s", msg);
 #endif
 
@@ -1962,7 +1966,7 @@ static int ntop_del_hash_redis(lua_State* vm) {
 static int ntop_get_hash_keys_redis(lua_State* vm) {
   char *key, **vals;
   Redis *redis = ntop->getRedis();
-  int rc, i;
+  int rc;
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key    = (char*)lua_tostring(vm, 1)) == NULL)    return(CONST_LUA_PARAM_ERROR);
@@ -1971,7 +1975,8 @@ static int ntop_get_hash_keys_redis(lua_State* vm) {
 
   if(rc > 0) {
     lua_newtable(vm);
-    for(i = 0; i < rc; i++) {
+
+    for(int i = 0; i < rc; i++) {
       lua_push_str_table_entry(vm, vals[i], (char*)"");
       free(vals[i]);
     }
@@ -2241,9 +2246,8 @@ static int ntop_lua_cli_print(lua_State* vm) {
  * @return CONST_LUA_OK.
  */
 static int is_historical_interface(lua_State* vm) {
-  u_int32_t id, historical_id;
-
-  if(ntop->getPrefs()->do_dump_flows_on_db()){
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    u_int32_t id, historical_id;
 
     historical_id = ntop->getHistoricalInterfaceId();
 
@@ -2532,7 +2536,6 @@ static const luaL_Reg ntop_reg[] = {
 /* ****************************************** */
 
 void Lua::lua_register_classes(lua_State *L, bool http_mode) {
-  int lib_id, meta_id;
   static const luaL_Reg _meta[] = { { NULL, NULL } };
   int i;
 
@@ -2545,6 +2548,8 @@ void Lua::lua_register_classes(lua_State *L, bool http_mode) {
   luaopen_lsqlite3(L);
 
   for(i=0; ntop[i].class_name != NULL; i++) {
+    int lib_id, meta_id;
+
     /* newclass = {} */
     lua_createtable(L, 0, 0);
     lib_id = lua_gettop(L);
@@ -2709,10 +2714,13 @@ static char* http_decode(char *str) {
 
 /* ****************************************** */
 
+static void free_ptree_data(void *data) { ; }
+
 int Lua::handle_script_request(struct mg_connection *conn,
 			       const struct mg_request_info *request_info,
 			       char *script_path) {
-  char buf[64], key[64], val[64], *_cookies, user[64], outbuf[FILENAME_MAX];
+  char buf[64], key[64], val[64], *_cookies, user[64] = { '\0' }, outbuf[FILENAME_MAX];
+  patricia_tree_t *ptree = NULL;
 
   luaL_openlibs(L); /* Load base libraries */
   lua_register_classes(L, true); /* Load custom classes */
@@ -2727,13 +2735,14 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
 
     if(_query_string) {
-      char *tok, *where, *query_string;
-      FILE *fd;
+      char *where, *query_string;
       int len = strlen(_query_string)+1;
 
       ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s", _query_string);
 
       if((query_string = (char*)malloc(len)) != NULL) {
+	char *tok;
+
 	Utils::urlDecode(_query_string, query_string, len);
 
 	tok = strtok_r(query_string, "&", &where);
@@ -2748,6 +2757,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	    equal[0] = '\0';
 	    if((decoded_buf = http_decode(&equal[1])) != NULL) {
 	      int i;
+	      FILE *fd;
 
 	      for(i=0; decoded_buf[i] != '\0'; i++) {
 		/* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
@@ -2860,10 +2870,10 @@ int Lua::handle_script_request(struct mg_connection *conn,
     if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
       goto set_preferred_interface;
     }
-
-    NetworkInterface *iface;
-
+    
   set_preferred_interface:
+    NetworkInterface *iface;
+    
     if((iface = ntop->getInterface(val)) != NULL) {
       /* The specified interface still exists */
       lua_push_str_table_entry(L, "ifname", iface->get_name());
@@ -2874,12 +2884,35 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
   lua_setglobal(L, "_SESSION"); /* Like in php */
 
+  if(user[0] != '\0') {
+    char val[255];
+
+    lua_pushlightuserdata(L, user);
+    lua_setglobal(L, "user");
+        
+    snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", user);
+    
+    if((ntop->getRedis()->get(key, val, sizeof(val)) != -1) 
+       && (val[0] != '\0')) {
+      
+      ptree = New_Patricia(128);
+
+      // TODO
+
+      lua_pushlightuserdata(L, ptree);
+      lua_setglobal(L, "allowed_nets");      
+    }
+  }
+
   if(luaL_dofile(L, script_path) != 0) {
     const char *err = lua_tostring(L, -1);
+
+    if(ptree) Destroy_Patricia(ptree, free_ptree_data);
 
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Script failure [%s][%s]", script_path, err);
     return(send_error(conn, 500 /* Internal server error */, "Internal server error", PAGE_ERROR, script_path, err));
   }
 
+  if(ptree) Destroy_Patricia(ptree, free_ptree_data);
   return(CONST_LUA_OK);
 }

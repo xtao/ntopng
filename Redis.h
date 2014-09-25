@@ -43,7 +43,6 @@ class Redis {
 
   int expire(char *key, u_int expire_sec);
   int get(char *key, char *rsp, u_int rsp_len);
-  int hashLen(char *key);
   int hashGet(char *key, char *member, char *rsp, u_int rsp_len);
   int hashDel(char *key, char *field);
   int hashSet(char *key, char *field, char *value);

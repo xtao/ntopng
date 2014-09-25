@@ -29,6 +29,8 @@ Mutex::Mutex() {
   locked = false;  
 #ifdef MUTEX_DEBUG
   num_locks = num_unlocks = 0;
+  last_lock_file[0] = '\0', last_unlock_file[0] = '\0';
+  last_lock_line = last_unlock_line = 0;
 #endif
 }
 
