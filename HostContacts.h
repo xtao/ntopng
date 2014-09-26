@@ -57,7 +57,7 @@ class HostContacts {
   };
 
   u_int get_num_contacts_by(IpAddress* host_ip);
-  void getContacts(lua_State* vm);
+  void getContacts(lua_State* vm, patricia_tree_t *ptree);
   bool hasHostContacts(char *host);    
   char* serialize();
   void deserialize(NetworkInterface *iface, GenericHost *h, json_object *o);

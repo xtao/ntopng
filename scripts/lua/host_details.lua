@@ -13,7 +13,7 @@ debug_hosts = false
 page        = _GET["page"]
 protocol_id = _GET["protocol"]
 host_info = url2hostinfo(_GET)
-host_ip = hostinfo2hostkey(host_info)
+host_ip   = hostinfo2hostkey(host_info)
 host_vlan = host_info["vlan"]
 active_page = "hosts"
 
@@ -32,14 +32,13 @@ is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 ifstats = interface.getStats()
 ifId = ifstats.id
 
-
 host = nil
 family = nil
 
 --print(">>>") print(host_info["host"]) print("<<<")
 if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Host:" .. host_info["host"] .. ", Vlan: "..host_vlan.."\n") end
 
-   host = interface.getHostInfo(host_info["host"],host_vlan)
+   host = interface.getHostInfo(host_info["host"], host_vlan)
    restoreFailed = false
 
    if((host == nil) and (_GET["mode"] == "restore")) then

@@ -92,7 +92,7 @@ bool StringHost::idle() {
 
 /* *************************************** */
 
-void StringHost::lua(lua_State* vm, bool returnHost) {
+void StringHost::lua(lua_State* vm, patricia_tree_t *ptree, bool returnHost) {
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm, "name", keyname);
@@ -112,7 +112,7 @@ void StringHost::lua(lua_State* vm, bool returnHost) {
   lua_push_int_table_entry(vm, "throughput_trend_bps", getThptTrend());
 
   if(ndpiStats) ndpiStats->lua(iface, vm);
-  getHostContacts(vm);
+  getHostContacts(vm, ptree);
 
   if(returnHost) {
     lua_pushstring(vm, keyname);

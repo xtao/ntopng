@@ -291,11 +291,12 @@ void Host::set_mac(char *m) {
 
 /* *************************************** */
 
-void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) {
+void Host::lua(lua_State* vm, patricia_tree_t *ptree, 
+	       bool host_details, bool verbose, bool returnHost) {
   char buf[64];
   char buf_id[64];
 
-  if(!Utils::isUserAllowedHost(vm, ip)) return;
+  if(!match(ptree)) return;
 
   if(host_details) {
     char *ipaddr = NULL, *local_net;
@@ -391,7 +392,7 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
       char *rsp = serialize();
 
       if(ndpiStats) ndpiStats->lua(iface, vm);
-      getHostContacts(vm);
+      getHostContacts(vm, ptree);
       lua_push_str_table_entry(vm, "json", rsp);
       free(rsp);
 
@@ -693,10 +694,10 @@ char* Host::serialize() {
 
 /* *************************************** */
 
-bool Host::addIfMatching(lua_State* vm, char *key) {
-  char keybuf[32] = { 0 } , *r;
+bool Host::addIfMatching(lua_State* vm, patricia_tree_t *ptree, char *key) {
+  char keybuf[32] = { 0 }, *r;
 
-  if(!Utils::isUserAllowedHost(vm, ip)) return(false);
+  if(!match(ptree)) return(false);
 
   if(symbolic_name && strcasestr(symbolic_name, key)) {
     lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), symbolic_name);

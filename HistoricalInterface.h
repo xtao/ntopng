@@ -67,7 +67,7 @@ class HistoricalInterface : public ParserInterface {
    * @brief Get interface type
    * @return sqlite
    */
-  inline const char* get_type()         { return("sqlite");      };
+  inline const char* get_type()         { return(CONST_INTERFACE_TYPE_SQLITE);      };
   /**
    * @brief Check if ndpi is enable for this interface
    * @return True if ndpi is enable, false otherwise.

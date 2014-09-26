@@ -1254,9 +1254,11 @@ void Redis::deleteQueuedAlert(u_int32_t idx_to_delete) {
 
 /* **************************************** */
 
-u_int Redis::getQueuedAlerts(char **alerts, u_int start_idx, u_int num) {
+u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_int start_idx, u_int num) {
   u_int i = 0;
   redisReply *reply = NULL;
+
+  // TODO - We need to filter events that belong to allowed_hosts only
 
   l->lock(__FILE__, __LINE__);
   while(i < num) {

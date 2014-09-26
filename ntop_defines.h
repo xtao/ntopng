@@ -111,6 +111,13 @@
 #define CONST_ALLOWED_NETS        "allowed_nets"
 #define CONST_USER                "user"
 
+#define CONST_INTERFACE_TYPE_PCAP      "pcap"
+#define CONST_INTERFACE_TYPE_PCAP_DUMP "pcap dump"
+#define CONST_INTERFACE_TYPE_ZMQ       "zmq"
+#define CONST_INTERFACE_TYPE_SQLITE    "sqlite"
+#define CONST_INTERFACE_TYPE_PF_RING   "PF_RING"
+#define CONST_INTERFACE_TYPE_UNKNOWN   "unknown"
+
 #ifndef TH_FIN
 #define	TH_FIN	0x01
 #endif

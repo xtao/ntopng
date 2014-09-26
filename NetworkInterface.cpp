@@ -125,7 +125,7 @@ NetworkInterface::NetworkInterface(const char *name) {
     hosts_hash = new HostHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
     strings_hash = new StringHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
     
-  // init global detection structure
+    // init global detection structure
     ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
 					     malloc_wrapper, free_wrapper, debug_printf);
     if(ndpi_struct == NULL) {
@@ -946,30 +946,40 @@ void NetworkInterface::flushHostContacts() {
 
 /* **************************************************** */
 
+struct vm_ptree {
+  lua_State* vm;
+  patricia_tree_t *ptree;
+};
+
 static bool hosts_get_list(GenericHashEntry *h, void *user_data) {
-  lua_State* vm = (lua_State*)user_data;
-
-  ((Host*)h)->lua(vm, false, false, false);
-
+  struct vm_ptree *vp = (struct vm_ptree*)user_data;
+  
+  ((Host*)h)->lua(vp->vm, vp->ptree, false, false, false);
+  
   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
 static bool hosts_get_list_details(GenericHashEntry *h, void *user_data) {
-  lua_State* vm = (lua_State*)user_data;
-
-  ((Host*)h)->lua(vm, true, false, false);
+  struct vm_ptree *vp = (struct vm_ptree*)user_data;
+  
+  ((Host*)h)->lua(vp->vm, vp->ptree, true, false, false);
 
   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getActiveHostsList(lua_State* vm, bool host_details) {
-  lua_newtable(vm);
+void NetworkInterface::getActiveHostsList(lua_State* vm,
+					  patricia_tree_t *allowed_hosts,
+					  bool host_details) {
+  struct vm_ptree vp;
+  
+  vp.vm = vm, vp.ptree = allowed_hosts;
 
-  hosts_hash->walk(host_details ? hosts_get_list_details : hosts_get_list, (void*)vm);
+  lua_newtable(vm);
+  hosts_hash->walk(host_details ? hosts_get_list_details : hosts_get_list, (void*)&vp);
 }
 
 /* **************************************************** */
@@ -978,6 +988,7 @@ struct aggregation_walk_hosts_info {
   lua_State* vm;
   u_int16_t family_id;
   char *host;
+  patricia_tree_t *allowed_hosts;
 };
 
 /* **************************************************** */
@@ -988,7 +999,7 @@ static bool aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
 
   if((info->family_id == 0) || (info->family_id == host->get_family_id())) {
     if((info->host == NULL) || host->hasHostContacts(info->host))
-      host->lua(info->vm, true);
+      host->lua(info->vm, info->allowed_hosts, true);
   }
 
   return(false); /* false = keep on walking */
@@ -997,11 +1008,13 @@ static bool aggregated_hosts_get_list(GenericHashEntry *h, void *user_data) {
 /* **************************************************** */
 
 void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm,
+						    patricia_tree_t *allowed_hosts,
 						    u_int16_t proto_family,
 						    char *host) {
   struct aggregation_walk_hosts_info info;
 
-  info.vm = vm, info.family_id = proto_family, info.host = host;
+  info.vm = vm, info.family_id = proto_family, 
+    info.host = host, info.allowed_hosts = allowed_hosts;
 
   lua_newtable(vm);
 
@@ -1156,20 +1169,22 @@ Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
 
 /* **************************************************** */
 
-bool NetworkInterface::getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id) {
-	if(host_ip == NULL)
-		return(false);
-	else {
-	  Host *h = getHost(host_ip, vlan_id);
+bool NetworkInterface::getHostInfo(lua_State* vm, 
+				   patricia_tree_t *allowed_hosts,
+				   char *host_ip, u_int16_t vlan_id) {
+  if(host_ip == NULL)
+    return(false);
+  else {
+    Host *h = getHost(host_ip, vlan_id);
 
-	  if(h) {
-		lua_newtable(vm);
+    if(h && h->match(allowed_hosts)) {
+      lua_newtable(vm);
 
-		h->lua(vm, true, true, true);
-		return(true);
-	  } else
-		return(false);
-	}
+      h->lua(vm, allowed_hosts, true, true, true);
+      return(true);
+    } else
+      return(false);
+  }
 }
 
 /* **************************************************** */
@@ -1185,13 +1200,15 @@ StringHost* NetworkInterface::getAggregatedHost(char *host_name) {
 
 /* **************************************************** */
 
-bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
+bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, 
+					     patricia_tree_t *ptree,
+					     char *host_name) {
   StringHost *h = getAggregatedHost(host_name);
 
   if(h != NULL) {
     lua_newtable(vm);
 
-    h->lua(vm, false);
+    h->lua(vm, ptree, false);
     return(true);
   } else
     return(false);
@@ -1205,7 +1222,8 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, char *host_name) {
   Example if we are looking at the DNS requests, it will return all DNS
   names requested by host X (host_name)
 */
-bool NetworkInterface::getAggregationsForHost(lua_State* vm, char *host_ip) {
+bool NetworkInterface::getAggregationsForHost(lua_State* vm, patricia_tree_t *allowed_hosts, 
+					      char *host_ip) {
   struct host_find_aggregation_info info;
   IpAddress *h = new IpAddress(host_ip);
 
@@ -1259,6 +1277,7 @@ bool NetworkInterface::getAggregatedFamilies(lua_State* vm) {
 
 struct flow_details_info {
   lua_State* vm;
+  patricia_tree_t *allowed_hosts;
   Host *h;
 };
 
@@ -1272,18 +1291,19 @@ static bool flows_get_list_details(GenericHashEntry *h, void *user_data) {
       return(false);
   }
 
-  flow->lua(info->vm, false /* Minimum details */);
+  flow->lua(info->vm, info->allowed_hosts, false /* Minimum details */);
   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
 void NetworkInterface::getActiveFlowsList(lua_State* vm,
+					  patricia_tree_t *allowed_hosts,
 					  char *host_ip,
 					  u_int vlan_id) {
   struct flow_details_info info;
 
-  info.vm = vm;
+  info.vm = vm, info.allowed_hosts = allowed_hosts;
 
   if(host_ip == NULL)
     info.h = NULL;
@@ -1291,7 +1311,9 @@ void NetworkInterface::getActiveFlowsList(lua_State* vm,
     info.h = getHost(host_ip, vlan_id);
 
   lua_newtable(vm);
-  flows_hash->walk(flows_get_list_details, (void*)&info);
+
+  if((info.h == NULL) || (info.h->match(allowed_hosts)))
+    flows_hash->walk(flows_get_list_details, (void*)&info);
 }
 
 /* **************************************************** */
@@ -1300,6 +1322,7 @@ struct flow_peers_info {
   lua_State *vm;
   char *numIP;
   u_int16_t vlanId;
+  patricia_tree_t *allowed_hosts;
 };
 
 static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
@@ -1307,19 +1330,22 @@ static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
   struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
   if((info->numIP == NULL) || flow->isFlowPeer(info->numIP, info->vlanId))
-    flow->print_peers(info->vm, (info->numIP == NULL) ? false : true);
+    flow->print_peers(info->vm, info->allowed_hosts, 
+		      (info->numIP == NULL) ? false : true);
 
   return(false); /* false = keep on walking */
 }
 
 /* **************************************************** */
 
-void NetworkInterface::getFlowPeersList(lua_State* vm, char *numIP, u_int16_t vlanId) {
+void NetworkInterface::getFlowPeersList(lua_State* vm,
+					patricia_tree_t *allowed_hosts,
+					char *numIP, u_int16_t vlanId) {
   struct flow_peers_info info;
 
   lua_newtable(vm);
 
-  info.vm = vm, info.numIP = numIP, info.vlanId = vlanId;
+  info.vm = vm, info.numIP = numIP, info.vlanId = vlanId, info.allowed_hosts = allowed_hosts;
   flows_hash->walk(flow_peers_walker, (void*)&info);
 }
 
@@ -1462,8 +1488,11 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 
 /* **************************************************** */
 
-Flow* NetworkInterface::findFlowByKey(u_int32_t key) {
-  return((Flow*)(flows_hash->findByKey(key)));
+Flow* NetworkInterface::findFlowByKey(u_int32_t key, patricia_tree_t *allowed_hosts) {
+  Flow *f = (Flow*)(flows_hash->findByKey(key));
+
+  if(!f->match(allowed_hosts)) f = NULL;
+  return(f);
 }
 
 /* **************************************************** */
@@ -1472,6 +1501,7 @@ struct search_host_info {
   lua_State *vm;
   char *host_name_or_ip;
   u_int num_matches;
+  patricia_tree_t *allowed_hosts;
 };
 
 /* **************************************************** */
@@ -1480,7 +1510,7 @@ static bool hosts_search_walker(GenericHashEntry *h, void *user_data) {
   Host *host = (Host*)h;
   struct search_host_info *info = (struct search_host_info*)user_data;
 
-  if(host->addIfMatching(info->vm, info->host_name_or_ip))
+  if(host->addIfMatching(info->vm, info->allowed_hosts, info->host_name_or_ip))
     info->num_matches++;
 
   /* Stop after CONST_MAX_NUM_FIND_HITS matches */
@@ -1502,10 +1532,10 @@ static bool aggregations_search_walker(GenericHashEntry *h, void *user_data) {
 
 /* **************************************************** */
 
-void NetworkInterface::findHostsByName(lua_State* vm, char *key) {
+void NetworkInterface::findHostsByName(lua_State* vm, patricia_tree_t *allowed_hosts, char *key) {
   struct search_host_info info;
 
-  info.vm = vm, info.host_name_or_ip = key, info.num_matches = 0;
+  info.vm = vm, info.host_name_or_ip = key, info.num_matches = 0, info.allowed_hosts = allowed_hosts;
 
   lua_newtable(vm);
   hosts_hash->walk(hosts_search_walker, (void*)&info);
@@ -1609,7 +1639,8 @@ bool NetworkInterface::isNumber(const char *str) {
 
 /* **************************************************** */
 
-StringHost* NetworkInterface::findHostByString(char *keyname,
+StringHost* NetworkInterface::findHostByString(patricia_tree_t *allowed_hosts,
+					       char *keyname,
 					       u_int16_t family_id,
 					       bool createIfNotPresent) {
   StringHost *ret = strings_hash->get(keyname, family_id);
@@ -1687,6 +1718,7 @@ static bool similarity_walker(GenericHashEntry *node, void *user_data) {
 /* **************************************************** */
 
 bool NetworkInterface::correlateHostActivity(lua_State* vm,
+					     patricia_tree_t *allowed_hosts,
 					     char *host_ip, u_int16_t vlan_id) {
   Host *h = getHost(host_ip, vlan_id);
 
@@ -1707,6 +1739,7 @@ bool NetworkInterface::correlateHostActivity(lua_State* vm,
 /* **************************************************** */
 
 bool NetworkInterface::similarHostActivity(lua_State* vm,
+					   patricia_tree_t *allowed_hosts,
 					   char *host_ip, u_int16_t vlan_id) {
   Host *h = getHost(host_ip, vlan_id);
 
@@ -1740,7 +1773,7 @@ static bool userfinder_walker(GenericHashEntry *node, void *user_data) {
     user = f->get_username(false);
 
   if(user && (strcmp(user, info->username) == 0))
-    f->lua(info->vm, false /* Minimum details */);
+    f->lua(info->vm, NULL, false /* Minimum details */);
 
   return(false); /* false = keep on walking */
 }
@@ -1766,12 +1799,12 @@ static bool proc_name_finder_walker(GenericHashEntry *node, void *user_data) {
   char *name = f->get_proc_name(true);
 
   if(name && (strcmp(name, info->proc_name) == 0))
-    f->lua(info->vm, false /* Minimum details */);
+    f->lua(info->vm, NULL, false /* Minimum details */);
   else {
     name = f->get_proc_name(false);
 
     if(name && (strcmp(name, info->proc_name) == 0))
-      f->lua(info->vm, false /* Minimum details */);
+      f->lua(info->vm, NULL, false /* Minimum details */);
   }
 
   return(false); /* false = keep on walking */
@@ -1797,7 +1830,7 @@ static bool pidfinder_walker(GenericHashEntry *node, void *pid_data) {
   struct pid_flows *info = (struct pid_flows*)pid_data;
 
   if((f->getPid(true) == info->pid) || (f->getPid(false) == info->pid))
-    f->lua(info->vm, false /* Minimum details */);
+    f->lua(info->vm, NULL, false /* Minimum details */);
 
   return(false); /* false = keep on walking */
 }
@@ -1819,7 +1852,7 @@ static bool father_pidfinder_walker(GenericHashEntry *node, void *father_pid_dat
   struct pid_flows *info = (struct pid_flows*)father_pid_data;
 
   if((f->getFatherPid(true) == info->pid) || (f->getFatherPid(false) == info->pid))
-    f->lua(info->vm, false /* Minimum details */);
+    f->lua(info->vm, NULL, false /* Minimum details */);
 
   return(false); /* false = keep on walking */
 }
@@ -1838,9 +1871,9 @@ void NetworkInterface::findFatherPidFlows(lua_State *vm, u_int32_t father_pid) {
 
 bool NetworkInterface::isInterfaceUp(char *name) {
 #ifdef WIN32
-	return(true);
+  return(true);
 #else
-	struct ifreq ifr;
+  struct ifreq ifr;
   int sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_IP);
 
   memset(&ifr, 0, sizeof(ifr));

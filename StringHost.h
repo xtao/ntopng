@@ -45,7 +45,7 @@ class StringHost : public GenericHost {
   inline char* host_key()                       { return(keyname);           };
   inline u_int16_t get_family_id()              { return(family_id);         };
   bool idle();
-  void lua(lua_State* vm, bool returnHost);
+  void lua(lua_State* vm, patricia_tree_t *ptree, bool returnHost);
   inline u_int32_t key()             { return( Utils::hashString(keyname) ); };
   inline void inc_num_queries_rcvd() { queriesReceived++;                  };
   char* get_string_key(char *buf, u_int buf_len);

@@ -107,13 +107,14 @@ class Redis {
 
   /**
    * @brief Returns up to the specified number of alerts, and removes them from redis. The first parameter must be long enough to hold the returned results
+   * @param allowed_hosts The list of hosts allowed to be returned by this function
    * @param alerts The returned alerts
    * @param start_idx The initial queue index from which extract messages. Zero (0) is the first (i.e. most recent) queue element.
    * @param num The maximum number of alerts to return.
    * @return The number of elements read.
    *
    */
-  u_int getQueuedAlerts(char **alerts, u_int start_idx, u_int num);
+  u_int getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_int start_idx, u_int num);
 
   /**
    * @brief Delete the alert identified by the specified index.

@@ -258,7 +258,8 @@ static int handle_lua_request(struct mg_connection *conn) {
   if((ntop->getGlobals()->isShutdown())
      //|| (strcmp(request_info->request_method, "GET"))
      || (ntop->getRedis() == NULL /* Starting up... */))
-    return(send_error(conn, 403 /* Forbidden */, request_info->uri, "Unexpected HTTP method or ntopng still starting up..."));
+    return(send_error(conn, 403 /* Forbidden */, request_info->uri, 
+		      "Unexpected HTTP method or ntopng still starting up..."));
 
   if(ntop->get_HTTPserver()->is_ssl_enabled() && (!request_info->is_ssl))
     redirect_to_ssl(conn, request_info);
@@ -356,13 +357,17 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
     _a = (char*)"ssl_certificate", _b = ssl_cert_path;
     ssl_enabled = true;
   } else {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "HTTPS Disabled: missing SSL certificate %s", ssl_cert_path);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Please read https://svn.ntop.org/svn/ntop/trunk/ntopng/README.SSL if you want to enable SSL.");
+    ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				 "HTTPS Disabled: missing SSL certificate %s", ssl_cert_path);
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+				 "Please read https://svn.ntop.org/svn/ntop/trunk/ntopng/README.SSL if you want to enable SSL.");
     ssl_enabled = false;
   }
   if ((!use_http) && (!use_ssl) & (!ssl_enabled)) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to start HTTP server: HTTP is disabled and the SSL certificate is missing.");
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Starting the HTTP server on the default port");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				 "Unable to start HTTP server: HTTP is disabled and the SSL certificate is missing.");
+    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+				 "Starting the HTTP server on the default port");
     port = CONST_DEFAULT_NTOP_PORT;
     snprintf(ports, sizeof(ports), "%d", port);
     use_http = true;

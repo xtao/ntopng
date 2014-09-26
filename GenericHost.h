@@ -76,7 +76,7 @@ class GenericHost : public GenericHashEntry {
   }
 
   inline void flushContacts()         { contacts->purgeAll();                    };
-  void getHostContacts(lua_State* vm) { contacts->getContacts(vm);               };
+  void getHostContacts(lua_State* vm, patricia_tree_t *ptree) { contacts->getContacts(vm, ptree);        };
   bool hasHostContacts(char *host)    { return(contacts->hasHostContacts(host)); };
   inline u_int get_num_contacts_by(IpAddress* host_ip) { return(contacts->get_num_contacts_by(host_ip)); };
   inline u_int32_t get_host_serial()  { return(host_serial);               };
@@ -89,6 +89,7 @@ class GenericHost : public GenericHashEntry {
   inline u_int8_t getSourceId()       { return(source_id);                 };
   bool triggerAlerts();
   virtual char* get_string_key(char *buf, u_int buf_len) { return(NULL);   };
+  virtual bool match(patricia_tree_t *ptree)  { return(true);              };
 };
 
 #endif /* _GENERIC_HOST_H_ */

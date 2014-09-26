@@ -77,6 +77,7 @@ class IpAddress {
   void deserialize(json_object *o);
   char* serialize();
   json_object* getJSONObject();
+  bool match(patricia_tree_t *ptree);
 };
 
 #endif /* _IP_ADDRESS_H_ */

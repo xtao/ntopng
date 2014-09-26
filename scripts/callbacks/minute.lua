@@ -1,7 +1,6 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
-
 
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
@@ -40,7 +39,8 @@ for _,_ifname in pairs(ifnames) do
 
    if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..ifstats.id.."]") end
    -- Dump topTalkers every minute
-
+   
+   if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknwon")) then
    talkers = getTopTalkers(ifstats.id, _ifname)
    basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when))
    filename = fixPath(basedir .. os.date("/%M.json", when))
@@ -143,4 +143,5 @@ for _,_ifname in pairs(ifnames) do
       end -- for
      end -- if rrd
    end -- if(diff
+ end -- if(good interface type
 end -- for ifname,_ in pairs(ifnames) do

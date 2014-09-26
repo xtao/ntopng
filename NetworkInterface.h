@@ -135,7 +135,7 @@ class NetworkInterface {
   virtual bool set_packet_filter(char *filter) { return(false); };
   virtual void incrDrops(u_int32_t num)        { ; }
   inline virtual bool is_packet_interface()    { return(true); }
-  inline virtual const char* get_type()        { return("unknown"); }
+  inline virtual const char* get_type()        { return(CONST_INTERFACE_TYPE_UNKNOWN); }
   inline virtual bool is_ndpi_enabled()        { return(true); }
   inline u_int  getNumnDPIProtocols()          { return(ndpi_get_num_supported_protocols(ndpi_struct)); };
   inline time_t getTimeLastPktRcvd()           { return(last_pkt_rcvd); };
@@ -167,8 +167,8 @@ class NetworkInterface {
   void findFlowHosts(u_int16_t vlan_id,
 		     u_int8_t src_mac[6], IpAddress *_src_ip, Host **src,
 		     u_int8_t dst_mac[6], IpAddress *_dst_ip, Host **dst);
-  Flow* findFlowByKey(u_int32_t key);
-  void findHostsByName(lua_State* vm, char *key);
+  Flow* findFlowByKey(u_int32_t key, patricia_tree_t *allowed_hosts);
+  void findHostsByName(lua_State* vm, patricia_tree_t *allowed_hosts, char *key);
   void flushHostContacts();
   void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
   void packet_processing(const u_int32_t when,
@@ -182,10 +182,10 @@ class NetworkInterface {
   void dumpFlows();
   void getnDPIStats(NdpiStats *stats);
   void updateHostStats();
-  void lua(lua_State* v);
-  void getActiveHostsList(lua_State* v, bool host_details);
-  void getActiveFlowsList(lua_State* v, char *host_ip, u_int vlan_id);
-  void getFlowPeersList(lua_State* vm, char *numIP, u_int16_t vlanId);
+  void lua(lua_State* vm);
+  void getActiveHostsList(lua_State* vm, patricia_tree_t *allowed_hosts, bool host_details);
+  void getActiveFlowsList(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip, u_int vlan_id);
+  void getFlowPeersList(lua_State* vm, patricia_tree_t *allowed_hosts, char *numIP, u_int16_t vlanId);
 
   void purgeIdle(time_t when);
   u_int purgeIdleFlows();
@@ -203,14 +203,15 @@ class NetworkInterface {
 		      bool createIfNotPresent);
   Host* getHost(char *host_ip, u_int16_t vlan_id);
   StringHost* getAggregatedHost(char *host_name);
-  bool getHostInfo(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  void getActiveAggregatedHostsList(lua_State* vm, u_int16_t proto_family, char *host);
-  bool getAggregatedHostInfo(lua_State* vm, char *host_ip);
+  bool getHostInfo(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip, u_int16_t vlan_id);
+  void getActiveAggregatedHostsList(lua_State* vm, patricia_tree_t *allowed_hosts, u_int16_t proto_family, char *host);
+  bool getAggregatedHostInfo(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip);
   bool getAggregatedFamilies(lua_State* vm);
-  bool getAggregationsForHost(lua_State* vm, char *host_ip);
-  bool correlateHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  bool similarHostActivity(lua_State* vm, char *host_ip, u_int16_t vlan_id);
-  StringHost* findHostByString(char *keyname, u_int16_t family_id,
+  bool getAggregationsForHost(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip);
+  bool correlateHostActivity(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip, u_int16_t vlan_id);
+  bool similarHostActivity(lua_State* vm, patricia_tree_t *allowed_hosts, char *host_ip, u_int16_t vlan_id);
+  StringHost* findHostByString(patricia_tree_t *allowed_hosts, 
+			       char *keyname, u_int16_t family_id,
 			       bool createIfNotPresent);
   inline u_int getNumAggregatedHosts() { return(strings_hash->getNumEntries()); }
   void findUserFlows(lua_State *vm, char *username);

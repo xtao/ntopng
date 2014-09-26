@@ -106,7 +106,7 @@ bool HostContacts::hasHostContacts(char *host) {
 
 /* *************************************** */
 
-void HostContacts::getContacts(lua_State* vm) {
+void HostContacts::getContacts(lua_State* vm, patricia_tree_t *ptree) {
   char buf[128];
 
   lua_newtable(vm);

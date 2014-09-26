@@ -93,7 +93,7 @@ class Host : public GenericHost {
   void incUses() { num_uses++; }
   void decUses() { num_uses--; }
   bool idle();
-  void lua(lua_State* vm, bool host_details, bool verbose, bool returnHost);
+  void lua(lua_State* vm, patricia_tree_t * ptree, bool host_details, bool verbose, bool returnHost);
   void resolveHostName();
   void setName(char *name, bool update_categorization);
   int compare(Host *h);
@@ -106,7 +106,7 @@ class Host : public GenericHost {
   char* serialize();
   bool deserialize(char *json_str);
   void flushContacts(bool freeHost);
-  bool addIfMatching(lua_State* vm, char *key);
+  bool addIfMatching(lua_State* vm, patricia_tree_t * ptree, char *key);
   void updateSynFlags(time_t when, u_int8_t flags, Flow *f);
 
   inline void incNumFlows(bool as_client) { if(as_client) num_flows_as_client++; else num_flows_as_server++; };
@@ -120,6 +120,7 @@ class Host : public GenericHost {
   inline void incNumEPPQueriesRcvd(u_int16_t query_type) { allocEPP(); if(epp) epp->incNumEPPQueriesRcvd(query_type); };
   inline void incNumEPPResponsesSent(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesSent(ret_code); };
   inline void incNumEPPResponsesRcvd(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesRcvd(ret_code); };
+  bool   match(patricia_tree_t *ptree) { return(get_ip()->match(ptree)); };
 };
 
 #endif /* _HOST_H_ */

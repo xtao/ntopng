@@ -193,7 +193,7 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
       return; // FIX
 #endif
 
-    host = iface->findHostByString(name, ndpi_proto_id, true);
+    host = iface->findHostByString(NULL /* all hosts */, name, ndpi_proto_id, true);
 
     if(host != NULL) {
       host->set_aggregation_mode(mode);
@@ -523,14 +523,13 @@ u_int64_t Flow::get_current_packets_srv2cli() {
 
 /* *************************************** */
 
-void Flow::print_peers(lua_State* vm, bool verbose) {
+void Flow::print_peers(lua_State* vm, patricia_tree_t * ptree, bool verbose) {
   char buf1[64], buf2[64], buf[256];
   Host *src = get_cli_host(), *dst = get_srv_host();
 
   if((src == NULL) || (dst == NULL)) return;
 
-  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
-     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
+  if((!src->match(ptree)) && (!dst->match(ptree)))
     return;
 
   lua_newtable(vm);
@@ -666,7 +665,7 @@ void Flow::update_hosts_stats(struct timeval *tv) {
 		       diff_sent_packets, diff_sent_bytes);
 
   if(aggregationInfo.name) {
-    StringHost *host = iface->findHostByString(aggregationInfo.name, ndpi_detected_protocol, true);
+    StringHost *host = iface->findHostByString(NULL /* all hosts */, aggregationInfo.name, ndpi_detected_protocol, true);
 
     if(host)
       host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
@@ -809,10 +808,6 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 
   if((src == NULL) || (dst == NULL)) return;
 
-  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
-     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
-    return;
-
   lua_newtable(vm);
 
   lua_push_int_table_entry(vm, "pid", proc->pid);
@@ -833,15 +828,15 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 
 /* *************************************** */
 
-void Flow::lua(lua_State* vm, bool detailed_dump) {
+void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
   char buf[64];
   Host *src = get_cli_host(), *dst = get_srv_host();
+  bool src_match, dst_match;
 
   if((src == NULL) || (dst == NULL)) return;
 
-  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
-     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
-    return;
+  src_match = src->match(ptree), dst_match = dst->match(ptree);
+  if((!src_match) && (!dst_match))return;
 
   lua_newtable(vm);
 
@@ -850,6 +845,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_int_table_entry(vm, "cli.source_id", get_cli_host()->getSourceId());
     lua_push_str_table_entry(vm, "cli.ip", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
     lua_push_bool_table_entry(vm, "cli.systemhost", get_cli_host()->isSystemHost());
+    lua_push_bool_table_entry(vm, "cli.allowed_host", src_match);
     lua_push_int32_table_entry(vm, "cli.network_id", get_cli_host()->get_local_network_id());
   } else {
     lua_push_nil_table_entry(vm, "cli.host");
@@ -863,6 +859,7 @@ void Flow::lua(lua_State* vm, bool detailed_dump) {
     lua_push_int_table_entry(vm, "srv.source_id", get_cli_host()->getSourceId());
     lua_push_str_table_entry(vm, "srv.ip", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
     lua_push_bool_table_entry(vm, "srv.systemhost", get_srv_host()->isSystemHost());
+    lua_push_bool_table_entry(vm, "srv.allowed_host", dst_match);
     lua_push_int32_table_entry(vm, "srv.network_id", get_srv_host()->get_local_network_id());
   } else {
     lua_push_nil_table_entry(vm, "srv.host");
@@ -1188,4 +1185,14 @@ char* Flow::get_proc_name(bool client) {
   ProcessInfo *proc = client ? client_proc : server_proc;
 
   return((proc == NULL) ? NULL : proc->name);
+};
+
+/* *************************************** */
+
+bool Flow::match(patricia_tree_t *ptree) { 
+  if((cli_host && cli_host->match(ptree))	
+     || (srv_host && srv_host->match(ptree)))
+    return(true);
+  else
+    return(false);
 };

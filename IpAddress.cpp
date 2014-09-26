@@ -291,3 +291,25 @@ json_object* IpAddress::getJSONObject() {
 
   return(my_object);
 }
+
+/* ******************************************* */
+
+/**
+ * @brief Check if the host matches the specifed host tree
+ *
+ * @param ptree     The hosts allowed to be accessed.
+ * @return true if the host matches the ptre, false otherwise.
+ */
+bool IpAddress::match(patricia_tree_t *ptree) {
+  patricia_node_t *node;
+
+  if(ptree == NULL) return(true);
+
+  if(addr.ipVersion == 4)
+    node = ptree_match(ptree, AF_INET, (void*)&addr.ipType.ipv4, 32);
+  else
+    node = ptree_match(ptree, AF_INET6, (void*)&addr.ipType.ipv6, 128);
+
+  return((node == NULL) ? false : true);
+}
+

@@ -66,7 +66,6 @@ else
   end
 end
 
-
 if(currentPage == nil) then
    currentPage = 1
 else
@@ -369,8 +368,9 @@ for _key, _value in pairsByKeys(vals, funct) do
    if(cli_name == nil) then cli_name = "???" end
    if(srv_name == nil) then srv_name = "???" end
 
-   src_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
-   if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
+   if(value["cli.allowed_host"]) then
+      src_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
+      if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
 
    -- Flow username
    i, j = nil
@@ -389,7 +389,12 @@ for _key, _value in pairsByKeys(vals, funct) do
          else
       src_port=""
          end
+   else			    
+     src_key = abbreviateString(cli_name, 20)
+     src_port=":"..value["cli.port"]
+   end     
 
+   if(value["srv.allowed_host"]) then
    dst_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?".. hostinfo2url(value,"srv").. "' data-toggle='tooltip' title='" ..srv_tooltip.. "' >".. abbreviateString(srv_name, 20)
    if(value["srv.systemhost"] == true) then dst_key = dst_key .. "&nbsp;<i class='fa fa-flag'></i>" end
    dst_key = dst_key .. "</A>"
@@ -399,6 +404,10 @@ for _key, _value in pairsByKeys(vals, funct) do
          else
       dst_port=""
          end
+  else			    
+     dst_key = abbreviateString(srv_name, 20)
+     dst_port=":"..value["srv.port"]
+   end     
 
    print ("{ \"key\" : \"" .. key..'\"')
 
