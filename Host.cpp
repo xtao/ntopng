@@ -295,6 +295,8 @@ void Host::lua(lua_State* vm, bool host_details, bool verbose, bool returnHost) 
   char buf[64];
   char buf_id[64];
 
+  if(!Utils::isUserAllowedHost(vm, ip)) return;
+
   if(host_details) {
     char *ipaddr = NULL, *local_net;
 
@@ -693,6 +695,8 @@ char* Host::serialize() {
 
 bool Host::addIfMatching(lua_State* vm, char *key) {
   char keybuf[32] = { 0 } , *r;
+
+  if(!Utils::isUserAllowedHost(vm, ip)) return(false);
 
   if(symbolic_name && strcasestr(symbolic_name, key)) {
     lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), symbolic_name);

@@ -48,5 +48,6 @@ class AddressResolution {
 
 extern patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line);
 extern patricia_node_t* ptree_match(patricia_tree_t *tree, int family, void *addr, int bits);
+extern void free_ptree_data(void *data);
 
 #endif /* _ADDRESS_RESOLUTION_H_ */

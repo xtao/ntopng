@@ -50,6 +50,8 @@ class Utils {
   static u_int8_t ifname2id(const char *name);
   static char* sanitizeHostName(char *str);
   static char* urlDecode(const char *src, char *dst, u_int dst_len);
+  static bool isUserAllowedHost(lua_State* vm, IpAddress *host_addr);
+  static bool isUserAdministrator(lua_State* vm);
 };
 
 

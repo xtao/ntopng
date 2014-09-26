@@ -354,23 +354,23 @@ void Ntop::getUsers(lua_State* vm) {
 
     lua_newtable(vm);
 
-    snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
+    snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "full_name", val);
     else
       lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
 
-    snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+    snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "group", val);
     else
       lua_push_str_table_entry(vm, "group", (char*)"unknown");
 
-    snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+    snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
-      lua_push_str_table_entry(vm, "allowed_nets", val);
+      lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, val);
     else
-      lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+      lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, (char*)"");
 
     lua_pushstring(vm, username);
     lua_insert(vm, -2);
@@ -396,11 +396,10 @@ void Ntop::getUserGroup(lua_State* vm) {
     return;
   }
 
-  mg_get_cookie(conn, "user", username, sizeof(username));
-
+  mg_get_cookie(conn, CONST_USER, username, sizeof(username));
   lua_newtable(vm);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
   if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
     lua_push_str_table_entry(vm, "group", val);
   else
@@ -416,19 +415,18 @@ void Ntop::getAllowedNetworks(lua_State* vm) {
   lua_getglobal(vm, CONST_HTTP_CONN);
   if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
-    lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, (char*)"");
     return;
   }
 
-  mg_get_cookie(conn, "user", username, sizeof(username));
-
+  mg_get_cookie(conn, CONST_USER, username, sizeof(username));
   lua_newtable(vm);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
   if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
-    lua_push_str_table_entry(vm, "allowed_nets", val);
+    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, val);
   else
-    lua_push_str_table_entry(vm, "allowed_nets", (char*)"");
+    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, (char*)"");
 }
 /* ******************************************* */
 
@@ -439,7 +437,7 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
   if((user == NULL) || (user[0] == '\0'))
     return(false);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.password", user);
+  snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, user);
 
   if(ntop->getRedis()->get(key, val, sizeof(val)) < 0) {
     return(false);
@@ -460,7 +458,7 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
   if(!checkUserPassword(username, old_password))
     return(false);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
 
   mg_md5(password_hash, new_password, NULL);
 
@@ -475,7 +473,7 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
 int Ntop::changeUserRole(char *username, char *usertype) const {
   char key[64];
   if(usertype != NULL) {
-    snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+    snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
 
     if(ntop->getRedis()->set(key, usertype, 0) < 0)
       return(false);
@@ -490,7 +488,7 @@ int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
   char key[64];
 
   if(allowed_nets != NULL) {
-    snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+    snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
 
     if(ntop->getRedis()->set(key, allowed_nets, 0) < 0)
       return(false);
@@ -511,16 +509,16 @@ int Ntop::addUser(char *username, char *full_name, char *password, char *host_ro
   ntop->getTrace()->traceEvent(TRACE_WARNING, "group = %s", host_role);
   ntop->getTrace()->traceEvent(TRACE_WARNING, "allowed networks = %s", allowed_networks);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
   ntop->getRedis()->set(key, (char*) host_role /* TODO: done Paola */, 0);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
   ntop->getRedis()->set(key, password_hash, 0);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.allowed_nets", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
   ntop->getRedis()->set(key, allowed_networks, 0);
 
   return (true);
@@ -532,13 +530,13 @@ int Ntop::addUser(char *username, char *full_name, char *password, char *host_ro
 int Ntop::deleteUser(char *username) {
   char key[64];
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.full_name", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->del(key);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.group", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
   ntop->getRedis()->del(key);
 
-  snprintf(key, sizeof(key), "ntopng.user.%s.password", username);
+  snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
   return(ntop->getRedis()->del(key) >= 0);
 }
 

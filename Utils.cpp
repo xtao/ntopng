@@ -540,3 +540,71 @@ char* Utils::urlDecode(const char *src, char *dst, u_int dst_len) {
   *dst++ = '\0';
   return(ret);
 }
+
+/* **************************************************** */
+
+/**
+ * @brief Check if the current user can access the specified host address
+ *
+ * @param vm   The lua state.
+ * @param host_addr The host address willing to access
+ * @return true if the host can be accessed, false otherwise.
+ */
+bool Utils::isUserAllowedHost(lua_State* vm, IpAddress *host_addr) {
+  patricia_tree_t *ptree;
+  patricia_node_t *node;
+  struct ipAddress* addr = host_addr->getIP();
+  bool rc;
+  char buf[64];
+
+  return true;
+
+  ntop->getTrace()->traceEvent(TRACE_WARNING, ">>== %s()", __FUNCTION__);
+
+  lua_getglobal(vm, CONST_ALLOWED_NETS);
+  if((ptree = (patricia_tree_t*)lua_touserdata(vm, lua_gettop(vm))) == NULL)
+    return(true);
+
+  ntop->getTrace()->traceEvent(TRACE_WARNING, "ptree=%p", ptree);
+
+  if(addr->ipVersion == 4)
+    node = ptree_match(ptree, AF_INET, (void*)&addr->ipType.ipv4, 32);
+  else
+    node = ptree_match(ptree, AF_INET6, (void*)&addr->ipType.ipv6, 128);
+
+  rc = (node == NULL) ? false : true;
+
+  if(!rc) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", 
+				 __FUNCTION__, host_addr->print(buf, sizeof(buf)));
+  }
+
+  return(rc);
+}
+
+/* **************************************************** */
+
+/**
+ * @brief Check if the current user is an administrator
+ *
+ * @param vm   The lua state.
+ * @return true if the current user is an administrator, false otherwise.
+ */
+bool Utils::isUserAdministrator(lua_State* vm) {
+  char *username;
+  char key[64], val[64];
+
+  lua_getglobal(vm, "user");
+  if((username = (char*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, "???");
+    return(false); /* Unknown */
+  }
+
+  snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
+  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0) {
+    return(strcmp(val, CONST_ADMINISTRATOR_USER) ? false : true);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, username);
+    return(false); /* Unknown */
+  }
+}

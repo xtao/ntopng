@@ -529,6 +529,10 @@ void Flow::print_peers(lua_State* vm, bool verbose) {
 
   if((src == NULL) || (dst == NULL)) return;
 
+  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
+     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
+    return;
+
   lua_newtable(vm);
 
   lua_push_str_table_entry(vm,  "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
@@ -801,6 +805,14 @@ void Flow::processJson(bool is_src,
 /* *************************************** */
 
 void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
+  Host *src = get_cli_host(), *dst = get_srv_host();
+
+  if((src == NULL) || (dst == NULL)) return;
+
+  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
+     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
+    return;
+
   lua_newtable(vm);
 
   lua_push_int_table_entry(vm, "pid", proc->pid);
@@ -823,6 +835,13 @@ void Flow::processLua(lua_State* vm, ProcessInfo *proc, bool client) {
 
 void Flow::lua(lua_State* vm, bool detailed_dump) {
   char buf[64];
+  Host *src = get_cli_host(), *dst = get_srv_host();
+
+  if((src == NULL) || (dst == NULL)) return;
+
+  if((!Utils::isUserAllowedHost(vm, src->get_ip()))
+     && (!Utils::isUserAllowedHost(vm, dst->get_ip())))
+    return;
 
   lua_newtable(vm);
 

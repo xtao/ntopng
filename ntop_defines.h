@@ -101,6 +101,16 @@
 #define NTOP_HOSTS_SERIAL       "ntopng.host_serial"
 #define DUMMY_IFACE_ID          ((u_int8_t)-1)
 #define MAX_CSRF_DURATION       120 /* 2 mins */
+
+#define CONST_ADMINISTRATOR_USER  "administrator"
+#define CONST_UNPRIVILEGED_USER   "unprivileged"
+#define CONST_STR_USER_GROUP      "ntopng.user.%s.group"
+#define CONST_STR_USER_FULL_NAME  "ntopng.user.%s.full_name"
+#define CONST_STR_USER_PASSWORD   "ntopng.user.%s.password"
+#define CONST_STR_USER_NETS       "ntopng.user.%s.allowed_nets"
+#define CONST_ALLOWED_NETS        "allowed_nets"
+#define CONST_USER                "user"
+
 #ifndef TH_FIN
 #define	TH_FIN	0x01
 #endif

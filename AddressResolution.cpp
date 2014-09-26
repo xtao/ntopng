@@ -205,7 +205,7 @@ int16_t AddressResolution::findAddress(int family, void *addr) {
 
 /* **************************************** */
 
-static void free_ptree_data(void *data) { ; }
+void free_ptree_data(void *data) { ; }
 
 /* **************************************** */
 
