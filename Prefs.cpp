@@ -53,12 +53,12 @@ Prefs::Prefs(Ntop *_ntop) {
   packet_filter = NULL;
   disable_host_persistency = false;
   num_interfaces = 0, enable_auto_logout = true;
-  dump_flows_on_db = false;
+  dump_flows_on_db = false, dump_flows_on_es = false;
   enable_aggregations = aggregations_disabled;
   memset(ifNames, 0, sizeof(ifNames));
   dump_hosts_to_db = location_none, dump_aggregations_to_db = location_none;
   shorten_aggregation_names = true; // TODO: make it configurable
-  json_symbolic_labels = 0;
+  json_symbolic_labels = true;
 #ifdef WIN32
   daemonize = true;
 #endif
@@ -169,7 +169,9 @@ void usage() {
 	 "                                    | 1 - Enable aggregations, no timeline dump\n"
 	 "                                    | 2 - Enable aggregations, with timeline\n"
 	 "                                    |     dump (see -C)\n"
-	 "[--dump-flows|-F]                   | Dump expired flows.\n"
+	 "[--dump-flows|-F] <mode>            | Dump expired flows. Mode:\n"
+	 "                                    | db - Dump in SQLite DB\n"
+	 "                                    | es - Dump in Redis "CONST_ES_QUEUE_NAME" queue\n"
 	 "[--export-flows|-I] <endpoint>      | Export flows using the specified endpoint.\n"
 	 "[--dump-hosts|-D] <mode>            | Dump hosts policy (default: none).\n"
 	 "                                    | Values:\n"
@@ -187,9 +189,6 @@ void usage() {
 	 "                                    | local  - Keep only local hosts\n"
 	 "                                    | remote - Keep only remote hosts\n"
 	 "                                    | none   - Flush hosts when idle\n"
-	 "--json-labels                       | In case JSON label is used (e.g. with\n"
-	 "                                    | ZMQ/Sqlite) labels instead of numbers are\n"
-	 "                                    | used as keys.\n"
 	 "--hw-timestamp-mode <mode>          | Enable hw timestamping/stripping.\n"
 	 "                                    | Supported TS modes are:\n"
 	 "                                    | ixia - Timestamped packets by ixiacom.com\n"
@@ -266,7 +265,7 @@ static const struct option long_options[] = {
   { "dump-timeline",                     no_argument,       NULL, 'C' },
   { "dump-hosts",                        required_argument, NULL, 'D' },
   { "dump-aggregations",                 required_argument, NULL, 'E' },
-  { "dump-flows",                        no_argument,       NULL, 'F' },
+  { "dump-flows",                        required_argument, NULL, 'F' },
 #ifndef WIN32
   { "pid",                               required_argument, NULL, 'G' },
 #endif
@@ -282,7 +281,6 @@ static const struct option long_options[] = {
   { "httpdocs-dir",                      required_argument, NULL, '1' },
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
-  { "json-labels",                       no_argument,       NULL, 211 },
   { "hw-timestamp-mode",                 required_argument, NULL, 212 },
 
   /* End of options */
@@ -490,7 +488,10 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'F':
-    dump_flows_on_db = true;
+    if(strcmp(optarg, "es") == 0)
+      dump_flows_on_es = true;
+    else
+      dump_flows_on_db = true;
     break;
 
 #ifndef WIN32
@@ -519,10 +520,6 @@ int Prefs::setOption(int optkey, char *optarg) {
 
   case 'X':
     max_num_flows = max_val(atoi(optarg), 1024);
-    break;
-
-  case 211:
-    json_symbolic_labels = 1;
     break;
 
   case 212:
@@ -583,7 +580,7 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
   while((c = getopt_long(argc, argv,
-			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:FG:HLI:S:U:X:W:VZ:",
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:F:G:HLI:S:U:X:W:VZ:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);

@@ -110,6 +110,7 @@
 #define CONST_STR_USER_NETS       "ntopng.user.%s.allowed_nets"
 #define CONST_ALLOWED_NETS        "allowed_nets"
 #define CONST_USER                "user"
+#define CONST_ES_QUEUE_NAME       "ntopng.es"
 
 #define CONST_INTERFACE_TYPE_PCAP      "pcap"
 #define CONST_INTERFACE_TYPE_PCAP_DUMP "pcap dump"
@@ -208,6 +209,7 @@
 #define CONST_RUNTIME_PREFS_ALERT_SYSLOG             "ntopng.prefs.alerts_syslog"  /* 0 / 1 */
 
 #define CONST_MAX_ALERT_MSG_QUEUE_LEN 512
+#define CONST_MAX_ES_MSG_QUEUE_LEN    8192
 #define CONST_MAX_NUM_READ_ALERTS     32
 #define CONST_MAX_THRESHOLD_CROSS_DURATION 3
 #define CONST_MAX_ACTIVITY_DURATION    86400 /* sec */

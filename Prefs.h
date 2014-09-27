@@ -47,7 +47,7 @@ class Prefs {
   u_int32_t max_num_hosts, max_num_flows;
   u_int http_port, https_port;
   u_int8_t num_interfaces;
-  bool dump_flows_on_db;
+  bool dump_flows_on_db, dump_flows_on_es;
   AggregationMode enable_aggregations;
   InterfaceInfo ifNames[MAX_NUM_INTERFACES];
   char *local_networks;
@@ -63,7 +63,7 @@ class Prefs {
   int redis_port;
   int cpu_affinity;
   int dns_mode;
-  int json_symbolic_labels;
+  bool json_symbolic_labels;
   FILE *logFd;
 
   inline void help() { usage(); };
@@ -95,6 +95,7 @@ class Prefs {
   inline AggregationMode get_aggregation_mode()         { return(enable_aggregations);    };
   inline u_int8_t get_num_user_specified_interfaces()   { return(num_interfaces);         };
   inline bool  do_dump_flows_on_db()                    { return(dump_flows_on_db);       };
+  inline bool  do_dump_flows_on_es()                    { return(dump_flows_on_es);       };
   inline char* get_if_name(u_int id)                    { return((id < MAX_NUM_INTERFACES) ? ifNames[id].name : NULL); };
   inline char* get_if_descr(u_int id)                   { return((id < MAX_NUM_INTERFACES) ? ifNames[id].description : NULL); };
   inline char* get_data_dir()                           { return(data_dir);       };
@@ -132,7 +133,7 @@ class Prefs {
   inline LocationPolicy get_dump_aggregations_to_db()   { return(dump_aggregations_to_db);   };
   int save();
   void add_network_interface(char *name, char *description);
-  inline u_int32_t get_json_symbolic_labels()           { return(json_symbolic_labels);      };
+  inline bool get_json_symbolic_labels()           { return(json_symbolic_labels);      };
   void lua(lua_State* vm);
   void loadIdleDefaults();
   void registerNetworkInterfaces();

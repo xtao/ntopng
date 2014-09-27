@@ -88,7 +88,9 @@ class Flow : public GenericHashEntry {
 
   char *getDomainCategory();
   void deleteFlowMemory();
-  char* serialize(bool partial_dump = false);
+  char* serialize(bool partial_dump = false, bool es_json = false);
+  json_object* flow2json(bool partial_dump);
+  json_object* flow2es(json_object *flow_object);
   inline u_int8_t getTcpFlags() { return(tcp_flags);  };
   u_int32_t getPid(bool client);
   u_int32_t getFatherPid(bool client);

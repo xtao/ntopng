@@ -407,30 +407,17 @@ int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
       rc = -1;
   }
 
+  l->unlock(__FILE__, __LINE__);
+
   if(!found) {
     /* Add to the list of addresses to resolve */
 
-    reply = (redisReply*)redisCommand(redis, "%s %s %s",
-				      localHost ? "LPUSH" : "RPUSH",
-				      ns_list, hostname);
-    if(!reply) reconnectRedis();
-    if(reply && (reply->type == REDIS_REPLY_ERROR))
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-    if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
-
-    /*
-      We make sure that no more than MAX_NUM_QUEUED_ADDRS entries are in queue
-      This is important in order to avoid the cache to grow too much
-    */
-    reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", ns_list, MAX_NUM_QUEUED_ADDRS);
-    if(!reply) reconnectRedis();
-    if(reply && (reply->type == REDIS_REPLY_ERROR))
-      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-    if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
+    if(localHost)
+      rc = rpush(ns_list, hostname, MAX_NUM_QUEUED_ADDRS);
+    else
+      rc = lpush(ns_list, hostname, MAX_NUM_QUEUED_ADDRS);
   } else
     reply = 0;
-
-  l->unlock(__FILE__, __LINE__);
 
   return(rc);
 }
@@ -1179,8 +1166,54 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
 /* ******************************************* */
 
-void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
+int Redis::lpush(const char *queue_name, char *msg, u_int queue_trim_size) {
+  return(msg_push("LPUSH", queue_name, msg, queue_trim_size));
+}
+
+/* ******************************************* */
+
+int Redis::rpush(const char *queue_name, char *msg, u_int queue_trim_size) {
+  return(msg_push("RPUSH", queue_name, msg, queue_trim_size));
+}
+
+/* ******************************************* */
+
+int Redis::msg_push(const char *cmd, const char *queue_name, char *msg, u_int queue_trim_size) {
   redisReply *reply;
+  int rc = 0;
+  
+  l->lock(__FILE__, __LINE__);
+  /* Put the latest messages on top so old messages (if any) will be discarded */
+  reply = (redisReply*)redisCommand(redis, "%s %s %s", cmd,  queue_name, msg);
+
+  if(!reply) reconnectRedis();
+  if(reply) {
+    if(reply->type == REDIS_REPLY_ERROR)
+      ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = -1;
+    
+    freeReplyObject(reply);
+    
+    if(queue_trim_size > 0) {
+      reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", queue_name, queue_trim_size);
+      if(!reply) reconnectRedis();
+      if(reply) {
+	if(reply->type == REDIS_REPLY_ERROR)
+	  ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = -1;
+	
+	freeReplyObject(reply);
+      } else
+	rc = -1;
+    }
+  } else
+    rc = -1;
+
+  l->unlock(__FILE__, __LINE__);
+  return(rc);
+}
+
+/* ******************************************* */
+
+void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
   char what[1024];
 
   snprintf(what, sizeof(what), "%u|%u|%u|%s",
@@ -1196,21 +1229,7 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
   }
 #endif
 
-  l->lock(__FILE__, __LINE__);
-  /* Put the latest messages on top so old messages (if any) will be discarded */
-  reply = (redisReply*)redisCommand(redis, "LPUSH %s %s",
-				    CONST_ALERT_MSG_QUEUE, what);
-
-  if(!reply) reconnectRedis();
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-
-  reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", CONST_ALERT_MSG_QUEUE, CONST_MAX_ALERT_MSG_QUEUE_LEN);
-  if(!reply) reconnectRedis();
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-  l->unlock(__FILE__, __LINE__);
-  if(reply) freeReplyObject(reply);
+  lpush(CONST_ALERT_MSG_QUEUE, what, CONST_MAX_ALERT_MSG_QUEUE_LEN);
 }
 
 /* ******************************************* */

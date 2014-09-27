@@ -56,7 +56,7 @@ NetworkInterface::NetworkInterface() {
     strings_hash = NULL, ndpi_struct = NULL,
     purge_idle_flows_hosts = true, id = (u_int8_t)-1,
     sprobe_interface = false, has_vlan_packets = false,
-    pcap_datalink_type = 0, cpu_affinity = 0, sprobe_interface = false, 
+    pcap_datalink_type = 0, cpu_affinity = 0, sprobe_interface = false,
     running = false;
   db = new DB(this);
 
@@ -120,11 +120,11 @@ NetworkInterface::NetworkInterface(const char *name) {
 
     num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_flows()/4);
     flows_hash = new FlowHash(this, num_hashes, ntop->getPrefs()->get_max_num_flows());
-    
+
     num_hashes = max_val(4096, ntop->getPrefs()->get_max_num_hosts()/4);
     hosts_hash = new HostHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
     strings_hash = new StringHash(this, num_hashes, ntop->getPrefs()->get_max_num_hosts());
-    
+
     // init global detection structure
     ndpi_struct = ndpi_init_detection_module(ntop->getGlobals()->get_detection_tick_resolution(),
 					     malloc_wrapper, free_wrapper, debug_printf);
@@ -132,15 +132,15 @@ NetworkInterface::NetworkInterface(const char *name) {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Global structure initialization failed");
       _exit(-1);
     }
-    
+
     if(ntop->getCustomnDPIProtos() != NULL)
       ndpi_load_protocols_file(ndpi_struct, ntop->getCustomnDPIProtos());
-    
+
     ndpi_port_range d_port[MAX_DEFAULT_PORTS];
     memset(d_port, 0, sizeof(d_port));
     ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
 			    (char*)"Operating System", d_port, d_port);
-    
+
     // enable all protocols
     NDPI_BITMASK_SET_ALL(all);
     ndpi_set_protocol_detection_bitmask2(ndpi_struct, &all);
@@ -149,7 +149,7 @@ NetworkInterface::NetworkInterface(const char *name) {
     next_idle_flow_purge = next_idle_host_purge = next_idle_aggregated_host_purge = 0;
     cpu_affinity = -1, has_vlan_packets = false;
     running = false, sprobe_interface = false;
-    
+
     db = new DB(this);
     checkIdle();
   }
@@ -209,8 +209,47 @@ NetworkInterface::~NetworkInterface() {
 
 /* **************************************************** */
 
-bool NetworkInterface::dumpFlow(time_t when, Flow *f, char *json) {
-  return(db->dumpFlow(when, f, json));
+int NetworkInterface::dumpFlow(time_t when, bool partial_dump, Flow *f) {
+  if(ntop->getPrefs()->do_dump_flows_on_db()) {
+    return(dumpDBFlow(when, partial_dump, f));
+  } else if(ntop->getPrefs()->do_dump_flows_on_es())
+    return(dumpEsFlow(when, partial_dump, f));
+  else {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error");
+    return(-1);
+  }
+}
+
+/* **************************************************** */
+
+int NetworkInterface::dumpEsFlow(time_t when, bool partial_dump, Flow *f) {
+  char *json = f->serialize(partial_dump, true);
+  int rc;
+
+  if(json) {
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] %s", es_rsp);
+
+    rc = ntop->getRedis()->lpush(CONST_ES_QUEUE_NAME, (char*)json, CONST_MAX_ES_MSG_QUEUE_LEN);
+    free(json);
+  } else
+    rc = -1;
+
+  return(rc);
+}
+
+/* **************************************************** */
+
+int NetworkInterface::dumpDBFlow(time_t when, bool partial_dump, Flow *f) {
+  char *json = f->serialize(partial_dump, false);
+  int rc;
+
+  if(json) {
+    rc = db->dumpFlow(when, f, json);
+    free(json);
+  } else
+    rc = -1;
+
+  return(rc);
 }
 
 /* **************************************************** */
@@ -312,7 +351,7 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
 
     while((domain != NULL) && strcmp(domain, "null")) {
       char *status;
-      
+
       if((status = strtok_r(NULL, ",", &pos)) == NULL) {
 	status = (char*)"true";
 	next_break = true;
@@ -680,13 +719,13 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   while(true) {
     if(eth_type == 0x8100 /* VLAN */) {
       Ether80211q *qType = (Ether80211q*)&packet[ip_offset];
-      
+
       vlan_id = ntohs(qType->vlanId) & 0xFFF;
       eth_type = (packet[ip_offset+2] << 8) + packet[ip_offset+3];
       ip_offset += 4;
     } else if(eth_type == 0x8847 /* MPLS */) {
       u_int8_t bos; /* bottom_of_stack */
-      
+
       bos = (((u_int8_t)packet[ip_offset+2]) & 0x1), ip_offset += 4;
       if(bos) {
 	eth_type = ETHERTYPE_IP;
@@ -695,7 +734,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     } else
       break;
   }
-    
+
   // just work on Ethernet packets that contain IPv4
   switch(eth_type) {
   case ETHERTYPE_IP:
@@ -800,8 +839,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
 void NetworkInterface::startPacketPolling() {
   if(cpu_affinity >= 0) Utils::setThreadAffinity(pollLoop, cpu_affinity);
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, 
-			       "Started packet polling on interface %s [id: %u]...", 
+  ntop->getTrace()->traceEvent(TRACE_NORMAL,
+			       "Started packet polling on interface %s [id: %u]...",
 			       get_name(), get_id());
   running = true;
 }
@@ -953,9 +992,9 @@ struct vm_ptree {
 
 static bool hosts_get_list(GenericHashEntry *h, void *user_data) {
   struct vm_ptree *vp = (struct vm_ptree*)user_data;
-  
+
   ((Host*)h)->lua(vp->vm, vp->ptree, false, false, false);
-  
+
   return(false); /* false = keep on walking */
 }
 
@@ -963,7 +1002,7 @@ static bool hosts_get_list(GenericHashEntry *h, void *user_data) {
 
 static bool hosts_get_list_details(GenericHashEntry *h, void *user_data) {
   struct vm_ptree *vp = (struct vm_ptree*)user_data;
-  
+
   ((Host*)h)->lua(vp->vm, vp->ptree, true, false, false);
 
   return(false); /* false = keep on walking */
@@ -975,7 +1014,7 @@ void NetworkInterface::getActiveHostsList(lua_State* vm,
 					  patricia_tree_t *allowed_hosts,
 					  bool host_details) {
   struct vm_ptree vp;
-  
+
   vp.vm = vm, vp.ptree = allowed_hosts;
 
   lua_newtable(vm);
@@ -1013,7 +1052,7 @@ void NetworkInterface::getActiveAggregatedHostsList(lua_State* vm,
 						    char *host) {
   struct aggregation_walk_hosts_info info;
 
-  info.vm = vm, info.family_id = proto_family, 
+  info.vm = vm, info.family_id = proto_family,
     info.host = host, info.allowed_hosts = allowed_hosts;
 
   lua_newtable(vm);
@@ -1169,7 +1208,7 @@ Host* NetworkInterface::getHost(char *host_ip, u_int16_t vlan_id) {
 
 /* **************************************************** */
 
-bool NetworkInterface::getHostInfo(lua_State* vm, 
+bool NetworkInterface::getHostInfo(lua_State* vm,
 				   patricia_tree_t *allowed_hosts,
 				   char *host_ip, u_int16_t vlan_id) {
   if(host_ip == NULL)
@@ -1200,7 +1239,7 @@ StringHost* NetworkInterface::getAggregatedHost(char *host_name) {
 
 /* **************************************************** */
 
-bool NetworkInterface::getAggregatedHostInfo(lua_State* vm, 
+bool NetworkInterface::getAggregatedHostInfo(lua_State* vm,
 					     patricia_tree_t *ptree,
 					     char *host_name) {
   StringHost *h = getAggregatedHost(host_name);
@@ -1222,7 +1261,7 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm,
   Example if we are looking at the DNS requests, it will return all DNS
   names requested by host X (host_name)
 */
-bool NetworkInterface::getAggregationsForHost(lua_State* vm, patricia_tree_t *allowed_hosts, 
+bool NetworkInterface::getAggregationsForHost(lua_State* vm, patricia_tree_t *allowed_hosts,
 					      char *host_ip) {
   struct host_find_aggregation_info info;
   IpAddress *h = new IpAddress(host_ip);
@@ -1330,7 +1369,7 @@ static bool flow_peers_walker(GenericHashEntry *h, void *user_data) {
   struct flow_peers_info *info = (struct flow_peers_info*)user_data;
 
   if((info->numIP == NULL) || flow->isFlowPeer(info->numIP, info->vlanId))
-    flow->print_peers(info->vm, info->allowed_hosts, 
+    flow->print_peers(info->vm, info->allowed_hosts,
 		      (info->numIP == NULL) ? false : true);
 
   return(false); /* false = keep on walking */
@@ -1579,7 +1618,7 @@ u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *
       else if(!help_printed)
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
     }
-    
+
     for(int i = 0; devpointer != NULL; i++) {
       if(validInterface(devpointer->description)) {
 	numInterfaces++;
@@ -1687,7 +1726,7 @@ static bool correlator_walker(GenericHashEntry *node, void *user_data) {
 static bool similarity_walker(GenericHashEntry *node, void *user_data) {
   Host *h = (Host*)node;
   struct correlator_host_info *info = (struct correlator_host_info*)user_data;
-  
+
   if(h
      // && h->isLocalHost() /* Consider only local hosts */
      && h->get_ip()

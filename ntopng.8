@@ -55,7 +55,7 @@ or
 .RB [ \-x
 .IR <max num hosts> ]
 .RB [ \-F
-.IR <dump\-flows> ]
+.IR <mode> <dump\-flows> ]
 .RB [ \-D
 .IR <dump\-hosts> ]
 .RB [ \-I
@@ -67,7 +67,6 @@ or
 .RB [ \-H ]
 .RB [ \-\-hw\-timestamp\-mode
 .IR <mode> ]
-.RB [ \-\-json\-label ]
 .RB [ \-v ]
 .RB [ \-V ]
 .RB [ \-h ]
@@ -248,9 +247,10 @@ detected they will be discarded.
 Specify the maximum number of active hosts that ntopng will handle. If more hosts are
 detected they will be discarded.
 
-.It \-F|\-\-dump\-flows
-If ntopng is compiled with sqlite support, flows can dumped persistently on disk using this option.
-Databases are created daily under <data directory>/<interface>/db. Using this option you can reload the dumped flows via the Historical Interface specify the time interval and the interface.
+.It \-F|\-\-dump\-flows <mode>
+If ntopng is compiled with sqlite support, flows can dumped persistently on disk using this option. The mode can be set to 
+db - Dump on local SQLite dabatase. Databases are created daily under <data directory>/<interface>/db. Using this option you can reload the dumped flows via the Historical Interface specify the time interval and the interface.
+es - Dump on ntopng.es queue in Elasticsearch format that be insert on a ES database.
 
 .It \-D|\-\-dump\-hosts
 If ntopng is compiled with sqlite support, hosts contacts can dumped persistently on disk using this option.
@@ -275,13 +275,10 @@ ntopng periodically purges idle hosts. With this option you can modify this beha
 not to purge the hosts specified by \-S. This parameter requires an argument that can be "all" (Keep all hosts in memory),
 "local" (Keep only local hosts), "remote" (Keep only remote hosts), "none" (Flush hosts when idle).
 
-.It \-\-json\-labels
-Using this option in case JSON label is used (e.g. with ZMQ/Sqlite) labels instead of numbers are used as keys.
-
 .It \-\-hw\-timestamp\-mode
 Enable hw timestamping/stripping. Supported TS modes are:
 .br
-ixia \(em Timestamped packets by ixiacom.com hardware devices .
+ixia \(em Timestamped packets by ixiacom.com hardware devices.
 
 .It \-v|\-\-verbose
 Verbose tracing.

@@ -621,8 +621,8 @@ char* Flow::print(char *buf, u_int buf_len) {
 
 void Flow::dumpFlow(bool partial_dump) {
   if(ntop->getPrefs()->do_dump_flows_on_db()
+     || ntop->getPrefs()->do_dump_flows_on_es()
      || ntop->get_export_interface()) {
-    char *json;
 
     if(partial_dump) {
       time_t now = time(NULL);
@@ -630,13 +630,21 @@ void Flow::dumpFlow(bool partial_dump) {
       if((now - last_db_dump.last_dump) < CONST_DB_DUMP_FREQUENCY)
 	return;
     }
-    json = serialize(partial_dump);
-    cli_host->getInterface()->dumpFlow(last_seen, this, json);
 
-    if(ntop->get_export_interface())
-      ntop->get_export_interface()->export_data(json);
+    if(ntop->getPrefs()->do_dump_flows_on_db()) {
+      cli_host->getInterface()->dumpDBFlow(last_seen, partial_dump, this);
+    } else if(ntop->getPrefs()->do_dump_flows_on_es()) {
+      cli_host->getInterface()->dumpEsFlow(last_seen, partial_dump, this);
+    }
 
-    if(json) free(json);
+    if(ntop->get_export_interface()) {
+      char *json = serialize(partial_dump, false);
+      
+      if(json) {
+	ntop->get_export_interface()->export_data(json);
+	free(json);
+      }
+    }
   }
 }
 
@@ -996,9 +1004,68 @@ void Flow::sumStats(NdpiStats *stats) {
 
 /* *************************************** */
 
-char* Flow::serialize(bool partial_dump) {
+char* Flow::serialize(bool partial_dump, bool es_json) {
+  json_object *my_object = flow2json(partial_dump);
+  char *rsp;
+
+  /* JSON string */
+  rsp = strdup(json_object_to_json_string(my_object));
+  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
+
+  if(es_json) {
+    json_object *es_object = flow2es(my_object);
+    const char *es_rsp;
+
+    /* JSON string */
+    es_rsp = strdup(json_object_to_json_string(es_object));
+   
+    /* Free memory (it will also free enclosed object my_object) */
+    json_object_put(es_object);
+  } else {
+    /* Free memory */
+    json_object_put(my_object);
+  }
+
+  return(rsp);
+}
+
+/* *************************************** */
+
+json_object* Flow::flow2es(json_object *flow_object) {
+  json_object *es_object;
+  struct timeval tv;
+  char buf[64];
+  struct tm* tm_info;
+  int len;
+
+  gettimeofday(&tv, NULL);
+  tm_info = localtime(&tv.tv_sec);
+
+  strftime(buf, sizeof(buf), "%FT%T", tm_info);
+  len = strlen(buf);
+  snprintf(&buf[len], sizeof(buf)-len, ".%03uZ", tv.tv_usec/1000);
+  json_object_object_add(flow_object, "@timestamp", json_object_new_string(buf));
+  json_object_object_add(flow_object, "@version", json_object_new_int(1));
+
+  es_object = json_object_new_object();
+  json_object_object_add(es_object, "_type", json_object_new_string("ntopng"));
+
+  snprintf(buf, sizeof(buf), "%u%u%lu", (unsigned int)tv.tv_sec, tv.tv_usec, (unsigned long)this);
+  json_object_object_add(es_object, "_id", json_object_new_string(buf));
+
+  strftime(buf, sizeof(buf), "ntopng-%Y.%m.%d", tm_info);
+  json_object_object_add(es_object, "_index", json_object_new_string(buf));
+  json_object_object_add(es_object, "_score", NULL);
+  json_object_object_add(es_object, "_source", flow_object);
+
+  return(es_object);
+}
+
+/* *************************************** */
+
+json_object* Flow::flow2json(bool partial_dump) {
   json_object *my_object;
-  char *rsp, buf[64], jsonbuf[64];
+  char buf[64], jsonbuf[64];
 
   my_object = json_object_new_object();
   json_object_object_add(my_object, Utils::jsonLabel(IPV4_SRC_ADDR, "IPV4_SRC_ADDR", jsonbuf, sizeof(jsonbuf)),
@@ -1068,14 +1135,7 @@ char* Flow::serialize(bool partial_dump) {
       last_db_dump.srv2cli_bytes = srv2cli_bytes,  last_db_dump.last_dump = last_seen;
   }
 
-  /* JSON string */
-  rsp = strdup(json_object_to_json_string(my_object));
-  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
-
-  /* Free memory */
-  json_object_put(my_object);
-
-  return(rsp);
+  return(my_object);
 }
 
 /* *************************************** */

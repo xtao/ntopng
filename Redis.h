@@ -34,6 +34,7 @@ class Redis {
 
   void setDefaults();
   void reconnectRedis();
+  int msg_push(const char *cmd, const char *queue_name, char *msg, u_int queue_trim_size);
 
  public:
   Redis(char *redis_host = (char*)"127.0.0.1", u_int16_t redis_port = 6379);
@@ -83,6 +84,9 @@ class Redis {
   u_int32_t host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key);
   int id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len);
 
+  int lpush(const char *queue_name, char *msg, u_int queue_trim_size);
+  int rpush(const char *queue_name, char *msg, u_int queue_trim_size);
+  
   /**
    * @brief Increment a redis key and return its new value
    *
