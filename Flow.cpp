@@ -1008,20 +1008,19 @@ char* Flow::serialize(bool partial_dump, bool es_json) {
   json_object *my_object = flow2json(partial_dump);
   char *rsp;
 
-  /* JSON string */
-  rsp = strdup(json_object_to_json_string(my_object));
-  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
-
   if(es_json) {
     json_object *es_object = flow2es(my_object);
-    const char *es_rsp;
 
     /* JSON string */
-    es_rsp = strdup(json_object_to_json_string(es_object));
+    rsp = strdup(json_object_to_json_string(es_object));
    
     /* Free memory (it will also free enclosed object my_object) */
     json_object_put(es_object);
   } else {
+  /* JSON string */
+    rsp = strdup(json_object_to_json_string(my_object));
+    ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
+    
     /* Free memory */
     json_object_put(my_object);
   }
