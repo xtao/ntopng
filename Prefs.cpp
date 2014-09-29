@@ -71,6 +71,9 @@ Prefs::Prefs(Ntop *_ntop) {
   flow_max_idle           = MAX_FLOW_IDLE /* sec */;
   host_max_new_flows_sec_threshold = CONST_MAX_NEW_FLOWS_SECOND; /* flows/sec */
   host_max_num_syn_sec_threshold = CONST_MAX_NUM_SYN_PER_SECOND; /* syn/sec */
+
+  es_type = (char*)"flows", es_index = (char*)"ntopng", 
+    es_url = (char*)"http://localhost:9200/_bulk", es_pwd = (char*)"";
 }
 
 /* ******************************************* */

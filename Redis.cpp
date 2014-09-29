@@ -27,6 +27,17 @@
 #include "third-party/hiredis/sds.c"
 #endif
 
+#ifdef HAVE_CURL
+#include <curl/curl.h>
+#endif
+
+/* **************************************************** */
+
+static void* esLoop(void* ptr) {
+  ntop->getRedis()->indexESdata();
+  return(NULL);
+}
+
 /* **************************************** */
 
 Redis::Redis(char *_redis_host, u_int16_t _redis_port) {
@@ -37,6 +48,9 @@ Redis::Redis(char *_redis_host, u_int16_t _redis_port) {
 
   l = new Mutex();
   setDefaults();
+
+  if(ntop->getPrefs()->do_dump_flows_on_es())
+    pthread_create(&esThreadLoop, NULL, esLoop, (void*)this);
 }
 
 /* **************************************** */
@@ -58,11 +72,11 @@ void Redis::reconnectRedis() {
   }
 
   redis = redisConnectWithTimeout(redis_host, redis_port, timeout);
-  
+
   if(redis) reply = (redisReply*)redisCommand(redis, "PING"); else reply = NULL;
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-  
+
   if((redis == NULL) || (reply == NULL)) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "ntopng requires redis server to be up and running");
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Please start it and try again or use -r");
@@ -70,7 +84,7 @@ void Redis::reconnectRedis() {
     _exit(-1);
   } else
     freeReplyObject(reply);
-  
+
   ntop->getTrace()->traceEvent(TRACE_NORMAL,
 			       "Successfully connected to Redis %s:%u",
 			       redis_host, redis_port);
@@ -437,24 +451,7 @@ int Redis::popHostToResolve(char *hostname, u_int hostname_len) {
 /* **************************************** */
 
 int Redis::popHost(const char* ns_list, char *hostname, u_int hostname_len) {
-  int rc;
-  redisReply *reply;
-
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "LPOP %s", ns_list);
-  if(!reply) reconnectRedis();
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-
-  if(reply && reply->str)
-    snprintf(hostname, hostname_len, "%s", reply->str), rc = 0;
-  else
-    hostname[0] = '\0', rc = -1;
-
-  if(reply) freeReplyObject(reply);
-  l->unlock(__FILE__, __LINE__);
-
-  return(rc);
+  return(lpop(ns_list, hostname, hostname_len));
 }
 
 /* **************************************** */
@@ -551,24 +548,7 @@ char* Redis::getFlowCategory(char *domainname, char *buf,
 /* **************************************** */
 
 int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
-  int rc;
-  redisReply *reply;
-
-  l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "LPOP %s", DOMAIN_TO_CATEGORIZE);
-  if(!reply) reconnectRedis();
-  if(reply && (reply->type == REDIS_REPLY_ERROR))
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
-
-  if(reply && reply->str)
-    snprintf(domainname, domainname_len, "%s", reply->str);
-  else
-    domainname[0] = '\0';
-
-  if(reply) freeReplyObject(reply), rc = 0; else rc = -1;
-  l->unlock(__FILE__, __LINE__);
-
-  return(rc);
+  return(lpop(DOMAIN_TO_CATEGORIZE, domainname, domainname_len));
 }
 
 /* **************************************** */
@@ -1181,7 +1161,7 @@ int Redis::rpush(const char *queue_name, char *msg, u_int queue_trim_size) {
 int Redis::msg_push(const char *cmd, const char *queue_name, char *msg, u_int queue_trim_size) {
   redisReply *reply;
   int rc = 0;
-  
+
   l->lock(__FILE__, __LINE__);
   /* Put the latest messages on top so old messages (if any) will be discarded */
   reply = (redisReply*)redisCommand(redis, "%s %s %s", cmd,  queue_name, msg);
@@ -1190,16 +1170,16 @@ int Redis::msg_push(const char *cmd, const char *queue_name, char *msg, u_int qu
   if(reply) {
     if(reply->type == REDIS_REPLY_ERROR)
       ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = -1;
-    
+
     freeReplyObject(reply);
-    
+
     if(queue_trim_size > 0) {
       reply = (redisReply*)redisCommand(redis, "LTRIM %s 0 %u", queue_name, queue_trim_size);
       if(!reply) reconnectRedis();
       if(reply) {
 	if(reply->type == REDIS_REPLY_ERROR)
 	  ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???"), rc = -1;
-	
+
 	freeReplyObject(reply);
       } else
 	rc = -1;
@@ -1234,12 +1214,12 @@ void Redis::queueAlert(AlertLevel level, AlertType t, char *msg) {
 
 /* ******************************************* */
 
-u_int Redis::getNumQueuedAlerts() {
+u_int Redis::llen(const char *queue_name) {
   redisReply *reply;
   u_int num = 0;
 
   l->lock(__FILE__, __LINE__);
-  reply = (redisReply*)redisCommand(redis, "LLEN %s", CONST_ALERT_MSG_QUEUE);
+  reply = (redisReply*)redisCommand(redis, "LLEN %s", queue_name);
   if(!reply) reconnectRedis();
   if(reply && (reply->type == REDIS_REPLY_ERROR))
     ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
@@ -1249,6 +1229,29 @@ u_int Redis::getNumQueuedAlerts() {
   if(reply) freeReplyObject(reply);
 
   return(num);
+}
+
+/* ******************************************* */
+
+int Redis::lpop(const char *queue_name, char *buf, u_int buf_len) {
+  int rc;
+  redisReply *reply;
+
+  l->lock(__FILE__, __LINE__);
+  reply = (redisReply*)redisCommand(redis, "LPOP %s", queue_name);
+  if(!reply) reconnectRedis();
+  if(reply && (reply->type == REDIS_REPLY_ERROR))
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "%s", reply->str ? reply->str : "???");
+
+  if(reply && reply->str)
+    snprintf(buf, buf_len, "%s", reply->str), rc = 0;
+  else
+    buf[0] = '\0', rc = -1;
+
+  if(reply) freeReplyObject(reply);
+  l->unlock(__FILE__, __LINE__);
+
+  return(rc);
 }
 
 /* ******************************************* */
@@ -1302,3 +1305,79 @@ u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_in
   return(i);
 }
 
+/* **************************************** */
+
+#ifdef HAVE_CURL
+void Redis::indexESdata() {
+  const u_int watermark = 8, min_buf_size = 512;
+  char postbuf[16384];
+
+  while(!ntop->getGlobals()->isShutdown()) {
+    u_int l = llen(CONST_ES_QUEUE_NAME);
+    CURL *curl;
+
+    if(l >= watermark) {
+      u_int len;
+
+      len = snprintf(postbuf, sizeof(postbuf), "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}\n", 
+		     ntop->getPrefs()->get_es_type(), ntop->getPrefs()->get_es_index());
+
+      for(int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
+	int rc = lpop(CONST_ES_QUEUE_NAME, &postbuf[len], sizeof(postbuf)-len);
+
+	if(rc >= 0) {
+	  len += strlen(&postbuf[len]);
+	  postbuf[len] = '\n';
+	  len++;
+	}
+      } /* for */      
+
+      postbuf[len] = '\0';
+
+      curl = curl_easy_init();
+      if(curl) {
+	CURLcode res;
+	struct curl_slist* headers = NULL;
+
+	curl_easy_setopt(curl, CURLOPT_URL, ntop->getPrefs()->get_es_url());
+	if(ntop->getPrefs()->get_es_pwd() 
+	   && (ntop->getPrefs()->get_es_pwd()[0] != '\0'))
+	  curl_easy_setopt(curl, CURLOPT_USERNAME, ntop->getPrefs()->get_es_pwd());
+
+	if(!strncmp(ntop->getPrefs()->get_es_url(), "https", 5)) {
+	  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	}
+
+	curl_easy_setopt(curl, CURLOPT_POST, 1L); 
+	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
+	curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */
+
+	res = curl_easy_perform(curl);
+
+	if(res != CURLE_OK)
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES: %s",
+				       curl_easy_strerror(res));
+	else {
+	  //ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Posted to %s", ntop->getPrefs()->get_es_url());
+
+#if 0
+	  printf("\n----------------------------------------------\n");
+	  printf("%s\n", postbuf);
+	  printf("\n----------------------------------------------\n");
+#endif
+	}
+
+	/* always cleanup */
+	curl_easy_cleanup(curl);
+      }
+    } else
+      sleep(1);
+  } /* while */
+}
+
+#endif

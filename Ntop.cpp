@@ -506,8 +506,10 @@ int Ntop::addUser(char *username, char *full_name, char *password, char *host_ro
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
 
+#if 0
   ntop->getTrace()->traceEvent(TRACE_WARNING, "group = %s", host_role);
   ntop->getTrace()->traceEvent(TRACE_WARNING, "allowed networks = %s", allowed_networks);
+#endif
 
   snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
@@ -522,7 +524,7 @@ int Ntop::addUser(char *username, char *full_name, char *password, char *host_ro
   ntop->getRedis()->set(key, allowed_networks, 0);
 
   return (true);
-// tODO inserire controllo return return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
+// TODO add check return return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
 }
 
 /* ******************************************* */

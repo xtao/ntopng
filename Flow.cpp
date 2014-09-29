@@ -1031,14 +1031,14 @@ char* Flow::serialize(bool partial_dump, bool es_json) {
 /* *************************************** */
 
 json_object* Flow::flow2es(json_object *flow_object) {
-  json_object *es_object;
+  //json_object *es_object;
   struct timeval tv;
   char buf[64];
   struct tm* tm_info;
   int len;
 
   gettimeofday(&tv, NULL);
-  tm_info = localtime(&tv.tv_sec);
+  tm_info = gmtime(&tv.tv_sec);
 
   strftime(buf, sizeof(buf), "%FT%T", tm_info);
   len = strlen(buf);
@@ -1046,6 +1046,9 @@ json_object* Flow::flow2es(json_object *flow_object) {
   json_object_object_add(flow_object, "@timestamp", json_object_new_string(buf));
   json_object_object_add(flow_object, "@version", json_object_new_int(1));
 
+  json_object_object_add(flow_object, "type", json_object_new_string(ntop->getPrefs()->get_es_type()));
+
+#if 0
   es_object = json_object_new_object();
   json_object_object_add(es_object, "_type", json_object_new_string("ntopng"));
 
@@ -1056,8 +1059,9 @@ json_object* Flow::flow2es(json_object *flow_object) {
   json_object_object_add(es_object, "_index", json_object_new_string(buf));
   json_object_object_add(es_object, "_score", NULL);
   json_object_object_add(es_object, "_source", flow_object);
+#endif
 
-  return(es_object);
+  return(flow_object);
 }
 
 /* *************************************** */

@@ -65,6 +65,7 @@ class Prefs {
   int dns_mode;
   bool json_symbolic_labels;
   FILE *logFd;
+  char *es_type, *es_index, *es_url, *es_pwd;
 
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
@@ -137,6 +138,12 @@ class Prefs {
   void lua(lua_State* vm);
   void loadIdleDefaults();
   void registerNetworkInterfaces();
+
+  inline char* get_es_type()  { return((char*)"flows");                       };
+  inline char* get_es_index() { return((char*)"ntopng");                      };
+  inline char* get_es_url()   { return((char*)"http://localhost:9200/_bulk"); };
+  inline char* get_es_pwd()   { return((char*)"");                            };
+
 };
 
 #endif /* _PREFS_H_ */

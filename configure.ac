@@ -118,6 +118,11 @@ AC_CHECK_LIB([rt], [clock_gettime],   [LDFLAGS="${LDFLAGS} -lrt"])
 dnl> ldl (used by edjdb)
 AC_CHECK_LIB([dl], [dlopen], [LDFLAGS="${LDFLAGS} -ldl"])
 
+AC_CHECK_LIB([curl], [curl_easy_perform], [LDFLAGS="${LDFLAGS} -lcurl"])
+if test ${ac_cv_lib_curl_curl_easy_perform} = "yes"; then
+     AC_DEFINE_UNQUOTED(HAVE_CURL, 1, [CURL is present])
+fi
+
 CFLAGS="-Wall $CFLAGS"
 
 dnl> http://luajit.org/install.html
