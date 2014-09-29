@@ -256,9 +256,18 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="]]
-print (ntop.getHttpPrefix())
-print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
+
+user_group = ntop.getUserGroup()
+if(user_group["group"]=="administrator") then
+  print (ntop.getHttpPrefix())
+  print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
       <li><a href="]]
+else
+  print (ntop.getHttpPrefix())
+  print [[/lua/admin/personal_password_change.lua"><i class="fa fa-user"></i>Change Password</a></li>
+      <li><a href="]]
+end
+
 print (ntop.getHttpPrefix())
 print [[/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
       <li class="divider"></li>
