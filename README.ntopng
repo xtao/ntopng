@@ -12,14 +12,15 @@ Prerequisites
 - libxml2-dev
 - libglib2.0-dev
 - libsqlite3-dev
+- libcurl-dev
 
 On Ubuntu
 - apt-get install build-essential 
-- apt-get install libglib2.0 libxml2-dev libpcap-dev libtool rrdtool autoconf automake autogen redis-server wget libsqlite3-dev libhiredis-dev libgeoip-dev
+- apt-get install libglib2.0 libxml2-dev libpcap-dev libtool rrdtool autoconf automake autogen redis-server wget libsqlite3-dev libhiredis-dev libgeoip-dev libcurl-dev
 
 On Fedora
 - yum groupinstall "Development tools"
-- yum install autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget
+- yum install autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget libcurl-devel
 
 On FreeBSD
 - pkg install autoconf automake libtool wget pkgconf rrdtool gmake redis
