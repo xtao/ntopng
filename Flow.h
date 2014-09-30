@@ -54,7 +54,6 @@ class Flow : public GenericHashEntry {
 
   /* Counter values at last host update */
   struct {
-    u_int8_t tcp_flags;
     u_int32_t cli2srv_packets, srv2cli_packets;
     u_int64_t cli2srv_bytes, srv2cli_bytes;
     u_int32_t last_dump;

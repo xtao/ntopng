@@ -1305,6 +1305,15 @@ u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_in
 
 /* **************************************** */
 
+int curl_writefunc(void *ptr, size_t size, size_t nmemb, void *stream){
+  char *str = (char*)ptr;
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "[ES] %s", str);
+  return(size*nmemb);
+}
+
+/* **************************************** */
+
 void Redis::indexESdata() {
   const int watermark = 8, min_buf_size = 512;
   char postbuf[16384];
@@ -1364,7 +1373,10 @@ void Redis::indexESdata() {
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
-	if(ntop->getTrace()->get_trace_level() <= 2)  
+
+       	if(ntop->getTrace()->get_trace_level() > 2)  
+	  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
+	else
 	  curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */
 
 	res = curl_easy_perform(curl);

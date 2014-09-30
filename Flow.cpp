@@ -39,8 +39,8 @@ Flow::Flow(NetworkInterface *_iface,
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
   cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
-  last_db_dump.tcp_flags = 0,  last_db_dump.cli2srv_packets = 0,  last_db_dump.srv2cli_packets = 0,
-    last_db_dump.cli2srv_bytes = 0,  last_db_dump.srv2cli_bytes = 0,  last_db_dump.last_dump = 0;
+  last_db_dump.cli2srv_packets = 0, last_db_dump.srv2cli_packets = 0,
+    last_db_dump.cli2srv_bytes = 0, last_db_dump.srv2cli_bytes = 0, last_db_dump.last_dump = 0;
   
   iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
   if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
@@ -534,15 +534,15 @@ void Flow::print_peers(lua_State* vm, patricia_tree_t * ptree, bool verbose) {
 
   lua_newtable(vm);
 
-  lua_push_str_table_entry(vm,  "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_int_table_entry(vm,  "client.vlan", get_cli_host()->get_vlan_id());
-  lua_push_str_table_entry(vm,  "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
-  lua_push_int_table_entry(vm,  "server.vlan", get_srv_host()->get_vlan_id());
-  lua_push_int_table_entry(vm,  "sent", cli2srv_bytes);
-  lua_push_int_table_entry(vm,  "rcvd", srv2cli_bytes);
-  lua_push_int_table_entry(vm,  "sent.last", get_current_bytes_cli2srv());
-  lua_push_int_table_entry(vm,  "rcvd.last", get_current_bytes_srv2cli());
-  lua_push_int_table_entry(vm,  "duration", get_duration());
+  lua_push_str_table_entry(vm, "client", get_cli_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm, "client.vlan", get_cli_host()->get_vlan_id());
+  lua_push_str_table_entry(vm, "server", get_srv_host()->get_ip()->print(buf, sizeof(buf)));
+  lua_push_int_table_entry(vm, "server.vlan", get_srv_host()->get_vlan_id());
+  lua_push_int_table_entry(vm, "sent", cli2srv_bytes);
+  lua_push_int_table_entry(vm, "rcvd", srv2cli_bytes);
+  lua_push_int_table_entry(vm, "sent.last", get_current_bytes_cli2srv());
+  lua_push_int_table_entry(vm, "rcvd.last", get_current_bytes_srv2cli());
+  lua_push_int_table_entry(vm, "duration", get_duration());
 
 
   lua_push_float_table_entry(vm, "client.latitude", get_cli_host()->get_latitude());
@@ -552,9 +552,9 @@ void Flow::print_peers(lua_State* vm, patricia_tree_t * ptree, bool verbose) {
 
   if(verbose) {
     lua_push_bool_table_entry(vm, "client.private", get_cli_host()->get_ip()->isPrivateAddress());
-    lua_push_str_table_entry(vm,  "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
+    lua_push_str_table_entry(vm, "client.country", get_cli_host()->get_country() ? get_cli_host()->get_country() : (char*)"");
     lua_push_bool_table_entry(vm, "server.private", get_srv_host()->get_ip()->isPrivateAddress());
-    lua_push_str_table_entry(vm,  "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
+    lua_push_str_table_entry(vm, "server.country", get_srv_host()->get_country() ? get_srv_host()->get_country() : (char*)"");
     lua_push_str_table_entry(vm, "client.city", get_cli_host()->get_city() ? get_cli_host()->get_city() : (char*)"");
     lua_push_str_table_entry(vm, "server.city", get_srv_host()->get_city() ? get_srv_host()->get_city() : (char*)"");
 
@@ -1096,17 +1096,17 @@ json_object* Flow::flow2json(bool partial_dump) {
 
   if(protocol == IPPROTO_TCP)
     json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS, "TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
-			   json_object_new_int(partial_dump ? last_db_dump.tcp_flags : tcp_flags & last_db_dump.tcp_flags));
+			   json_object_new_int(tcp_flags));
 
   json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS, "OUT_PKTS", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(partial_dump ? last_db_dump.cli2srv_packets : cli2srv_packets - last_db_dump.cli2srv_packets));
+			 json_object_new_int64(partial_dump ? (cli2srv_packets - last_db_dump.cli2srv_packets) : cli2srv_packets));
   json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES, "OUT_BYTES", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(partial_dump ? last_db_dump.cli2srv_bytes : cli2srv_bytes - last_db_dump.cli2srv_bytes));
+			 json_object_new_int64(partial_dump ? (cli2srv_bytes - last_db_dump.cli2srv_bytes) : cli2srv_bytes));
 
   json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS, "IN_PKTS", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(partial_dump ? last_db_dump.srv2cli_packets : srv2cli_packets - last_db_dump.srv2cli_packets));
+			 json_object_new_int64(partial_dump ? (srv2cli_packets - last_db_dump.srv2cli_packets) : srv2cli_packets));
   json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES, "IN_BYTES", jsonbuf, sizeof(jsonbuf)),
-			 json_object_new_int64(partial_dump ? last_db_dump.srv2cli_bytes : srv2cli_bytes - last_db_dump.srv2cli_bytes));
+			 json_object_new_int64(partial_dump ? (srv2cli_bytes - last_db_dump.srv2cli_bytes) : srv2cli_bytes));
 
   json_object_object_add(my_object, Utils::jsonLabel(FIRST_SWITCHED, "FIRST_SWITCHED", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int((u_int32_t)(partial_dump && last_db_dump.last_dump) ? last_db_dump.last_dump : first_seen));
@@ -1133,9 +1133,9 @@ json_object* Flow::flow2json(bool partial_dump) {
   }
 
   if(partial_dump) {
-    last_db_dump.tcp_flags = tcp_flags,  last_db_dump.cli2srv_packets = cli2srv_packets,
+    last_db_dump.cli2srv_packets = cli2srv_packets,
       last_db_dump.srv2cli_packets = srv2cli_packets, last_db_dump.cli2srv_bytes = cli2srv_bytes,
-      last_db_dump.srv2cli_bytes = srv2cli_bytes,  last_db_dump.last_dump = last_seen;
+      last_db_dump.srv2cli_bytes = srv2cli_bytes, last_db_dump.last_dump = last_seen;
   }
 
   return(my_object);
