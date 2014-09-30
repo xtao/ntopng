@@ -75,7 +75,7 @@ a = _GET["label"]
 
 patterns = {
    ['_'] = "",
-   ['-_'] = "<i class=\"fa fa-exchange fa-lg\"></i>"
+   ['-_'] = " <i class=\"fa fa-exchange fa-lg\"></i> "
 }
 for search,replace in pairs(patterns) do
    a = string.gsub(a, search, replace)
