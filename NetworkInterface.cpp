@@ -1530,7 +1530,7 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 Flow* NetworkInterface::findFlowByKey(u_int32_t key, patricia_tree_t *allowed_hosts) {
   Flow *f = (Flow*)(flows_hash->findByKey(key));
 
-  if(!f->match(allowed_hosts)) f = NULL;
+  if(f && (!f->match(allowed_hosts))) f = NULL;
   return(f);
 }
 
