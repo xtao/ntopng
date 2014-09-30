@@ -33,10 +33,12 @@
 
 /* **************************************************** */
 
+#ifdef HAVE_CURL
 static void* esLoop(void* ptr) {
   ntop->getRedis()->indexESdata();
   return(NULL);
 }
+#endif
 
 /* **************************************** */
 
@@ -49,8 +51,10 @@ Redis::Redis(char *_redis_host, u_int16_t _redis_port) {
   l = new Mutex();
   setDefaults();
 
+#ifdef HAVE_CURL
   if(ntop->getPrefs()->do_dump_flows_on_es())
     pthread_create(&esThreadLoop, NULL, esLoop, (void*)this);
+#endif
 }
 
 /* **************************************** */
