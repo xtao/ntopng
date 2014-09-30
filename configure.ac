@@ -119,8 +119,9 @@ dnl> ldl (used by edjdb)
 AC_CHECK_LIB([dl], [dlopen], [LDFLAGS="${LDFLAGS} -ldl"])
 
 AC_CHECK_LIB([curl], [curl_easy_perform], [LDFLAGS="${LDFLAGS} -lcurl"])
-if test ${ac_cv_lib_curl_curl_easy_perform} = "yes"; then
-     AC_DEFINE_UNQUOTED(HAVE_CURL, 1, [CURL is present])
+if test ${ac_cv_lib_curl_curl_easy_perform} = "no"; then
+    echo "Please install libcurl(-dev) (http://curl.haxx.se/)"
+    exit
 fi
 
 CFLAGS="-Wall $CFLAGS"

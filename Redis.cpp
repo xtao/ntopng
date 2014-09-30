@@ -27,18 +27,14 @@
 #include "third-party/hiredis/sds.c"
 #endif
 
-#ifdef HAVE_CURL
 #include <curl/curl.h>
-#endif
 
 /* **************************************************** */
 
-#ifdef HAVE_CURL
 static void* esLoop(void* ptr) {
   ntop->getRedis()->indexESdata();
   return(NULL);
 }
-#endif
 
 /* **************************************** */
 
@@ -51,10 +47,8 @@ Redis::Redis(char *_redis_host, u_int16_t _redis_port) {
   l = new Mutex();
   setDefaults();
 
-#ifdef HAVE_CURL
   if(ntop->getPrefs()->do_dump_flows_on_es())
     pthread_create(&esThreadLoop, NULL, esLoop, (void*)this);
-#endif
 }
 
 /* **************************************** */
@@ -1311,9 +1305,8 @@ u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_in
 
 /* **************************************** */
 
-#ifdef HAVE_CURL
 void Redis::indexESdata() {
-  const u_int watermark = 8, min_buf_size = 512;
+  const int watermark = 8, min_buf_size = 512;
   char postbuf[16384];
 
   while(!ntop->getGlobals()->isShutdown()) {
@@ -1383,5 +1376,3 @@ void Redis::indexESdata() {
       sleep(1);
   } /* while */
 }
-
-#endif
