@@ -77,6 +77,7 @@ else
 
       link = ntop.getHttpPrefix().."/lua/get_process_info.lua?pid="..proc.pid.."&name="..proc.name.."&host=".. host .."&page=Flows"
       nest2tab(nest)
+      if(add_comma) then print(',') add_comma = false end
       print('{ "name": "'..proc.name..' (pid '.. proc.pid..')", "link": "'.. link ..'", "type": "proc", "children": [ ] }')
 
       if(last_element) then
