@@ -36,7 +36,7 @@ ntopng-data:
 	ln -s ./debian.ntopng-data ./debian
 	\rm -rf ./usr ./debian/tmp
 	\mkdir -p ${NTOPNG_BUILD}/usr/share/ntopng/httpdocs/geoip
-	cd ../../ ; make geoip
+	cd ../../ ; ./configure; make geoip
 	cp ../../httpdocs/geoip/* ${NTOPNG_BUILD}/usr/share/ntopng/httpdocs/geoip
 	-gunzip ${NTOPNG_BUILD}/usr/share/ntopng/httpdocs/geoip/*.gz
 	find ${NTOPNG_BUILD}/usr/share/ntopng -name "*~"   | xargs /bin/rm -f
