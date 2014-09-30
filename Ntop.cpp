@@ -701,7 +701,7 @@ NetworkInterface* Ntop::getNetworkInterface(const char *name) {
 	return(iface[i]);
     }
 
-    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to find inteface Id %d", if_id);
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to find interface Id %d", if_id);
 
     return(NULL);
   }

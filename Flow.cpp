@@ -1042,7 +1042,7 @@ json_object* Flow::flow2es(json_object *flow_object) {
 
   strftime(buf, sizeof(buf), "%FT%T", tm_info);
   len = strlen(buf);
-  snprintf(&buf[len], sizeof(buf)-len, ".%03uZ", tv.tv_usec/1000);
+  snprintf(&buf[len], sizeof(buf)-len, ".%03uZ", (unsigned int)(tv.tv_usec/1000));
   json_object_object_add(flow_object, "@timestamp", json_object_new_string(buf));
   json_object_object_add(flow_object, "@version", json_object_new_int(1));
 
