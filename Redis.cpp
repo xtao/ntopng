@@ -1315,9 +1315,21 @@ void Redis::indexESdata() {
 
     if(l >= watermark) {
       u_int len;
+      char index_name[64];
+      struct tm* tm_info;
+      struct timeval tv;
 
-      len = snprintf(postbuf, sizeof(postbuf), "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}\n", 
-		     ntop->getPrefs()->get_es_type(), ntop->getPrefs()->get_es_index());
+      gettimeofday(&tv, NULL);
+      tm_info = gmtime(&tv.tv_sec);
+      
+      snprintf(index_name, sizeof(index_name), "%s-", 
+	       ntop->getPrefs()->get_es_index());
+      len = strlen(index_name);
+      strftime(&index_name[len], sizeof(index_name)-len, "%Y.%m.%d", tm_info);
+ 
+      len = snprintf(postbuf, sizeof(postbuf),
+		     "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}\n", 
+		     ntop->getPrefs()->get_es_type(), index_name);
 
       for(int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
 	int rc = lpop(CONST_ES_QUEUE_NAME, &postbuf[len], sizeof(postbuf)-len);
@@ -1352,7 +1364,8 @@ void Redis::indexESdata() {
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
-	curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */
+	if(ntop->getTrace()->get_trace_level() <= 2)  
+	  curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */
 
 	res = curl_easy_perform(curl);
 
@@ -1360,7 +1373,8 @@ void Redis::indexESdata() {
 	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES: %s",
 				       curl_easy_strerror(res));
 	else {
-	  //ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Posted to %s", ntop->getPrefs()->get_es_url());
+	  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] Posted JSON to %s",
+				       ntop->getPrefs()->get_es_url());
 
 #if 0
 	  printf("\n----------------------------------------------\n");
