@@ -76,9 +76,14 @@ for _key, _value in pairsByKeys(vals, funct) do
 	 print ("  \"column_username\"  : \"" .. key .. "\", ")
 	 print ("  \"column_full_name\" : \"" .. value["full_name"] .. "\", ")
 	 print ("  \"column_group\"     : \"" .. value["group"] .. "\", ")
-	 print ("  \"column_edit\"      : \"<a href='#password_dialog' role='button' class='add-on' data-toggle='modal' id='password_btn_" .. key .. "'><span class='label label-info'>Manage</span></a><script> $('#password_btn_" .. key .. "').on('mouseenter', function() { $('#password_dialog_title').text('" .. key .. "'); $('#password_dialog_username').val('" .. key .. "'); $('#pref_dialog_username').val('" .. key .. "'); $('#host_role_select option[value = "..value["group"].."]').attr('selected','selected'); $('#allowed_networks_input').val('" .. value["allowed_nets"] .. "');}); </script> ")
 
-	 if(key ~= "admin") then
+	 if(key == "admin") then
+	    print ("  \"column_edit\"      : \"<a href='#password_dialog' role='button' class='add-on' data-toggle='modal' id='password_btn_" .. key .. "'><span class='label label-info'>Manage</span></a><script> $('#password_btn_" .. key .. "').on('mouseenter', function() { $('#password_dialog_title').text('" .. key .. "'); $('#password_dialog_username').val('" .. key .. "'); $('#pref_dialog_username').val('" .. key .. "'); $('#host_role_select option[value = "..value["group"].."]').attr('selected','selected'); $('#allowed_networks_input').val('" .. value["allowed_nets"] .. "'); $('#form_pref_change').hide(); $('#pref_part_separator').hide(); }); </script>")
+   else
+	    print ("  \"column_edit\"      : \"<a href='#password_dialog' role='button' class='add-on' data-toggle='modal' id='password_btn_" .. key .. "'><span class='label label-info'>Manage</span></a><script> $('#password_btn_" .. key .. "').on('mouseenter', function() { $('#password_dialog_title').text('" .. key .. "'); $('#password_dialog_username').val('" .. key .. "'); $('#pref_dialog_username').val('" .. key .. "'); $('#host_role_select option[value = "..value["group"].."]').attr('selected','selected'); $('#allowed_networks_input').val('" .. value["allowed_nets"] .. "'); $('#form_pref_change').show(); $('#pref_part_separator').show();}); </script>")
+   end
+
+  if(key ~= "admin") then
 	    print ("<a href='#delete_user_dialog' role='button' class='add-on' data-toggle='modal' id='delete_btn_" .. key .. "'><span class='label label-danger'>Delete</span></a><script> $('#delete_btn_" .. key .. "').on('mouseenter', function() { delete_user_alert.warning('Are you sure you want to delete " .. key .. "?'); $('#delete_dialog_username').val('" .. key .. "'); }); </script>")
 	 end
 	 print ("\"}")

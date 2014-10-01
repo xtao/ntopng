@@ -1,3 +1,4 @@
+
 print [[
 
  <style type='text/css'>
@@ -62,8 +63,9 @@ print [[
 
 user_group = ntop.getUserGroup()
 if(user_group["group"]=="administrator") then
+
 print [[
-<hr>
+<div id="pref_part_separator"><hr/></div>
 <form id="form_pref_change" class="form-horizontal" method="get" action="change_user_prefs.lua" role="form">
   <input id="pref_dialog_username" type="hidden" name="username" value="" />
 <div class="input-group">
@@ -88,6 +90,7 @@ print [[
   </div>
 
 <div class="input-group">&nbsp;</div> 
+
   <button id="pref_change" class="btn btn-primary btn-block">Change User Preferences</button>
 
 </div>
@@ -146,8 +149,10 @@ $('#password_reset_submit').click(function() {
   $('#form_password_reset').submit();
 });
 </script>
+
 </div>
 </div>
 </div> <!-- password_dialog -->
 
 			    ]]
+
