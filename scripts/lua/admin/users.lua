@@ -8,6 +8,7 @@ require "lua_utils"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
+
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 active_page = "admin"

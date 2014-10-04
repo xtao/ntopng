@@ -258,13 +258,13 @@ print [[
       <li><a href="]]
 
 user_group = ntop.getUserGroup()
-if(user_group["group"]=="administrator") then
+if(user_group == "administrator") then
   print (ntop.getHttpPrefix())
   print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
       <li><a href="]]
 else
   print (ntop.getHttpPrefix())
-  print [[/lua/admin/personal_password_change.lua"><i class="fa fa-user"></i>Change Password</a></li>
+  print [[/lua/admin/change_user_password.lua"><i class="fa fa-user"></i> Change Password</a></li>
       <li><a href="]]
 end
 
@@ -285,7 +285,7 @@ print [[/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     <ul class="dropdown-menu">
 	 <li><a href="]]
 print (ntop.getHttpPrefix())
-print [[/lua/logout.lua"><i class="fa fa-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
+print [[/lua/logout.lua"><i class="fa fa-power-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
     </ul>
     </li>
    ]]

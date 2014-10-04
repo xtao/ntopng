@@ -438,9 +438,15 @@ function getUsers()
 
 --! @memberof ntop
 --! @brief Get the user group.
---! @details For more information please read the @ref ntop_get_user_group documentation.TODO: 
---! @return An hashtable containing the user group.
+--! @details Return the stored group for the given user.
+--! @return The user group.
 function getUserGroup()
+
+--! @memberof ntop
+--! @brief Get the user allowed networks.
+--! @details Return the stored allowed netwroks (i.e. the networks this user can see) for the given user.
+--! @return The user allowed networks
+function getAllowedNetworks()
 
 --! @memberof ntop
 --! @brief Reset the user password.

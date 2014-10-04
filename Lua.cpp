@@ -94,6 +94,8 @@ static int ntop_dump_file(lua_State* vm) {
   FILE *fd;
   struct mg_connection *conn;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_getglobal(vm, CONST_HTTP_CONN);
   if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
@@ -151,6 +153,8 @@ static int ntop_dump_file(lua_State* vm) {
  * @return @ref CONST_LUA_OK.
  */
 static int ntop_get_default_interface_name(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_pushstring(vm, ntop->getInterfaceAtId(0)->get_name());
   return(CONST_LUA_OK);
 }
@@ -166,6 +170,8 @@ static int ntop_get_default_interface_name(lua_State* vm) {
 static int ntop_set_active_interface_id(lua_State* vm) {
   NetworkInterface *iface;
   u_int32_t id;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   id = (u_int32_t)lua_tonumber(vm, 1);
@@ -192,6 +198,8 @@ static int ntop_set_active_interface_id(lua_State* vm) {
 static int ntop_get_interface_names(lua_State* vm) {
   lua_newtable(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   for(int i=0; i<ntop->get_num_interfaces(); i++) {
     NetworkInterface *iface =  ntop->getInterfaceAtId(i);
 
@@ -209,6 +217,8 @@ static int ntop_get_interface_names(lua_State* vm) {
 /* ****************************************** */
 
 static patricia_tree_t* get_allowed_nets(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_getglobal(vm, CONST_ALLOWED_NETS);
   return((patricia_tree_t*)lua_touserdata(vm, lua_gettop(vm)));
 }
@@ -217,6 +227,8 @@ static patricia_tree_t* get_allowed_nets(lua_State* vm) {
 
 static NetworkInterface* get_ntop_interface(lua_State* vm) {
   NetworkInterface *ntop_interface;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   lua_getglobal(vm, "ntop_interface");
   if((ntop_interface = (NetworkInterface*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -235,6 +247,8 @@ static NetworkInterface* get_ntop_interface(lua_State* vm) {
  */
 static int ntop_flush_host_contacts(lua_State* vm) {
   NetworkInterface *ntop_interface;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
@@ -258,6 +272,8 @@ static int ntop_flush_host_contacts(lua_State* vm) {
 static int ntop_find_interface(lua_State* vm) {
   char *ifname;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   ifname = (char*)lua_tostring(vm, 1);
 
@@ -279,6 +295,8 @@ static int ntop_find_interface(lua_State* vm) {
 static int ntop_get_ndpi_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   NdpiStats stats;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_interface) {
     ntop_interface->getnDPIStats(&stats);
@@ -303,6 +321,8 @@ static int ntop_get_ndpi_protocol_name(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   NdpiStats stats;
   int proto;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   proto = (u_int32_t)lua_tonumber(vm, 1);
@@ -329,6 +349,8 @@ static int ntop_get_ndpi_protocol_name(lua_State* vm) {
 static int ntop_get_interface_hosts(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_interface) ntop_interface->getActiveHostsList(vm, get_allowed_nets(vm), false);
 
   return(CONST_LUA_OK);
@@ -346,6 +368,8 @@ static int ntop_get_interface_hosts(lua_State* vm) {
 static int ntop_get_interface_hosts_info(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   bool show_details;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   /* Optional */
   if(lua_type(vm, 1) != LUA_TBOOLEAN)
@@ -372,6 +396,8 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
   u_int16_t family = 0;
   char *host = NULL;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(lua_type(vm, 1) == LUA_TNUMBER)
     family = (u_int16_t)lua_tonumber(vm, 1);
 
@@ -394,6 +420,8 @@ static int ntop_get_interface_aggregated_hosts_info(lua_State* vm) {
 static int ntop_get_interface_num_aggregated_hosts(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_interface) lua_pushnumber(vm, ntop_interface->getNumAggregatedHosts());
 
   return(CONST_LUA_OK);
@@ -412,6 +440,8 @@ static int ntop_is_dir(lua_State* vm) {
   char *path;
   struct stat buf;
   int rc;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   path = (char*)lua_tostring(vm, 1);
@@ -436,6 +466,8 @@ static int ntop_get_file_dir_exists(lua_State* vm) {
   struct stat buf;
   int rc;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   path = (char*)lua_tostring(vm, 1);
 
@@ -459,6 +491,8 @@ static int ntop_get_file_last_change(lua_State* vm) {
   char *path;
   struct stat buf;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   path = (char*)lua_tostring(vm, 1);
 
@@ -480,6 +514,8 @@ static int ntop_get_file_last_change(lua_State* vm) {
  * @return CONST_LUA_OK.
  */
 static int ntop_is_windows(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_pushboolean(vm,
 #ifdef WIN32
 		  1
@@ -503,6 +539,8 @@ static int ntop_is_windows(lua_State* vm) {
 static int ntop_list_dir_files(lua_State* vm) {
   char *path;
   DIR *dirp;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   path = (char*)lua_tostring(vm, 1);
@@ -535,6 +573,8 @@ static int ntop_gettimemsec(lua_State* vm) {
   struct timeval tp;
   double ret;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   gettimeofday(&tp, NULL);
 
   ret = (((double)tp.tv_usec) / (double)1000) + tp.tv_sec;
@@ -555,6 +595,8 @@ static int ntop_inet_ntoa(lua_State* vm) {
   u_int32_t ip;
   struct in_addr in;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(lua_type(vm, 1) == LUA_TSTRING)
     ip = atol((char*)lua_tostring(vm, 1));
   else if(lua_type(vm, 1) == LUA_TNUMBER)
@@ -572,6 +614,8 @@ static int ntop_inet_ntoa(lua_State* vm) {
 static int ntop_zmq_connect(lua_State* vm) {
   char *endpoint, *topic;
   void *context, *subscriber;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((endpoint = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
@@ -614,6 +658,8 @@ static int ntop_zmq_connect(lua_State* vm) {
 static int ntop_delete_redis_key(lua_State* vm) {
   char *key;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
   ntop->getRedis()->del(key);
@@ -631,6 +677,8 @@ static int ntop_delete_redis_key(lua_State* vm) {
  */
 static int ntop_get_set_members_redis(lua_State* vm) {
   char *key;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
@@ -650,6 +698,8 @@ static int ntop_get_set_members_redis(lua_State* vm) {
 static int ntop_delete_hash_redis_key(lua_State* vm) {
   char *key, *member;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
@@ -664,6 +714,8 @@ static int ntop_delete_hash_redis_key(lua_State* vm) {
 
 static int ntop_zmq_disconnect(lua_State* vm) {
   void *context, *subscriber;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   lua_getglobal(vm, "zmq_context");
   if((context = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -694,6 +746,8 @@ static int ntop_zmq_receive(lua_State* vm) {
   int payload_len;
   zmq_pollitem_t item;
   int rc;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   lua_getglobal(vm, "zmq_subscriber");
   if((subscriber = (void*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -761,6 +815,8 @@ static int ntop_zmq_receive(lua_State* vm) {
  * @return CONST_LUA_OK.
  */
 static int ntop_verbose_trace(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_pushboolean(vm, (ntop->getTrace()->get_trace_level() == MAX_TRACE_LEVEL) ? true : false);
   return(CONST_LUA_OK);
 }
@@ -795,6 +851,8 @@ static int ntop_get_interface_flows_info(lua_State* vm) {
   char *host_ip = NULL;
   u_int16_t vlan_id = 0;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(lua_type(vm, 1) == LUA_TSTRING) {
     char buf[64];
 
@@ -824,6 +882,8 @@ static int ntop_get_interface_host_info(lua_State* vm) {
   u_int16_t vlan_id = 0;
   char buf[64];
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
@@ -844,6 +904,8 @@ static int ntop_correalate_host_activity(lua_State* vm) {
   u_int16_t vlan_id = 0;
   char buf[64];
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
 
@@ -863,6 +925,8 @@ static int ntop_similar_host_activity(lua_State* vm) {
   char *host_ip;
   u_int16_t vlan_id = 0;
   char buf[64];
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &host_ip, &vlan_id, buf, sizeof(buf));
@@ -885,6 +949,8 @@ static int ntop_get_interface_host_activitymap(lua_State* vm) {
   bool aggregated;
   u_int16_t vlan_id = 0;
   char buf[64];
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!ntop_interface)  return(CONST_LUA_ERROR);
 
@@ -931,6 +997,8 @@ static int ntop_restore_interface_host(lua_State* vm) {
   u_int16_t vlan_id = 0;
   char buf[64];
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
@@ -957,6 +1025,8 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
   u_int16_t vlan_id = 0;
   char buf[64];
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
 
@@ -971,6 +1041,8 @@ static int ntop_get_interface_aggregated_host_info(lua_State* vm) {
 static int ntop_get_interface_aggregation_families(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if((!ntop_interface) || (!ntop_interface->getAggregatedFamilies(vm)))
     return(CONST_LUA_ERROR);
   else
@@ -984,6 +1056,8 @@ static int ntop_get_aggregregations_for_host(lua_State* vm) {
   char *host_name;
   u_int16_t vlan_id = 0;
   char buf[64];
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &host_name, &vlan_id, buf, sizeof(buf));
@@ -1000,6 +1074,8 @@ static int ntop_get_interface_flows_peers(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   char *host_name;
   u_int16_t vlan_id = 0;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(lua_type(vm, 1) == LUA_TSTRING) {
     char buf[64];
@@ -1024,6 +1100,8 @@ static int ntop_get_interface_find_flow_by_key(lua_State* vm) {
   Flow *f;
   patricia_tree_t *ptree = get_allowed_nets(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   key = (u_int32_t)lua_tonumber(vm, 1);
 
@@ -1045,6 +1123,8 @@ static int ntop_get_interface_find_user_flows(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   char *key;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
@@ -1061,6 +1141,8 @@ static int ntop_get_interface_find_user_flows(lua_State* vm) {
 static int ntop_get_interface_find_pid_flows(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   u_int32_t pid;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
@@ -1079,6 +1161,8 @@ static int ntop_get_interface_find_father_pid_flows(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   u_int32_t father_pid;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
@@ -1095,6 +1179,8 @@ static int ntop_get_interface_find_father_pid_flows(lua_State* vm) {
 static int ntop_get_interface_find_proc_name_flows(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   char *proc_name;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
@@ -1113,6 +1199,8 @@ static int ntop_get_interface_find_host(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   char *key;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   key = (char*)lua_tostring(vm, 1);
 
@@ -1127,6 +1215,8 @@ static int ntop_get_interface_find_host(lua_State* vm) {
 static int ntop_get_interface_endpoint(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   u_int8_t id;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(lua_type(vm, 1) != LUA_TNUMBER) /* Optional */
     id = 0;
@@ -1147,6 +1237,8 @@ static int ntop_get_interface_endpoint(lua_State* vm) {
 static int ntop_interface_is_running(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!ntop_interface) return(CONST_LUA_ERROR);
   return(ntop_interface->isRunning());
 }
@@ -1156,6 +1248,7 @@ static int ntop_interface_is_running(lua_State* vm) {
 static int ntop_interface_is_idle(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   if(!ntop_interface) return(CONST_LUA_ERROR);
   return(ntop_interface->idle());
 }
@@ -1165,6 +1258,8 @@ static int ntop_interface_is_idle(lua_State* vm) {
 static int ntop_interface_set_idle(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   bool state;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!ntop_interface) return(CONST_LUA_ERROR);
 
@@ -1180,6 +1275,8 @@ static int ntop_interface_set_idle(lua_State* vm) {
 
 static int ntop_interface_name2id(lua_State* vm) {
   char *if_name;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if_name = (char*)lua_tostring(vm, 1);
@@ -1324,6 +1421,8 @@ static int ntop_rrd_fetch(lua_State* L) {
 static int ntop_http_redirect(lua_State* vm) {
   char *url, str[512];
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((url = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
@@ -1350,6 +1449,8 @@ static int ntop_http_get(lua_State* vm) {
   char *page, *host, rsp[4096], *out;
   u_int port = 80;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((host = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
@@ -1366,6 +1467,8 @@ static int ntop_http_get(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_http_get_prefix(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_pushstring(vm, ntop->getPrefs()->get_http_prefix());
   return(CONST_LUA_OK);
 }
@@ -1373,6 +1476,8 @@ static int ntop_http_get_prefix(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_prefs(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   ntop->getPrefs()->lua(vm);
 
   return(CONST_LUA_OK);
@@ -1381,6 +1486,8 @@ static int ntop_get_prefs(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_load_prefs_defaults(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   ntop->getPrefs()->loadIdleDefaults();
   ntop->getPrefs()->lua(vm);
   return(CONST_LUA_OK);
@@ -1391,6 +1498,8 @@ static int ntop_load_prefs_defaults(lua_State* vm) {
 static int ntop_increase_drops(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
   u_int32_t num;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   num = (u_int32_t)lua_tonumber(vm, 1);
@@ -1404,16 +1513,18 @@ static int ntop_increase_drops(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_users(lua_State* vm) {
-  ntop->getUsers(vm);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
+  ntop->getUsers(vm);
   return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
 
 static int ntop_get_user_group(lua_State* vm) {
-  ntop->getUserGroup(vm);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
+  ntop->getUserGroup(vm);
   return(CONST_LUA_OK);
 }
 
@@ -1421,35 +1532,44 @@ static int ntop_get_user_group(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_allowed_networks(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   ntop->getAllowedNetworks(vm);
-
   return(CONST_LUA_OK);
 }
 
 /* ****************************************** */
 
 static int ntop_reset_user_password(lua_State* vm) {
-  char *username, *old_password, *new_password;
+  char *who, *username, *old_password, *new_password;
 
-  if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
+  /* Username who requested the password change */
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  if((who = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((old_password = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  if((username = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
-  if((new_password = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  if((old_password = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
-  return ntop->resetUserPassword(username, old_password, new_password);
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((new_password = (char*)lua_tostring(vm, 4)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  if((!Utils::isUserAdministrator(vm)) && (strcmp(who, username)))
+    return(CONST_LUA_ERROR);
+
+  return(ntop->resetUserPassword(username, old_password, new_password));
 }
 
 /* ****************************************** */
 
 static int ntop_change_user_role(lua_State* vm) {
   char *username, *user_role;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
@@ -1467,6 +1587,7 @@ static int ntop_change_user_role(lua_State* vm) {
 static int ntop_change_allowed_nets(lua_State* vm) {
   char *username, *allowed_nets;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
@@ -1482,6 +1603,8 @@ static int ntop_change_allowed_nets(lua_State* vm) {
 
 static int ntop_add_user(lua_State* vm) {
   char *username, *full_name, *password, *host_role, *allowed_networks;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
@@ -1508,6 +1631,8 @@ static int ntop_add_user(lua_State* vm) {
 static int ntop_delete_user(lua_State* vm) {
   char *username;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
@@ -1520,6 +1645,8 @@ static int ntop_delete_user(lua_State* vm) {
 
 static int ntop_resolve_address(lua_State* vm) {
   char *numIP, symIP[64];
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((numIP = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
@@ -1584,6 +1711,8 @@ void lua_push_float_table_entry(lua_State *L, const char *key, float value) {
 static int ntop_get_interface_stats(lua_State* vm) {
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_interface) ntop_interface->lua(vm);
   return(CONST_LUA_OK);
 }
@@ -1591,6 +1720,8 @@ static int ntop_get_interface_stats(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_dirs(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "installdir", ntop->get_install_dir());
   lua_push_str_table_entry(vm, "workingdir", ntop->get_working_dir());
@@ -1604,6 +1735,8 @@ static int ntop_get_dirs(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_uptime(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   lua_pushinteger(vm, ntop->getGlobals()->getUptime());
   return(CONST_LUA_OK);
 }
@@ -1613,6 +1746,8 @@ static int ntop_get_uptime(lua_State* vm) {
 static int ntop_get_info(lua_State* vm) {
   char rsp[256];
   int major, minor, patch;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   lua_newtable(vm);
   lua_push_str_table_entry(vm, "copyright", (char*)"&copy; 1998-2014 - ntop.org");
@@ -1647,6 +1782,8 @@ static int ntop_get_resolved_address(lua_State* vm) {
   Redis *redis = ntop->getRedis();
   u_int16_t vlan_id = 0;
   char buf[64];
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   get_host_vlan_info((char*)lua_tostring(vm, 1), &key, &vlan_id, buf, sizeof(buf));
@@ -1692,6 +1829,8 @@ static int ntop_syslog(lua_State* vm) {
   char *msg;
   bool is_error;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TBOOLEAN)) return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING))  return(CONST_LUA_ERROR);
 
@@ -1716,6 +1855,8 @@ static int ntop_syslog(lua_State* vm) {
 static int ntop_generate_csrf_value(lua_State* vm) {
   char random_a[32], random_b[32], csrf[33];
   Redis *redis = ntop->getRedis();
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   snprintf(random_a, sizeof(random_a), "%d", rand());
   snprintf(random_b, sizeof(random_b), "%lu", time(NULL)*rand());
@@ -1765,6 +1906,8 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
   struct ntopng_sqlite_state state;
   struct stat buf;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING))  return(CONST_LUA_ERROR);
   db_path = (char*)lua_tostring(vm, 1);
 
@@ -1799,6 +1942,8 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
 static int ntop_mkdir_tree(lua_State* vm) {
   char *dir;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((dir = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
   if(dir[0] == '\0')                                   return(CONST_LUA_OK); /* Nothing to do */
@@ -1811,6 +1956,8 @@ static int ntop_mkdir_tree(lua_State* vm) {
 static int ntop_get_redis(lua_State* vm) {
   char *key, rsp[4096];
   Redis *redis = ntop->getRedis();
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
@@ -1826,6 +1973,8 @@ static int ntop_get_hash_redis(lua_State* vm) {
   char *key, *member, rsp[4096];
   Redis *redis = ntop->getRedis();
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
   if((member = (char*)lua_tostring(vm, 2)) == NULL)    return(CONST_LUA_PARAM_ERROR);
@@ -1840,6 +1989,8 @@ static int ntop_get_hash_redis(lua_State* vm) {
 static int ntop_set_hash_redis(lua_State* vm) {
   char *key, *member, *value;
   Redis *redis = ntop->getRedis();
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
@@ -1857,6 +2008,8 @@ static int ntop_del_hash_redis(lua_State* vm) {
   char *key, *member;
   Redis *redis = ntop->getRedis();
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
   if((member = (char*)lua_tostring(vm, 2)) == NULL)    return(CONST_LUA_PARAM_ERROR);
@@ -1872,6 +2025,8 @@ static int ntop_get_hash_keys_redis(lua_State* vm) {
   char *key, **vals;
   Redis *redis = ntop->getRedis();
   int rc;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key    = (char*)lua_tostring(vm, 1)) == NULL)    return(CONST_LUA_PARAM_ERROR);
@@ -1898,6 +2053,8 @@ static int ntop_get_redis_set_pop(lua_State* vm) {
   char *set_name, rsp[512];
   Redis *redis = ntop->getRedis();
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((set_name = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
   lua_pushfstring(vm, "%s", redis->popSet(set_name, rsp, sizeof(rsp)));
@@ -1914,6 +2071,8 @@ static int ntop_redis_get_host_id(lua_State* vm) {
   time_t when = time(NULL);
   bool new_key;
   NetworkInterface *ntop_interface = get_ntop_interface(vm);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((host_name = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
@@ -1932,6 +2091,8 @@ static int ntop_redis_get_id_to_host(lua_State* vm) {
   char daybuf[32];
   time_t when = time(NULL);
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((host_idx = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
@@ -1946,6 +2107,7 @@ static int ntop_redis_get_id_to_host(lua_State* vm) {
 static int ntop_get_num_queued_alerts(lua_State* vm) {
   Redis *redis = ntop->getRedis();
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   lua_pushinteger(vm, redis->getNumQueuedAlerts());
 
   return(CONST_LUA_OK);
@@ -1954,6 +2116,8 @@ static int ntop_get_num_queued_alerts(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_delete_queued_alert(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
@@ -1965,6 +2129,8 @@ static int ntop_delete_queued_alert(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_flush_all_queued_alerts(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   ntop->getRedis()->flushAllQueuedAlerts();
@@ -1979,6 +2145,8 @@ static int ntop_queue_alert(lua_State* vm) {
   int alert_level;
   int alert_type;
   char *alert_msg;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   alert_level = (int)lua_tonumber(vm, 1);
@@ -1999,6 +2167,8 @@ static int ntop_get_queued_alerts(lua_State* vm) {
   Redis *redis = ntop->getRedis();
   u_int32_t num, i = 0, start_idx = 0, n = 0;
   char *alerts[CONST_MAX_NUM_READ_ALERTS] = { NULL };
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   start_idx = (u_int32_t)lua_tonumber(vm, 1);
@@ -2030,6 +2200,8 @@ static int ntop_redis_dump_daily_stats(lua_State* vm) {
   char *day;
   Redis *redis = ntop->getRedis();
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   /* 131206 */
   if((day = (char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
@@ -2045,6 +2217,8 @@ static int ntop_redis_dump_daily_stats(lua_State* vm) {
 static int ntop_set_redis(lua_State* vm) {
   char *key, *value;
   Redis *redis = ntop->getRedis();
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
@@ -2063,6 +2237,8 @@ static int ntop_set_redis(lua_State* vm) {
 static int ntop_lua_http_print(lua_State* vm) {
   struct mg_connection *conn;
   int t;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   lua_getglobal(vm, CONST_HTTP_CONN);
   if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
@@ -2115,6 +2291,8 @@ static int ntop_lua_http_print(lua_State* vm) {
 static int ntop_lua_cli_print(lua_State* vm) {
   int t;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   switch(t = lua_type(vm, 1)) {
   case LUA_TSTRING:
     {
@@ -2150,6 +2328,8 @@ static int ntop_lua_cli_print(lua_State* vm) {
  * @return CONST_LUA_OK.
  */
 static int is_historical_interface(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
   if(ntop->getPrefs()->do_dump_flows_on_db()) {
     u_int32_t id, historical_id;
 
@@ -2176,6 +2356,8 @@ static int is_historical_interface(lua_State* vm) {
 static int get_historical_info(lua_State* vm) {
   HistoricalInterface *iface = NULL;
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(iface != NULL) {
     lua_newtable(vm);
@@ -2211,6 +2393,7 @@ static int set_historical_info(lua_State* vm) {
   u_int8_t iface_id = 0;
   HistoricalInterface *iface = NULL;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
@@ -2248,6 +2431,7 @@ static int load_historical_interval(lua_State* vm) {
   u_int8_t iface_id = 0;
   HistoricalInterface *iface = NULL;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
@@ -2287,6 +2471,7 @@ static int load_historical_file(lua_State* vm) {
   bool cleanup;
   HistoricalInterface *iface = NULL;
 
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
   if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
 
   iface = (HistoricalInterface*)ntop->getHistoricalInterface();

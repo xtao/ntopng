@@ -11,10 +11,11 @@ sendHTTPHeader('application/json')
 key = "ntopng.user.".. _GET["user"] ..".password"
 existing = ntop.getCache(key)
 
-if(existing ~= "") then
-   valid = 0
+if(string.len(existing) > 0) then
+   print('{ "valid" : 0, "user": "'.. _GET["user"]..'", "msg": "User already existing" }\n')
+   return
 else
    valid = 1
 end
 
-print('{ "valid" : ' .. valid ..', "user": "'.. _GET["user"]..'"}\n')
+print('{ "valid" : 1, "user": "'.. _GET["user"]..'", "msg": "Ok" }\n')

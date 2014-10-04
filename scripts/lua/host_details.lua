@@ -1276,6 +1276,7 @@ print [[
 
 jaccard = interface.similarHostActivity(host_info["host"],host_info["vlan"])
 
+if(jaccard ~= nil) then
 print [[
 <script type="text/javascript">
   var $bar = $('#prg');
@@ -1383,7 +1384,7 @@ print [[/lua/host_details.lua?ifname="]] print(ifId.."&"..hostinfo2url(host_info
 <li>Two hosts are similar according to the Jaccard coefficient when their activity tends to overlap. In particular when their activity map is very similar. The <A HREF=http://en.wikipedia.org/wiki/Jaccard_index>Jaccard similarity coefficient</A> is a number between +1 and 0.
 </ul>
 ]]
-
+end
 
 elseif(page == "contacts") then
 

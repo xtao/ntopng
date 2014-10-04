@@ -11,6 +11,6 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-dofile(dirs.installdir .. "/scripts/lua/inc/personal_password_dialog.lua")
+dofile(dirs.installdir .. "/scripts/lua/inc/change_user_password_form.lua")
 
 dofile(dirs.installdir .. "/scripts/lua/inc/footer.lua")

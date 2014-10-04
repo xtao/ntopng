@@ -120,7 +120,7 @@ class Host : public GenericHost {
   inline void incNumEPPQueriesRcvd(u_int16_t query_type) { allocEPP(); if(epp) epp->incNumEPPQueriesRcvd(query_type); };
   inline void incNumEPPResponsesSent(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesSent(ret_code); };
   inline void incNumEPPResponsesRcvd(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesRcvd(ret_code); };
-  bool   match(patricia_tree_t *ptree) { return(get_ip()->match(ptree)); };
+  bool   match(patricia_tree_t *ptree) { return(get_ip() ? get_ip()->match(ptree) : false); };
 };
 
 #endif /* _HOST_H_ */

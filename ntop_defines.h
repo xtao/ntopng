@@ -100,7 +100,7 @@
 #define HOST_ALTERNATE_NAME     "ntopng.alternate_names"
 #define NTOP_HOSTS_SERIAL       "ntopng.host_serial"
 #define DUMMY_IFACE_ID          ((u_int8_t)-1)
-#define MAX_CSRF_DURATION       120 /* 2 mins */
+#define MAX_CSRF_DURATION       300 /* 5 mins */
 
 #define CONST_ADMINISTRATOR_USER  "administrator"
 #define CONST_UNPRIVILEGED_USER   "unprivileged"

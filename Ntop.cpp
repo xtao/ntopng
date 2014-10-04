@@ -360,6 +360,12 @@ void Ntop::getUsers(lua_State* vm) {
     else
       lua_push_str_table_entry(vm, "full_name", (char*) "unknown");
 
+    snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
+    if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
+      lua_push_str_table_entry(vm, "password", val);
+    else
+      lua_push_str_table_entry(vm, "password", (char*) "unknown");
+
     snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
     if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
       lua_push_str_table_entry(vm, "group", val);
@@ -392,21 +398,19 @@ void Ntop::getUserGroup(lua_State* vm) {
   lua_getglobal(vm, CONST_HTTP_CONN);
   if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
-    lua_push_str_table_entry(vm, "group", (char*)"unknown");
+    lua_pushstring(vm, (char*)"unknown");
     return;
   }
 
   mg_get_cookie(conn, CONST_USER, username, sizeof(username));
-  lua_newtable(vm);
 
   snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
-  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
-    lua_push_str_table_entry(vm, "group", val);
-  else
-    lua_push_str_table_entry(vm, "group", (char*)"unknown");
+  lua_pushstring(vm,
+		 (ntop->getRedis()->get(key, val, sizeof(val)) >= 0) ? val : (char*)"unknown");
 }
 
 /* ******************************************* */
+
 void Ntop::getAllowedNetworks(lua_State* vm) {
   char key[64], val[64];
   char username[33];
@@ -415,23 +419,19 @@ void Ntop::getAllowedNetworks(lua_State* vm) {
   lua_getglobal(vm, CONST_HTTP_CONN);
   if((conn = (struct mg_connection*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "INTERNAL ERROR: null HTTP connection");
-    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, (char*)"");
+    lua_pushstring(vm, (char*)"");
     return;
   }
 
   mg_get_cookie(conn, CONST_USER, username, sizeof(username));
-  lua_newtable(vm);
 
   snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
-  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
-    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, val);
-  else
-    lua_push_str_table_entry(vm, CONST_ALLOWED_NETS, (char*)"");
+  lua_pushstring(vm, (ntop->getRedis()->get(key, val, sizeof(val)) >= 0) ? val : (char*)"");
 }
 /* ******************************************* */
 
 // Return 1 if username/password is allowed, 0 otherwise.
-int Ntop::checkUserPassword(const char *user, const char *password) {
+bool Ntop::checkUserPassword(const char *user, const char *password) {
   char key[64], val[64];
 
   if((user == NULL) || (user[0] == '\0'))
@@ -445,21 +445,22 @@ int Ntop::checkUserPassword(const char *user, const char *password) {
     char password_hash[33];
 
     mg_md5(password_hash, password, NULL);
-    return(strcmp(password_hash, val) == 0);
+    return((strcmp(password_hash, val) == 0) ? true : false);
   }
 }
 
 /* ******************************************* */
 
-int Ntop::resetUserPassword(char *username, char *old_password, char *new_password) {
+bool Ntop::resetUserPassword(char *username, char *old_password, char *new_password) {
   char key[64];
   char password_hash[33];
 
-  if(!checkUserPassword(username, old_password))
-    return(false);
+  if((old_password != NULL) && (old_password[0] != '\0')) {
+    if(!checkUserPassword(username, old_password))
+      return(false);
+  }
 
   snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
-
   mg_md5(password_hash, new_password, NULL);
 
   if(ntop->getRedis()->set(key, password_hash, 0) < 0)
@@ -470,8 +471,9 @@ int Ntop::resetUserPassword(char *username, char *old_password, char *new_passwo
 
 /* ******************************************* */
 
-int Ntop::changeUserRole(char *username, char *usertype) const {
+bool Ntop::changeUserRole(char *username, char *usertype) const {
   char key[64];
+
   if(usertype != NULL) {
     snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
 
@@ -484,7 +486,7 @@ int Ntop::changeUserRole(char *username, char *usertype) const {
 
 /* ******************************************* */
 
-int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
+bool Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
   char key[64];
 
   if(allowed_nets != NULL) {
@@ -499,17 +501,12 @@ int Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
 
 /* ******************************************* */
 
-int Ntop::addUser(char *username, char *full_name, char *password, char *host_role, char *allowed_networks) {
+bool Ntop::addUser(char *username, char *full_name, char *password, char *host_role, char *allowed_networks) {
   char key[64];
   char password_hash[33];
 
   // FIX add a seed
   mg_md5(password_hash, password, NULL);
-
-#if 0
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "group = %s", host_role);
-  ntop->getTrace()->traceEvent(TRACE_WARNING, "allowed networks = %s", allowed_networks);
-#endif
 
   snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
@@ -523,13 +520,13 @@ int Ntop::addUser(char *username, char *full_name, char *password, char *host_ro
   snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);
   ntop->getRedis()->set(key, allowed_networks, 0);
 
-  return (true);
+  return(true);
 // TODO add check return return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
 }
 
 /* ******************************************* */
 
-int Ntop::deleteUser(char *username) {
+bool Ntop::deleteUser(char *username) {
   char key[64];
 
   snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
@@ -539,7 +536,7 @@ int Ntop::deleteUser(char *username) {
   ntop->getRedis()->del(key);
 
   snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
-  return(ntop->getRedis()->del(key) >= 0);
+  return((ntop->getRedis()->del(key) >= 0) ? true : false);
 }
 
 /* ******************************************* */

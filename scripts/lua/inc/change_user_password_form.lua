@@ -6,7 +6,7 @@ print [[
 }
 </style>
 <div id="password_dialog" tabindex="-1" >
-  <h3 id="password_dialog_label">Change Password <span id="password_dialog_title"></span></h3>
+<h3 id="password_dialog_label">Change ]] print(_SESSION["user"]) print [[ Password <span id="password_dialog_title"></span></h3>
 
   <div id="password_alert_placeholder"></div>
 
@@ -66,13 +66,14 @@ print [[<script>
           password_alert.success(response.message);
         }
         else {
-          password_alert.error(response.message);i
+          password_alert.error(response.message);
         }
         $("old_password_input").text("");
         $("new_password_input").text("");
         $("confirm_new_password_input").text("");
       }
     });
+
     return false;
   });
 

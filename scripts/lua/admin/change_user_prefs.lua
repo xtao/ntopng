@@ -10,7 +10,7 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 
 username = _GET["username"]
 host_role = _GET["host_role"]
-allowed_networks = _GET["allowed_networks"]
+networks = _GET["networks"]
 
 -- TODO: parser networks
 
@@ -26,8 +26,8 @@ if( host_role ~= nil) then
   end
 end
 
-if( allowed_networks ~= nil) then
-  if(not ntop.changeAllowedNets(username, allowed_networks)) then
+if( networks ~= nil) then
+  if(not ntop.changeAllowedNets(username, networks)) then
     print ("{ \"result\" : -1, \"message\" : \"Error in changing allowed networks\" }")
     return 
   end
