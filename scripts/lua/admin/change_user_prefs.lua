@@ -6,27 +6,25 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
-sendHTTPHeader('text/html; charset=iso-8859-1')
+sendHTTPHeader('application/json')
 
 username = _GET["username"]
 host_role = _GET["host_role"]
 networks = _GET["networks"]
 
--- TODO: parser networks
-
-if( username == nil) then   
+if(username == nil) then   
     print ("{ \"result\" : -1, \"message\" : \"Error in username\" }")
     return
 end
 
-if( host_role ~= nil) then
+if(host_role ~= nil) then
   if(not ntop.changeUserRole(username, host_role)) then
     print ("{ \"result\" : -1, \"message\" : \"Error in changing host type\" }")
     return
   end
 end
 
-if( networks ~= nil) then
+if(networks ~= nil) then
   if(not ntop.changeAllowedNets(username, networks)) then
     print ("{ \"result\" : -1, \"message\" : \"Error in changing allowed networks\" }")
     return 

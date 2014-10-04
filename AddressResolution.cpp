@@ -144,13 +144,17 @@ patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line) {
     u_char *ip4 = (u_char *) &addr4;
 
     if((num_octets = sscanf(ip, "%u.%u.%u.%u", &ip4_0, &ip4_1, &ip4_2, &ip4_3)) >= 1) {
+      u_int num_bits = atoi(bits);
+
       ip4[0] = ip4_0, ip4[1] = ip4_1, ip4[2] = ip4_2, ip4[3] = ip4_3;
 
-      if(num_octets * 8 < atoi(bits))
-	ntop->getTrace()->traceEvent(TRACE_WARNING, "Found ip smaller than netmask\n");
+      if(num_bits > 32) num_bits = 32;
+
+      if(num_octets * 8 < num_bits)
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Found IP smaller than netmask [%s]", line);
 
       //addr4.s_addr = ntohl(addr4.s_addr);
-      node = add_to_ptree(ptree, AF_INET, &addr4, atoi(bits));
+      node = add_to_ptree(ptree, AF_INET, &addr4, num_bits);
     } else {
       ntop->getTrace()->traceEvent(TRACE_ERROR, "Error parsing IPv4 %s\n", ip);
     }

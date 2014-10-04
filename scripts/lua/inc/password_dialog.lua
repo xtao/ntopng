@@ -138,13 +138,30 @@ print [[
   });
 
   var frmprefchange = $('#form_pref_change');
+
   frmprefchange.submit(function () {
+  var ok = true;
+
+  if($("#networks_input").val().length == 0) {
+     password_alert.error("Network list not specified");
+     ok = false;
+  } else {
+     var arrayOfStrings = $("#networks_input").val().split(",");
+
+     for (var i=0; i < arrayOfStrings.length; i++) {
+	if(!is_network_mask(arrayOfStrings[i])) {
+	   password_alert.error("Invalid network list specified ("+arrayOfStrings[i]+")");
+	   ok = false;
+	}
+     }
+  }
+
+  if(ok) {
     $.ajax({
       type: frmprefchange.attr('method'),
       url: frmprefchange.attr('action'),
       data: frmprefchange.serialize(),
-      success: function (data) {
-        var response = jQuery.parseJSON(data);
+      success: function (response) {
         if(response.result == 0) {
           password_alert.success(response.message);
    	  window.location.href = 'users.lua';
@@ -152,10 +169,10 @@ print [[
           password_alert.error(response.message);
       }
     });
+   }
 
-    return false;
-  });
-
+    return false;   
+   });
 </script>
 
 </div> <!-- modal-body -->
@@ -180,6 +197,7 @@ function reset_pwd_dialog(user) {
       $('#form_pref_change').show();
       $('#pref_part_separator').show();
       $('#password_alert_placeholder').html('');
+      $('#add_user_alert_placeholder').html('');
     });
 
       return(true);

@@ -42,6 +42,8 @@
     <script type="text/javascript" src="@HTTP_PREFIX@/js/moment.js"></script>
     <script type="text/javascript" src="@HTTP_PREFIX@/js/bootstrap-datetimepicker.js"></script> 
     <link rel="stylesheet" href="@HTTP_PREFIX@/css/bootstrap-datetimepicker.css" />  
+
+    <script type="text/javascript" src="@HTTP_PREFIX@/js/ntopng_utils.js"></script>
   </head>
 <body>
 
