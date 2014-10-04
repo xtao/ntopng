@@ -58,7 +58,7 @@ Prefs::Prefs(Ntop *_ntop) {
   memset(ifNames, 0, sizeof(ifNames));
   dump_hosts_to_db = location_none, dump_aggregations_to_db = location_none;
   shorten_aggregation_names = true; // TODO: make it configurable
-  json_symbolic_labels = true;
+  json_labels_string_format = true;
 #ifdef WIN32
   daemonize = true;
 #endif

@@ -24,15 +24,15 @@
 /* ****************************************************** */
 
 char* Utils::jsonLabel(int label, const char *label_str,char *buf, u_int buf_len){
-  if(ntop->getPrefs()->get_json_symbolic_labels()) {
+  if(ntop->getPrefs()->json_labels_as_strings()) {
     snprintf(buf, buf_len, "%s", label_str);
-  }else
+  } else
     snprintf(buf, buf_len, "%d", label);
 
   return(buf);
-
 }
 
+/* ****************************************************** */
 
 char* Utils::formatTraffic(float numBits, bool bits, char *buf, u_int buf_len) {
   char unit;

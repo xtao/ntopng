@@ -16,9 +16,10 @@ print [[
   add_user_alert.error =   function(message) { $('#add_user_alert_placeholder').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>');
  }
   add_user_alert.success = function(message) { $('#add_user_alert_placeholder').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>'); }
+
 </script>
 
-  <form id="form_add_user" class="form-horizontal" method="get" action="add_user.lua">
+ <form id="form_add_user" class="form-horizontal" method="get" action="add_user.lua" >
 			   ]]
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[
@@ -72,7 +73,13 @@ print [[
 
 <script>
   var frmadduser = $('#form_add_user');
+
   frmadduser.submit(function () {
+    $.getJSON('check_existing_user.lua?user='+frmadduser.find('input[name="username"]').val(), function(data){
+			       if (!data.valid) {
+				  alert('Error: user '+data.user+' is already existing');
+			       }
+			    else {
     $.ajax({
       type: frmadduser.attr('method'),
       url: frmadduser.attr('action'),
@@ -88,6 +95,10 @@ print [[
         frmadduser[0].reset();
       }
     });
+			       }
+			    });
+
+
     return false;
   });
 </script>

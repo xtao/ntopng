@@ -33,7 +33,6 @@
     <script src="@HTTP_PREFIX@/js/springy-ntop.js"></script>
     <script src="@HTTP_PREFIX@/js/springyui-ntop.js"></script>
 
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="@HTTP_PREFIX@/js/html5shiv.js"></script>
     <![endif]-->

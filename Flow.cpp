@@ -1005,11 +1005,15 @@ void Flow::sumStats(NdpiStats *stats) {
 /* *************************************** */
 
 char* Flow::serialize(bool partial_dump, bool es_json) {
-  json_object *my_object = flow2json(partial_dump);
+  json_object *my_object;
   char *rsp;
 
   if(es_json) {
-    json_object *es_object = flow2es(my_object);
+    json_object *es_object;
+
+    ntop->getPrefs()->set_json_symbolic_labels_format(true);
+    my_object = flow2json(partial_dump);
+    es_object = flow2es(my_object);
 
     /* JSON string */
     rsp = strdup(json_object_to_json_string(es_object));
@@ -1017,7 +1021,9 @@ char* Flow::serialize(bool partial_dump, bool es_json) {
     /* Free memory (it will also free enclosed object my_object) */
     json_object_put(es_object);
   } else {
-  /* JSON string */
+    /* JSON string */
+    ntop->getPrefs()->set_json_symbolic_labels_format(false);
+    my_object = flow2json(partial_dump);
     rsp = strdup(json_object_to_json_string(my_object));
     ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
     
@@ -1098,14 +1104,14 @@ json_object* Flow::flow2json(bool partial_dump) {
     json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS, "TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
 			   json_object_new_int(tcp_flags));
 
-  json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS, "OUT_PKTS", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS, "IN_PKTS", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(partial_dump ? (cli2srv_packets - last_db_dump.cli2srv_packets) : cli2srv_packets));
-  json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES, "OUT_BYTES", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES, "IN_BYTES", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(partial_dump ? (cli2srv_bytes - last_db_dump.cli2srv_bytes) : cli2srv_bytes));
 
-  json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS, "IN_PKTS", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_PKTS, "OUT_PKTS", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(partial_dump ? (srv2cli_packets - last_db_dump.srv2cli_packets) : srv2cli_packets));
-  json_object_object_add(my_object, Utils::jsonLabel(IN_BYTES, "IN_BYTES", jsonbuf, sizeof(jsonbuf)),
+  json_object_object_add(my_object, Utils::jsonLabel(OUT_BYTES, "OUT_BYTES", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(partial_dump ? (srv2cli_bytes - last_db_dump.srv2cli_bytes) : srv2cli_bytes));
 
   json_object_object_add(my_object, Utils::jsonLabel(FIRST_SWITCHED, "FIRST_SWITCHED", jsonbuf, sizeof(jsonbuf)),

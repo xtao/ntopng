@@ -23,12 +23,11 @@
 
 /* **************************************************** */
 
- ParserInterface::ParserInterface(const char *endpoint) : NetworkInterface(endpoint) { }
+ParserInterface::ParserInterface(const char *endpoint) : NetworkInterface(endpoint) { }
 
 /* **************************************************** */
 
  u_int8_t ParserInterface::parse_flows(char *payload, int payload_size, u_int8_t source_id, void *data) {
-
   json_object *o, *additional_o;
   ZMQ_Flow flow;
 
@@ -54,9 +53,10 @@
       const char *value = json_object_get_string(v);
 
       if((key != NULL) && (value != NULL)) {
-        u_int key_id = atoi(key);
+        u_int key_id;
 
-        ntop->getTrace()->traceEvent(TRACE_INFO, "[%s]=[%s]", key, value);
+	/* FIX: the key can either be numeric of a string */
+	key_id = atoi(key);
 
         switch(key_id) {
         case 0: //json additional object added by Flow::serialize()

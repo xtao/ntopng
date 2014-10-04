@@ -63,7 +63,7 @@ class Prefs {
   int redis_port;
   int cpu_affinity;
   int dns_mode;
-  bool json_symbolic_labels;
+  bool json_labels_string_format;
   FILE *logFd;
   char *es_type, *es_index, *es_url, *es_pwd;
 
@@ -128,13 +128,14 @@ class Prefs {
   void add_default_interfaces();
   int loadFromCLI(int argc, char *argv[]);
   int loadFromFile(const char *path);
-  inline void set_dump_hosts_to_db_policy(LocationPolicy p)   { dump_hosts_to_db = p;        };
-  inline void get_dump_aggregations_to_db(LocationPolicy p)   { dump_aggregations_to_db = p; };
-  inline LocationPolicy get_dump_hosts_to_db_policy()   { return(dump_hosts_to_db);          };
-  inline LocationPolicy get_dump_aggregations_to_db()   { return(dump_aggregations_to_db);   };
+  inline void set_dump_hosts_to_db_policy(LocationPolicy p)   { dump_hosts_to_db = p;               };
+  inline void get_dump_aggregations_to_db(LocationPolicy p)   { dump_aggregations_to_db = p;        };
+  inline LocationPolicy get_dump_hosts_to_db_policy()         { return(dump_hosts_to_db);           };
+  inline LocationPolicy get_dump_aggregations_to_db()         { return(dump_aggregations_to_db);    };
   int save();
   void add_network_interface(char *name, char *description);
-  inline bool get_json_symbolic_labels()           { return(json_symbolic_labels);      };
+  inline bool json_labels_as_strings()                        { return(json_labels_string_format);       };
+  inline void set_json_symbolic_labels_format(bool as_string) { json_labels_string_format = as_string;   };
   void lua(lua_State* vm);
   void loadIdleDefaults();
   void registerNetworkInterfaces();
@@ -143,7 +144,6 @@ class Prefs {
   inline char* get_es_index() { return((char*)"ntopng");                      };
   inline char* get_es_url()   { return((char*)"http://localhost:9200/_bulk"); };
   inline char* get_es_pwd()   { return((char*)"");                            };
-
 };
 
 #endif /* _PREFS_H_ */
