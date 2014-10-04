@@ -562,6 +562,7 @@ void Redis::setDefaults() {
     set((char*)"ntopng.user.admin.password", (char*)"21232f297a57a5a743894a0e4a801fc3");
     set((char*)"ntopng.user.admin.full_name", (char*)"ntopng Administrator");
     set((char*)"ntopng.user.admin.group", (char*)"administrator");
+    set((char*)"ntopng.user.admin.allowed_nets", (char*)"0.0.0.0/0,::/0");
   }
 }
 
@@ -1374,7 +1375,7 @@ void Redis::indexESdata() {
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
 
-       	if(ntop->getTrace()->get_trace_level() > 2)  
+       	if(true || (ntop->getTrace()->get_trace_level() > 2)  )
 	  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
 	else
 	  curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */

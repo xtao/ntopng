@@ -78,9 +78,16 @@ print [[
 
   var frmadduser = $('#form_add_user');
 
+function isValid(str) { return /^\w+$/.test(str); }
+
   frmadduser.submit(function () {
+                          if(!isValid($("#username_input").val())) {
+			     add_user_alert.error("Username must contain only letters and numbers");
+			     return(false);
+                          }
+
 			  if($("#username_input").val().length < 5) {
-			     add_user_alert.error("User name too short (5 or more characters)");
+			     add_user_alert.error("Username too short (5 or more characters)");
 			     return(false);
 			  }
 
