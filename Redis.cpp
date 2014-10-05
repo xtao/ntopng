@@ -1316,7 +1316,7 @@ int curl_writefunc(void *ptr, size_t size, size_t nmemb, void *stream){
 /* **************************************** */
 
 void Redis::indexESdata() {
-  const int watermark = 8, min_buf_size = 512;
+  const u_int watermark = 8, min_buf_size = 512;
   char postbuf[16384];
 
   while(!ntop->getGlobals()->isShutdown()) {
@@ -1341,7 +1341,7 @@ void Redis::indexESdata() {
 		     "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}\n", 
 		     ntop->getPrefs()->get_es_type(), index_name);
 
-      for(int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
+      for(u_int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
 	int rc = lpop(CONST_ES_QUEUE_NAME, &postbuf[len], sizeof(postbuf)-len);
 
 	if(rc >= 0) {
