@@ -23,6 +23,8 @@ application = _GET["application"]
 
 general_process = 0
 
+interface.find(ifname)
+
 if((pid_key == nil) and (name_key == nil))then
    print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Missing pid name</div>")
 else

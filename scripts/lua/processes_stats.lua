@@ -42,7 +42,7 @@ if(ifstats.iface_vlan) then print ('processes_rows_option["source_id"] = true;\n
 
 print [[
    $("#table-processes").datatable({
-          title: "Active Processes",
+          title: "Active Processes: Realtime View",
           url: "]]
 print (ntop.getHttpPrefix())
 print [[/lua/get_processes_data.lua",
