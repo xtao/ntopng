@@ -97,7 +97,7 @@ static void generate_session_id(char *buf, const char *random, const char *user)
 // Return 1 if request is authorized, 0 otherwise.
 static int is_authorized(const struct mg_connection *conn,
                          const struct mg_request_info *request_info,
-			 char *username) {
+			 char *username, u_int username_len) {
   char session_id[33];
 
   // Always authorize accesses to login page and to authorize URI
@@ -106,7 +106,7 @@ static int is_authorized(const struct mg_connection *conn,
     return 1;
   }
 
-  mg_get_cookie(conn, "user", username, sizeof(username));
+  mg_get_cookie(conn, "user", username, username_len);
   mg_get_cookie(conn, "session", session_id, sizeof(session_id));
 
   if(session_id[0] == '\0') {
@@ -269,7 +269,7 @@ static int handle_lua_request(struct mg_connection *conn) {
        && ((strcmp(&request_info->uri[len-4], ".css") == 0)
 	   || (strcmp(&request_info->uri[len-3], ".js")) == 0))
       ;
-    else if(!is_authorized(conn, request_info, username)) {
+    else if(!is_authorized(conn, request_info, username, sizeof(username))) {
       redirect_to_login(conn, request_info);
       return(1);
     } else if(strcmp(request_info->uri, AUTHORIZE_URL) == 0) {
