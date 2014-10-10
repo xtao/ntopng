@@ -54,6 +54,8 @@ PF_RINGInterface::PF_RINGInterface(const char *name) : NetworkInterface(name) {
 
   pcap_datalink_type = DLT_EN10MB;
 
+  pfring_set_direction(pfring_handle, rx_only_direction);
+  pfring_set_poll_watermark(pfring_handle, 8);
   pfring_set_application_name(pfring_handle, (char*)"ntopng");
 }
 
@@ -71,15 +73,14 @@ PF_RINGInterface::~PF_RINGInterface() {
 static void* packetPollLoop(void* ptr) {
   PF_RINGInterface *iface = (PF_RINGInterface*)ptr;
   pfring  *pd = iface->get_pfring_handle();
-  int fd = pfring_get_selectable_fd(pd);
 
   /* Wait until the initialization completes */
   while(!iface->isRunning()) sleep(1);
   pfring_enable_ring(pd);
 
-  while(iface->isRunning()) {
-    while(iface->idle()) { iface->purgeIdle(time(NULL)); sleep(1); }
+  while(iface->idle()) { iface->purgeIdle(time(NULL)); sleep(1); }
 
+  while(iface->isRunning()) {
     if(pfring_is_pkt_available(pd)) {
       u_char *buffer; 
       struct pfring_pkthdr hdr;
@@ -98,15 +99,8 @@ static void* packetPollLoop(void* ptr) {
 	}
       }
     } else {
-      struct timeval timeout;
-      fd_set fdset;
-      
-      FD_ZERO(&fdset);
-      FD_SET(fd, &fdset);
-      timeout.tv_sec = 0, timeout.tv_usec = 1;
-      
-      if(select(fd+1, &fdset, NULL, NULL, &timeout) == 0)
-	iface->purgeIdle(time(NULL));
+      usleep(1);
+      iface->purgeIdle(time(NULL));
     }
   }
 
