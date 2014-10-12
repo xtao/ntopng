@@ -13,6 +13,7 @@ max_num_to_find = 5
 
 print [[
       {
+	 "interface" : "]] print(ifname) print [[",
 	 "results": [
       ]]
 

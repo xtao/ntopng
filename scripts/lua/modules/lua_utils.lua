@@ -3,9 +3,33 @@
 --
 require "lua_trace"
 
+function getInterfaceName(interface_id)
+   local ifnames = interface.getIfNames()
+   
+   interface_id = tonumber(interface_id)
+   for _,if_name in pairs(ifnames) do
+      interface.find(if_name)
+      ifstats = interface.getStats()
+      if(ifstats.id == interface_id) then
+	 return(ifstats.name) 
+      end
+   end
+   
+   return("")
+end
+
+
 -- Note that ifname can be set by Lua.cpp so don't touch it if already defined
 if((ifname == nil) and (_GET ~= nil)) then
   ifname = _GET["ifname"]
+
+  if(ifname ~= nil) then
+     if(ifname.."" == tostring(tonumber(ifname)).."") then
+	-- ifname does not contain the interface name but rather the interface id
+	ifname = getInterfaceName(ifname)
+	if(ifname == "") then ifname = nil end
+     end
+  end
 
   if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"]) end
 

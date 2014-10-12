@@ -107,10 +107,10 @@ function drawPeity(ifid, host, rrdFile, zoomLevel, selectedEpoch)
 
    for k,v in ipairs(zoom_vals) do
       if(zoom_vals[k][1] == zoomLevel) then
-         if (k > 1) then
+         if(k > 1) then
            nextZoomLevel = zoom_vals[k-1][1]
          end
-         if (epoch) then
+         if(epoch) then
            start_time = epoch - zoom_vals[k][3]/2
            end_time = epoch + zoom_vals[k][3]/2
          else
@@ -198,10 +198,10 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
 
    for k,v in ipairs(zoom_vals) do
       if(zoom_vals[k][1] == zoomLevel) then
-         if (k > 1) then
+         if(k > 1) then
 	    nextZoomLevel = zoom_vals[k-1][1]
          end
-         if (epoch) then
+         if(epoch) then
 	    start_time = epoch - zoom_vals[k][3]/2
 	    end_time = epoch + zoom_vals[k][3]/2
          else
@@ -504,7 +504,7 @@ function fdate(when) {
 
 function fbits(bits) {
 	var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
-	if (bits == 0) return 'n/a';
+	if(bits == 0) return 'n/a';
 	var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
 	return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
 }
@@ -528,21 +528,16 @@ function capitaliseFirstLetter(string)
 	 var gigabyte = megabyte * 1024;
 	 var terabyte = gigabyte * 1024;
 
-	 if ((bytes >= 0) && (bytes < kilobyte)) {
+	 if((bytes >= 0) && (bytes < kilobyte)) {
 	    return bytes + ' B';
-
-	 } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+	 } else if((bytes >= kilobyte) && (bytes < megabyte)) {
 	    return (bytes / kilobyte).toFixed(precision) + ' KB';
-
-	 } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+	 } else if((bytes >= megabyte) && (bytes < gigabyte)) {
 	    return (bytes / megabyte).toFixed(precision) + ' MB';
-
-	 } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+	 } else if((bytes >= gigabyte) && (bytes < terabyte)) {
 	    return (bytes / gigabyte).toFixed(precision) + ' GB';
-
-	 } else if (bytes >= terabyte) {
+	 } else if(bytes >= terabyte) {
 	    return (bytes / terabyte).toFixed(precision) + ' TB';
-
 	 } else {
 	    return bytes + ' B';
 	 }
@@ -557,13 +552,13 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 		var points = args.points;
 		var point = points.filter( function(p) { return p.active } ).shift();
 
-		if (point.value.y === null) return;
+		if(point.value.y === null) return;
 
 		var formattedXValue = fdate(point.value.x); // point.formattedXValue;
 		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
 		var infoHTML = "";
 ]]
-if (xInfoURL) then
+if(xInfoURL) then
   print [[
 		$.ajax({
 			type: 'GET',
@@ -579,7 +574,7 @@ if (xInfoURL) then
 				  infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Avg Traffic/sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
-				    if (items < 3)
+				    if(items < 3)
 				      infoHTML += "<li><a href='host_details.lua?host="+m.label+"'>"+m.label+"</a> ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
@@ -617,14 +612,14 @@ print [[
 		dot.style.borderColor = point.series.color;
 		this.element.appendChild(dot);
 
-		if (point.active) {
+		if(point.active) {
 			item.className = 'item active';
 			dot.className = 'dot active';
 		}
 
 		this.show();
 
-		if (typeof this.onRender == 'function') {
+		if(typeof this.onRender == 'function') {
 			this.onRender(args);
 		}
 
@@ -648,13 +643,13 @@ var legend = new Rickshaw.Graph.Legend( {
 
 var yAxis = new Rickshaw.Graph.Axis.Y({
     graph: graph,
-    tickFormat: Rickshaw.Fixtures.Number.formatKMBT
-				      });
+    tickFormat: fbits
+});
 
 yAxis.render();
 
 $("#chart").click(function() {
-  if (hover.selected_epoch)
+  if(hover.selected_epoch)
     window.location.href = ']]
 print(baseurl .. '&rrd_file=' .. rrdFile .. '&graph_zoom=' .. nextZoomLevel .. '&epoch=')
 print[['+hover.selected_epoch;
