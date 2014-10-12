@@ -28,12 +28,12 @@ for _,ifname in pairs(ifnames) do
 
       -- Traffic stats
       name = fixPath(basedir .. "/" .. "bytes.rrd")
-      create_rrd(name,"bytes")
+      create_rrd(name, "bytes")
       ntop.rrd_update(name, "N:".. ifstats.stats_bytes)
       if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name .. " " .. ifstats.stats_bytes ..'\n') end
 
       name = fixPath(basedir .. "/" .. "packets.rrd")
-      create_rrd(name,"packets")
+      create_rrd(name, "packets")
       ntop.rrd_update(name, "N:".. ifstats.stats_packets)
       if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name ..'\n') end
    end

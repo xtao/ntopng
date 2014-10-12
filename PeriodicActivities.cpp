@@ -103,8 +103,16 @@ void PeriodicActivities::secondActivitiesLoop() {
   snprintf(script, sizeof(script), "%s/%s", ntop->get_callbacks_dir(), SECOND_SCRIPT_PATH);
 
   while(!ntop->getGlobals()->isShutdown()) {
+    struct timeval begin, end;
+    u_long usec_diff;
+
+    gettimeofday(&begin, NULL);
     runScript(script);
-    sleep(1);
+    gettimeofday(&end, NULL);
+
+    usec_diff = (end.tv_sec * 1000000) + end.tv_usec - (begin.tv_sec * 1000000) - begin.tv_usec;
+
+    if(usec_diff < 1000) usleep(1000 - usec_diff);
   }
 }
 

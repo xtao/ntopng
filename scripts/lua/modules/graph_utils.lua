@@ -131,7 +131,6 @@ function drawPeity(ifid, host, rrdFile, zoomLevel, selectedEpoch)
       local step = 1
       local series = {}
 
-
       if(sample_rate < 1) then
 	 sample_rate = 1
       end
@@ -315,7 +314,8 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
 
 	 t = t * step
 
-	 if((minval_bits_time == 0) or (minval_bits >= t)) then
+	 if(((minval_bits_time == 0) or (minval_bits >= t)) and (value[0] < lastval_bits_time)) then
+	    --io.write(value[0].."\t".. t .. "\t".. lastval_bits_time .. "\n")
 	    minval_bits_time = value[0]
 	    minval_bits = t
 	 end
@@ -677,9 +677,9 @@ function create_rrd(name, ds)
 	 name, 
 	 1,   -- step
 	 'DS:' .. ds .. ':DERIVE:5:U:U',
-	 'RRA:AVERAGE:0.5:1:86400',    -- raw: 1 day = 86400
-	 'RRA:AVERAGE:0.5:3600:2400',  -- 1h resolution (3600 points)   2400 hours = 100 days
-	 'RRA:AVERAGE:0.5:86400:365',    -- 1d resolution (86400 points)  365 days
+	 'RRA:AVERAGE:0.5:1:86400',   -- raw: 1 day = 86400
+	 'RRA:AVERAGE:0.5:3600:2400', -- 1h resolution (3600 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:86400:365', -- 1d resolution (86400 points)  365 days
 	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
    end
 end
@@ -693,8 +693,8 @@ function createRRDcounter(path, verbose)
 	 'DS:sent:DERIVE:600:U:U',
 	 'DS:rcvd:DERIVE:600:U:U',
 	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
-	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
-	 'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
+	 'RRA:AVERAGE:0.5:12:2400', -- 1h resolution (12 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:288:365', -- 1d resolution (288 points)  365 days
 	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
    end
 end
@@ -709,8 +709,8 @@ function createSingleRRDcounter(path, verbose)
 	 300, -- step
 	 'DS:num:DERIVE:600:U:U',
 	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
-	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days
-	 'RRA:AVERAGE:0.5:288:365',  -- 1d resolution (288 points)  365 days
+	 'RRA:AVERAGE:0.5:12:2400', -- 1h resolution (12 points)   2400 hours = 100 days
+	 'RRA:AVERAGE:0.5:288:365', -- 1d resolution (288 points)  365 days
 	 'RRA:HWPREDICT:1440:0.1:0.0035:20')
    end
 end
