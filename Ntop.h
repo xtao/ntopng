@@ -56,7 +56,6 @@ class Ntop {
   HTTPBL* httpbl;
   ExportInterface *export_interface;
   int8_t historical_interface_id;
-  Mutex *rrd_lock;
   long time_offset;
   time_t start_time; /**< Time when start() was called */
 
@@ -283,8 +282,6 @@ class Ntop {
   inline Prefs*            getPrefs()                { return(prefs);               };
   inline RuntimePrefs*            getRuntimePrefs()                { return(runtimeprefs);               };
 
-  inline void rrdLock(const char *filename, const int line)   { rrd_lock->lock(filename, line);   };
-  inline void rrdUnlock(const char *filename, const int line) { rrd_lock->unlock(filename, line); };
   inline ExportInterface* get_export_interface()              { return(export_interface);         };
 
   void getUsers(lua_State* vm); 

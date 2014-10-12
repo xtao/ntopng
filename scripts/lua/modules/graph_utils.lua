@@ -122,8 +122,8 @@ function drawPeity(ifid, host, rrdFile, zoomLevel, selectedEpoch)
 
    if(ntop.exists(rrdname)) then
       --print("=> Found "..rrdname.."<p>\n")
-      --print("=> Found ".. start_time .. "|" .. end_time .. "<p>\n")
-      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      --io.write("=> Found ".. start_time .. "|" .. end_time .. "<p>\n")
+      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, 'AVERAGE', start_time..", end_time..")
       local max_num_points = 512 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
       local sample_rate = round(num_points_found / max_num_points)
@@ -230,8 +230,8 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
 
    if(ntop.exists(rrdname)) then
       -- print("=> "..rrdname)
-      -- print("=> Found ".. start_time .. "|" .. end_time .. "\n")
-      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, '--start', start_time, '--end', end_time, 'AVERAGE')
+      -- io.write("=> *** ".. start_time .. "|" .. end_time .. "<p>\n")
+      local fstart, fstep, fnames, fdata = ntop.rrd_fetch(rrdname, 'AVERAGE', start_time, end_time)
       --print("=> here we go")
       local max_num_points = 600 -- This is to avoid having too many points and thus a fat graph
       local num_points_found = table.getn(fdata)
@@ -284,7 +284,7 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
 	    end
 
 	    s[elemId] = v*8 -- bps
-	    -- if(s[elemId] > 0) then io.write("[".. elemId .. "]=" .. s[elemId] .."\n") end
+	    --if(s[elemId] > 0) then io.write("[".. elemId .. "]=" .. s[elemId] .."\n") end
 	    elemId = elemId + 1
 	 end
 
@@ -674,9 +674,8 @@ function create_rrd(name, ds)
    if(not(ntop.exists(name))) then
       if(enable_second_debug == 1) then io.write('Creating RRD ', name, '\n') end
       ntop.rrd_create(
-	 name,
-	 '--start', 'now',
-	 '--step', '1',
+	 name, 
+	 1,   -- step
 	 'DS:' .. ds .. ':DERIVE:5:U:U',
 	 'RRA:AVERAGE:0.5:1:86400',    -- raw: 1 day = 86400
 	 'RRA:AVERAGE:0.5:3600:2400',  -- 1h resolution (3600 points)   2400 hours = 100 days
@@ -690,8 +689,7 @@ function createRRDcounter(path, verbose)
       if(verbose) then print('Creating RRD ', name, '\n') end
       ntop.rrd_create(
 	 name,
-	 '--start', 'now',
-	 '--step', '300',
+	 300, -- step
 	 'DS:sent:DERIVE:600:U:U',
 	 'DS:rcvd:DERIVE:600:U:U',
 	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
@@ -708,8 +706,7 @@ function createSingleRRDcounter(path, verbose)
       if(verbose) then print('Creating RRD ', path, '\n') end
       ntop.rrd_create(
 	 path,
-	 '--start', 'now',
-	 '--step', '300',
+	 300, -- step
 	 'DS:num:DERIVE:600:U:U',
 	 'RRA:AVERAGE:0.5:1:7200',  -- raw: 1 day = 1 * 24 = 24 * 300 sec = 7200
 	 'RRA:AVERAGE:0.5:12:2400',  -- 1h resolution (12 points)   2400 hours = 100 days

@@ -1288,9 +1288,10 @@ static int ntop_interface_name2id(lua_State* vm) {
 
 /* ****************************************** */
 
-/* Code taken from third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c */
-
-typedef int (*RRD_FUNCTION)(int, char **);
+/*
+   Code partially taken from third-party/rrdtool-1.4.7/bindings/lua/rrdlua.c
+   and made reentrant
+*/
 
 static void reset_rrd_state(void) {
   optind = 0;
@@ -1298,122 +1299,187 @@ static void reset_rrd_state(void) {
   rrd_clear_error();
 }
 
-static char **make_argv(const char *cmd, lua_State * L) {
-  char **argv;
+/* ****************************************** */
+
+static const char **make_argv(lua_State * vm, u_int offset) {
+  const char **argv;
   int i;
-  int argc = lua_gettop(L) + 1;
+  int argc = lua_gettop(vm) - offset;
 
-  if(!(argv = (char**)calloc(argc, sizeof (char *))))
+  if(!(argv = (const char**)calloc(argc, sizeof (char *))))
     /* raise an error and never return */
-    luaL_error(L, "Can't allocate memory for arguments array", cmd);
+    luaL_error(vm, "Can't allocate memory for arguments array");
 
-  /* fprintf(stderr, "Args:\n"); */
-  argv[0] = (char *) cmd; /* Dummy arg. Cast to (char *) because rrd */
-                          /* functions don't expect (const * char)   */
   /* fprintf(stderr, "%s\n", argv[0]); */
-  for (i=1; i<argc; i++) {
+  for(i=0; i<argc; i++) {
+    u_int idx = i + offset;
     /* accepts string or number */
-    if(lua_isstring(L, i) || lua_isnumber(L, i)) {
-      if(!(argv[i] = (char*)lua_tostring (L, i))) {
+    if(lua_isstring(vm, idx) || lua_isnumber(vm, idx)) {
+      if(!(argv[i] = (char*)lua_tostring (vm, idx))) {
         /* raise an error and never return */
-        luaL_error(L, "%s - error duplicating string area for arg #%d",
-                   cmd, i);
+        luaL_error(vm, "Error duplicating string area for arg #%d", i);
       }
     } else {
       /* raise an error and never return */
-      luaL_error(L, "Invalid arg #%d to %s: args must be strings or numbers",
-                 i, cmd);
+      luaL_error(vm, "Invalid arg #%d: args must be strings or numbers", i);
     }
-    /* fprintf(stderr, "%s\n", argv[i]); */
+
+    // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[%d] %s", i, argv[i]);
   }
 
-  return argv;
+  return(argv);
 }
 
 /* ****************************************** */
 
-static int rrd_common_call (lua_State *L, const char *cmd,
-			    RRD_FUNCTION rrd_function) {
-  char **argv;
-  int argc = lua_gettop(L) + 1;
+static int ntop_rrd_create(lua_State* vm) {
+  const char *filename;
+  unsigned long pdp_step;
+  const char **argv;
+  int argc, status, offset = 3;
 
-  if(ntop->getGlobals()->isShutdown()) return(CONST_LUA_PARAM_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((filename = (const char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
-  ntop->rrdLock(__FILE__, __LINE__);
-  rrd_clear_error();
-  argv = make_argv(cmd, L);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  pdp_step = (unsigned long)lua_tonumber(vm, 2);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s(%s)", __FUNCTION__, filename);
+
+  argc = lua_gettop(vm) - offset;
+  argv = make_argv(vm, offset);
+
   reset_rrd_state();
-  rrd_function(argc, argv);
+  status = rrd_create_r(filename, pdp_step, time(NULL), argc, argv);
   free(argv);
-  if(rrd_test_error()) {
-    char *err =  rrd_get_error();
+
+  if(status != 0) {
+    char *err = rrd_get_error();
 
     if(err != NULL) {
-      /*
-	IMPORTANT
-
-	It is important to unlock now as if luaL_error is called the
-	function returns and no unlock will take place
-      */
-      ntop->rrdUnlock(__FILE__, __LINE__);
-      luaL_error(L, err);
+      luaL_error(vm, err);
+      return(CONST_LUA_ERROR);
     }
   }
 
-  ntop->rrdUnlock(__FILE__, __LINE__);
-
-  return 0;
+  return(CONST_LUA_OK);
 }
 
-static int ntop_rrd_create(lua_State* L) { return(rrd_common_call(L, "create", rrd_create)); }
-static int ntop_rrd_update(lua_State* L) { return(rrd_common_call(L, "update", rrd_update)); }
+/* ****************************************** */
 
-static int ntop_rrd_fetch(lua_State* L) {
-  int argc = lua_gettop(L) + 1;
-  char **argv = make_argv("fetch", L);
-  unsigned long i, j, step, ds_cnt;
-  rrd_value_t *data, *p;
-  char    **names;
-  time_t  t, start, end;
+static int ntop_rrd_update(lua_State* vm) {
+  const char *filename, *update_arg;
+  int status;
+  const char *argv[1];
 
-  ntop->rrdLock(__FILE__, __LINE__);
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((filename = (const char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((update_arg = (const char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s(%s) %s", __FUNCTION__, filename, update_arg);
+
+  argv[0] = update_arg;
   reset_rrd_state();
-  rrd_fetch(argc, argv, &start, &end, &step, &ds_cnt, &names, &data);
-  free(argv);
-  if(rrd_test_error()) luaL_error(L, rrd_get_error());
+  status = rrd_update_r(filename, NULL, 1, argv);
 
-  lua_pushnumber(L, (lua_Number) start);
-  lua_pushnumber(L, (lua_Number) step);
+  if(status != 0) {
+    char *err = rrd_get_error();
+
+    if(err != NULL) {
+      luaL_error(vm, err);
+      return(CONST_LUA_ERROR);
+    }
+  }
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_rrd_fetch(lua_State* vm) {
+  unsigned long i, j, step = 0, ds_cnt = 0;
+  rrd_value_t *data, *p;
+  char **names, *err;
+  const char *filename, *cf, *start_s, *end_s;
+  time_t  t, start, end;
+  rrd_time_value_t start_tv, end_tv;
+  int status;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((filename = (const char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s(%s)", __FUNCTION__, filename);
+  
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((cf = (const char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if((lua_type(vm, 3) == LUA_TNUMBER) && (lua_type(vm, 4) == LUA_TNUMBER))
+    start = (time_t)lua_tonumber(vm, 3), end = (time_t)lua_tonumber(vm, 4);
+  else {
+    if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+    if((start_s = (const char*)lua_tostring(vm, 3)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+    
+    if((err = rrd_parsetime(start_s, &start_tv)) != NULL) {
+      luaL_error(vm, err);
+      return(CONST_LUA_PARAM_ERROR);
+    }   
+
+    if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+    if((end_s = (const char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+    
+    if((err = rrd_parsetime(end_s, &end_tv)) != NULL) {
+      luaL_error(vm, err);
+      return(CONST_LUA_PARAM_ERROR);
+    }   
+
+    if(rrd_proc_start_end(&start_tv, &end_tv, &start, &end) == -1)
+      return(CONST_LUA_PARAM_ERROR);
+  }
+
+  reset_rrd_state();
+
+  status = rrd_fetch_r(filename, cf, &start, &end, &step, &ds_cnt, &names, &data);
+  if(status != 0) {
+    err = rrd_get_error();
+
+    if(err != NULL) {
+      luaL_error(vm, err);
+      return(CONST_LUA_ERROR);
+    }
+  }
+
+  lua_pushnumber(vm, (lua_Number) start);
+  lua_pushnumber(vm, (lua_Number) step);
   /* fprintf(stderr, "%lu, %lu, %lu, %lu\n", start, end, step, num_points); */
 
   /* create the ds names array */
-  lua_newtable(L);
-  for (i=0; i<ds_cnt; i++) {
-    lua_pushstring(L, names[i]);
-    lua_rawseti(L, -2, i+1);
+  lua_newtable(vm);
+  for(i=0; i<ds_cnt; i++) {
+    lua_pushstring(vm, names[i]);
+    lua_rawseti(vm, -2, i+1);
     rrd_freemem(names[i]);
   }
   rrd_freemem(names);
 
   /* create the data points array */
-  lua_newtable(L);
+  lua_newtable(vm);
   p = data;
-  for (t=start, i=0; t<end; t+=step, i++) {
-    lua_newtable(L);
-    for (j=0; j<ds_cnt; j++) {
-      /*fprintf(stderr, "Point #%lu\n", j+1); */
-      lua_pushnumber(L, (lua_Number) *p++);
-      lua_rawseti(L, -2, j+1);
+  for(t=start, i=0; t<end; t+=step, i++) {
+    lua_newtable(vm);
+    for(j=0; j<ds_cnt; j++) {
+      lua_pushnumber(vm, (lua_Number) *p++);
+      lua_rawseti(vm, -2, j+1);
     }
-    lua_rawseti(L, -2, i+1);
+    lua_rawseti(vm, -2, i+1);
   }
   rrd_freemem(data);
-  ntop->rrdUnlock(__FILE__, __LINE__);
 
   /* return the end as the last value */
-  lua_pushnumber(L, (lua_Number) end);
+  lua_pushnumber(vm, (lua_Number) end);
 
-  return 5;
+  return(5);
 }
 
 /* ****************************************** */

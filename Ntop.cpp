@@ -38,7 +38,6 @@ Ntop::Ntop(char *appName) {
   categorization = NULL;
   httpbl = NULL;
   custom_ndpi_protos = NULL;
-  rrd_lock = new Mutex(); /* FIX: one day we need to use the reentrant RRD API */
   prefs = NULL, redis = NULL;
   num_defined_interfaces = 0;
   local_interface_addresses = New_Patricia(128);
@@ -124,7 +123,6 @@ Ntop::~Ntop() {
   if(custom_ndpi_protos) delete(custom_ndpi_protos);
 
   Destroy_Patricia(local_interface_addresses, NULL);
-  delete rrd_lock;
   delete address;
   delete pa;
   if(geo)   delete geo;
