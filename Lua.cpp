@@ -1466,11 +1466,16 @@ static int ntop_rrd_fetch(lua_State* vm) {
   /* create the data points array */
   lua_newtable(vm);
   p = data;
-  for(t=start, i=0; t<end; t+=step, i++) {
+  for(t=start+1, i=0; t<end; t+=step, i++) {
     lua_newtable(vm);
     for(j=0; j<ds_cnt; j++) {
-      lua_pushnumber(vm, (lua_Number) *p++);
-      lua_rawseti(vm, -2, j+1);
+      rrd_value_t value = *p++;
+
+      if(value != DNAN /* Skip NaN */) {
+	lua_pushnumber(vm, (lua_Number)value);
+	lua_rawseti(vm, -2, j+1);
+	// ntop->getTrace()->traceEvent(TRACE_NORMAL, "%u / %.f", t, value);
+      }
     }
     lua_rawseti(vm, -2, i+1);
   }

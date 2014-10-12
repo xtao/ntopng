@@ -223,7 +223,8 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
 
    prefixLabel = l4Label(string.gsub(rrdFile, ".rrd", ""))
 
-   if(prefixLabel == "bytes") then
+   -- io.write(prefixLabel.."\n")
+   if(prefixLabel == "Bytes") then
       prefixLabel = "Traffic"
    end
 
@@ -247,7 +248,7 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selec
       num = 0
       for i, n in ipairs(fnames) do
 	 names[num] = prefixLabel
-	 if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " " .. firstToUpper(n) end
+	 -- if(prefixLabel ~= firstToUpper(n)) then names[num] = names[num] .. " (" .. firstToUpper(n)..")" end
 	 num = num + 1
 	 --io.write(prefixLabel.."\n")
 	 --print(num.."\n")
@@ -419,7 +420,7 @@ print [[
    ]]
 
 
-print('   <tr><th>' .. prefixLabel .. '</th><th>Time</th><th>Value</th></tr>\n')
+print('   <tr><th>&nbsp;</th><th>Time</th><th>Value</th></tr>\n')
 
 if(string.contains(rrdFile, "num_")) then
    print('   <tr><th>Min</th><td>' .. os.date("%x %X", minval_bits_time) .. '</td><td>' .. formatValue(round(minval_bits/step), 1) .. '</td></tr>\n')
