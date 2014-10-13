@@ -112,7 +112,11 @@ void PeriodicActivities::secondActivitiesLoop() {
 
     usec_diff = (end.tv_sec * 1000000) + end.tv_usec - (begin.tv_sec * 1000000) - begin.tv_usec;
 
-    if(usec_diff < 1000) usleep(1000 - usec_diff);
+    if(usec_diff < 1000000) {
+      u_int diff = 1000000 - usec_diff;
+
+      usleep(diff);
+    }
   }
 }
 

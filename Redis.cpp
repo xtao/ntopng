@@ -1382,10 +1382,11 @@ void Redis::indexESdata() {
 
 	res = curl_easy_perform(curl);
 
-	if(res != CURLE_OK)
+	if(res != CURLE_OK) {
 	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES: %s",
 				       curl_easy_strerror(res));
-	else {
+	  sleep(1);
+	} else {
 	  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] Posted JSON to %s",
 				       ntop->getPrefs()->get_es_url());
 
