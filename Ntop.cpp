@@ -185,7 +185,7 @@ void Ntop::createHistoricalInterface() {
 /* ******************************************* */
 
 NetworkInterface* Ntop::getHistoricalInterface() {
-	return (getInterface(get_if_name(historical_interface_id))); 
+  return (getInterface(get_if_name(historical_interface_id))); 
 };
 
 /* ******************************************* */

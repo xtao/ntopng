@@ -1000,6 +1000,32 @@ function getHostCommaSeparatedList(p_hosts)
   return hosts,hosts_size
 end
 
+-- ##############################################
+
+-- Used to avoid resolving host names too many times
+resolved_host_labels_cache = {}
+
+function getHostAltName(host_ip)
+   local alt_name = resolved_host_labels_cache[host_ip]
+   
+   if(alt_name ~= nil) then
+      return(alt_name)
+   end
+
+   alt_name = ntop.getHashCache("ntopng.host_labels", host_ip)
+
+   if((alt_name == nil) or (alt_name == "")) then
+     alt_name = host_ip
+   end
+
+   resolved_host_labels_cache[host_ip] = alt_name
+   
+   return(alt_name)
+end
+
+function setHostAltName(host_ip, alt_name)
+  ntop.setHashCache("ntopng.host_labels", host_ip, alt_name)
+end
 
 -- Flow Utils --
 
@@ -1007,9 +1033,17 @@ function flowinfo2hostname(flow_info, host_type, show_vlan)
   local name = ""
 
   name = flow_info[host_type..".host"]
+
   if((name == "") or (name == nil)) then
     name = flow_info[host_type..".ip"]
-    name = ntop.getResolvedAddress(name)
+  end
+
+  alt_name = getHostAltName(name)
+
+  if(name == alt_name) then
+      name = ntop.getResolvedAddress(name)
+  else
+      name = alt_name
   end
 
   -- io.write(host_type.. " / " .. flow_info[host_type..".host"].." / "..name.."\n")
@@ -1161,7 +1195,6 @@ function hostinfo2url(host_info,host_type)
       rsp = rsp..'@'..tostring(host_info["vlan"])
     end
   end
-
 
   if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
 

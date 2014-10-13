@@ -97,7 +97,7 @@
 #define HTTPBL_TO_RESOLVE       "ntopng.httpbl.toresolve"
 #define HTTPBL_CACHE_DURATIION  43200 /* 12 h */
 #define DNS_CACHE_DURATION      3600  /*  1 h */
-#define HOST_ALTERNATE_NAME     "ntopng.alternate_names"
+#define HOST_LABEL_NAMES        "ntopng.host_labels"
 #define NTOP_HOSTS_SERIAL       "ntopng.host_serial"
 #define DUMMY_IFACE_ID          ((u_int8_t)-1)
 #define MAX_CSRF_DURATION       300 /* 5 mins */

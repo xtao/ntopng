@@ -89,10 +89,10 @@ else
    end
 
    if(_GET["custom_name"] ~=nil) then
-      ntop.setHashCache("ntop.alternate_names", hostinfo2hostkey(host_info), _GET["custom_name"])
+   	setHostAltName(hostinfo2hostkey(host_info), _GET["custom_name"])
    end
 
-   host["alternate_name"] = ntop.getHashCache("ntop.alternate_names", hostinfo2hostkey(host_info))
+   host["label"] = getHostAltName(hostinfo2hostkey(host_info))
 
    rrdname = dirs.workingdir .. "/" .. ifId .. "/rrd/" .. hostinfo2hostkey(host_info) .. "/bytes.rrd"
    -- print(rrdname)
@@ -399,9 +399,9 @@ print [[
       print(host_info["host"])
 print [[">
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
-      if(host["alternate_name"] ~= nil) then print(host["alternate_name"]) end
+      if(host["label"] ~= nil) then print(host["label"]) end
 print [["></input>
-	 <button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>]]
+	 &nbsp;<button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>]]
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[</form>
 </td></tr>

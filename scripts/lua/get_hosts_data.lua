@@ -259,10 +259,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation == nil) and (aggregated == nil)) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
+
 	    print(shortHostName(value["name"]))
 
-	    if((value["alternate_name"] ~= nil) and (value["alternate_name"] ~= "")) then
-	       print (" ["..value["alternate_name"].."]")
+	    if((value["label"] ~= nil) and (value["label"] ~= "")) then
+	       print (" ["..value["label"].."]")
 	    end
 
 	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then
@@ -276,7 +277,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    --   print("</div>")
 
 	    if(value["systemhost"] == true) then print("&nbsp;<i class='fa fa-flag'></i>") end
-	    if(value["country"] ~= nil) then
+	    if((value["country"] ~= nil) and (value["country"] ~= "")) then
 	       print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
 	    end
 

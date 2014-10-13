@@ -258,6 +258,7 @@ print [[
       <li><a href="]]
 
 user_group = ntop.getUserGroup()
+
 if(user_group == "administrator") then
   print (ntop.getHttpPrefix())
   print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>

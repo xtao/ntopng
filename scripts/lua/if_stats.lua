@@ -128,7 +128,7 @@ if((page == "overview") or (page == nil)) then
    print("<tr><th width=250>Name</th><td>" .. ifstats.name .. "</td>\n")
 
   if(ifstats.name ~= nil) then
-    alternate_name = ntop.getCache('ntopng.prefs.'..ifstats.name..'.name')
+    label = ntop.getCache('ntopng.prefs.'..ifstats.name..'.name')
     print [[
     <td>
     <form class="form-inline" style="margin-bottom: 0px;">
@@ -138,7 +138,7 @@ if((page == "overview") or (page == nil)) then
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[
        <input type="text" name="custom_name" placeholder="Custom Name" value="]]
-          if(alternate_name ~= nil) then print(alternate_name) end
+          if(label ~= nil) then print(label) end
     print [["></input>
       &nbsp;<button type="submit" style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>
     </form>

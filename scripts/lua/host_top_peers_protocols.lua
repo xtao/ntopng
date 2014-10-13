@@ -69,9 +69,14 @@ for value,peer in pairsByKeys(_peers, rev) do
 	    end
       
 	    host = interface.getHostInfo(peer)
-	    if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(hostinfo2hostkey(host)) end
-	    print("\t { \"host\": \"" .. peer .."\", \"name\": \"".. host.name.."\", \"url\": \"<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?host=".. hostinfo2hostkey(host) .."'>"..host.name .."</A>\", \"l7proto\": \"".. proto .."\", \"l7proto_url\": \"<A HREF="..ntop.getHttpPrefix().."/lua/flows_stats.lua?host=".. hostinfo2hostkey(host) .."&application="..proto..">"..proto.."</A>\", \"traffic\": ".. math.log10(peers_proto[peer][proto]) .. " }")
-	    n = n + 1
+	    if(host ~= nil) then
+  	      if(host["name"] == nil) then
+	        host["name"] = ntop.getResolvedAddress(hostinfo2hostkey(host))	
+	      end
+
+	      print("\t { \"host\": \"" .. peer .."\", \"name\": \"".. host.name.."\", \"url\": \"<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?host=".. hostinfo2hostkey(host) .."'>"..host.name .."</A>\", \"l7proto\": \"".. proto .."\", \"l7proto_url\": \"<A HREF="..ntop.getHttpPrefix().."/lua/flows_stats.lua?host=".. hostinfo2hostkey(host) .."&application="..proto..">"..proto.."</A>\", \"traffic\": ".. math.log10(peers_proto[peer][proto]) .. " }")
+   	      n = n + 1
+	    end
 	 end
       end
 

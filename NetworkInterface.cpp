@@ -327,7 +327,7 @@ void NetworkInterface::process_epp_flow(ZMQ_Flow *zflow, Flow *flow) {
     flow->get_cli_host()->incNumEPPResponsesRcvd(zflow->epp_rsp_code);
 
     if(strcmp(zflow->epp_registrar_name, "null"))
-      flow->get_cli_host()->set_alternate_name(zflow->epp_registrar_name);
+      flow->get_cli_host()->set_label_name(zflow->epp_registrar_name);
   }
 
   if(flow->get_srv_host()) {
@@ -1100,7 +1100,7 @@ static bool find_host_by_name(GenericHashEntry *h, void *user_data) {
     }
 
     if((host->get_name() && (!strcmp(host->get_name(), info->host_to_find)))
-       || (host->get_alternate_name() && (!strcmp(host->get_alternate_name(), info->host_to_find)))) {
+       || (host->get_label_name() && (!strcmp(host->get_label_name(), info->host_to_find)))) {
       info->h = host;
       return(true); /* found */
     }

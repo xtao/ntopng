@@ -267,7 +267,7 @@ void Flow::processDetectedProtocol() {
 
   case NDPI_PROTOCOL_NETBIOS:
     if(ndpi_flow->host_server_name[0] != '\0') {
-      get_cli_host()->set_alternate_name((char*)ndpi_flow->host_server_name);
+      get_cli_host()->set_label_name((char*)ndpi_flow->host_server_name);
       protocol_processed = true;
     }
     break;

@@ -144,12 +144,12 @@ print('</ul></p>')
 
 
 print('<h4>ntopng set and get hash in redis cache</h4>')
-print('<pre><code>ntop.setHashCache(\"ntop.alternate_names\", \"127.0.0.1\", \"test_name\")\n\nntop.getHashCache(\"ntop.alternate_names\", \"127.0.0.1\")</code></pre>')
+print('<pre><code>ntop.setHashCache(\"ntopng.alternate_names\", \"127.0.0.1\", \"test_name\")\n\nntop.getHashCache(\"ntopng.alternate_names\", \"127.0.0.1\")</code></pre>')
 
-ntop.setHashCache("ntop.alternate_names", "127.0.0.1", "test_name")
+ntop.setHashCache("ntopng.alternate_names", "127.0.0.1", "test_name")
 
 print('<p>Output:<ul>')
-print("<li>ntop.alternate_names = "..ntop.getHashCache("ntop.alternate_names", "127.0.0.1") .."<br>")
+print("<li>ntopng.alternate_names = "..ntop.getHashCache("ntopng.alternate_names", "127.0.0.1") .."<br>")
 print('</ul></p>')
 
 

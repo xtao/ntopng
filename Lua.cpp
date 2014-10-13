@@ -1875,7 +1875,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
   if(!strcmp(value, key)) {
     char rsp[64];
 
-    if((ntop->getRedis()->hashGet((char*)HOST_ALTERNATE_NAME, key, rsp, sizeof(rsp)) == 0)
+    if((ntop->getRedis()->hashGet((char*)HOST_LABEL_NAMES, key, rsp, sizeof(rsp)) == 0)
        && (rsp[0] !='\0'))
       lua_pushfstring(vm, "%s", rsp);
     else

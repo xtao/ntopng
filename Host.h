@@ -28,7 +28,7 @@ class Host : public GenericHost {
  private:
   u_int8_t mac_address[6];
   u_int32_t asn;
-  char *symbolic_name, *alternate_name, *country, *city, *asname, category[8], os[16], httpbl[12];
+  char *symbolic_name, *label_name, *country, *city, *asname, category[8], os[16], httpbl[12];
   bool blacklisted_host;
   u_int16_t num_uses;
   int16_t local_network_id;
@@ -49,8 +49,8 @@ class Host : public GenericHost {
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
   void refreshHTTPBL();
   void refreshCategory();
-  void read_alternate_name();
-  void save_alternate_name();
+  void read_host_label();
+  void save_host_label();
   void computeHostSerial();
   inline void allocDNS() { if(dns == NULL) dns = new DnsStats(); }
   inline void allocEPP() { if(epp == NULL) epp = new EppStats(); }
@@ -72,20 +72,20 @@ class Host : public GenericHost {
   inline void setOS(char *_os)                 { if(os[0] == '\0') snprintf(os, sizeof(os), "%s", _os); }
   inline IpAddress* get_ip()                   { return(ip);               }
   void set_mac(char *m);
-  void set_alternate_name(char *name);
+  void set_label_name(char *name);
   inline bool is_blacklisted()                 { return(blacklisted_host); }
   inline u_int8_t*  get_mac()                  { return(mac_address);      }
   inline char* get_os()                        { return(os);               }
   inline char* get_name()                      { return(symbolic_name);    }
-  inline char* get_alternate_name()            { return(alternate_name);   }
+  inline char* get_label_name()                { return(label_name);       }
   inline char* get_country()                   { return(country);          }
   inline char* get_city()                      { return(city);             }
   inline char* get_category()                  { refreshCategory(); return(category); }
   inline char* get_httpbl()                    { refreshHTTPBL();   return(httpbl); }
-  inline u_int32_t get_asn()                   { return(asn);           }
+  inline u_int32_t get_asn()                   { return(asn);              }
   inline bool isPrivateHost()                  { return((ip && ip->isPrivateAddress()) ? true : false); }
-  inline float get_latitude()                  { return(latitude);      }
-  inline float get_longitude()                 { return(longitude);     }
+  inline float get_latitude()                  { return(latitude);         }
+  inline float get_longitude()                 { return(longitude);        }
   bool isLocalInterfaceAddress();
   char* get_mac(char *buf, u_int buf_len);
   char* get_name(char *buf, u_int buf_len, bool force_resolution_if_not_found);
