@@ -503,7 +503,7 @@ function fdate(when) {
 }
 
 function fbits(bits) {
-	var sizes = ['bps', 'Kbit', 'Mbit', 'Gbit', 'Tbit'];
+	var sizes = ['bps', 'Kbit/s', 'Mbit/s', 'Gbit/s', 'Tbit/s'];
 	if(bits == 0) return 'n/a';
 	var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
 	return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];

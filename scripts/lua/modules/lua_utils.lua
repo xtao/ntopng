@@ -350,13 +350,13 @@ function bitsToSize(bits)
   terabit = gigabit * 1024;
 
   if ((bits >= kilobit) and (bits < megabit)) then
-    return round(bits / kilobit, precision) .. ' Kbit';
+    return round(bits / kilobit, precision) .. ' Kbit/s';
   elseif ((bits >= megabit) and (bits < gigabit)) then
-    return round(bits / megabit, precision) .. ' Mbit';
+    return round(bits / megabit, precision) .. ' Mbit/s';
   elseif ((bits >= gigabit) and (bits < terabit)) then
-    return round(bits / gigabit, precision) .. ' Gbit';
+    return round(bits / gigabit, precision) .. ' Gbit/s';
   elseif (bits >= terabit) then
-    return round(bits / terabit, precision) .. ' Tbit';
+    return round(bits / terabit, precision) .. ' Tbit/s';
   else
     return round(bits, precision) .. ' bps';
   end
