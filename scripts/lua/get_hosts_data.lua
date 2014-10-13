@@ -156,6 +156,7 @@ for key, value in pairs(hosts_stats) do
    if(ok) then
       --print("==>"..hosts_stats[key]["bytes.sent"].."[" .. sortColumn .. "]\n")
 
+
     if(hosts_stats[key]["name"] == nil) then
       if(hosts_stats[key]["ip"] ~= nil) then
          hosts_stats[key]["name"] = ntop.getResolvedAddress(hosts_stats[key]["ip"])
@@ -259,11 +260,14 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation == nil) and (aggregated == nil)) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
-
+	    
 	    print(shortHostName(value["name"]))
 
-	    if((value["label"] ~= nil) and (value["label"] ~= "")) then
-	       print (" ["..value["label"].."]")
+	    if (value["ip"] ~= nil) then
+  	      label = getHostAltName(value["ip"])
+	      if(label ~= value["ip"]) then
+	       print (" ["..label.."]")
+              end
 	    end
 
 	    if((value["httpbl"] ~= nil) and (string.len(value["httpbl"]) > 2)) then

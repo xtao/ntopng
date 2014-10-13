@@ -53,27 +53,6 @@ Host::Host(NetworkInterface *_iface, u_int8_t mac[6],
 
 /* *************************************** */
 
-void Host::read_host_label() {  
-  char buf[64], rsp[64], *host = ip->print(buf, sizeof(buf));
-  
-  if(ntop->getRedis()->hashGet((char*)HOST_LABEL_NAMES, host, rsp, sizeof(rsp)) == 0) {
-    if(label_name) free(label_name);
-    label_name = strdup(rsp);  
-  }
-}
-
-/* *************************************** */
-
-void Host::save_host_label() {
-  if(label_name) {
-    char buf[64], *host = ip->print(buf, sizeof(buf));
-
-    ntop->getRedis()->hashSet((char*)HOST_LABEL_NAMES, host, label_name);
-  }
-}
-
-/* *************************************** */
-
 Host::~Host() {
   char key[128], *k;
 
@@ -107,8 +86,6 @@ Host::~Host() {
 
   dumpHostContacts(HOST_FAMILY_ID);
 
-  save_host_label();
-
   // ntop->getTrace()->traceEvent(TRACE_NORMAL, "Deleting %s (%s)", k, localHost ? "local": "remote");
 
   if((localHost || systemHost)
@@ -124,7 +101,6 @@ Host::~Host() {
   if(epp)            delete epp;
 
   if(symbolic_name)  free(symbolic_name);
-  if(label_name) free(label_name);
   if(country)        free(country);
   if(city)           free(city);
   if(asname)         free(asname);
@@ -132,6 +108,16 @@ Host::~Host() {
   delete syn_flood_alert;
   delete ip;
   delete m;
+}
+
+/* *************************************** */
+
+void Host::set_host_label(char *label_name) {
+  if(label_name) {
+    char buf[64], *host = ip->print(buf, sizeof(buf));
+
+    ntop->getRedis()->hashSet((char*)HOST_LABEL_NAMES, host, label_name);
+  }
 }
 
 /* *************************************** */
@@ -176,7 +162,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 
   syn_flood_alert = new AlertCounter(ntop->getPrefs()->get_host_max_new_syn_sec(), CONST_MAX_THRESHOLD_CROSS_DURATION);
   category[0] = '\0', os[0] = '\0', httpbl[0] = '\0', blacklisted_host = false;
-  num_uses = 0, symbolic_name = label_name = NULL, vlan_id = _vlanId;
+  num_uses = 0, symbolic_name = NULL, vlan_id = _vlanId;
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
@@ -231,7 +217,6 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
       if(country) { free(country); country = NULL; }
       if(city)    { free(city); city = NULL; }
       ntop->getGeolocation()->getInfo(ip, &country, &city, &latitude, &longitude);
-      read_host_label();
     } else {
       char buf[32];
 
@@ -307,7 +292,6 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
   lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
   lua_push_int_table_entry(vm, "vlan", vlan_id);
   lua_push_bool_table_entry(vm, "localhost", localHost);   
-  lua_push_str_table_entry(vm, "label", label_name ? label_name : (char*)"");
 
   if(host_details) {
     char *ipaddr = NULL, *local_net;   
@@ -449,22 +433,6 @@ void Host::setName(char *name, bool update_categorization) {
   if(to_categorize && ntop->get_categorization())
     ntop->get_categorization()->findCategory(symbolic_name, category, sizeof(category),
 					     update_categorization);
-}
-
-/* ***************************************** */
-
-void Host::set_label_name(char *name) {
-  if(label_name) {
-    if(!strcmp(name, label_name))
-      return; /* Nothing changed */
-    else {
-      free(label_name);
-      label_name = NULL;
-    }
-  }
-
-  label_name = strdup(name);
-  save_host_label();
 }
 
 /* ***************************************** */
@@ -689,9 +657,6 @@ bool Host::addIfMatching(lua_State* vm, patricia_tree_t *ptree, char *key) {
 
   if(symbolic_name && strcasestr(symbolic_name, key)) {
     lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), symbolic_name);
-    return(true);
-  } else if(label_name && strcasestr(label_name, key)) {
-    lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), label_name);
     return(true);
   } else if(strcasestr((r = get_mac(keybuf, sizeof(keybuf))), key)) {
     lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), r);

@@ -1872,6 +1872,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
   else
     snprintf(value, sizeof(value), "%s", tmp);
 
+#if 0
   if(!strcmp(value, key)) {
     char rsp[64];
 
@@ -1882,6 +1883,9 @@ static int ntop_get_resolved_address(lua_State* vm) {
       lua_pushfstring(vm, "%s", value);
   } else
     lua_pushfstring(vm, "%s", value);
+#else
+  lua_pushfstring(vm, "%s", value);
+#endif
 
   return(CONST_LUA_OK);
 }
