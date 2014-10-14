@@ -9,7 +9,10 @@
 #include <netdb.h>
 #include <errno.h>
 
+#ifndef __USE_GNU
 #define __USE_GNU
+#endif
+
 #include <unistd.h>
 
 #define BUFLEN 65535
