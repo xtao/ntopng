@@ -923,7 +923,7 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
   if(!detailed_dump) {
     lua_Integer k = key();
   
-	lua_pushinteger(vm, k); // Index
+    lua_pushinteger(vm, k); // Index
     lua_insert(vm, -2);
     lua_settable(vm, -3);
   } else {

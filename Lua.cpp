@@ -34,6 +34,10 @@ extern "C" {
 #ifdef HAVE_GEOIP
   extern const char * GeoIP_lib_version(void);
 #endif
+
+#include "third-party/snmp/snmp.c"
+#include "third-party/snmp/asn1.c"
+#include "third-party/snmp/net.c"
 };
 
 #include "third-party/lsqlite3/lsqlite3.c"
@@ -1411,7 +1415,7 @@ static int ntop_rrd_fetch(lua_State* vm) {
   if((filename = (const char*)lua_tostring(vm, 1)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s(%s)", __FUNCTION__, filename);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((cf = (const char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
@@ -1420,19 +1424,19 @@ static int ntop_rrd_fetch(lua_State* vm) {
   else {
     if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
     if((start_s = (const char*)lua_tostring(vm, 3)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-    
+
     if((err = rrd_parsetime(start_s, &start_tv)) != NULL) {
       luaL_error(vm, err);
       return(CONST_LUA_PARAM_ERROR);
-    }   
+    }
 
     if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
     if((end_s = (const char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-    
+
     if((err = rrd_parsetime(end_s, &end_tv)) != NULL) {
       luaL_error(vm, err);
       return(CONST_LUA_PARAM_ERROR);
-    }   
+    }
 
     if(rrd_proc_start_end(&start_tv, &end_tv, &start, &end) == -1)
       return(CONST_LUA_PARAM_ERROR);
@@ -1888,6 +1892,75 @@ static int ntop_get_resolved_address(lua_State* vm) {
 #endif
 
   return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+static int ntop_snmpget(lua_State* vm) {
+  char *agent_host, *oid, *community;
+  u_int agent_port = 161, timeout = 5, request_id = time(NULL);
+  int sock, i = 0, rc = CONST_LUA_OK;
+  SNMPMessage *message;
+  int len;
+  unsigned char *buf;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING))  return(CONST_LUA_ERROR);
+  agent_host = (char*)lua_tostring(vm, 1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING))  return(CONST_LUA_ERROR);
+  community = (char*)lua_tostring(vm, 2);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING))  return(CONST_LUA_ERROR);
+  oid = (char*)lua_tostring(vm, 3);
+
+  sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+  if(sock < 0) return(CONST_LUA_ERROR);
+
+  message = snmp_create_message();
+  snmp_set_version(message, 0);
+  snmp_set_community(message, community);
+  snmp_set_pdu_type(message, SNMP_GET_REQUEST_TYPE);
+  snmp_set_request_id(message, request_id);
+  snmp_set_error(message, 0);
+  snmp_set_error_index(message, 0);
+  snmp_add_varbind_null(message, oid);
+
+  len = snmp_message_length(message);
+  buf = (unsigned char*)malloc(len);
+  snmp_render_message(message, buf);
+  snmp_destroy_message(message);
+
+  send_udp_datagram(buf, len, sock, agent_host, agent_port);
+
+  free(buf);
+
+  if(input_timeout(sock, timeout) == 0) {
+    /* Timeout */
+    rc = CONST_LUA_ERROR;
+    lua_pushnil(vm);
+  } else {
+    char buf[BUFLEN];
+    SNMPMessage *message;
+    char *sender_host, *oid_str,  *value_str;
+    int sender_port, added = 0, len;
+
+    len = receive_udp_datagram(buf, BUFLEN, sock, &sender_host, &sender_port);
+    message = snmp_parse_message(buf, len);
+
+    i = 0;
+    while(snmp_get_varbind_as_string(message, i, &oid_str, NULL, &value_str)) {
+      if(!added) lua_newtable(vm), added = 1;
+      lua_push_str_table_entry(vm, oid_str, value_str);
+      i++;
+    }
+
+    snmp_destroy_message(message);
+  }
+  close(sock);
+
+
+  return(rc);
 }
 
 /* ****************************************** */
@@ -2697,6 +2770,9 @@ static const luaL_Reg ntop_reg[] = {
   /* Logging */
   { "syslog",         ntop_syslog },
 
+  /* SNMP */
+  { "snmpget",        ntop_snmpget },
+
   /* SQLite */
   { "execQuery",      ntop_sqlite_exec_query },
 
@@ -2942,7 +3018,7 @@ int Lua::handle_script_request(struct mg_connection *conn,
 		   || (decoded_buf[i] == '@')
 		   || (decoded_buf[i] == ',')
 		   || (decoded_buf[i] == '.')
-		   || 
+		   ||
 #endif
 		   isprint(decoded_buf[i])
 		   )
