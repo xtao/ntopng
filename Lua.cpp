@@ -2930,7 +2930,9 @@ int Lua::handle_script_request(struct mg_connection *conn,
 	      for(i=0; decoded_buf[i] != '\0'; i++) {
 		/* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
 
-		if(((decoded_buf[i] >= 'a') && (decoded_buf[i] <= 'z'))
+		if(
+#if 0
+		   ((decoded_buf[i] >= 'a') && (decoded_buf[i] <= 'z'))
 		   || ((decoded_buf[i] >= 'A') && (decoded_buf[i] <= 'Z'))
 		   || ((decoded_buf[i] >= '0') && (decoded_buf[i] <= '9'))
 		   || (decoded_buf[i] == ':')
@@ -2939,7 +2941,11 @@ int Lua::handle_script_request(struct mg_connection *conn,
 		   || (decoded_buf[i] == '/')
 		   || (decoded_buf[i] == '@')
 		   || (decoded_buf[i] == ',')
-		   || (decoded_buf[i] == '.'))
+		   || (decoded_buf[i] == '.')
+		   || 
+#endif
+		   isprint(decoded_buf[i])
+		   )
 		  ; /* Good: we're on the whitelist */
 		else
 		  decoded_buf[i] = '_'; /* Invalid char: we discard it */

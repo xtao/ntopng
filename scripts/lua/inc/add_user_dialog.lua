@@ -75,8 +75,8 @@ print [[
 
 <script>
 
-
   var frmadduser = $('#form_add_user');
+
 
 function isValid(str) { return /^\w+$/.test(str); }
 
