@@ -3073,6 +3073,13 @@ int Lua::handle_script_request(struct mg_connection *conn,
   }
   lua_setglobal(L, "_GET"); /* Like in php */
 
+  /* _SERVER */
+  lua_newtable(L);
+  lua_push_str_table_entry(L, "HTTP_REFERER", (char*)mg_get_header(conn, "Referer"));
+  lua_push_str_table_entry(L, "HTTP_USER_AGENT", (char*)mg_get_header(conn, "User-Agent"));
+  lua_push_str_table_entry(L, "SERVER_NAME", (char*)mg_get_header(conn, "Host"));
+  lua_setglobal(L, "_SERVER"); /* Like in php */
+
   /* Cookies */
   lua_newtable(L);
   if((_cookies = (char*)mg_get_header(conn, "Cookie")) != NULL) {

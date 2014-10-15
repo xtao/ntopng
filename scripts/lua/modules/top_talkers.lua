@@ -83,7 +83,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 	 if(old == nil) then old = 0 end
 	 _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
 
-    key = hostinfo2hostkey(hosts_stats[_key],"cli")
+         key = hostinfo2hostkey(hosts_stats[_key],"cli")
 	 if(key ~= nil) then
 	    old = _rcvd[key]
 	    if(old == nil) then old = 0 end

@@ -145,7 +145,6 @@ static int is_authorized(const struct mg_connection *conn,
 // we came from, so that after the authorization we could redirect back.
 static void redirect_to_login(struct mg_connection *conn,
                               const struct mg_request_info *request_info) {
-
   char session_id[33];
 
   mg_get_cookie(conn, "session", session_id, sizeof(session_id));
@@ -153,8 +152,10 @@ static void redirect_to_login(struct mg_connection *conn,
 
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
-	    "Location: %s%s\r\n\r\n",
-	    session_id, ntop->getPrefs()->get_http_prefix(), LOGIN_URL);
+	    "Location: %s%s?referer=%s\r\n\r\n",
+	    session_id,
+	    ntop->getPrefs()->get_http_prefix(), LOGIN_URL,
+	    conn->request_info.uri);
 }
 
 /* ****************************************** */
@@ -171,7 +172,7 @@ static void get_qsvar(const struct mg_request_info *request_info,
 // Login page form sends user name and password to this endpoint.
 static void authorize(struct mg_connection *conn,
                       const struct mg_request_info *request_info) {
-  char user[32], password[32];
+  char user[32], password[32], referer[256];
 
   if(!strcmp(request_info->request_method, "POST")) {
     char post_data[1024];
@@ -179,11 +180,16 @@ static void authorize(struct mg_connection *conn,
 
     mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
     mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+    mg_get_var(post_data, post_data_len, "referer", referer, sizeof(referer));
   } else {
     // Fetch user name and password.
     get_qsvar(request_info, "user", user, sizeof(user));
     get_qsvar(request_info, "password", password, sizeof(password));
+    get_qsvar(request_info, "ref", referer, sizeof(referer));
   }
+
+  /* Referer url must begin with '/' */
+  if(referer[0] != '/') strcpy(referer, "/");
 
   if(ntop->checkUserPassword(user, password)) {
     char key[256], session_id[64], random[64];
@@ -208,9 +214,10 @@ static void authorize(struct mg_connection *conn,
     mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	      "Set-Cookie: session=%s; path=/; max-age=%u; HttpOnly\r\n"  // Session ID
 	      "Set-Cookie: user=%s; path=/; max-age=%u; HttpOnly\r\n"  // Set user, needed by Javascript code
-	      "Location: %s/\r\n\r\n",
+	      "Location: %s%s\r\n\r\n",
 	      session_id, HTTP_SESSION_DURATION,
-	      user, HTTP_SESSION_DURATION, ntop->getPrefs()->get_http_prefix());
+	      user, HTTP_SESSION_DURATION, 
+	      ntop->getPrefs()->get_http_prefix(), referer);
 
     /* Save session in redis */
     snprintf(key, sizeof(key), "sessions.%s", session_id);
@@ -258,7 +265,7 @@ static int handle_lua_request(struct mg_connection *conn) {
   if((ntop->getGlobals()->isShutdown())
      //|| (strcmp(request_info->request_method, "GET"))
      || (ntop->getRedis() == NULL /* Starting up... */))
-    return(send_error(conn, 403 /* Forbidden */, request_info->uri, 
+    return(send_error(conn, 403 /* Forbidden */, request_info->uri,
 		      "Unexpected HTTP method or ntopng still starting up..."));
 
   if(ntop->get_HTTPserver()->is_ssl_enabled() && (!request_info->is_ssl))
@@ -322,10 +329,10 @@ static int handle_lua_request(struct mg_connection *conn) {
   } else {
     /* Prevent short URI or .inc files to be served */
     if((len < 4) || (strncmp(&request_info->uri[len-4], ".inc", 4) == 0)) {
-      return(send_error(conn, 403, "Forbidden", 
+      return(send_error(conn, 403, "Forbidden",
 			ACCESS_FORBIDDEN, request_info->uri));
     } else {
-      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s%s", 
+      ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] Serving file %s%s",
 				   ntop->get_HTTPserver()->get_docs_dir(), request_info->uri);
       return(0); /* This is a static document so let mongoose handle it */
     }
@@ -365,14 +372,14 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   } else {
     ntop->getTrace()->traceEvent(TRACE_NORMAL,
 				 "HTTPS Disabled: missing SSL certificate %s", ssl_cert_path);
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, 
+    ntop->getTrace()->traceEvent(TRACE_NORMAL,
 				 "Please read https://svn.ntop.org/svn/ntop/trunk/ntopng/README.SSL if you want to enable SSL.");
     ssl_enabled = false;
   }
   if ((!use_http) && (!use_ssl) & (!ssl_enabled)) {
-    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+    ntop->getTrace()->traceEvent(TRACE_ERROR,
 				 "Unable to start HTTP server: HTTP is disabled and the SSL certificate is missing.");
-    ntop->getTrace()->traceEvent(TRACE_ERROR, 
+    ntop->getTrace()->traceEvent(TRACE_ERROR,
 				 "Starting the HTTP server on the default port");
     port = CONST_DEFAULT_NTOP_PORT;
     snprintf(ports, sizeof(ports), "%d", port);
