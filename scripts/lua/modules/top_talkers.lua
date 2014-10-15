@@ -1,5 +1,5 @@
 --
--- (C) 2013 - ntop.org
+-- (C) 2013-14 - ntop.org
 --
 
 dirs = ntop.getDirs()
@@ -46,6 +46,7 @@ function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
       return("[ ]\n")
    end
 end
+
 -- #################################################
 
 function getActualTopTalkers(ifid, ifname, mode, epoch)
@@ -154,8 +155,6 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 	    break
 	 end
       end
-
-
    end
 
    if(mode == nil) then
@@ -177,7 +176,6 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
       for key, value in pairs(_rcvd) do
 	 -- io.write(key.."\n")
-
 	 if(last[key] ~= nil) then
 	    v = _rcvd[key]-last[key]
 
@@ -231,8 +229,7 @@ end
 
 -- #####################################################
 
-function getTopASs(ifname)
-   max_num_entries = 10
+function getActualTopXASs(ifname, max_num_entries, use_threshold, use_delta)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end
@@ -258,7 +255,6 @@ function getTopASs(ifname)
       _asn[key] = old + val
    end
 
-
    asn = {}
    for _key, value in pairs(_asn) do
       asn[value] = _key
@@ -275,18 +271,26 @@ function getTopASs(ifname)
       key   = asn[_key]
       value = _key
 
-      if((value == 0) or (value < low_threshold) or ((value < threshold) and (num > 2))) then break end
+      if(value == 0) then break end
+      
+      if(use_threshold) then
+	 if((value < low_threshold) or ((value < threshold) and (num > 2))) then break end
+      end
+
       if(num > 0) then rsp = rsp .. " }," end
-      rsp = rsp .. '\n\t\t { "label": "'..key..'", "value": '..value
+      k = string.split(key, " ")
+      rsp = rsp .. '\n\t\t { "asn": "'..k[1].. '", "label": "'..key..'", "value": '..value
       num = num + 1
 
-      if(num == max_num_entries) then
-	 break
-      end
+      if(num == max_num_entries) then break end
    end
 
    rsp = rsp .. " }\n"
    rsp = rsp .. "\n]\n"
 
    return(rsp)
+end
+
+function getTopASs(ifname)
+   return(getActualTopXASs(ifname, 10, true, false))
 end
