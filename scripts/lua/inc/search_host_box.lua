@@ -10,7 +10,14 @@ print [[
 --        print('<a class="btn" href="#"><i class="fa fa-bell fa-lg"></i></a>')
 
 print [[
-	 <input id="search_typeahead" type="text" name="host" class="search-query span2" placeholder="Search Host" data-provide="typeahead" autocomplete="off"></input>
+
+
+	 <div class="control-group" style="width:15em;">
+          <div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+	 <input id="search_typeahead" type="text" name="host" class="form-control search-query span2" placeholder="Search Host" data-provide="typeahead" autocomplete="off"></input>
+	 </div>
+         </div>
+
 	 </form>
 	 </li>
 

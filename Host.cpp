@@ -655,6 +655,8 @@ bool Host::addIfMatching(lua_State* vm, patricia_tree_t *ptree, char *key) {
 
   if(!match(ptree)) return(false);
 
+  // if(symbolic_name) ntop->getTrace()->traceEvent(TRACE_WARNING, "%s/%s", symbolic_name, ip->print(keybuf, sizeof(keybuf)));
+
   if(symbolic_name && strcasestr(symbolic_name, key)) {
     lua_push_str_table_entry(vm, get_string_key(keybuf, sizeof(keybuf)), symbolic_name);
     return(true);
