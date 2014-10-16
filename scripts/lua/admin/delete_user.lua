@@ -8,16 +8,17 @@ require "lua_utils"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
-username = _GET["username"]
-
-if(username == nil) then
-  print ("{ \"result\" : -1, \"message\" : \"Invalid parameters\" }")
-  return
+if(haveAdminPrivileges()) then
+   username = _GET["username"]
+   
+   if(username == nil) then
+      print ("{ \"result\" : -1, \"message\" : \"Invalid parameters\" }")
+      return
+   end
+   
+   if(ntop.deleteUser(username)) then
+      print ("{ \"result\" : 0, \"message\" : \"User deleted successfully\" }")
+   else
+      print ("{ \"result\" : -1, \"message\" : \"Error deleting user\" }")
+   end
 end
-
-if(ntop.deleteUser(username)) then
-  print ("{ \"result\" : 0, \"message\" : \"User deleted successfully\" }")
-else
-  print ("{ \"result\" : -1, \"message\" : \"Error deleting user\" }")
-end
-

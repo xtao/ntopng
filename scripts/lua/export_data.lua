@@ -34,24 +34,24 @@ print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFVa
 
 print [[
 
-<div class="control-group">
-    <label class="control-label" for="hostIP">Host:</label>
+  <div class="control-group">
+    <label class="control-label">Host</label>
     <div class="controls">
-      <input type="text" id="hostIP" name="hostIP" placeholder="IP or MAC Address">
-
-     <label><small>NOTE: If the field is empty all hosts will be exported</small></label>
+      <input type="text" id="hostIP" name="hostIP" placeholder="IP or MAC Address" class="form-control">
     </div>
+<label><small>NOTE: If the field is empty all hosts will be exported</small></label>
   </div>
+
 
 <div class="control-group">
     <label class="control-label" for="hostVlan">Vlan:</label>
     <div class="controls">
-      <input type="text" id="hostVlan" name="hostVlan" placeholder="Vlan">
-
-     <label><small>NOTE: If the field is empty vlan is set to 0.</small></label>
+      <input type="text" id="hostVlan" name="hostVlan" placeholder="Vlan" class="form-control">
     </div>
+     <label><small>NOTE: If the field is empty vlan is set to 0.</small></label>
   </div>
 </br>
+
 <div class="control-group">
 <div class="controls">
   <button type="submit" class="btn btn-primary">Export JSON Data</button> 

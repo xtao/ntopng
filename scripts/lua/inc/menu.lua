@@ -34,13 +34,13 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></li>
       <li><a href="http://blog.ntop.org/"><i class="fa fa-globe"></i> ntop Blog</a></li>
       <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
       <li class="divider"></li>
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
     </ul>
   </li>
@@ -56,9 +56,9 @@ else
 end
 
 if(active_page == "flows") then
-   print ('<li class="active"><a href="'..url..'">Flows</a></li>')
+   print('<li class="active"><a href="'..url..'">Flows</a></li>')
 else
-   print ('<li><a href="'..url..'">Flows</a></li>')
+   print('<li><a href="'..url..'">Flows</a></li>')
 end
 
 if active_page == "hosts" then
@@ -73,7 +73,7 @@ print [[
       </a>
     <ul class="dropdown-menu">
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_stats.lua">Hosts List</a></li>
       ]]
   if not (is_historical) then
@@ -93,7 +93,7 @@ end
 print [[
       <li class="divider"></li>
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_interaction.lua">Interactions</a></li>
 ]]
 
@@ -104,24 +104,24 @@ end
 
 print [[
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_flows_matrix.lua">Top Hosts Traffic</a></li>
    ]]
 
 if(not(isLoopback(ifname))) then
    print [[
 	    <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_geomap.lua"><i class="fa fa-map-marker"></i> Geo Map</a></li>
 	    <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_treemap.lua"><i class="fa fa-sitemap"></i> Tree Map</a></li>
       ]]
 end
 
 print [[
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_matrix.lua"><i class="fa fa-th-large"></i> Local Matrix</a></li>
     </ul>
   </li>
@@ -153,19 +153,19 @@ print [[
     <a tabindex="-1" href="#">EPP</a>
     <ul class="dropdown-menu">
    <li><a tabindex="-1" href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/hosts_stats.lua?mode=local&protocol=EPP"> Hosts </a></li>
    <li><a tabindex="-1" href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=1"> Server </a></li>
    <li><a tabindex="-1" href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=4"> Registrar </a></li>
    <li><a tabindex="-1" href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=1"> Existing Domains </a></li>
    <li><a tabindex="-1" href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/protocols/epp_aggregations.lua?protocol=38&aggregation=2&tracked=0"> Unknown Domains </a></li>
 
   </ul>
@@ -260,20 +260,23 @@ print [[
 user_group = ntop.getUserGroup()
 
 if(user_group == "administrator") then
-  print (ntop.getHttpPrefix())
+  print(ntop.getHttpPrefix())
   print [[/lua/admin/users.lua"><i class="fa fa-user"></i> Manage Users</a></li>
-      <li><a href="]]
+      ]]
 else
-  print (ntop.getHttpPrefix())
+  print(ntop.getHttpPrefix())
   print [[/lua/admin/change_user_password.lua"><i class="fa fa-user"></i> Change Password</a></li>
-      <li><a href="]]
+      ]]
 end
 
-print (ntop.getHttpPrefix())
-print [[/lua/admin/prefs.lua"><i class="fa fa-flask"></i> Preferences</a></li>
+if(user_group == "administrator") then
+   print("<li><a href=\""..ntop.getHttpPrefix().."/lua/admin/prefs.lua\"><i class=\"fa fa-flask\"></i> Preferences</a></li>\n")
+end
+
+print [[
       <li class="divider"></li>
       <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
     </ul>
     </li>
@@ -285,7 +288,7 @@ print [[/lua/export_data.lua"><i class="fa fa-share"></i> Export Data</a></li>
       </a>
     <ul class="dropdown-menu">
 	 <li><a href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/logout.lua"><i class="fa fa-power-off"></i> Logout ]]    print(_COOKIE["user"]) print [[</a></li>
     </ul>
     </li>
@@ -296,7 +299,7 @@ if(ntop.getNumQueuedAlerts() > 0) then
 print [[
 <li>
 <a  href="]]
-print (ntop.getHttpPrefix())
+print(ntop.getHttpPrefix())
 print [[/lua/show_alerts.lua">
 <i class="fa fa-warning fa-lg" style="color: #B94A48;"></i>
 </a>
@@ -318,5 +321,5 @@ else
    logo_path = ntop.getHttpPrefix().."/img/logo.png"
 end
 
-print ("</ul>\n<h3 class=\"muted\"><A href=http://www.ntop.org><img src=\""..logo_path.."\"></A></h3>\n</div>\n")
+print("</ul>\n<h3 class=\"muted\"><A href=http://www.ntop.org><img src=\""..logo_path.."\"></A></h3>\n</div>\n")
 

@@ -8,6 +8,7 @@ require "lua_utils"
 
 sendHTTPHeader('application/json')
 
+if(haveAdminPrivileges()) then
 currentPage     = _GET["currentPage"]
 perPage         = _GET["perPage"]
 sortColumn      = _GET["sortColumn"]
@@ -103,3 +104,4 @@ end
 print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
 
 print ("\"totalRows\" : " .. total .. " \n}")
+end

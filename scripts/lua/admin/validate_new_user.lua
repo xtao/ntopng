@@ -8,14 +8,16 @@ require "lua_utils"
 
 sendHTTPHeader('application/json')
 
-key = "ntopng.user.".. _GET["user"] ..".password"
-existing = ntop.getCache(key)
+if(haveAdminPrivileges()) then
+   key = "ntopng.user.".. _GET["user"] ..".password"
+   existing = ntop.getCache(key)
+   
+   if(string.len(existing) > 0) then
+      print('{ "valid" : 0, "user": "'.. _GET["user"]..'", "msg": "User already existing" }\n')
+      return
+   else
+      valid = 1
+   end
 
-if(string.len(existing) > 0) then
-   print('{ "valid" : 0, "user": "'.. _GET["user"]..'", "msg": "User already existing" }\n')
-   return
-else
-   valid = 1
+   print('{ "valid" : 1, "user": "'.. _GET["user"]..'", "msg": "Ok" }\n')
 end
-
-print('{ "valid" : 1, "user": "'.. _GET["user"]..'", "msg": "Ok" }\n')
