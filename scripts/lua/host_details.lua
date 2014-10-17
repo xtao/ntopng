@@ -366,7 +366,10 @@ print [[
       print("</th><td colspan=2>"..host["vlan"].."</td></tr>\n")
    end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
-   if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td colspan=2>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td></tr>\n") end
+   if((host["asn"] ~= nil) and (host["asn"] > 0)) then print("<tr><th>ASN</th><td>".. printASN(host["asn"], host.asname) .. " [ " .. host.asname .. " ] </td>")
+
+   print('<td><A HREF="http://itools.com/tool/arin-whois-domain-search?q='.. host["ip"] ..'&submit=Look+up">Whois Lookup</A> <i class="fa fa-external-link fa-lg"></i></td>')
+   print("</td></tr>\n") end
 
    if((host["category"] ~= nil) and (host["category"] ~= "")) then
       cat = getCategory(host["category"])
