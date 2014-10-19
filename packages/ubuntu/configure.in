@@ -5,11 +5,16 @@ PFRING_VERS=`cat $HOME/PF_RING/kernel/linux/pf_ring.h | grep RING_VERSION | head
 PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
-
+SHORT_MACHINE=`uname -m | cut -b1-3`
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
 else
+  if test $SHORT_MACHINE = "arm"; then
+     EXTN="armhf"
+     EXTRA_DEPS=""
+  else
    EXTN="i386"
+  fi
 fi
 
 DATE=`date -R`
