@@ -383,8 +383,8 @@ print [[
       if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
       print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"> <span id=name>")
 
-      if(host["ip"] ==  host["name"]) then
-	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\"> ")
+      if(host["ip"] == host["name"]) then
+	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\" id=throbber> ")
       end
 
       print(host["name"] .. "</span></A> <i class=\"fa fa-external-link fa-lg\"></i> ")
@@ -404,7 +404,7 @@ print [[">
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
       if(host["label"] ~= nil) then print(host["label"]) end
 print [["></input>
-	 &nbsp;<button style="position: absolute; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>]]
+	 &nbsp;<button style="position: relative; margin-top: 0; height: 26px" type="submit" class="btn btn-default btn-xs">Save Name</button>]]
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[</form>
 </td></tr>
@@ -1965,9 +1965,12 @@ print [[/lua/host_stats.lua',
 			$('#pkts_rcvd').html(formatPackets(host["pkts.rcvd"]));
 			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
-			$('#name').html(host["name"]);
+			if(!host["name"]) { 
+			   $('#name').html(host["ip"]); 
+			} else { 
+			   $('#name').html(host["name"]);
+			}
 			$('#num_alerts').html(host["num_alerts"]);
-
 			$('#flows_as_client').html(addCommas(host["flows.as_client"]));
 			$('#flows_as_server').html(addCommas(host["flows.as_server"]));
 		  ]]
