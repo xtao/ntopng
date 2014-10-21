@@ -189,7 +189,8 @@ static void authorize(struct mg_connection *conn,
   }
 
   /* Referer url must begin with '/' */
-  if(referer[0] != '/') strcpy(referer, "/");
+  if((referer[0] != '/') || (strcmp(referer, AUTHORIZE_URL) == 0))
+    strcpy(referer, "/");
 
   if(ntop->checkUserPassword(user, password)) {
     char key[256], session_id[64], random[64];

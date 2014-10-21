@@ -313,7 +313,7 @@ if((page == "overview") or (page == nil)) then
       end
    else
       if(host["mac"] ~= nil) then
-	 print("<tr><th>MAC Address</th><td colspan=1>" .. host["mac"].. "</td></tr>\n")
+	 print("<tr><th>MAC Address</th><td colspan=2>" .. host["mac"].. "</td></tr>\n")
       end
    end
 
@@ -398,9 +398,10 @@ if(host["ip"] ~= nil) then
 print [[
 <td>
 <form class="form-inline" style="margin-bottom: 0px;">
-	 <input type="hidden" name="host" value="]]
+      	 <input type="hidden" name="host" value="]]
       print(host_info["host"])
 print [[">
+
 	 <input type="text" name="custom_name" placeholder="Custom Name" value="]]
       if(host["label"] ~= nil) then print(host["label"]) end
 print [["></input>
@@ -417,7 +418,7 @@ if(host["num_alerts"] > 0) then
 end
 
    print("<tr><th>First / Last Seen</th><td nowrap><span id=first_seen>" .. formatEpoch(host["seen.first"]) ..  " [" .. secondsToTime(os.time()-host["seen.first"]) .. " ago]" .. "</span></td>\n")
-   print("<td nowrap><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
+   print("<td  width='35%'><span id=last_seen>" .. formatEpoch(host["seen.last"]) .. " [" .. secondsToTime(os.time()-host["seen.last"]) .. " ago]" .. "</span></td></tr>\n")
 
 
    if((host["bytes.sent"]+host["bytes.rcvd"]) > 0) then
