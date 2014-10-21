@@ -32,6 +32,8 @@
     <link href="@HTTP_PREFIX@/css/cal-heatmap.css" rel="stylesheet">
     <script src="@HTTP_PREFIX@/js/springy-ntop.js"></script>
     <script src="@HTTP_PREFIX@/js/springyui-ntop.js"></script>
+    <script src="@HTTP_PREFIX@/js/c3.js"></script>
+    <link href="@HTTP_PREFIX@/css/c3.css" rel="stylesheet">
 
     <!--[if lt IE 9]>
       <script src="@HTTP_PREFIX@/js/html5shiv.js"></script>
