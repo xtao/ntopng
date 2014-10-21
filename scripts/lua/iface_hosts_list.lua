@@ -12,6 +12,8 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 interface.find(ifname)
 hosts_stats = interface.getHosts()
 
+ajax_format = _GET["ajax_format"]
+
 tot = 0
 _hosts_stats = {}
 top_key = nil
@@ -50,8 +52,13 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
    if(num > 0) then
       print ",\n"
    end
-   
-   print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(value).."\" }")
+
+   if((ajax_format == nil) or (ajax_format == "d3")) then
+      print("\t { \"label\": \"" .. value .."\", \"value\": ".. key ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(value).."\" }")
+   else
+      print("\t [ \"" .. value .."\", ".. key .." ]")
+   end	
+
    accumulate = accumulate + key
    num = num + 1
 
@@ -61,13 +68,22 @@ for key, value in pairsByKeys(_hosts_stats, rev) do
 end
 
 if((num == 0) and (top_key ~= nil)) then
-   print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(top_key).."\" }")
+   if((ajax_format == nil) or (ajax_format == "d3")) then
+     print("\t { \"label\": \"" .. top_key .."\", \"value\": ".. top_value ..", \"url\": \""..ntop.getHttpPrefix().."/lua/host_details.lua?"..hostinfo2url(top_key).."\" }")
+   else      
+    print("\t [ \"" .. top_key .."\", ".. top_value .." ]")
+   end
+
    accumulate = accumulate + top_value
 end
 
 -- In case there is some leftover do print it as "Other"
 if(accumulate < tot) then
-   print(",\n\t { \"label\": \"Other\", \"value\": ".. (tot-accumulate) .." }")
+   if((ajax_format == nil) or (ajax_format == "d3")) then
+      print(",\n\t { \"label\": \"Other\", \"value\": ".. (tot-accumulate) .." }")
+   else
+      print(",\n\t [ \"Other\", ".. (tot-accumulate) .." ]")
+   end
 end
 
 print "\n]"
