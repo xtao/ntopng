@@ -29,6 +29,17 @@
 
 Ntop *ntop;
 
+static const char* dirs[] = {
+  NULL,
+#ifndef WIN32
+  CONST_DEFAULT_INSTALL_DIR,
+#else
+  install_dir,
+#endif
+  CONST_ALT_INSTALL_DIR,
+  NULL
+};
+
 /* ******************************************* */
 
 Ntop::Ntop(char *appName) {
@@ -62,11 +73,10 @@ Ntop::Ntop(char *appName) {
 	break;
       }
   }
+
+  dirs[0] = startup_dir;
   strcpy(install_dir, startup_dir);
 #else
-  struct stat statbuf;
-  char tmp_path[MAX_PATH];
-
   snprintf(working_dir, sizeof(working_dir), "%s/ntopng", CONST_DEFAULT_WRITABLE_DIR);
 
   umask (0);
@@ -75,18 +85,20 @@ Ntop::Ntop(char *appName) {
   if(getcwd(startup_dir, sizeof(startup_dir)) == NULL)
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Occurred while checking the current directory (errno=%d)", errno);
 
-  snprintf(tmp_path, sizeof(tmp_path), "%s/scripts/lua/index.lua", CONST_DEFAULT_INSTALL_DIR);
+  dirs[0] = startup_dir;
 
-  if(stat(tmp_path, &statbuf) == 0)
-    strcpy(install_dir, CONST_DEFAULT_INSTALL_DIR);
-  else {
-    snprintf(tmp_path, sizeof(tmp_path), "%s/scripts/lua/index.lua", CONST_ALT_INSTALL_DIR);
-    
-    if(stat(tmp_path, &statbuf) == 0)
-      strcpy(install_dir, CONST_ALT_INSTALL_DIR);
-    else {
-      if(getcwd(install_dir, sizeof(install_dir)) == NULL)
-	strcpy(install_dir, startup_dir);
+  install_dir[0] = '\0';
+
+  for(int i=0; dirs[i] != NULL; i++) {
+    char path[MAX_PATH];
+    struct stat statbuf;
+
+    snprintf(path, sizeof(path), "%s/scripts/lua/index.lua", dirs[i]);
+    fixPath(path);
+
+    if(stat(path, &statbuf) == 0) {
+      strcpy(install_dir, dirs[i]);
+      break;
     }
   }
 #endif
@@ -560,16 +572,6 @@ char* Ntop::getValidPath(char *__path) {
 #ifdef WIN32
   const char *install_dir = (const char *)get_install_dir();
 #endif
-  const char* dirs[] = {
-    startup_dir,
-#ifndef WIN32
-    CONST_DEFAULT_INSTALL_DIR,
-#else
-    install_dir,
-#endif
-    CONST_ALT_INSTALL_DIR,
-    NULL
-  };
 
   if(strncmp(__path, "./", 2) == 0) {
     snprintf(_path, MAX_PATH, "%s/%s", startup_dir, &__path[2]);
