@@ -10,7 +10,7 @@ Packager: Luca Deri <deri@ntop.org>
 BuildArch: noarch
 # Temporary location where the RPM will be built
 BuildRoot:  %{_tmppath}/%{name}-%{version}-root
-Requires: ntopng
+#Requires: ntopng
 
 %description
 GeoIP databases for ntopng

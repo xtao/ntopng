@@ -10,7 +10,7 @@ Depends: libsqlite3-0, libzmq3, redis-server, librrd4, libnuma1, libcurl3, pfrin
 Package: ntopng
 Architecture: @EXTN@
 Recommends: ntopng-data
-Suggests:
+Suggests: ntopng-data
 Pre-Depends:
 Conflicts:
 Provides:

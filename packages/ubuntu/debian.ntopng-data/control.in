@@ -6,7 +6,7 @@ Standards-Version: @NTOPNG_VERS@
 Build-Depends:
 Build-Conflicts:
 
-Depends: ntopng
+Depends:
 Package: ntopng-data
 Architecture: all
 Recommends:
