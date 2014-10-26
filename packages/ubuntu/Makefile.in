@@ -20,10 +20,11 @@ ntopng:
 	find ${NTOPNG_BUILD}/usr/share/ntopng -name ".svn" | xargs /bin/rm -rf
 	@echo
 	@find . -name "*~" -exec /bin/rm {} ';'
+	@/bin/rm -f ../ntopng_*deb
 	dpkg-buildpackage -rfakeroot -d -us -uc
-	dpkg-sig --sign builder -k 7921DF34 ../ntopng*deb
-	@\rm -f ../ntopng*dsc ../ntopng*.gz ../ntopng*changes
-	@/bin/mv ../ntopng*deb .
+	dpkg-sig --sign builder -k 7921DF34 ../ntopng_*deb
+	@\rm -f ../ntopng_*dsc ../ntopng_*.gz ../ntopng_*changes
+	@/bin/mv ../ntopng_*deb .
 	@echo
 	@echo "Package built."
 	@/bin/ls ntopng_*deb
@@ -43,10 +44,11 @@ ntopng-data:
 	find ${NTOPNG_BUILD}/usr/share/ntopng -name ".svn" | xargs /bin/rm -rf
 	@echo
 	@find . -name "*~" -exec /bin/rm {} ';'
+	@/bin/rm -f ../ntopng-data_*deb
 	dpkg-buildpackage -rfakeroot -d -us -uc
-	dpkg-sig --sign builder -k 7921DF34 ../ntopng*deb
-	@\rm -f ../ntopng*dsc ../ntopng*.gz ../ntopng*changes
-	@/bin/mv ../ntopng*deb .
+	dpkg-sig --sign builder -k 7921DF34 ../ntopng-data_*deb
+	@\rm -f ../ntopng-data_*dsc ../ntopng-data_*.gz ../ntopng-data_*changes
+	@/bin/mv ../ntopng-data_*deb .
 	@echo
 	@echo "Package built."
 	@/bin/ls ntopng-data_*deb

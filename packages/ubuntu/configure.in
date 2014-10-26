@@ -6,6 +6,8 @@ PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 SHORT_MACHINE=`uname -m | cut -b1-3`
+EXTRA_DEPS=", libnuma1"
+
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
 else
@@ -25,6 +27,7 @@ AC_SUBST(MACHINE)
 AC_SUBST(EXTN)
 AC_SUBST(DATE)
 AC_SUBST(KERNEL)
+AC_SUBST(EXTRA_DEPS)
 AC_SUBST(SVN_RELEASE)
 AC_SUBST(PFRING_VERS)
 AC_SUBST(PFRING_SVN_RELEASE)

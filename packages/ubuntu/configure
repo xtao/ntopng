@@ -586,6 +586,7 @@ LIBOBJS
 PFRING_SVN_RELEASE
 PFRING_VERS
 SVN_RELEASE
+EXTRA_DEPS
 KERNEL
 DATE
 EXTN
@@ -1676,6 +1677,8 @@ PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 SHORT_MACHINE=`uname -m | cut -b1-3`
+EXTRA_DEPS=", libnuma1"
+
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
 else
@@ -1689,6 +1692,7 @@ fi
 
 DATE=`date -R`
 KERNEL=`uname -r`
+
 
 
 
