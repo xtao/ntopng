@@ -7,11 +7,60 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 -- io.write ("Session:".._SESSION["session"].."\n")
 require "lua_utils"
 
+
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+-- Alerts 
+
+
+-- Interfaces 
+function interfaces(div_name) 
+print [[
+
+<div class='chart'>
+<div id=']] print(div_name) print [['></div>
+</div>
+]]
+
+
+local ifnames = {}
+
+for v,k in pairs(names) do
+   interface.find(k)
+   _ifstats = interface.getStats()
+
+   ifnames[_ifstats.id] = _ifstats.name
+   --print(_ifstats.name.."=".._ifstats.id.." ")
+end
+
+for k,v in pairsByKeys(ifnames, asc) do
+   print("      <li>")
+   
+   --print(k.."="..v.." ")
+
+   if(v == ifname) then
+      print("<a href=\""..ntop.getHttpPrefix().."/lua/if_stats.lua?if_name="..v.."\">")
+   else
+      print("<a href=\""..ntop.getHttpPrefix().."/lua/set_active_interface.lua?id="..k.."\">")
+   end
+   
+   if(v == ifname) then print("<i class=\"fa fa-check\"></i> ") end
+   if (isPausedInterface(v)) then  print('<i class="fa fa-pause"></i> ') end
+
+   
+   print(getHumanReadableInterfaceName(v))
+   print("</a>\tTRAFFIC\tGRAFICO</li>\n")
+end
+--	print ("</script>")
+
+
+end
+
+
+
 -- Body
 
 
@@ -52,17 +101,10 @@ function update_]] print(div_name) print [[() {
 
 $(document).ready(function () { update_]] print(div_name) print [[(); });
 setInterval(function() { update_]] print(div_name) print [[(); }, 3000);
-
 </script>
-
-
-
 ]]
 
 end
-
-
-
 
 print [[
 <div class="container-fluid">
@@ -70,22 +112,22 @@ print [[
 <div class="row">
   <div class="col-md-4">
      <div class="panel panel-default">
-        <div class="panel-heading">Empty</div>
-        <div class="panel-body">]] pieChart("top_test", "/lua/iface_hosts_list.lua?ajax_format=c3")   print [[</div>
-     </div>
-  </div>
-
-  <div class="col-md-4">
-     <div class="panel panel-default">
-        <div class="panel-heading">Empty</div>
-        <div class="panel-body">Body</div>
+        <div class="panel-heading">Top Receivers</div>
+        <div class="panel-body">]] pieChart("top_test", "/lua/iface_hosts_list_rcvd.lua?ajax_format=c3")   print [[</div>
      </div>
   </div>
 
   <div class="col-md-4">
      <div class="panel panel-default">
         <div class="panel-heading">Interfaces</div>
-        <div class="panel-body">Body</div>
+        <div class="panel-body">]] interfaces("listInterfaces")   print [[</div>
+     </div>
+  </div>
+
+  <div class="col-md-4">
+     <div class="panel panel-default">
+        <div class="panel-heading">Alerts</div>
+        <div class="panel-body">@@@@ ALERTS @@@@</div>
      </div>
   </div>
 </div>
@@ -93,13 +135,13 @@ print [[
   <div class="col-md-4">
      <div class="panel panel-default">
         <div class="panel-heading">Top Senders</div>
-        <div class="panel-body">]] pieChart("top_senders", "/lua/iface_hosts_list.lua?ajax_format=c3")   print [[</div>
+        <div class="panel-body">]] pieChart("top_senders", "/lua/iface_hosts_list_sent.lua?ajax_format=c3")   print [[</div>
      </div>
   </div>
 
   <div class="col-md-4">
      <div class="panel panel-default">
-        <div class="panel-heading">Top Receivers</div>
+        <div class="panel-heading">Empty</div>
         <div class="panel-body">Body</div>
      </div>
   </div>

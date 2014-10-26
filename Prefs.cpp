@@ -72,8 +72,9 @@ Prefs::Prefs(Ntop *_ntop) {
   host_max_new_flows_sec_threshold = CONST_MAX_NEW_FLOWS_SECOND; /* flows/sec */
   host_max_num_syn_sec_threshold = CONST_MAX_NUM_SYN_PER_SECOND; /* syn/sec */
 
-  es_type = (char*)"flows", es_index = (char*)"ntopng", 
-    es_url = (char*)"http://localhost:9200/_bulk", es_pwd = (char*)"";
+  es_type = strdup((char*)"flows"), es_index = strdup((char*)"ntopng"), 
+    es_url = strdup((char*)"http://localhost:9200/_bulk"), 
+    es_pwd = strdup((char*)"");
 }
 
 /* ******************************************* */
@@ -83,15 +84,19 @@ Prefs::~Prefs() {
     if(deferred_interfaces_to_register[i] != NULL)
       free(deferred_interfaces_to_register[i]);
 
-  if(logFd) fclose(logFd);
-  if(data_dir) free(data_dir);
-  if(docs_dir) free(docs_dir);
-  if(scripts_dir) free(scripts_dir);
-  if(callbacks_dir) free(callbacks_dir);
+  if(logFd)            fclose(logFd);
+  if(data_dir)         free(data_dir);
+  if(docs_dir)         free(docs_dir);
+  if(scripts_dir)      free(scripts_dir);
+  if(callbacks_dir)    free(callbacks_dir);
   if(config_file_path) free(config_file_path);
-  if(user) free(user);
-  if(pid_path) free(pid_path);
-  if(packet_filter) free(packet_filter);
+  if(user)             free(user);
+  if(pid_path)         free(pid_path);
+  if(packet_filter)    free(packet_filter);
+  if(es_type)          free(es_type);
+  if(es_index)         free(es_index);
+  if(es_url)           free(es_url);
+  if(es_pwd)           free(es_pwd);
   free(http_prefix);
 }
 
@@ -175,6 +180,10 @@ void usage() {
 	 "[--dump-flows|-F] <mode>            | Dump expired flows. Mode:\n"
 	 "                                    | db - Dump in SQLite DB\n"
 	 "                                    | es - Dump in Redis "CONST_ES_QUEUE_NAME" queue\n"
+	 "                                    |      Format:\n"
+	 "                                    |      es;<idx type>;<idx name>;<es URL>;<es pwd>\n"
+	 "                                    |      Example:\n"
+	 "                                    |      es;flows;ntopng;http://localhost:9200/_bulk;\n"
 	 "[--export-flows|-I] <endpoint>      | Export flows using the specified endpoint.\n"
 	 "[--dump-hosts|-D] <mode>            | Dump hosts policy (default: none).\n"
 	 "                                    | Values:\n"
@@ -491,10 +500,46 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'F':
-    if(strcmp(optarg, "es") == 0)
-      dump_flows_on_es = true;
-    else
+    if((strncmp(optarg, "es", 2) == 0) 
+       && (strlen(optarg) > 3)) {
+      char *elastic_index_type = NULL, *elastic_index_name = NULL,
+	*elastic_url = NULL, *elastic_pwd = NULL;
+      /* es;<index type>;<index name>;<es URL>;<es pwd> */
+
+      if((elastic_index_type = strtok(&optarg[3], ";")) != NULL) {
+	if((elastic_index_name = strtok(NULL, ";")) != NULL) {
+	  if((elastic_url = strtok(NULL, ";")) != NULL) {
+	    if((elastic_pwd = strtok(NULL, ";")) == NULL)
+	      elastic_pwd = (char*)"";
+	  }
+	}
+      }
+      
+      if(elastic_index_type 
+	 && elastic_index_name
+	 && elastic_url 
+	 && elastic_pwd) {
+	free(es_type), free(es_index), free(es_url), free(es_pwd);
+
+	es_type = strdup(elastic_index_type);
+	es_index = strdup(elastic_index_name);
+	es_url = strdup(elastic_url);
+	es_pwd = strdup(elastic_pwd);
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using ElasticSearch for data dump [%s][%s][%s]",
+				     es_type, es_index, es_url);
+	dump_flows_on_es = true;
+      } else {
+	ntop->getTrace()->traceEvent(TRACE_WARNING,
+				     "Discarding -F: invalid format for es");
+	ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				     "Format: -F es;<index type>;<index name>;<es URL>;<pwd>");
+      }
+    } else if(!strcmp(optarg, "db"))
       dump_flows_on_db = true;
+    else
+      ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				   "Discarding -F %s: value out of range",
+				   optarg);    
     break;
 
 #ifndef WIN32

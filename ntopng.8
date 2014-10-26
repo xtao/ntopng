@@ -250,7 +250,7 @@ detected they will be discarded.
 .It \-F|\-\-dump\-flows <mode>
 If ntopng is compiled with sqlite support, flows can dumped persistently on disk using this option. The mode can be set to 
 db - Dump on local SQLite dabatase. Databases are created daily under <data directory>/<interface>/db. Using this option you can reload the dumped flows via the Historical Interface specify the time interval and the interface.
-es - Dump on ntopng.es queue in Elasticsearch format that be insert on a ES database.
+es - Dump on ntopng.es queue in Elasticsearch format that be insert on a ES database. In this case the format is "es;<idx type>;<idx name>;<es URL>;<es pwd>". Example: -F "es;flows;ntopng;http://localhost:9200/_bulk;"
 
 .It \-D|\-\-dump\-hosts
 If ntopng is compiled with sqlite support, hosts contacts can dumped persistently on disk using this option.

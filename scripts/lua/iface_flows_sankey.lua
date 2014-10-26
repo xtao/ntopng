@@ -52,14 +52,20 @@ while(num == 0) do
       end
       if(last > threshold) then
 
-   if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
-   if((debug) and (findString(key, tracked_host) ~= nil))then io.write("findString(key, tracked_host)==>"..findString(key, tracked_host)) end
-   if((debug) and (findString(values["cli.ip"], tracked_host) ~= nil)) then io.write("findString(values[cli.ip], tracked_host)==>"..findString(values["cli.ip"], tracked_host)) end
-   if((debug) and (findString(values["srv.ip"], tracked_host) ~= nil)) then io.write("findString(values[srv.ip], tracked_host)==>"..findString(values["srv.ip"], tracked_host)) end
+	 if(debug) then io.write("==>"..key.."\t[T:"..tracked_host.. (values["sent.last"] + values["rcvd.last"]) .."][".. values["duration"].."][" .. last.. "]\n") end
+	 if((debug) and (findString(key, tracked_host) ~= nil))then io.write("findString(key, tracked_host)==>"..findString(key, tracked_host)) end
+	 if((debug) and (findString(values["cli.ip"], tracked_host) ~= nil)) then io.write("findString(values[cli.ip], tracked_host)==>"..findString(values["cli.ip"], tracked_host)) end
+	 if((debug) and (findString(values["srv.ip"], tracked_host) ~= nil)) then io.write("findString(values[srv.ip], tracked_host)==>"..findString(values["srv.ip"], tracked_host)) end
 
-   if((tracked_host == nil) or findString(key, tracked_host) or findString(values["cli.ip"], tracked_host) or findString(values["srv.ip"], tracked_host)) then
-      -- print("[" .. key .. "]")
-      -- print("[" .. tracked_host .. "]\n")
+	 k = string.split(key, " ")
+
+	 if((tracked_host == nil)
+   	    or findString(k[1], tracked_host)
+            or findString(k[2], tracked_host)
+	    or findString(values["cli.ip"], tracked_host) 
+	    or findString(values["srv.ip"], tracked_host)) then
+	    -- print("[" .. key .. "]")
+	    -- print("[" .. tracked_host .. "]\n")
 
 	    for key,word in pairs(split(key, " ")) do
 	       if(num >= max_num_hosts) then
@@ -105,7 +111,7 @@ if ((num == 0) and (tracked_host == nil)) then
 
    hosts_stats = interface.getHosts()
    for key, value in pairs(hosts_stats) do
-    value = hosts_stats[key]["traffic"]
+      value = hosts_stats[key]["traffic"]
       if(value > top_value) then
 	 top_host = key
 	 top_value = value
@@ -127,10 +133,10 @@ if ((num == 0) and (tracked_host == nil)) then
 	       if(hosts[word] == nil) then
 		  hosts[word] = num
 
-      host_info = hostkey2hostinfo(word)
+		  host_info = hostkey2hostinfo(word)
 
-      -- 3. print nodes
-      print ("{\"name\": \"" .. word .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
+		  -- 3. print nodes
+		  print ("{\"name\": \"" .. word .. "\", \"host\": \"" .. host_info["host"] .. "\", \"vlan\": \"" .. host_info["vlan"] .. "\"}")
 		  num = num + 1
 
 		  if(num >= max_num_hosts) then

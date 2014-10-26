@@ -31,7 +31,7 @@ if((ifname == nil) and (_GET ~= nil)) then
      end
   end
 
-  if (debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"]) end
+  if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => Session:".._SESSION["session"]) end
 
   if((ifname == nil) and (_SESSION ~= nil)) then
     if(debug_session) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Session => set ifname by _SESSION value") end
@@ -84,7 +84,7 @@ end
 
 function isEmptyString(str)
   -- io.write(str..'\n')
-  if ((str == nil) or (str == "")) then
+  if((str == nil) or (str == "")) then
     return true
   else
     return false
@@ -98,17 +98,17 @@ function findString(str, tofind)
 
   str1    = string.gsub(str, "-", "_")
   tofind1 = string.gsub(tofind, "-", "_")
-  rsp = string.find(str1, tofind1, 1)
+  rsp     = string.find(str1, tofind1, 1)
 
-  if (upper_lower) then
-    if (rsp == nil) then
+  if(upper_lower) then
+    if(rsp == nil) then
       -- Lowercase
       str1 = string.lower(str1)
       tofind1 = string.lower(tofind1)
       rsp = string.find(str1, tofind1, 1)
     end
 
-    if (rsp == nil) then
+    if(rsp == nil) then
       -- Uppercase
       str1 = string.upper(str1)
       tofind1 = string.upper(tofind1)
@@ -162,14 +162,14 @@ end
 
 function shortHostName(name)
   local chunks = {name:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")}
-  if (#chunks == 4) then
+  if(#chunks == 4) then
     return(name)
   else
     max_len = 24
 
     chunks = {name:match("%w+:%w+:%w+:%w+:%w+:%w+")}
     --io.write(#chunks.."\n")
-    if (#chunks == 1) then
+    if(#chunks == 1) then
       return(name)
     end
 
@@ -326,15 +326,15 @@ function bytesToSize(bytes)
   gigabyte = megabyte * 1024;
   terabyte = gigabyte * 1024;
 
-  if ((bytes >= 0) and (bytes < kilobyte)) then
+  if((bytes >= 0) and (bytes < kilobyte)) then
     return bytes .. " Bytes";
-  elseif ((bytes >= kilobyte) and (bytes < megabyte)) then
+  elseif((bytes >= kilobyte) and (bytes < megabyte)) then
     return round(bytes / kilobyte, precision) .. ' KB';
-  elseif ((bytes >= megabyte) and (bytes < gigabyte)) then
+  elseif((bytes >= megabyte) and (bytes < gigabyte)) then
     return round(bytes / megabyte, precision) .. ' MB';
-  elseif ((bytes >= gigabyte) and (bytes < terabyte)) then
+  elseif((bytes >= gigabyte) and (bytes < terabyte)) then
     return round(bytes / gigabyte, precision) .. ' GB';
-  elseif (bytes >= terabyte) then
+  elseif(bytes >= terabyte) then
     return round(bytes / terabyte, precision) .. ' TB';
   else
     return bytes .. ' B';
@@ -349,13 +349,13 @@ function bitsToSize(bits)
   gigabit = megabit * 1024;
   terabit = gigabit * 1024;
 
-  if ((bits >= kilobit) and (bits < megabit)) then
+  if((bits >= kilobit) and (bits < megabit)) then
     return round(bits / kilobit, precision) .. ' Kbit/s';
-  elseif ((bits >= megabit) and (bits < gigabit)) then
+  elseif((bits >= megabit) and (bits < gigabit)) then
     return round(bits / megabit, precision) .. ' Mbit/s';
-  elseif ((bits >= gigabit) and (bits < terabit)) then
+  elseif((bits >= gigabit) and (bits < terabit)) then
     return round(bits / gigabit, precision) .. ' Gbit/s';
-  elseif (bits >= terabit) then
+  elseif(bits >= terabit) then
     return round(bits / terabit, precision) .. ' Tbit/s';
   else
     return round(bits, precision) .. ' bps';
@@ -366,7 +366,7 @@ end
 function pktsToSize(pkts)
   precision = 2
   if     (pkts >= 1000000) then return round(pkts/1000000, precision)..' Mpps';
-  elseif (pkts >=    1000) then return round(pkts/   1000, precision)..' Kpps';
+  elseif(pkts >=    1000) then return round(pkts/   1000, precision)..' Kpps';
   else                     return round(pkts        , precision)..' pps';
   end
 end
@@ -377,7 +377,7 @@ function formatValue(amount)
   if(formatted == nil) then return(0) end
   while true do
     formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
-    if (k==0) then
+    if(k==0) then
       break
     end
   end
@@ -744,7 +744,7 @@ categories = {
 };
 
 function getCategory(_cat)
-  if (_cat == nil) then return "" end
+  if(_cat == nil) then return "" end
   cat = string.gsub(_cat, "\n", "")
 
   if(starts(cat, "error") or (cat == "''") or (cat == "") or starts(cat, "-") or starts(cat, "Local")) then
@@ -929,10 +929,10 @@ end
 -- See datatype AggregationType in ntop_typedefs.h
 function aggregation2String(value)
   if(value == 0) then return("Client Name")
-  elseif (value == 1) then return("Server Name")
-  elseif (value == 2) then return("Domain Name")
-  elseif (value == 3) then return("Operating System")
-  elseif (value == 4) then return("Registrar Name")
+  elseif(value == 1) then return("Server Name")
+  elseif(value == 2) then return("Domain Name")
+  elseif(value == 3) then return("Operating System")
+  elseif(value == 4) then return("Registrar Name")
   else return(value)
   end
 end
@@ -1068,8 +1068,8 @@ end
 function hostkey2hostinfo(key)
   local host = {}
   local info = split(key,"@")
-  if (info[1] ~= nil) then host["host"] = info[1]           end
-  if (info[2] ~= nil) then
+  if(info[1] ~= nil) then host["host"] = info[1]           end
+  if(info[2] ~= nil) then
     host["vlan"] = tonumber(info[2])
   else
     host["vlan"] = 0
@@ -1092,7 +1092,7 @@ function hostinfo2hostkey(host_info,host_type,show_vlan)
       rsp = rsp..host_info["cli.ip"]
     end
 
-  elseif (host_type == "srv") then
+  elseif(host_type == "srv") then
 
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..host_info["srv.ip"]
@@ -1111,12 +1111,12 @@ function hostinfo2hostkey(host_info,host_type,show_vlan)
 
   end
 
-  if ( ( (host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0) ) or
+  if( ( (host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0) ) or
     ( (show_vlan ~= nil) and show_vlan) )  then
     rsp = rsp..'@'..tostring(host_info["vlan"])
   end
 
-  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
+  if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
   return rsp
 end
 
@@ -1127,18 +1127,18 @@ end
 function url2hostinfo(get_info)
   local host = {}
   -- Catch when the host key is using as host url parameter
-  if ((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then
+  if((get_info["host"] ~= nil) and (string.find(get_info["host"],"@"))) then
     get_info = hostkey2hostinfo(get_info["host"])
   end
 
   if(get_info["host"] ~= nil) then
     host["host"] = get_info["host"]
-    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Host:"..get_info["host"].."\n") end
+    if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Host:"..get_info["host"].."\n") end
   end
 
   if(get_info["vlan"] ~= nil) then
     host["vlan"] = tonumber(get_info["vlan"])
-    if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Vlan:"..get_info["vlan"].."\n") end
+    if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"URL2HOST => Vlan:"..get_info["vlan"].."\n") end
   else
     host["vlan"] = 0
   end
@@ -1165,14 +1165,14 @@ function hostinfo2url(host_info,host_type)
       rsp = rsp..'host='..host_info["cli.ip"]
     end
 
-  elseif (host_type == "srv") then
+  elseif(host_type == "srv") then
 
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["srv.ip"]
     end
   else
 
-    if ((type(host_info) ~= "table")) then
+    if((type(host_info) ~= "table")) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1189,14 +1189,14 @@ function hostinfo2url(host_info,host_type)
   end
 
   if((host_info["vlan"] ~= nil) and (host_info["vlan"] ~= 0)) then
-    if (version == 0) then
+    if(version == 0) then
       rsp = rsp..'&vlan='..tostring(host_info["vlan"])
-    elseif (version == 1) then
+    elseif(version == 1) then
       rsp = rsp..'@'..tostring(host_info["vlan"])
     end
   end
 
-  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
+  if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2URL => ".. rsp .. "\n") end
 
   return rsp
 end
@@ -1216,12 +1216,12 @@ function hostinfo2json(host_info,host_type)
     if(host_info["cli.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["cli.ip"]..'"'
     end
-  elseif (host_type == "srv") then
+  elseif(host_type == "srv") then
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host: "'..host_info["srv.ip"]..'"'
     end
   else
-    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
+    if((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1240,7 +1240,7 @@ function hostinfo2json(host_info,host_type)
     rsp = rsp..', vlan: "'..tostring(host_info["vlan"]) .. '"'
   end
 
-  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2JSON => ".. rsp .. "\n") end
+  if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2JSON => ".. rsp .. "\n") end
 
   return rsp
 end
@@ -1256,7 +1256,7 @@ function hostinfo2jqueryid(host_info,host_type)
       rsp = rsp..''..host_info["cli.ip"]
     end
 
-  elseif (host_type == "srv") then
+  elseif(host_type == "srv") then
 
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..''..host_info["srv.ip"]
@@ -1264,7 +1264,7 @@ function hostinfo2jqueryid(host_info,host_type)
 
   else
 
-    if ((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
+    if((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
       host_info = hostkey2hostinfo(host_info)
     end
 
@@ -1286,7 +1286,7 @@ function hostinfo2jqueryid(host_info,host_type)
 
   rsp = string.gsub (rsp, "%.", "_")
 
-  if (debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2KEY => ".. rsp .. "\n") end
+  if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2KEY => ".. rsp .. "\n") end
 
   return rsp
 end
@@ -1317,7 +1317,7 @@ end
 function tprint (tbl, indent)
   if not indent then indent = 0 end
 
-  if (tbl ~= nil) then
+  if(tbl ~= nil) then
     for k, v in pairs(tbl) do
       formatting = string.rep("  ", indent) .. k .. ": "
       if type(v) == "table" then
@@ -1335,7 +1335,7 @@ function tprint (tbl, indent)
 end
 
 function table.empty(table)
-  if (table == nil) then return true end
+  if(table == nil) then return true end
   if next(table) == nil then
     return true
   end
@@ -1430,13 +1430,13 @@ end
 
 function isPausedInterface(current_ifname)
   state = ntop.getCache("ntopng.prefs."..current_ifname.."_not_idle")
-  if (state == "0") then return true else return false end
+  if(state == "0") then return true else return false end
 end
 
 function getThroughputType()
   throughput_type = ntop.getCache("ntopng.prefs.thpt_content")
 
-  if (throughput_type == "") then
+  if(throughput_type == "") then
     throughput_type = "bps"
   end
   return throughput_type
@@ -1466,19 +1466,19 @@ end
 
 function getDefaultTableSort(table_type)
   table_key = getRedisPrefix("ntopng.prefs.table")
-  if (table_type ~= nil) then
+  if(table_type ~= nil) then
     value = ntop.getHashCache(table_key, "sort_"..table_type)
   end
-  if ((value == nil) or (value == "")) then value = 'column_' end
+  if((value == nil) or (value == "")) then value = 'column_' end
   return(value)
 end
 
 function getDefaultTableSortOrder(table_type)
   table_key = getRedisPrefix("ntopng.prefs.table")
-  if (table_type ~= nil) then
+  if(table_type ~= nil) then
     value = ntop.getHashCache(table_key, "sort_order_"..table_type)
   end
-  if ((value == nil) or (value == "")) then value = 'desc' end
+  if((value == nil) or (value == "")) then value = 'desc' end
   return(value)
 end
 
@@ -1491,7 +1491,7 @@ end
 
 function tablePreferences(key, value)
   table_key = getRedisPrefix("ntopng.prefs.table")
-  if (value == nil) then
+  if(value == nil) then
     -- Get preferences
     return ntop.getHashCache(table_key, key)
   else

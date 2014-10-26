@@ -1383,7 +1383,8 @@ void Redis::indexESdata() {
 	res = curl_easy_perform(curl);
 
 	if(res != CURLE_OK) {
-	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES: %s",
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES (%s): %s",
+				       ntop->getPrefs()->get_es_url(),
 				       curl_easy_strerror(res));
 	  sleep(1);
 	} else {
