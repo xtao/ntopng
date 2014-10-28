@@ -14,6 +14,13 @@ CPPFLAGS="${CPPFLAGS} -I/usr/local/include"
 LDFLAGS="${LDFLAGS} -L/usr/local/lib"
 fi
 
+SHORT_MACHINE=`uname -m | cut -b1-3`
+if test $SHORT_MACHINE = "arm"; then
+LIBNUMA=""
+else
+LIBNUMA="-lnuma"
+fi
+
 if test -d ".svn"; then :
 SVN_RELEASE=`svn info . | grep "^Revision"|cut -d " " -f 2`
 SVN_DATE=`svn info . | grep "^Last Changed Date"|cut -d " " -f 4-`
@@ -69,7 +76,7 @@ if test -f "/usr/local/lib/libpfring.a" || test -f "/opt/pfring/lib/libpfring.a"
   if test -f "${PF_RING_HOME}/userland/lib/libpfring.a"; then
   echo "${PF_RING_HOME}/userland/libpcap/libpcap.a"
      if test -f "${PF_RING_HOME}/userland/libpcap/libpcap.a"; then
-       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a -L${PF_RING_HOME}/userland/libpcap/ -lnuma"
+       LDFLAGS="${LDFLAGS} ${PF_RING_HOME}/userland/lib/libpfring.a -L${PF_RING_HOME}/userland/libpcap/ ${LIBNUMA}"
        CPPFLAGS="${CPPFLAGS} -I${PF_RING_HOME}/kernel -I${PF_RING_HOME}/userland/lib -I${PF_RING_HOME}/userland/libpcap"
        echo "Using PF_RING installed in ${PF_RING_HOME}"
      else
