@@ -1671,6 +1671,20 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+SUB_DISTRO=`lsb_release -i|cut -f 2`
+
+if test "$SUB_DISTRO" = "Debian"; then
+   UBUNTU_RELEASE="debian"
+else
+   UBUNTU_RELEASE=`lsb_release -r|cut -f 2`
+fi
+
+/bin/rm -f debian.ntopng/control.in
+cd debian.ntopng
+ln -s control.$UBUNTU_RELEASE.in control.in
+cd -
+
+
 NTOPNG_VERS=`cat ../../configure.ac | head -2|grep 'C_INIT' | cut -d " " -f 2|cut -d ')' -f 1`
 PFRING_VERS=`cat $HOME/PF_RING/kernel/linux/pf_ring.h | grep RING_VERSION | head -1 | cut -d '"' -f 2`
 PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
