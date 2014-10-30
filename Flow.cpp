@@ -302,19 +302,23 @@ void Flow::processDetectedProtocol() {
 
       if(svr) {
 	char buf[64];
-
-	aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
-
-	if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
-					     buf, sizeof(buf), true) != NULL) {
-	  categorization.flow_categorized = true;
-	  categorization.category = strdup(buf);
-	}
-
-	if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
-	  svr->setName((char*)ndpi_flow->host_server_name, true);
-	  ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
-					       (char*)ndpi_flow->host_server_name);
+       	
+	/* Check if the name isn't numeric */
+	if(strcmp((const char*)ndpi_flow->host_server_name, 
+		  svr->get_ip()->print(buf, sizeof(buf)))) {
+	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
+	  
+	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
+					       buf, sizeof(buf), true) != NULL) {
+	    categorization.flow_categorized = true;
+	    categorization.category = strdup(buf);
+	  }
+	  
+	  if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
+	    svr->setName((char*)ndpi_flow->host_server_name, true);
+	    ntop->getRedis()->setResolvedAddress(svr->get_ip()->print(buf, sizeof(buf)),
+						 (char*)ndpi_flow->host_server_name);
+	  }
 	}
 
 	if(ndpi_flow->detected_os[0] != '\0') {
