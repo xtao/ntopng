@@ -138,7 +138,7 @@ NetworkInterface::NetworkInterface(const char *name) {
 
     ndpi_port_range d_port[MAX_DEFAULT_PORTS];
     memset(d_port, 0, sizeof(d_port));
-    ndpi_set_proto_defaults(ndpi_struct, NTOPNG_NDPI_OS_PROTO_ID,
+    ndpi_set_proto_defaults(ndpi_struct, NDPI_PROTOCOL_UNRATED, NTOPNG_NDPI_OS_PROTO_ID,
 			    (char*)"Operating System", d_port, d_port);
 
     // enable all protocols
