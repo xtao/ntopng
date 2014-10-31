@@ -15,6 +15,10 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 -- Alerts 
 
+-- ============================
+dofile(dirs.installdir .. "/scripts/lua/modules/traffic_stats.lua")
+		       	  
+getTalkers(ifname, 0, "packets", "both", 10, "desc")
 
 -- Interfaces 
 function interfaces(div_name) 

@@ -554,7 +554,7 @@ bool Utils::isUserAdministrator(lua_State* vm) {
 
   lua_getglobal(vm, "user");
   if((username = (char*)lua_touserdata(vm, lua_gettop(vm))) == NULL) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, "???");
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, "???");
     return(false); /* Unknown */
   }
 
@@ -562,7 +562,7 @@ bool Utils::isUserAdministrator(lua_State* vm) {
   if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0) {
     return(strcmp(val, CONST_ADMINISTRATOR_USER) ? false : true);
   } else {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, username);
+    // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, username);
     return(false); /* Unknown */
   }
 }

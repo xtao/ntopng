@@ -327,30 +327,30 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
     lua_push_str_table_entry(vm, "country", country ? country : (char*)"");
     lua_push_int_table_entry(vm, "bytes.sent", sent.getNumBytes());
     lua_push_int_table_entry(vm, "bytes.rcvd", rcvd.getNumBytes());
-    lua_push_int_table_entry(vm, "pkts.sent", sent.getNumPkts());
-    lua_push_int_table_entry(vm, "pkts.rcvd", rcvd.getNumPkts());
+    lua_push_int_table_entry(vm, "packets.sent", sent.getNumPkts());
+    lua_push_int_table_entry(vm, "packets.rcvd", rcvd.getNumPkts());
     lua_push_int_table_entry(vm, "flows.as_client", num_flows_as_client);
     lua_push_int_table_entry(vm, "flows.as_server", num_flows_as_server);
 
     if(ip) {
-      lua_push_int_table_entry(vm, "udp.pkts.sent",  udp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "udp.packets.sent",  udp_sent.getNumPkts());
       lua_push_int_table_entry(vm, "udp.bytes.sent", udp_sent.getNumBytes());
-      lua_push_int_table_entry(vm, "udp.pkts.rcvd",  udp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "udp.packets.rcvd",  udp_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "udp.bytes.rcvd", udp_rcvd.getNumBytes());
 
-      lua_push_int_table_entry(vm, "tcp.pkts.sent",  tcp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "tcp.packets.sent",  tcp_sent.getNumPkts());
       lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
-      lua_push_int_table_entry(vm, "tcp.pkts.rcvd",  tcp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "tcp.packets.rcvd",  tcp_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());
 
-      lua_push_int_table_entry(vm, "icmp.pkts.sent",  icmp_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "icmp.packets.sent",  icmp_sent.getNumPkts());
       lua_push_int_table_entry(vm, "icmp.bytes.sent", icmp_sent.getNumBytes());
-      lua_push_int_table_entry(vm, "icmp.pkts.rcvd",  icmp_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "icmp.packets.rcvd",  icmp_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "icmp.bytes.rcvd", icmp_rcvd.getNumBytes());
 
-      lua_push_int_table_entry(vm, "other_ip.pkts.sent",  other_ip_sent.getNumPkts());
+      lua_push_int_table_entry(vm, "other_ip.packets.sent",  other_ip_sent.getNumPkts());
       lua_push_int_table_entry(vm, "other_ip.bytes.sent", other_ip_sent.getNumBytes());
-      lua_push_int_table_entry(vm, "other_ip.pkts.rcvd",  other_ip_rcvd.getNumPkts());
+      lua_push_int_table_entry(vm, "other_ip.packets.rcvd",  other_ip_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "other_ip.bytes.rcvd", other_ip_rcvd.getNumBytes());
     }
 

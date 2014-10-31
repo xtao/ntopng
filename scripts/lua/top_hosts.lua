@@ -25,7 +25,7 @@ for key, value in pairs(hosts_stats) do
    --print(hosts_stats[key]["name"].."<p>\n")
 
    if((hosts_stats[key]["localhost"] == true) and (hosts_stats[key]["ip"] ~= nil)) then
-      localhosts[key] = hosts_stats[key]["pkts.sent"]+hosts_stats[key]["pkts.rcvd"]
+      localhosts[key] = hosts_stats[key]["packets.sent"]+hosts_stats[key]["packets.rcvd"]
       found = true
       num = num + 1
    end

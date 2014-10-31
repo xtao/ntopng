@@ -15,4 +15,4 @@ host = interface.getAggregatedHostInfo(host_ip)
 sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
-print('{ "pkts.rcvd": '.. host["pkts.rcvd"] .. ', "last_seen": ' .. host["seen.last"] .. ', "epoch": ' .. os.time()..'" }\n')
+print('{ "packets.rcvd": '.. host["packets.rcvd"] .. ', "last_seen": ' .. host["seen.last"] .. ', "epoch": ' .. os.time()..'" }\n')

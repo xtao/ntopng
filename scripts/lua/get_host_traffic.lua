@@ -17,7 +17,7 @@ host = interface.getHostInfo(host_ip)
 if(host == nil) then
    value = 0
 else
-   value = host["pkts.sent"]+host["pkts.rcvd"]
+   value = host["packets.sent"]+host["packets.rcvd"]
 end
 
 print(' { "value": ' .. value .. ' } ')

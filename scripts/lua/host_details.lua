@@ -125,10 +125,10 @@ if(page == "packets") then
    print("<li class=\"active\"><a href=\"#\">Packets</a></li>\n")
 else
    if((host["ip"] ~= nil) and (
-   	(host["udp.pkts.sent"] > 0)
-	or (host["udp.pkts.rcvd"] > 0)
-   	or (host["tcp.pkts.sent"] > 0)
-	or (host["tcp.pkts.rcvd"] > 0))) then
+   	(host["udp.packets.sent"] > 0)
+	or (host["udp.packets.rcvd"] > 0)
+   	or (host["tcp.packets.sent"] > 0)
+	or (host["tcp.packets.rcvd"] > 0))) then
       print("<li><a href=\""..url.."&page=packets\">Packets</a></li>")
    end
 end
@@ -427,7 +427,7 @@ end
       print("</td></tr>\n")
    end
 
-   print("<tr><th>Traffic Sent / Received</th><td><span id=pkts_sent>" .. formatPackets(host["pkts.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td><td><span id=pkts_rcvd>" .. formatPackets(host["pkts.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
+   print("<tr><th>Traffic Sent / Received</th><td><span id=pkts_sent>" .. formatPackets(host["packets.sent"]) .. "</span> / <span id=bytes_sent>".. bytesToSize(host["bytes.sent"]) .. "</span> <span id=sent_trend></span></td><td><span id=pkts_rcvd>" .. formatPackets(host["packets.rcvd"]) .. "</span> / <span id=bytes_rcvd>".. bytesToSize(host["bytes.rcvd"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
    print("<tr><th>Flows 'As Client' / 'As Server'</th><td><span id=flows_as_client>" .. formatValue(host["flows.as_client"]) .. "</span> <span id=as_client_trend></span></td><td><span id=flows_as_server>" .. formatValue(host["flows.as_server"]) .. "</span> <span id=as_server_trend></td></tr>\n")
 
@@ -1925,8 +1925,8 @@ end
 end
 
 print [[ <script>]]
-print("var last_pkts_sent = " .. host["pkts.sent"] .. ";\n")
-print("var last_pkts_rcvd = " .. host["pkts.rcvd"] .. ";\n")
+print("var last_pkts_sent = " .. host["packets.sent"] .. ";\n")
+print("var last_pkts_rcvd = " .. host["packets.rcvd"] .. ";\n")
 print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
 print("var last_flows_as_server = " .. host["flows.as_server"] .. ";\n")
 print("var last_flows_as_client = " .. host["flows.as_client"] .. ";\n")
@@ -1962,8 +1962,8 @@ print [[/lua/host_stats.lua',
 			var host = jQuery.parseJSON(content);
 			$('#first_seen').html(epoch2Seen(host["seen.first"]));
 			$('#last_seen').html(epoch2Seen(host["seen.last"]));
-			$('#pkts_sent').html(formatPackets(host["pkts.sent"]));
-			$('#pkts_rcvd').html(formatPackets(host["pkts.rcvd"]));
+			$('#pkts_sent').html(formatPackets(host["packets.sent"]));
+			$('#pkts_rcvd').html(formatPackets(host["packets.rcvd"]));
 			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
 			if(!host["name"]) { 
@@ -2103,21 +2103,21 @@ print [[
 			   $('#alerts_trend').html("<i class=\"fa fa-arrow-up\" style=\"color: #B94A48;\"></i>");
 			}
 
-			if(last_pkts_sent == host["pkts.sent"]) {
+			if(last_pkts_sent == host["packets.sent"]) {
 			   $('#sent_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
 			   $('#sent_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
-			if(last_pkts_rcvd == host["pkts.rcvd"]) {
+			if(last_pkts_rcvd == host["packets.rcvd"]) {
 			   $('#rcvd_trend').html("<i class=\"fa fa-minus\"></i>");
 			} else {
 			   $('#rcvd_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
 			last_num_alerts = host["num_alerts"];
-			last_pkts_sent = host["pkts.sent"];
-			last_pkts_rcvd = host["pkts.rcvd"];
+			last_pkts_sent = host["packets.sent"];
+			last_pkts_rcvd = host["packets.rcvd"];
 			last_flows_as_server = host["flows.as_server"];
 			last_flows_as_client = host["flows.as_client"];
 		  ]]

@@ -161,8 +161,8 @@ for i=0,tot_hosts-1 do
 	 name = ntop.getResolvedAddress(k)
       end
       if(target_host['localhost'] ~= nil) then label = "local" else label = "remote" end 
-      v['sent'] = target_host['pkts.sent'] and target_host['pkts.sent'] or 0
-      v['rcvd'] = target_host['pkts.rcvd'] and target_host['pkts.rcvd'] or 0       
+      v['sent'] = target_host['packets.sent'] and target_host['packets.sent'] or 0
+      v['rcvd'] = target_host['packets.rcvd'] and target_host['packets.rcvd'] or 0       
    else
       v['sent'] = 0
       v['rcvd'] = 0
