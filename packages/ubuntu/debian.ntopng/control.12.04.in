@@ -6,7 +6,7 @@ Standards-Version: @NTOPNG_VERS@
 Build-Depends:
 Build-Conflicts:
 
-Depends: libsqlite3-0, redis-server, librrd4, libcurl3 @EXTRA_DEPS@
+Depends: libsqlite3-0, redis-server, librrd4, libhiredis0.10, libcurl3 @EXTRA_DEPS@
 Package: ntopng
 Architecture: @EXTN@
 Recommends: ntopng-data, pfring (=@PFRING_VERS@-@PFRING_SVN_RELEASE@)
