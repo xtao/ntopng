@@ -1,11 +1,15 @@
 AC_INIT([Makefile.in], 1.0)
 
 SUB_DISTRO=`lsb_release -i|cut -f 2`    
+EXTRA_DEPS=", libnuma1, libzmq3"
 
 if test "$SUB_DISTRO" = "Debian"; then
    UBUNTU_RELEASE="debian"
 else
    UBUNTU_RELEASE=`lsb_release -r|cut -f 2`
+   if test "$UBUNTU_RELEASE" = "12.04"; then
+      EXTRA_DEPS=", libnuma1"
+   fi
 fi
 
 /bin/rm -f debian.ntopng/control.in
@@ -20,7 +24,6 @@ PFRING_SVN_RELEASE=`svn info $HOME/PF_RING | grep "^Revision"|cut -d " " -f 2`
 SVN_RELEASE=`svn info ../.. | grep "^Revision"|cut -d " " -f 2`
 MACHINE=`uname -m`
 SHORT_MACHINE=`uname -m | cut -b1-3`
-EXTRA_DEPS=", libnuma1, libzmq3"
 
 if test $MACHINE = "x86_64"; then
    EXTN="amd64"
