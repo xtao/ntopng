@@ -65,7 +65,7 @@ class Prefs {
   int dns_mode;
   bool json_labels_string_format;
   FILE *logFd;
-  char *es_type, *es_index, *es_url, *es_pwd;
+  char *es_type, *es_index, *es_url, *es_user, *es_pwd;
 
   inline void help() { usage(); };
   int setOption(int optkey, char *optarg);
@@ -140,10 +140,11 @@ class Prefs {
   void loadIdleDefaults();
   void registerNetworkInterfaces();
 
-  inline char* get_es_type()  { return((char*)"flows");                       };
-  inline char* get_es_index() { return((char*)"ntopng");                      };
-  inline char* get_es_url()   { return((char*)"http://localhost:9200/_bulk"); };
-  inline char* get_es_pwd()   { return((char*)"");                            };
+  inline char* get_es_type()  { return(es_type);  };
+  inline char* get_es_index() { return(es_index); };
+  inline char* get_es_url()   { return(es_url);   };
+  inline char* get_es_user()  { return(es_user);  };
+  inline char* get_es_pwd()   { return(es_pwd);   };
 };
 
 #endif /* _PREFS_H_ */

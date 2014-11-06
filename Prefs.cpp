@@ -74,7 +74,7 @@ Prefs::Prefs(Ntop *_ntop) {
 
   es_type = strdup((char*)"flows"), es_index = strdup((char*)"ntopng"), 
     es_url = strdup((char*)"http://localhost:9200/_bulk"), 
-    es_pwd = strdup((char*)"");
+    es_user = strdup((char*)""), es_pwd = strdup((char*)"");
 }
 
 /* ******************************************* */
@@ -503,28 +503,36 @@ int Prefs::setOption(int optkey, char *optarg) {
     if((strncmp(optarg, "es", 2) == 0) 
        && (strlen(optarg) > 3)) {
       char *elastic_index_type = NULL, *elastic_index_name = NULL,
-	*elastic_url = NULL, *elastic_pwd = NULL;
+	*elastic_url = NULL, *elastic_user = NULL, *elastic_pwd = NULL;
       /* es;<index type>;<index name>;<es URL>;<es pwd> */
 
       if((elastic_index_type = strtok(&optarg[3], ";")) != NULL) {
 	if((elastic_index_name = strtok(NULL, ";")) != NULL) {
 	  if((elastic_url = strtok(NULL, ";")) != NULL) {
-	    if((elastic_pwd = strtok(NULL, ";")) == NULL)
+	    if((elastic_user = strtok(NULL, ";")) == NULL)
 	      elastic_pwd = (char*)"";
+	    else {
+	      char *double_col = strchr(elastic_user, ':');
+
+	      if(double_col)
+		elastic_pwd = &double_col[1], double_col[0] = '\0';
+	      else
+		elastic_pwd = (char*)"";
+	    }
 	  }
 	}
       }
       
       if(elastic_index_type 
 	 && elastic_index_name
-	 && elastic_url 
-	 && elastic_pwd) {
-	free(es_type), free(es_index), free(es_url), free(es_pwd);
+	 && elastic_url) {
+	free(es_type), free(es_index), free(es_url), free(es_user), free(es_pwd);
 
-	es_type = strdup(elastic_index_type);
+	es_type  = strdup(elastic_index_type);
 	es_index = strdup(elastic_index_name);
-	es_url = strdup(elastic_url);
-	es_pwd = strdup(elastic_pwd);
+	es_url   = strdup(elastic_url);
+	es_user  = strdup(elastic_user ? elastic_user : "");
+	es_pwd   = strdup(elastic_pwd ? elastic_pwd : "");
 	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Using ElasticSearch for data dump [%s][%s][%s]",
 				     es_type, es_index, es_url);
 	dump_flows_on_es = true;
@@ -532,7 +540,7 @@ int Prefs::setOption(int optkey, char *optarg) {
 	ntop->getTrace()->traceEvent(TRACE_WARNING,
 				     "Discarding -F: invalid format for es");
 	ntop->getTrace()->traceEvent(TRACE_WARNING, 
-				     "Format: -F es;<index type>;<index name>;<es URL>;<pwd>");
+				     "Format: -F es;<index type>;<index name>;<es URL>;<user>:<pwd>");
       }
     } else if(!strcmp(optarg, "db"))
       dump_flows_on_db = true;

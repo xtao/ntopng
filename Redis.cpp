@@ -1309,7 +1309,7 @@ u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_in
 int curl_writefunc(void *ptr, size_t size, size_t nmemb, void *stream){
   char *str = (char*)ptr;
 
-  ntop->getTrace()->traceEvent(TRACE_NORMAL, "[ES] %s", str);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] %s", str);
   return(size*nmemb);
 }
 
@@ -1325,7 +1325,7 @@ void Redis::indexESdata() {
 
     if(l >= watermark) {
       u_int len;
-      char index_name[64];
+      char index_name[64], header[256];
       struct tm* tm_info;
       struct timeval tv;
 
@@ -1337,18 +1337,19 @@ void Redis::indexESdata() {
       len = strlen(index_name);
       strftime(&index_name[len], sizeof(index_name)-len, "%Y.%m.%d", tm_info);
  
-      len = snprintf(postbuf, sizeof(postbuf),
-		     "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}\n", 
-		     ntop->getPrefs()->get_es_type(), index_name);
+      snprintf(header, sizeof(header),
+	       "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}", 
+	       ntop->getPrefs()->get_es_type(), index_name);
+      len = 0;
 
       for(u_int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
-	int rc = lpop(CONST_ES_QUEUE_NAME, &postbuf[len], sizeof(postbuf)-len);
+	char rsp[4096];
+	int rc = lpop(CONST_ES_QUEUE_NAME, rsp, sizeof(rsp));
 
-	if(rc >= 0) {
-	  len += strlen(&postbuf[len]);
-	  postbuf[len] = '\n';
-	  len++;
-	}
+	if(rc >= 0)
+	  len += snprintf(&postbuf[len], sizeof(postbuf)-len, "%s\n%s\n", header, rsp);	
+	else
+	  break;
       } /* for */      
 
       postbuf[len] = '\0';
@@ -1359,9 +1360,15 @@ void Redis::indexESdata() {
 	struct curl_slist* headers = NULL;
 
 	curl_easy_setopt(curl, CURLOPT_URL, ntop->getPrefs()->get_es_url());
+	if(ntop->getPrefs()->get_es_user() 
+	   && (ntop->getPrefs()->get_es_user()[0] != '\0'))
+	  curl_easy_setopt(curl, CURLOPT_USERNAME, ntop->getPrefs()->get_es_user());
+
 	if(ntop->getPrefs()->get_es_pwd() 
-	   && (ntop->getPrefs()->get_es_pwd()[0] != '\0'))
-	  curl_easy_setopt(curl, CURLOPT_USERNAME, ntop->getPrefs()->get_es_pwd());
+	   && (ntop->getPrefs()->get_es_pwd()[0] != '\0')) {
+	  curl_easy_setopt(curl, CURLOPT_USERPWD, ntop->getPrefs()->get_es_pwd());
+	  curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_DIGEST);
+	}
 
 	if(!strncmp(ntop->getPrefs()->get_es_url(), "https", 5)) {
 	  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -1369,16 +1376,11 @@ void Redis::indexESdata() {
 	}
 
 	curl_easy_setopt(curl, CURLOPT_POST, 1L); 
-	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+	headers = curl_slist_append(headers, "Content-Type: application/json");
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
-
-       	if(true || (ntop->getTrace()->get_trace_level() > 2)  )
-	  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
-	else
-	  curl_easy_setopt(curl, CURLOPT_NOBODY, 1); /* Suppress output */
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
 
 	res = curl_easy_perform(curl);
 
@@ -1390,12 +1392,7 @@ void Redis::indexESdata() {
 	} else {
 	  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] Posted JSON to %s",
 				       ntop->getPrefs()->get_es_url());
-
-#if 0
-	  printf("\n----------------------------------------------\n");
-	  printf("%s\n", postbuf);
-	  printf("\n----------------------------------------------\n");
-#endif
+	  // printf("-----------\n%s----------\n", postbuf);
 	}
 
 	/* always cleanup */
