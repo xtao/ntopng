@@ -291,7 +291,10 @@ static int handle_lua_request(struct mg_connection *conn) {
   if(strstr(request_info->uri, "//")
      || strstr(request_info->uri, "&&")
      || strstr(request_info->uri, "??")
-     || strstr(request_info->uri, "..")) {
+     || strstr(request_info->uri, "..")
+     || strstr(request_info->uri, "\r")
+     || strstr(request_info->uri, "\n")
+     ) {
     ntop->getTrace()->traceEvent(TRACE_WARNING, "[HTTP] The URL %s is invalid/dangerous",
 				 request_info->uri);
     return(send_error(conn, 400 /* Bad Request */, request_info->uri,

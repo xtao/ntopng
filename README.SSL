@@ -1,7 +1,7 @@
 In order to use SSL with ntopng (i.e. HTTPS) you need to
 
 1. Install OpenSSL
-   On OSX do: sudo port install openssl
+   On OSX do: brew install openssl
 
 2. Create your SSL certificate
    make cert
@@ -13,7 +13,8 @@ In order to use SSL with ntopng (i.e. HTTPS) you need to
    ln -s /usr/lib/x86_64-linux-gnu/libssl.so .
 
    - OSX
-    ln -s /opt/local/lib/libssl.dylib /opt/local/lib/libcrypto.dylib .
+   ln -s /usr/local/Cellar/openssl/1.0.1i/lib/libcrypto.dylib .
+   ln -s /usr/local/Cellar/openssl/1.0.1i/lib/libssl.dylib .
 
 4. Start ntopng
 

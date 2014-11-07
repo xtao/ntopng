@@ -51,6 +51,7 @@ class Utils {
   static char* sanitizeHostName(char *str);
   static char* urlDecode(const char *src, char *dst, u_int dst_len);
   static bool isUserAdministrator(lua_State* vm);
+  static void purifyHTTPparam(char *param, bool strict);
 };
 
 

@@ -3000,41 +3000,10 @@ int Lua::handle_script_request(struct mg_connection *conn,
 
 	    equal[0] = '\0';
 	    if((decoded_buf = http_decode(&equal[1])) != NULL) {
-	      int i;
 	      FILE *fd;
 
-	      for(i=0; decoded_buf[i] != '\0'; i++) {
-		/* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
-
-		if(
-#if 0
-		   ((decoded_buf[i] >= 'a') && (decoded_buf[i] <= 'z'))
-		   || ((decoded_buf[i] >= 'A') && (decoded_buf[i] <= 'Z'))
-		   || ((decoded_buf[i] >= '0') && (decoded_buf[i] <= '9'))
-		   || (decoded_buf[i] == ':')
-		   || (decoded_buf[i] == '-')
-		   || (decoded_buf[i] == '_')
-		   || (decoded_buf[i] == '/')
-		   || (decoded_buf[i] == '@')
-		   || (decoded_buf[i] == ',')
-		   || (decoded_buf[i] == '.')
-		   ||
-#endif
-		   isprint(decoded_buf[i])
-		   )
-		  ; /* Good: we're on the whitelist */
-		else
-		  decoded_buf[i] = '_'; /* Invalid char: we discard it */
-
-		if((i > 0)
-		   && (((decoded_buf[i] == '.') && (decoded_buf[i-1] == '.'))
-		       || ((decoded_buf[i] == '/') && (decoded_buf[i-1] == '/'))
-		       || ((decoded_buf[i] == '\\') && (decoded_buf[i-1] == '\\'))
-		       )) {
-		  /* Make sure we do not have .. in the variable that can be used for future hacking */
-		  decoded_buf[i-1] = '_', decoded_buf[i] = '_'; /* Invalidate the path */
-		}
-	      }
+	      Utils::purifyHTTPparam(tok, true);
+	      Utils::purifyHTTPparam(decoded_buf, false);
 
 	      /* Now make sure that decoded_buf is not a file path */
 	      if((decoded_buf[0] == '.')

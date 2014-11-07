@@ -260,7 +260,7 @@ void Utils::dropPrivileges() {
 /* **************************************************** */
 
 /* http://www.adp-gmbh.ch/cpp/common/base64.html */
-static const std::string base64_chars = 
+static const std::string base64_chars =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   "abcdefghijklmnopqrstuvwxyz"
   "0123456789+/";
@@ -404,7 +404,7 @@ double Utils::pearsonValueCorrelation(u_int8_t *x, u_int8_t *y) {
 
 /* *************************************** */
 /* XXX: it assumes that the vectors are bitmaps */
-double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) { 
+double Utils::JaccardSimilarity(u_int8_t *x, u_int8_t *y) {
   size_t inter_card = 0, union_card = 0;
 
   for(size_t i = 0; i < CONST_MAX_ACTIVITY_DURATION; i++) {
@@ -465,7 +465,7 @@ u_int8_t Utils::ifname2id(const char *name) {
       snprintf(key, sizeof(key), "%u", idx);
       if(ntop->getRedis()->hashGet((char*)CONST_IFACE_ID_PREFS, key, rsp, sizeof(rsp)) < 0) {
 	/* Free Id */
-	
+
 	snprintf(rsp, sizeof(rsp), "%u", idx);
 	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, (char*)name, rsp);
 	ntop->getRedis()->hashSet((char*)CONST_IFACE_ID_PREFS, rsp, (char*)name);
@@ -473,7 +473,7 @@ u_int8_t Utils::ifname2id(const char *name) {
       }
     }
   }
-  
+
   return(DUMMY_IFACE_ID); /* This can't happen, hopefully */
 }
 
@@ -564,5 +564,54 @@ bool Utils::isUserAdministrator(lua_State* vm) {
   } else {
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "%s(%s): NO", __FUNCTION__, username);
     return(false); /* Unknown */
+  }
+}
+
+/* **************************************************** */
+
+/**
+ * @brief Purify the HTTP parameter
+ *
+ * @param param   The parameter to purify (remove unliked chars with _)
+ */
+
+void Utils::purifyHTTPparam(char *param, bool strict) {
+
+  for(int i=0; param[i] != '\0'; i++) {
+    /* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
+    bool is_good;
+
+    if(strict) {
+      is_good =
+        ((param[i] >= 'a') && (param[i] <= 'z'))
+	|| ((param[i] >= 'A') && (param[i] <= 'Z'))
+	|| ((param[i] >= '0') && (param[i] <= '9'))
+	// || (param[i] == ':')
+	// || (param[i] == '-')
+	|| (param[i] == '_')
+	// || (param[i] == '/')
+	|| (param[i] == '@')
+	// || (param[i] == ',')
+	// || (param[i] == '.')
+	;
+    } else {
+      is_good = isprint(param[i])
+	&& (param[i] != '<')
+	&& (param[i] != '>');
+    }
+
+    if(is_good)
+      ; /* Good: we're on the whitelist */
+    else
+      param[i] = '_'; /* Invalid char: we discard it */
+
+    if((i > 0)
+       && (((param[i] == '.') && (param[i-1] == '.'))
+	   || ((param[i] == '/') && (param[i-1] == '/'))
+	   || ((param[i] == '\\') && (param[i-1] == '\\'))
+	   )) {
+      /* Make sure we do not have .. in the variable that can be used for future hacking */
+      param[i-1] = '_', param[i] = '_'; /* Invalidate the path */
+    }
   }
 }

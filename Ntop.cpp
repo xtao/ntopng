@@ -512,17 +512,21 @@ bool Ntop::changeAllowedNets(char *username, char *allowed_nets) const {
 /* ******************************************* */
 
 bool Ntop::addUser(char *username, char *full_name, char *password, char *host_role, char *allowed_networks) {
-  char key[64];
+  char key[64], val[64];
   char password_hash[33];
 
-  // FIX add a seed
   mg_md5(password_hash, password, NULL);
 
+  if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
+    return(false); // user already exists
+  else
+    ntop->getRedis()->set(key, full_name, 0);  
+  
   snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
 
   snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
-  ntop->getRedis()->set(key, (char*) host_role /* TODO: done Paola */, 0);
+  ntop->getRedis()->set(key, (char*) host_role, 0);
 
   snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
   ntop->getRedis()->set(key, password_hash, 0);
@@ -531,7 +535,6 @@ bool Ntop::addUser(char *username, char *full_name, char *password, char *host_r
   ntop->getRedis()->set(key, allowed_networks, 0);
 
   return(true);
-// TODO add check return return(ntop->getRedis()->set(key, password_hash, 0) >= 0);
 }
 
 /* ******************************************* */
