@@ -226,6 +226,9 @@
 
 #define CONST_DB_DAY_FORMAT            "%y%m%d"
 
+#define CONST_ANY_ADDRESS              "0.0.0.0"
+#define CONST_LOOPBACK_ADDRESS         "127.0.0.1"
+
 #define CONST_EPP_MAX_CMD_NUM          34
 
 #define HTTPBL_DOMAIN                  "dnsbl.httpbl.org"

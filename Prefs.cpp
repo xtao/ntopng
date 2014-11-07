@@ -41,6 +41,7 @@ Prefs::Prefs(Ntop *_ntop) {
   https_port = CONST_DEFAULT_NTOP_PORT+1;
   change_user = true, daemonize = false;
   user = strdup(CONST_DEFAULT_NTOP_USER);
+  http_binding_address = https_binding_address = CONST_ANY_ADDRESS;
   categorization_key = NULL;
   httpbl_key = NULL;
   cpu_affinity = -1;
@@ -302,6 +303,8 @@ static const struct option long_options[] = {
 /* ******************************************* */
 
 int Prefs::setOption(int optkey, char *optarg) {
+  char *double_dot;
+
   switch(optkey) {
   case 'A':
     switch(atoi(optarg)) {
@@ -374,6 +377,7 @@ int Prefs::setOption(int optkey, char *optarg) {
     else if(!strcmp(optarg, "none")) sticky_hosts = location_none;
     else ntop->getTrace()->traceEvent(TRACE_ERROR, "Unknown value %s for -S", optarg);
     break;
+
   case 'g':
     cpu_affinity = atoi(optarg);
     break;
@@ -428,11 +432,19 @@ int Prefs::setOption(int optkey, char *optarg) {
     break;
 
   case 'w':
-    http_port = atoi(optarg);
+    double_dot = strchr(optarg, ':');
+    if(double_dot)
+      http_port = atoi(&double_dot[1]), bind_http_to_loopback();
+    else
+      http_port = atoi(optarg);
     break;
 
   case 'W':
-    https_port = atoi(optarg);
+    double_dot = strchr(optarg, ':');
+    if(double_dot)
+      https_port = atoi(&double_dot[1]), bind_https_to_loopback();
+    else
+      https_port = atoi(optarg);
     break;
 
   case 'Z':
@@ -591,6 +603,11 @@ int Prefs::setOption(int optkey, char *optarg) {
     return(-1);
   }
 
+  if((http_port == 0) && (https_port == 0)) {
+    ntop->getTrace()->traceEvent(TRACE_ERROR, "Both HTTP and HTTPS ports are disabled: quitting");
+    _exit(0);
+  }
+  
   return(0);
 }
 

@@ -36,6 +36,7 @@ class Prefs {
  private:
   u_int8_t num_deferred_interfaces_to_register;
   char *deferred_interfaces_to_register[MAX_NUM_INTERFACES];
+  const char *http_binding_address, *https_binding_address;
   Ntop *ntop;
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, httpbl_enabled, resolve_all_host_ip, change_user, daemonize,
@@ -71,6 +72,9 @@ class Prefs {
   int setOption(int optkey, char *optarg);
   int checkOptions();
   u_int32_t getDefaultPrefsValue(const char *pref_key, u_int32_t default_value);
+
+  void bind_http_to_loopback()  { http_binding_address  = CONST_LOOPBACK_ADDRESS; };
+  void bind_https_to_loopback() { https_binding_address = CONST_LOOPBACK_ADDRESS; };
 
  public:
   Prefs(Ntop *_ntop);
@@ -139,6 +143,9 @@ class Prefs {
   void lua(lua_State* vm);
   void loadIdleDefaults();
   void registerNetworkInterfaces();
+
+  inline const char* get_http_binding_address()  { return(http_binding_address);  };
+  inline const char* get_https_binding_address() { return(https_binding_address); };
 
   inline char* get_es_type()  { return(es_type);  };
   inline char* get_es_index() { return(es_index); };
