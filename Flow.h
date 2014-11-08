@@ -121,6 +121,11 @@ class Flow : public GenericHashEntry {
   inline Host* get_cli_host()                     { return(cli_host);                        };
   inline Host* get_srv_host()                     { return(srv_host);                        };
   inline char* get_json_info()			  { return(json_info);                       };
+  inline ndpi_protocol_breed_t get_protocol_breed() { return(ndpi_get_proto_breed(iface->get_ndpi_struct(), ndpi_detected_protocol)); };
+  inline char* get_protocol_breed_name()       { return(ndpi_get_proto_breed_name(iface->get_ndpi_struct(), 
+										  ndpi_get_proto_breed(iface->get_ndpi_struct(), 
+												       ndpi_detected_protocol))); };
+
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
   u_int64_t get_current_packets_cli2srv();

@@ -14,6 +14,31 @@ is_historical = interface.isHistoricalInterface(interface.name2id(ifname))
 sendHTTPHeader('text/html; charset=iso-8859-1')
 --sendHTTPHeader('application/json')
 
+if(not(is_historical)) then
+   stats = interface.getFlowsInfo()
+   
+   _ifstats = {}
+   __ifstats = {}
+   
+   for key, value in pairs(stats) do
+      --b = stats[key]["breed"]
+      b = stats[key]["proto.ndpi_breed"]
+      
+      traffic = stats[key]["bytes"]
+      
+      if(__ifstats[b] == nil) then
+	 __ifstats[b] = traffic
+      else
+	 __ifstats[b] = __ifstats[b] + traffic
+      end
+   end
+   
+   for key, value in pairs(__ifstats) do
+      -- print(key.."="..value.."<p>\n")
+      _ifstats[value] = key
+   end
+end
+
 if(ifstats ~= nil) then
    uptime = ntop.getUptime()
    prefs = ntop.getPrefs()
@@ -51,7 +76,20 @@ if(ifstats ~= nil) then
     
     print(', "success_file": ' .. success_file.. ', "open_error": ' .. historical_stats.open_error.. ', "file_error": '..historical_stats.file_error ..', "query_error": '..historical_stats.query_error)
     print(', "success_pctg": ' .. success_pctg..', "open_pctg": ' .. open_pctg.. ', "file_pctg": '.. file_pctg ..', "query_pctg": '..query_pctg)
-  end
+else
+   
+   print(", \"breed\": {\n")
+   num = 0
+   for key, value in pairsByKeys(_ifstats, rev) do
+      if(num > 0) then
+	 print(",\n")
+      end
+      print('\t"'..value..'": '..key)
+      num = num + 1
+   end
+   print('\n\t}\n')
+end
+
    print('}\n')
 else
    print('{ }\n')

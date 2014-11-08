@@ -90,6 +90,7 @@ void NdpiStats::lua(NetworkInterface *iface, lua_State* vm) {
 	if(counters[i]->packets.sent || counters[i]->packets.rcvd) {
 	  lua_newtable(vm);
 	  
+	  lua_push_str_table_entry(vm, "breed", iface->get_ndpi_proto_breed_name(i));
 	  lua_push_int_table_entry(vm, "packets.sent", counters[i]->packets.sent);
 	  lua_push_int_table_entry(vm, "packets.rcvd", counters[i]->packets.rcvd);
 	  lua_push_int_table_entry(vm, "bytes.sent", counters[i]->bytes.sent);

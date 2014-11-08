@@ -53,7 +53,7 @@ if(host == nil) then
    host = interface.getAggregatedHostInfo(host_info["host"])
    if (debug_hosts) then traceError(TRACE_DEBUG,TRACE_CONSOLE, "Aggregated Host Info\n") end
    if(host == nil) then
-      if(not(restoreFailed)) then json = ntop.getCache(host_info["host"].. "." .. ifId .. ".json") end
+      if(not(restoreFailed) and (host_info ~= nil) and (host_info["host"] ~= nil)) then json = ntop.getCache(host_info["host"].. "." .. ifId .. ".json") end
       sendHTTPHeader('text/html; charset=iso-8859-1')
       ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
       dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
@@ -761,7 +761,14 @@ print [[/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..host
       print [[
 
       <table class="table table-bordered table-striped">
-      	<tr><th class="text-left">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      	<tr><th class="text-left">Protocol Overview</th>
+	       <td colspan=3>
+	       <div class="pie-chart" id="topApplicationProtocols"></div>
+	       </td>
+	       <td colspan=2>
+	       <div class="pie-chart" id="topApplicationBreeds"></div>
+	       </td>
+	       </tr>
 	</div>
 
         <script type='text/javascript'>
@@ -770,9 +777,19 @@ print [[/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..host
 				   do_pie("#topApplicationProtocols", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
+
+				   do_pie("#topApplicationBreeds", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ndpi_stats.lua', { breed: "true", ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
+
+
+
 				}
 
-	    </script><p>
+	    </script>
+
+
+<p>
 	]]
 
       print("<tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
@@ -799,9 +816,9 @@ print [[/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , "
 	 print("<tr><th>")
 	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
 	 if(ntop.exists(fname)) then
-	    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.."</A>")
+	    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.." "..formatBreed(host["ndpi"][k]["breed"]).."</A>")
 	 else
-	    print(k)
+	    print(k.." "..formatBreed(host["ndpi"][k]["breed"]))
 	 end
 	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
 	 print("</th><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")

@@ -450,7 +450,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    -- if (debug) then io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")   end
    print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
    app = getApplicationLabel(value["proto.ndpi"])
-   print ("\", \"column_ndpi\" : \"<A HREF=".. ntop.getHttpPrefix().."/lua/hosts_stats.lua?protocol=" .. value["proto.ndpi"] ..">"..app.."</A>")
+   print ("\", \"column_ndpi\" : \"<A HREF=".. ntop.getHttpPrefix().."/lua/hosts_stats.lua?protocol=" .. value["proto.ndpi"] ..">"..app.." " .. formatBreed(value["proto.ndpi_breed"]) .."</A>")
    if(value["client_process"] ~= nil) then
       print ("\", \"column_client_process\" : \"")
       print("<A HREF="..ntop.getHttpPrefix().."/lua/get_process_info.lua?pid=".. value["client_process"]["pid"] .."&name="..value["client_process"]["name"].."&host="..value["cli.ip"]..">" .. processColor(value["client_process"]).."</A>")

@@ -343,6 +343,36 @@ static int ntop_get_ndpi_protocol_name(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+/* ****************************************** */
+
+/**
+ * @brief Same as ntop_get_ndpi_protocol_name() with the exception that the protocl breed is returned
+ *
+ * @param vm The lua state.
+ * @return CONST_LUA_ERROR if ntop_interface is null, CONST_LUA_OK otherwise.
+ */
+static int ntop_get_ndpi_protocol_breed(lua_State* vm) {
+  NetworkInterface *ntop_interface = get_ntop_interface(vm);
+  NdpiStats stats;
+  int proto;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  proto = (u_int32_t)lua_tonumber(vm, 1);
+
+  if(proto == HOST_FAMILY_ID)
+    lua_pushstring(vm, "Unrated-to-Host Contact");
+  else {
+    if(ntop_interface)
+      lua_pushstring(vm, ntop_interface->get_ndpi_proto_breed_name(proto));
+    else
+      lua_pushnil(vm);
+  }
+
+  return(CONST_LUA_OK);
+}
+
 /**
  * @brief Get the hosts of network interface.
  * @details Get the ntop interface global variable of lua and return into lua stack a new hash table of host information (Host name and number of bytes sent and received).
@@ -2655,6 +2685,7 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "getStats",               ntop_get_interface_stats },
   { "getNdpiStats",           ntop_get_ndpi_interface_stats },
   { "getNdpiProtoName",       ntop_get_ndpi_protocol_name },
+  { "getNdpiProtoBreed",      ntop_get_ndpi_protocol_breed },
   { "getHosts",               ntop_get_interface_hosts },
   { "getHostsInfo",           ntop_get_interface_hosts_info },
   { "getAggregatedHostsInfo", ntop_get_interface_aggregated_hosts_info },

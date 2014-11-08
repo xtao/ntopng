@@ -204,7 +204,10 @@ elseif(page == "ndpi") then
       print [[
       <script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
       <table class="table table-bordered table-striped">
-      <tr><th class="text-center">Protocol Overview</th><td colspan=5><div class="pie-chart" id="topApplicationProtocols"></div></td></tr>
+      <tr><th class="text-left">Protocol Overview</th>
+	       <td colspan=3><div class="pie-chart" id="topApplicationProtocols"></div></td>
+	       <td colspan=2><div class="pie-chart" id="topApplicationBreeds"></div></td>
+	       </tr>
   </div>
 
         <script type='text/javascript'>
@@ -213,6 +216,10 @@ elseif(page == "ndpi") then
        do_pie("#topApplicationProtocols", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/iface_ndpi_stats.lua', { mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
+
+       do_pie("#topApplicationBreeds", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/iface_ndpi_stats.lua', { breed: "true", mode: "sinceStartup", ifname: "]] print(_ifname) print [[" }, "", refresh);
     }
 
       </script><p>
@@ -258,8 +265,6 @@ elseif(page == "historical") then
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], ntop.getHttpPrefix().."/lua/top_talkers.lua")
-
-
 
 --
 --  Historical Interface configuration page

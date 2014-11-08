@@ -12,12 +12,18 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 interface.find(ifname)
 host_info = url2hostinfo(_GET)
 
+if(_GET["breed"] == "true") then
+   show_breed = true
+else
+   show_breed = false
+end
+
 if(_GET["mode"] == "sinceStartup") then
    stats = interface.getStats()
 elseif(host_info["host"] == nil) then
    stats = interface.getNdpiStats()
 else
-   stats = interface.getHostInfo(host_info["host"],host_info["vlan"])
+   stats = interface.getHostInfo(host_info["host"], host_info["vlan"])
 end
 
 print "[\n"
@@ -25,17 +31,46 @@ print "[\n"
 if(stats ~= nil) then
    tot = 0
    _ifstats = {}
-   for key, value in pairs(stats["ndpi"]) do
-      --    print("->"..key.."\n")
-      traffic = stats["ndpi"][key]["bytes.sent"] + stats["ndpi"][key]["bytes.rcvd"]
-      _ifstats[traffic] = key
-      --print(key.."="..traffic)
-      tot = tot + traffic
+   
+   if(show_breed) then
+      __ifstats = {}
+      
+      for key, value in pairs(stats["ndpi"]) do
+	 b = stats["ndpi"][key]["breed"] 
+
+	 traffic = stats["ndpi"][key]["bytes.sent"] + stats["ndpi"][key]["bytes.rcvd"]
+
+	 if(__ifstats[b] == nil) then
+	    __ifstats[b] = traffic
+	 else
+	    __ifstats[b] = __ifstats[b] + traffic
+	 end
+      end
+
+      for key, value in pairs(__ifstats) do
+	 --print(key.."="..value.."<p>\n")
+	 _ifstats[value] = key
+	 tot = tot + value
+      end
+
+   else
+      for key, value in pairs(stats["ndpi"]) do
+	 --    print("->"..key.."\n")
+	 traffic = stats["ndpi"][key]["bytes.sent"] + stats["ndpi"][key]["bytes.rcvd"]
+	 
+	 if(show_breed) then
+	    _ifstats[traffic] = stats["ndpi"][key]["breed"]
+	 else
+	    _ifstats[traffic] = key
+	 end
+	 
+	 --print(key.."="..traffic)
+	 tot = tot + traffic
+      end
    end
 
-
    -- Print up to this number of entries
-   max_num_entries = 5
+   max_num_entries = 5   
 
    -- Print entries whose value >= 5% of the total
    threshold = (tot * 3) / 100

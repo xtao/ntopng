@@ -32,9 +32,9 @@ for _k in pairsByKeys(vals , desc) do
 
   fname = getRRDName(ifstats.id, nil, k..".rrd")
   if(ntop.exists(fname) and not is_historical) then
-    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/if_stats.lua?if_name=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .."</A>")
+     print("<A HREF=\""..ntop.getHttpPrefix().."/lua/if_stats.lua?if_name=" .. ifname .. "&page=historical&rrd_file=".. k ..".rrd\">".. k .." "..formatBreed(ifstats["ndpi"][k]["breed"]).."</A>")
   else
-    print(k)
+     print(k.." "..formatBreed(ifstats["ndpi"][k]["breed"]))
   end
 
   print(" <A HREF="..ntop.getHttpPrefix().."/lua/flows_stats.lua?application="..k.."><i class=\"fa fa-search-plus\"></i></A></th>")

@@ -141,6 +141,9 @@ class NetworkInterface {
   inline time_t getTimeLastPktRcvd()           { return(last_pkt_rcvd); };
   inline void  setTimeLastPktRcvd(time_t t)    { last_pkt_rcvd = t; };
   inline char* get_ndpi_proto_name(u_int id)   { return(ndpi_get_proto_name(ndpi_struct, id));   };
+  inline char* get_ndpi_proto_breed_name(u_int id) { return(ndpi_get_proto_breed_name(ndpi_struct, 
+										      ndpi_get_proto_breed(ndpi_struct,
+													   id))); };
   inline u_int get_flow_size()                 { return(ndpi_detection_get_sizeof_ndpi_flow_struct()); };
   inline u_int get_size_id()                   { return(ndpi_detection_get_sizeof_ndpi_id_struct());   };
   inline char* get_name()                      { return(ifname);                                       };

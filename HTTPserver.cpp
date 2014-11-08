@@ -365,7 +365,8 @@ HTTPserver::HTTPserver(u_int16_t _port, const char *_docs_dir, const char *_scri
   snprintf(ssl_cert_path, sizeof(ssl_cert_path), "%s/ssl/%s",
 	   docs_dir, CONST_HTTPS_CERT_NAME);
 
-  if(stat(ssl_cert_path, &buf) == 0) {
+  if((ntop->getPrefs()->get_https_port() > 0)
+     && (stat(ssl_cert_path, &buf) == 0)) {
     use_ssl = true;
     if(use_http)
       snprintf(ports, sizeof(ports), "%s:%d,%s:%ds",

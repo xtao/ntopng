@@ -143,7 +143,7 @@ else
 
    print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/"..ntop.getHttpPrefix().."lua/")
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
-   print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A></td></tr>\n")
+   print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A> ".. formatBreed(flow["proto.ndpi_breed"]).."</td></tr>\n")
    print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
    print("<td nowrap><div id=last_seen>" .. formatEpoch(flow["seen.last"]) .. " [" .. secondsToTime(os.time()-flow["seen.last"]) .. " ago]" .. "</div></td></tr>\n")
 

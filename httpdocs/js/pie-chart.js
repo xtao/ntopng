@@ -320,7 +320,7 @@ PieChart.prototype.startInterval = function() {
 ///////////////////////////////////////////////////////////
 
 function create_pie_chart(name, units) {
-    var w = 600; //380 - Please keep in sync with pie-chart.css
+    var w = 500; //380 - Please keep in sync with pie-chart.css
     var h = 325; //280
     var ir = 52; //45
     var textOffset = 14;
@@ -349,9 +349,9 @@ function create_pie_chart(name, units) {
     ///////////////////////////////////////////////////////////
 
     var vis = d3.select(name).append("svg:svg")
-	// .attr("width", w)
-	// .attr("height", h)
-	.attr("viewBox","0 0 600 325") 
+	.attr("width", w)
+	.attr("height", h)
+	.attr("viewBox","0 0 500 325") 
 	.attr("preserveAspectRatio","xMidYMid");
 
     //GROUP FOR ARCS/PATHS

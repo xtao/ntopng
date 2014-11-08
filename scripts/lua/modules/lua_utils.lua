@@ -1609,3 +1609,20 @@ function getKeysSortedByValue(tbl, sortFunction)
 end
 
 
+-- ##############################################                                                                                                                                                  
+
+function formatBreed(breed)
+   if(breed == "Safe") then
+      return("<i class='fa fa-lock' alt='Safe Protocol'></i>")
+   elseif(breed == "Acceptable") then
+      return("<i class='fa fa-thumbs-o-up' alt='Acceptable Protocol'></i>")
+   elseif(breed == "Fun") then
+      return("<i class='fa fa-smile' alt='Fun Protocol'></i>")
+   elseif(breed == "Unsafe") then
+      return("<i class='fa fa-thumbs-o-down'></i>")
+   elseif(breed == "Dangerous") then
+      return("<i class='fa fa-warning'></i>")
+   else
+      return("")
+   end
+end

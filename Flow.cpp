@@ -885,8 +885,10 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
      || iface->is_ndpi_enabled()
      || iface->is_sprobe_interface()) {
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
-  } else
-    lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
+  } else {
+    lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);    
+  } 
+  lua_push_str_table_entry(vm, "proto.ndpi_breed", get_protocol_breed_name());
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
   lua_push_int_table_entry(vm, "bytes.last", get_current_bytes_cli2srv() + get_current_bytes_srv2cli());
