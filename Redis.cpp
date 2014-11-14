@@ -27,8 +27,6 @@
 #include "third-party/hiredis/sds.c"
 #endif
 
-#include <curl/curl.h>
-
 /* **************************************************** */
 
 static void* esLoop(void* ptr) {
@@ -1306,22 +1304,12 @@ u_int Redis::getQueuedAlerts(patricia_tree_t *allowed_hosts, char **alerts, u_in
 
 /* **************************************** */
 
-int curl_writefunc(void *ptr, size_t size, size_t nmemb, void *stream){
-  char *str = (char*)ptr;
-
-  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] %s", str);
-  return(size*nmemb);
-}
-
-/* **************************************** */
-
 void Redis::indexESdata() {
   const u_int watermark = 8, min_buf_size = 512;
   char postbuf[16384];
 
   while(!ntop->getGlobals()->isShutdown()) {
     u_int l = llen(CONST_ES_QUEUE_NAME);
-    CURL *curl;
 
     if(l >= watermark) {
       u_int len;
@@ -1354,49 +1342,12 @@ void Redis::indexESdata() {
 
       postbuf[len] = '\0';
 
-      curl = curl_easy_init();
-      if(curl) {
-	CURLcode res;
-	struct curl_slist* headers = NULL;
-
-	curl_easy_setopt(curl, CURLOPT_URL, ntop->getPrefs()->get_es_url());
-	if(ntop->getPrefs()->get_es_user() 
-	   && (ntop->getPrefs()->get_es_user()[0] != '\0'))
-	  curl_easy_setopt(curl, CURLOPT_USERNAME, ntop->getPrefs()->get_es_user());
-
-	if(ntop->getPrefs()->get_es_pwd() 
-	   && (ntop->getPrefs()->get_es_pwd()[0] != '\0')) {
-	  curl_easy_setopt(curl, CURLOPT_USERPWD, ntop->getPrefs()->get_es_pwd());
-	  curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_DIGEST);
-	}
-
-	if(!strncmp(ntop->getPrefs()->get_es_url(), "https", 5)) {
-	  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-	}
-
-	curl_easy_setopt(curl, CURLOPT_POST, 1L); 
-	headers = curl_slist_append(headers, "Content-Type: application/json");
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)len);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
-
-	res = curl_easy_perform(curl);
-
-	if(res != CURLE_OK) {
-	  ntop->getTrace()->traceEvent(TRACE_WARNING, "[ES] Unable to post data to ES (%s): %s",
-				       ntop->getPrefs()->get_es_url(),
-				       curl_easy_strerror(res));
-	  sleep(1);
-	} else {
-	  ntop->getTrace()->traceEvent(TRACE_INFO, "[ES] Posted JSON to %s",
-				       ntop->getPrefs()->get_es_url());
-	  // printf("-----------\n%s----------\n", postbuf);
-	}
-
-	/* always cleanup */
-	curl_easy_cleanup(curl);
+      if(!Utils::postHTTPJsonData(ntop->getPrefs()->get_es_user(),
+				  ntop->getPrefs()->get_es_pwd(),
+				  ntop->getPrefs()->get_es_url(),
+				  postbuf)) {
+	/* Post failure */
+	sleep(1);
       }
     } else
       sleep(1);

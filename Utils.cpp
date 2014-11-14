@@ -21,6 +21,8 @@
 
 #include "ntop_includes.h"
 
+#include <curl/curl.h>
+
 /* ****************************************************** */
 
 char* Utils::jsonLabel(int label, const char *label_str,char *buf, u_int buf_len){
@@ -576,7 +578,6 @@ bool Utils::isUserAdministrator(lua_State* vm) {
  */
 
 void Utils::purifyHTTPparam(char *param, bool strict) {
-
   for(int i=0; param[i] != '\0'; i++) {
     /* Fix for http://packetstormsecurity.com/files/127329/Ntop-NG-1.1-Cross-Site-Scripting.html */
     bool is_good;
@@ -614,4 +615,73 @@ void Utils::purifyHTTPparam(char *param, bool strict) {
       param[i-1] = '_', param[i] = '_'; /* Invalidate the path */
     }
   }
+}
+
+/* **************************************************** */
+
+/**
+ * @brief Implement HTTP POST of JSON data
+ *
+ * @param username  Username to be used on post or NULL if missing
+ * @param password  Password to be used on post or NULL if missing
+ * @param url       URL where to post data to
+ * @param json      The content of the POST
+ * @return true if post was successfull, false otherwise.
+ */
+
+static int curl_writefunc(void *ptr, size_t size, size_t nmemb, void *stream) {
+  char *str = (char*)ptr;
+
+  ntop->getTrace()->traceEvent(TRACE_NORMAL, "[JSON] %s", str);
+  return(size*nmemb);
+}
+
+/* **************************************** */
+
+bool Utils::postHTTPJsonData(char *username, char *password, char *url, char *json) {
+  CURL *curl;
+  bool ret = true;
+
+  curl = curl_easy_init();
+  if(curl) {
+    CURLcode res;
+    struct curl_slist* headers = NULL;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    if(username && (username[0] != '\0'))
+      curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+
+    if(password && (password[0] != '\0')) {
+      curl_easy_setopt(curl, CURLOPT_USERPWD, password);
+      curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_DIGEST);
+    }
+
+    if(!strncmp(url, "https", 5)) {
+      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
+    curl_easy_setopt(curl, CURLOPT_POST, 1L); 
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(json));
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_writefunc);
+
+    res = curl_easy_perform(curl);
+
+    if(res != CURLE_OK) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, 
+				   "Unable to post data to (%s): %s",
+				   url, curl_easy_strerror(res));
+      ret = false;
+    } else {
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Posted JSON to %s", url);
+    }
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+
+  return(ret);
 }

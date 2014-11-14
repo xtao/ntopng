@@ -1706,6 +1706,29 @@ static int ntop_change_allowed_nets(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_post_http_json_data(lua_State* vm) {
+  char *username, *password, *url, *json;
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((password = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((url = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
+  
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
+  if((json = (char*)lua_tostring(vm, 4)) == NULL) return(CONST_LUA_PARAM_ERROR);
+
+  if(Utils::postHTTPJsonData(username, password, url, json))
+    return(CONST_LUA_OK);
+  else
+    return(CONST_LUA_ERROR);
+}
+
+/* ****************************************** */
+
 static int ntop_add_user(lua_State* vm) {
   char *username, *full_name, *password, *host_role, *allowed_networks;
 
@@ -2132,7 +2155,8 @@ static int ntop_mkdir_tree(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_redis(lua_State* vm) {
-  char *key, rsp[4096];
+  char *key, *rsp;
+  u_int rsp_len = 32768;
   Redis *redis = ntop->getRedis();
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
@@ -2140,9 +2164,12 @@ static int ntop_get_redis(lua_State* vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((key = (char*)lua_tostring(vm, 1)) == NULL)       return(CONST_LUA_PARAM_ERROR);
 
-  lua_pushfstring(vm, "%s", (redis->get(key, rsp, sizeof(rsp)) == 0) ? rsp : (char*)"");
-
-  return(CONST_LUA_OK);
+  if((rsp = (char*)malloc(rsp_len)) != NULL) {
+    lua_pushfstring(vm, "%s", (redis->get(key, rsp, rsp_len) == 0) ? rsp : (char*)"");
+    free(rsp);
+    return(CONST_LUA_OK);
+  } else
+    return(CONST_LUA_ERROR);
 }
 
 /* ****************************************** */
@@ -2793,6 +2820,9 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Security */
   { "getRandomCSRFValue",     ntop_generate_csrf_value },
+
+  /* HTTP */
+  { "postHTTPJsonData",       ntop_post_http_json_data },
 
   /* Address Resolution */
   { "resolveAddress",     ntop_resolve_address },
