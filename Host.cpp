@@ -276,36 +276,36 @@ void Host::set_mac(char *m) {
 
 /* *************************************** */
 
-void Host::lua(lua_State* vm, patricia_tree_t *ptree, 
+void Host::lua(lua_State* vm, patricia_tree_t *ptree,
 	       bool host_details, bool verbose, bool returnHost) {
-  char buf[64];
+  char buf[64], ip_buf[64];
   char buf_id[64];
+  char *ipaddr = NULL;
 
   if(!match(ptree)) return;
 
   lua_newtable(vm);
   if(ip)
-    lua_push_str_table_entry(vm, "ip", ip->print(buf, sizeof(buf)));
+    lua_push_str_table_entry(vm, "ip", (ipaddr = ip->print(ip_buf, sizeof(ip_buf))));
   else
     lua_push_nil_table_entry(vm, "ip");
-  
+
   lua_push_str_table_entry(vm, "mac", get_mac(buf, sizeof(buf)));
   lua_push_int_table_entry(vm, "vlan", vlan_id);
-  lua_push_bool_table_entry(vm, "localhost", localHost);   
+  lua_push_bool_table_entry(vm, "localhost", localHost);
 
-  if(host_details) {
-    char *ipaddr = NULL, *local_net;   
+  if(host_details && ip) {
+    char *local_net;
 
     lua_push_bool_table_entry(vm, "privatehost", isPrivateHost());
 
-    if((ipaddr != NULL)
-       && ((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0))) {
+    if((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0)) {
       /* We resolve immediately the IP address by queueing on the top of address queue */
       
       ntop->getRedis()->pushHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
-      lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
-    }   
+    }
 
+    lua_push_str_table_entry(vm, "name", get_name(buf, sizeof(buf), false));
     lua_push_int32_table_entry(vm, "local_network_id", local_network_id);
 
     local_net = ntop->getLocalNetworkName(local_network_id);
@@ -393,7 +393,7 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
       } else {
         sprintf(buf_id, "%s@%d",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)),vlan_id );
       }
-      
+
       lua_pushstring(vm,buf_id);
       lua_insert(vm, -2);
       lua_settable(vm, -3);
@@ -406,7 +406,7 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
       sprintf(buf_id, "%s",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)));
     } else {
       sprintf(buf_id, "%s@%d",(ip != NULL) ? ip->print(buf, sizeof(buf)) : get_mac(buf, sizeof(buf)),vlan_id );
-    }   
+    }
     lua_pushstring(vm, buf_id);
     lua_insert(vm, -2);
     lua_settable(vm, -3);
@@ -496,7 +496,7 @@ int Host::compare(Host *h) {
 
 bool Host::idle() {
   if(num_uses > 0) return(false);
-  
+
   if(!iface->is_purge_idle_interface()) return(false);
 
   switch(ntop->getPrefs()->get_host_stickness()) {
@@ -711,12 +711,12 @@ bool Host::deserialize(char *json_str) {
 
   if(json_object_object_get_ex(o, "dns", &obj)) {
     allocDNS();
-    if(dns) dns->deserialize(obj); 
+    if(dns) dns->deserialize(obj);
   }
 
   if(json_object_object_get_ex(o, "epp", &obj)) {
     allocEPP();
-    if(epp) epp->deserialize(obj); 
+    if(epp) epp->deserialize(obj);
   }
 
   if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
@@ -753,22 +753,22 @@ void Host::updateSynFlags(time_t when, u_int8_t flags, Flow *f) {
 
     if(!triggerAlerts()) return;
 
-    /* 
+    /*
        It's normal that at startup several flows are created
     */
     if(ntop->getUptime() < 10 /* sec */) return;
 
     h = ip->print(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a SYN flooder [%u SYNs in the last %u sec] %s", 
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a SYN flooder [%u SYNs in the last %u sec] %s",
 	     h, iface->get_name(), h,
 	     syn_flood_alert->getCurrentHits(),
 	     syn_flood_alert->getOverThresholdDuration(),
 	     f->print(flow_buf, sizeof(flow_buf)));
-    
+
     ntop->getTrace()->traceEvent(TRACE_INFO, "SYN Flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_syn_flood, msg);
     incNumAlerts();
-  }  
+  }
 }
 

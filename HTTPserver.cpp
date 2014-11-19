@@ -152,10 +152,12 @@ static void redirect_to_login(struct mg_connection *conn,
 
   mg_printf(conn, "HTTP/1.1 302 Found\r\n"
 	    "Set-Cookie: session=%s; path=/; expires=Thu, 01-Jan-1970 00:00:01 GMT; max-age=0; HttpOnly\r\n"  // Session ID
-	    "Location: %s%s?referer=%s\r\n\r\n",
+	    "Location: %s%s?referer=%s%s%s\r\n\r\n",
 	    session_id,
 	    ntop->getPrefs()->get_http_prefix(), LOGIN_URL,
-	    conn->request_info.uri);
+	    conn->request_info.uri,
+	    conn->request_info.query_string ? "%3F" /* ? */: "",
+	    conn->request_info.query_string ? conn->request_info.query_string : "");
 }
 
 /* ****************************************** */
