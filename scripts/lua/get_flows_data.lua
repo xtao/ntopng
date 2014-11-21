@@ -9,7 +9,7 @@ require "lua_utils"
 require "sqlite_utils"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
-local debug = true
+local debug = false
 local debug_process = false -- Show flow processed information
 
 interface.find(ifname)
