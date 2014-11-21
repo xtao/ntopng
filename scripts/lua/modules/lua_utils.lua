@@ -1166,7 +1166,6 @@ function hostinfo2url(host_info,host_type)
     end
 
   elseif(host_type == "srv") then
-
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..'host='..host_info["srv.ip"]
     end
@@ -1257,13 +1256,10 @@ function hostinfo2jqueryid(host_info,host_type)
     end
 
   elseif(host_type == "srv") then
-
     if(host_info["srv.ip"] ~= nil) then
       rsp = rsp..''..host_info["srv.ip"]
     end
-
   else
-
     if((type(host_info) ~= "table") and (string.find(host_info,"@"))) then
       host_info = hostkey2hostinfo(host_info)
     end
@@ -1284,7 +1280,9 @@ function hostinfo2jqueryid(host_info,host_type)
     rsp = rsp..'_'..tostring(host_info["vlan"])
   end
 
-  rsp = string.gsub (rsp, "%.", "_")
+  rsp = string.gsub(rsp, "%.", "__")
+  rsp = string.gsub(rsp, "/", "___")
+  rsp = string.gsub(rsp, ":", "____")
 
   if(debug_host) then traceError(TRACE_DEBUG,TRACE_CONSOLE,"HOST2KEY => ".. rsp .. "\n") end
 

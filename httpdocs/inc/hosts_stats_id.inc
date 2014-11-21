@@ -43,13 +43,17 @@ function host_table_setID (row) {
 }
 
 function hostkey2hostInfo(host_key) {
-    var info = host_key.split("_");
+    var info;
     var hostinfo = [];
-    hostinfo[0] = info[0] + '.' + info[1] + '.' + info[2] + '.' + info[3];
-    hostinfo[1] = info[4];
-    return (hostinfo);
-} 
 
+    host_key = host_key.replace(/____/g, ":");
+    host_key = host_key.replace(/___/g, "/");
+    host_key = host_key.replace(/__/g, ".");
+    host_key = host_key.replace(/@/g, ".");
+
+    info = host_key.split("@");
+    return(info);
+} 
 
 function row_update(host_key) {
    var hostInfo = hostkey2hostInfo(host_key);
@@ -72,7 +76,6 @@ function row_update(host_key) {
       console.log("error");
     }
   });
-
 }
 
 // Updating function

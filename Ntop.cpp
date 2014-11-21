@@ -197,7 +197,7 @@ void Ntop::createHistoricalInterface() {
 /* ******************************************* */
 
 NetworkInterface* Ntop::getHistoricalInterface() {
-  return (getInterface(get_if_name(historical_interface_id))); 
+  return (getInterface(get_if_name(historical_interface_id)));
 };
 
 /* ******************************************* */
@@ -283,24 +283,36 @@ void Ntop::loadLocalInterfaceAddress() {
 
       if(inet_ntop(ifa->ifa_addr->sa_family,(void *)&(s4->sin_addr), buf, sizeof(buf)) != NULL) {
 	int l = strlen(buf);
+	int16_t network_id;
 
 	snprintf(&buf[l], sizeof(buf)-l, "%s", "/32");
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv4 interface address", buf);
 	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
-	address->addLocalNetwork(buf2);
+
+	/* Add the net unless a larger one already exists */
+	if((prefs->get_local_networks() == NULL)
+	   || (!isLocalAddress(AF_INET, (void *)&(s4->sin_addr), &network_id))) {
+	  address->addLocalNetwork(buf2);
+	}
       }
     } else if(ifa->ifa_addr->sa_family == AF_INET6) {
       struct sockaddr_in6 *s6 =(struct sockaddr_in6 *)(ifa->ifa_addr);
 
       if(inet_ntop(ifa->ifa_addr->sa_family,(void *)&(s6->sin6_addr), buf, sizeof(buf)) != NULL) {
 	int l = strlen(buf);
+	int16_t network_id;
 
 	snprintf(&buf[l], sizeof(buf)-l, "%s", "/128");
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv6 interface address", buf);
 	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
-	address->addLocalNetwork(buf2);
+
+	/* Add the net unless a larger one already exists */
+	if((prefs->get_local_networks() == NULL)
+	   || (!isLocalAddress(AF_INET6, (void *)&(s6->sin6_addr), &network_id))) {
+	  address->addLocalNetwork(buf2);
+	}
       }
     }
   }
@@ -489,8 +501,8 @@ bool Ntop::changeUserRole(char *username, char *usertype) const {
 
     if(ntop->getRedis()->set(key, usertype, 0) < 0)
       return(false);
-  }  
-  
+  }
+
   return(true);
 }
 
@@ -520,8 +532,8 @@ bool Ntop::addUser(char *username, char *full_name, char *password, char *host_r
   if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
     return(false); // user already exists
   else
-    ntop->getRedis()->set(key, full_name, 0);  
-  
+    ntop->getRedis()->set(key, full_name, 0);
+
   snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
 
@@ -559,7 +571,7 @@ void Ntop::fixPath(char *str) {
 #ifdef WIN32
     if(str[i] == '/') str[i] = '\\';
 #endif
-    
+
     if((i > 0) && (str[i] == '.') && (str[i-1] == '.')) {
       // ntop->getTrace()->traceEvent(TRACE_WARNING, "Invalid path detected %s", str);
       str[i-1] = '_', str[i] = '_'; /* Invalidate the path */
@@ -743,7 +755,7 @@ NetworkInterface* Ntop::getInterface(char *name) {
  /* This method accepts both interface names or Ids */
   u_int if_id;
   char str[8];
-  
+
   if(name == NULL) return(NULL);
 
   if_id = atoi(name);
@@ -775,7 +787,7 @@ int Ntop::getInterfaceIdByName(char *name) {
   if(strcmp(name, str) == 0) {
     /* name is a number */
     NetworkInterface *iface = getInterfaceById(if_id);
-    
+
     if(iface != NULL)
       return(iface->get_id());
     else

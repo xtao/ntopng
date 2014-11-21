@@ -43,6 +43,7 @@ class GenericHost : public GenericHashEntry {
 
   /* Throughput */
   float bytes_thpt, pkts_thpt;
+  float last_bytes_thpt, last_pkts_thpt;
   ValueTrend bytes_thpt_trend, pkts_thpt_trend;
   u_int64_t last_bytes, last_packets;
   struct timeval last_update_time;

@@ -30,8 +30,8 @@ GenericHost::GenericHost(NetworkInterface *_iface) : GenericHashEntry(_iface) {
   ndpiStats = new NdpiStats();
 
   systemHost = false, localHost = false, last_activity_update = 0, host_serial = 0;
-  last_bytes = 0, bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
-  last_packets = 0, pkts_thpt = 0, pkts_thpt_trend = trend_unknown;
+  last_bytes = 0, last_bytes_thpt = bytes_thpt = 0, bytes_thpt_trend = trend_unknown;
+  last_packets = 0, last_pkts_thpt = pkts_thpt = 0, pkts_thpt_trend = trend_unknown;
   last_update_time.tv_sec = 0, last_update_time.tv_usec = 0, vlan_id = 0;
   contacts = new HostContacts(this);
   num_alerts_detected = 0, source_id = 0;
@@ -152,6 +152,7 @@ void GenericHost::updateStats(struct timeval *tv) {
     else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
     else                        bytes_thpt_trend = trend_stable;
 
+    last_bytes_thpt = bytes_thpt, last_pkts_thpt = pkts_thpt;
     bytes_thpt = bytes_msec, last_bytes = new_bytes;
     // Calculate pps throughput
     u_int64_t new_packets = sent.getNumPkts()+ rcvd.getNumPkts();

@@ -16,13 +16,13 @@ perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 protocol    = _GET["protocol"]
+net         = _GET["net"]
 
 -- Host comparison parameters
 mode        = _GET["mode"]
 aggregation = _GET["aggregation"]
 aggregated  = _GET["aggregated"]
 tracked     = _GET["tracked"]
-protocol    = _GET["protocol"]
 
 -- Only for aggregations
 client      = _GET["client"]
@@ -92,8 +92,49 @@ now = os.time()
 vals = {}
 num = 0
 
+sort_mode = mode
 -- for k,v in pairs(hosts_stats) do io.write(k.."\n") end
 
+if(net ~= nil) then
+   net = string.gsub(net, "_", "/")
+end
+
+if(mode == "network") then
+   my_networks = { }
+   for key, value in pairs(hosts_stats) do
+      h = hosts_stats[key]
+      nw_name = h["local_network_name"]
+
+      if(h["local_network_name"] ~= nil) then
+	 -- io.write(nw_name.."\n")
+	 
+	 if(nw_name ~= nil) then
+	    if(my_networks[nw_name] == nil) then
+	       h["ip"] = nw_name
+	       h["name"] = nw_name -- FIX
+	       
+	       my_networks[nw_name] = h
+	    else
+	       my_networks[nw_name]["num_alerts"] = my_networks[nw_name]["num_alerts"] + h["num_alerts"]
+	       my_networks[nw_name]["throughput_bps"] = my_networks[nw_name]["throughput_bps"] + h["throughput_bps"]
+	       my_networks[nw_name]["throughput_pps"] = my_networks[nw_name]["throughput_pps"] + h["throughput_pps"]
+	       my_networks[nw_name]["bytes.sent"] = my_networks[nw_name]["bytes.sent"] + h["bytes.sent"]
+	       my_networks[nw_name]["bytes.rcvd"] = my_networks[nw_name]["bytes.rcvd"] + h["bytes.rcvd"]
+	       
+	       if(my_networks[nw_name]["seen.first"] > h["seen.first"]) then
+		  my_networks[nw_name]["seen.first"] = h["seen.first"]
+	       end
+	    end
+	 end
+      end
+   end
+
+   hosts_stats = my_networks
+   mode = "local"
+end
+
+
+--
 for key, value in pairs(hosts_stats) do
    num = num + 1
    postfix = string.format("0.%04u", num)
@@ -123,6 +164,12 @@ for key, value in pairs(hosts_stats) do
        or ((mode == "local") and (value["localhost"] == true))
     or ((mode == "remote") and (value["localhost"] ~= true)))) then
       ok = false
+   end
+
+   if(net ~= nil) then
+      if((value["local_network_name"] == nil) or (value["local_network_name"] ~= net)) then
+	 ok = false
+      end
    end
 
    if(ok == true) then
@@ -229,7 +276,12 @@ for _key, _value in pairsByKeys(vals, funct) do
       print ('\"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\",')
 	    print ("\"column_ip\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
 	    if((aggregation ~= nil) or (aggregated ~= nil)) then print("aggregated_") end
-	    print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
+
+	    if(sort_mode == "network") then
+	       print("hosts_stats.lua?net=" ..string.gsub(hosts_stats[key]["ip"], "/", "_") .. "'>")
+	    else
+	       print("host_details.lua?" ..hostinfo2url(hosts_stats[key]) .. "'>")
+	    end
 	    if((aggregation == nil) and (aggregated == nil)) then
          if (value["ip"] ~= nil) then
           print(value["ip"])

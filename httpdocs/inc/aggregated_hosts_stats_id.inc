@@ -23,7 +23,6 @@ function aggregated_host_table_setID (row) {
 
   // console.log(row);
   return row;
-
 }
 
 function hostkey2hostInfo(aggregated_host_key) {

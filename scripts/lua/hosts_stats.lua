@@ -7,12 +7,12 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "lua_utils"
 
-
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 protocol = _GET["protocol"]
+net      = _GET["net"]
 
 mode = _GET["mode"]
 if(mode == nil) then mode = "all" end
@@ -36,6 +36,10 @@ print(mode)
 
 if(protocol ~= nil) then
    print('&protocol='..protocol)
+end
+
+if(net ~= nil) then
+   print('&net='..net)
 end
 
 print ('";')
@@ -63,8 +67,10 @@ if(mode == "all") then
    print('title: "All '..protocol..' Hosts",\n')
 elseif(mode == "local") then
    print('title: "Local '..protocol..' Hosts",\n')
-else
+elseif(mode == "remote") then
    print('title: "Remote '..protocol..' Hosts",\n')
+else
+   print('title: "Local Networks",\n')
 end
 print ('rowCallback: function ( row ) { return host_table_setID(row); },')
 
@@ -84,7 +90,9 @@ print [[/lua/hosts_stats.lua">All Hosts</a></li><li><a href="]]
 print (ntop.getHttpPrefix())
 print [[/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="]]
 print (ntop.getHttpPrefix())
-print [[/lua/hosts_stats.lua?mode=remote">Remote Only</a></li></ul> </div>' ],
+print [[/lua/hosts_stats.lua?mode=remote">Remote Only</a></li><li>&nbsp;</li><li><a href="]]
+print (ntop.getHttpPrefix())
+print [[/lua/hosts_stats.lua?mode=network">Local Networks</a></li></ul> </div>' ],
 	        columns: [
 	        	{
 	        		title: "Key",
@@ -139,7 +147,6 @@ print [[
 			        textAlign: 'center'
 			       }
 			       },
-
 		       ]]
 end
 
@@ -153,10 +160,8 @@ print [[
 			        textAlign: 'center'
 			       }
 			       },
-
 		       ]]
 end
-
 
 
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/hosts_stats_bottom.inc")
