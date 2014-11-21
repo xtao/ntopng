@@ -4,7 +4,7 @@
 
 
 -- Enable/disable Influx DB
-use_influx = false -- true
+use_influx = false
 
 influx_user = ""
 influx_pwd  = ""

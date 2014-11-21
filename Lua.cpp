@@ -2175,7 +2175,7 @@ static int ntop_get_redis(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_hash_redis(lua_State* vm) {
-  char *key, *member, rsp[4096];
+  char *key, *member, rsp[CONST_MAX_LEN_REDIS_VALUE];
   Redis *redis = ntop->getRedis();
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
@@ -2255,7 +2255,7 @@ static int ntop_get_hash_keys_redis(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_get_redis_set_pop(lua_State* vm) {
-  char *set_name, rsp[512];
+  char *set_name, rsp[CONST_MAX_LEN_REDIS_VALUE];
   Redis *redis = ntop->getRedis();
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
@@ -2291,7 +2291,7 @@ static int ntop_redis_get_host_id(lua_State* vm) {
 /* ****************************************** */
 
 static int ntop_redis_get_id_to_host(lua_State* vm) {
-  char *host_idx, rsp[256];
+  char *host_idx, rsp[CONST_MAX_LEN_REDIS_VALUE];
   Redis *redis = ntop->getRedis();
   char daybuf[32];
   time_t when = time(NULL);

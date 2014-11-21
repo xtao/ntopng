@@ -385,7 +385,7 @@ int Redis::pushHostToResolve(char *hostname, bool dont_check_for_existance, bool
 int Redis::pushHost(const char* ns_cache, const char* ns_list, char *hostname,
 		    bool dont_check_for_existance, bool localHost) {
   int rc = 0;
-  char key[128];
+  char key[CONST_MAX_LEN_REDIS_KEY];
   bool found;
   redisReply *reply;
 
@@ -454,7 +454,7 @@ int Redis::popHost(const char* ns_list, char *hostname, u_int hostname_len) {
 
 char* Redis::getHTTPBLCategory(char *numeric_ip, char *buf,
 			     u_int buf_len, bool categorize_if_unknown) {
-  char key[128];
+  char key[CONST_MAX_LEN_REDIS_KEY];
   redisReply *reply;
 
   buf[0] = '\0';
@@ -497,7 +497,7 @@ char* Redis::getHTTPBLCategory(char *numeric_ip, char *buf,
 
 char* Redis::getFlowCategory(char *domainname, char *buf,
 			     u_int buf_len, bool categorize_if_unknown) {
-  char key[128];
+  char key[CONST_MAX_LEN_REDIS_KEY];
   redisReply *reply;
 
   buf[0] = 0;
@@ -550,7 +550,7 @@ int Redis::popDomainToCategorize(char *domainname, u_int domainname_len) {
 /* **************************************** */
 
 void Redis::setDefaults() {
-  char value[32];
+  char value[CONST_MAX_LEN_REDIS_VALUE];
 
   setResolvedAddress((char*)"127.0.0.1", (char*)"localhost");
   setResolvedAddress((char*)"255.255.255.255", (char*)"Broadcast");
@@ -570,7 +570,7 @@ int Redis::getAddressHTTPBL(char *numeric_ip,
 			    NetworkInterface *iface,
 			    char *rsp, u_int rsp_len,
 			    bool queue_if_not_found) {
-  char key[64];
+  char key[CONST_MAX_LEN_REDIS_KEY];
   int rc;
 
   rsp[0] = '\0';
@@ -598,7 +598,7 @@ int Redis::getAddressHTTPBL(char *numeric_ip,
 
 int Redis::getAddress(char *numeric_ip, char *rsp,
 		      u_int rsp_len, bool queue_if_not_found) {
-  char key[64];
+  char key[CONST_MAX_LEN_REDIS_KEY];
   int rc;
 
   rsp[0] = '\0';
@@ -621,7 +621,7 @@ int Redis::getAddress(char *numeric_ip, char *rsp,
 /* **************************************** */
 
 int Redis::setHTTPBLAddress(char *numeric_ip, char *httpbl) {
-  char key[64];
+  char key[CONST_MAX_LEN_REDIS_KEY];
 
   snprintf(key, sizeof(key), "%s.%s", HTTPBL_CACHE, numeric_ip);
   return(set(key, httpbl, HTTPBL_CACHE_DURATIION));
@@ -630,7 +630,7 @@ int Redis::setHTTPBLAddress(char *numeric_ip, char *httpbl) {
 /* **************************************** */
 
 int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
-  char key[64], numeric[256], *w, *h;
+  char key[CONST_MAX_LEN_REDIS_KEY], numeric[256], *w, *h;
   int rc;
 
   snprintf(numeric, sizeof(numeric), "%s", numeric_ip);
@@ -685,7 +685,7 @@ char* Redis::getVersion(char *str, u_int str_len) {
 /* **************************************** */
 
 void Redis::getHostContacts(lua_State* vm, GenericHost *h, bool client_contacts) {
-  char hkey[64], key[64];
+  char hkey[CONST_MAX_LEN_REDIS_KEY], key[CONST_MAX_LEN_REDIS_KEY];
   redisReply *reply;
 
   h->get_string_key(hkey, sizeof(hkey));
@@ -841,7 +841,7 @@ void Redis::setHostId(NetworkInterface *iface, char *daybuf, char *host_name, u_
 u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_name, bool *new_key) {
   u_int32_t id;
   int rc;
-  char buf[32], keybuf[384], rsp[32];
+  char buf[32], keybuf[384], rsp[CONST_MAX_LEN_REDIS_VALUE];
 
   snprintf(keybuf, sizeof(keybuf), "%s|%s", iface->get_name(), host_name);
 
@@ -865,7 +865,7 @@ u_int32_t Redis::host_to_id(NetworkInterface *iface, char *daybuf, char *host_na
 /* *************************************** */
 
 int Redis::id_to_host(char *daybuf, char *host_idx, char *buf, u_int buf_len) {
-  char key[32];
+  char key[CONST_MAX_LEN_REDIS_KEY];
 
   /* Add host key if missing */
   snprintf(key, sizeof(key), "%s.hostkeys", daybuf);
@@ -921,7 +921,7 @@ bool Redis::dumpDailyStatsKeys(char *day) {
 
   if(kreply && (kreply->type == REDIS_REPLY_ARRAY)) {
     for(u_int kid = 0; kid < kreply->elements; kid++) {
-      char *_key = (char*)kreply->element[kid]->str, key[256];
+      char *_key = (char*)kreply->element[kid]->str, key[CONST_MAX_LEN_REDIS_KEY];
       char ifname[32];
       char *host, *token, *pipe;
 

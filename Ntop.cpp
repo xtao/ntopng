@@ -347,7 +347,7 @@ void Ntop::setCustomnDPIProtos(char *path) {
 void Ntop::getUsers(lua_State* vm) {
   char **usernames;
   char *username, *holder;
-  char key[64], val[64];
+  char key[CONST_MAX_LEN_REDIS_KEY], val[CONST_MAX_LEN_REDIS_VALUE];
   int rc, i;
 
   lua_newtable(vm);
