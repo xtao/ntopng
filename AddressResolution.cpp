@@ -127,8 +127,10 @@ patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line) {
   bits  = strchr(line, '/');
   if(bits == NULL)
     bits = (char*)"/32";
-
-  bits[0] = '\0';  bits++;
+  else
+    bits[0] = '\0';
+  
+  bits++;
 
   ntop->getTrace()->traceEvent(TRACE_DEBUG, "Rule '%s'/'%s'\n", ip, bits);
 
