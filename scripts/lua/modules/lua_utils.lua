@@ -1510,8 +1510,8 @@ function getHumanReadableInterfaceName(interface_id)
       ifstats = interface.getStats()
       
       -- print(interface_id.."="..ifstats.name)
-
-      if(interface_id ~= ifstats.description) then
+      
+      if((interface_id ~= ifstats.description) and (ifstats.description ~= "PF_RING")) then
 	 return(ifstats.description)
       else
 	 return(ifstats.name)
