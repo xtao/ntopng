@@ -30,9 +30,9 @@ class Flow : public GenericHashEntry {
   Host *cli_host, *srv_host;  
   u_int16_t cli_port, srv_port;
   u_int16_t vlanId;
-  u_int8_t protocol, tcp_flags;
+  u_int8_t protocol, src2dst_tcp_flags, dst2src_tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
-  bool detection_completed, protocol_processed, blacklist_alarm_emitted;
+  bool detection_completed, protocol_processed, blacklist_alarm_emitted, cli2srv_direction;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -90,12 +90,12 @@ class Flow : public GenericHashEntry {
   char* serialize(bool partial_dump = false, bool es_json = false);
   json_object* flow2json(bool partial_dump);
   json_object* flow2es(json_object *flow_object);
-  inline u_int8_t getTcpFlags() { return(tcp_flags);  };
+  inline u_int8_t getTcpFlags() { return(src2dst_tcp_flags | dst2src_tcp_flags);  };
   u_int32_t getPid(bool client);
   u_int32_t getFatherPid(bool client);
   char* get_username(bool client);
   char* get_proc_name(bool client);
-  void updateTcpFlags(time_t when, u_int8_t flags);
+  void updateTcpFlags(time_t when, u_int8_t flags, bool src2dst_direction);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(const char *json);
@@ -148,6 +148,8 @@ class Flow : public GenericHashEntry {
   void guessProtocol();
   void dumpFlow(bool partial_dump);
   bool match(patricia_tree_t *ptree);
+  inline Host* get_real_client() { return(cli2srv_direction ? cli_host : srv_host); };
+  inline Host* get_real_server() { return(cli2srv_direction ? srv_host : cli_host); };
 };
 
 #endif /* _FLOW_H_ */

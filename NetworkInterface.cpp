@@ -389,8 +389,10 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
 
   if(flow == NULL) return;
 
-  /* Check if this is am EPP flow" */
-  if(zflow->l4_proto == IPPROTO_TCP) flow->updateTcpFlags(last_pkt_rcvd, zflow->tcp_flags);
+  /* Check if this is an EPP flow" */
+  if(zflow->l4_proto == IPPROTO_TCP) 
+    flow->updateTcpFlags(last_pkt_rcvd, zflow->tcp_flags, src2dst_direction);
+
   flow->addFlowStats(src2dst_direction,
 		     zflow->pkt_sampling_rate*zflow->in_pkts,
 		     zflow->pkt_sampling_rate*zflow->in_bytes,
@@ -476,7 +478,7 @@ void NetworkInterface::packet_processing(const u_int32_t when,
       return;
     }
 
-    l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen)-sizeof(const struct ndpi_ip6_hdr);
+    l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen);
     l4_proto = ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt;
     l4 = (u_int8_t*)ip6 + sizeof(const struct ndpi_ip6_hdr);
     ip = (u_int8_t*)ip6;
@@ -536,7 +538,8 @@ void NetworkInterface::packet_processing(const u_int32_t when,
     return;
   } else {
     flow->incStats(src2dst_direction, rawsize);
-    if(l4_proto == IPPROTO_TCP) flow->updateTcpFlags(when, tcp_flags);
+    if(l4_proto == IPPROTO_TCP)
+      flow->updateTcpFlags(when, tcp_flags, src2dst_direction);
   }
 
   if(new_flow) {

@@ -34,8 +34,9 @@ Flow::Flow(NetworkInterface *_iface,
 
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
-  json_info = strdup("{}");
-  tcp_flags = 0, last_update_time.tv_sec = 0, bytes_thpt = top_bytes_thpt = pkts_thpt = top_pkts_thpt = 0;
+  json_info = strdup("{}"), cli2srv_direction = true;
+  src2dst_tcp_flags = dst2src_tcp_flags = 0, last_update_time.tv_sec = 0, 
+    bytes_thpt = top_bytes_thpt = pkts_thpt = top_pkts_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
   cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
@@ -300,10 +301,11 @@ void Flow::processDetectedProtocol() {
 
       if(srv_host) {
 	char buf[64];
-       	
+	Host *srv = get_real_server();
+
 	/* Check if the name isn't numeric */
 	if(strcmp((const char*)ndpi_flow->host_server_name, 
-		  srv_host->get_ip()->print(buf, sizeof(buf)))) {
+		  srv->get_ip()->print(buf, sizeof(buf)))) {
 	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
 	  
 	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
@@ -313,8 +315,8 @@ void Flow::processDetectedProtocol() {
 	  }
 	  
 	  if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
-	    srv_host->setName((char*)ndpi_flow->host_server_name, true);
-	    ntop->getRedis()->setResolvedAddress(srv_host->get_ip()->print(buf, sizeof(buf)),
+	    srv->setName((char*)ndpi_flow->host_server_name, true);
+	    ntop->getRedis()->setResolvedAddress(srv->get_ip()->print(buf, sizeof(buf)),
 						 (char*)ndpi_flow->host_server_name);
 	  }
 	}
@@ -950,7 +952,11 @@ u_int32_t Flow::key() {
 /* *************************************** */
 
 bool Flow::idle() {
+  u_int8_t tcp_flags;
+
   if(!iface->is_purge_idle_interface()) return(false);
+
+  tcp_flags = src2dst_tcp_flags | dst2src_tcp_flags;
 
   /* If this flow is idle for at least MAX_TCP_FLOW_IDLE */
   if((protocol == IPPROTO_TCP)
@@ -1106,7 +1112,7 @@ json_object* Flow::flow2json(bool partial_dump) {
 
   if(protocol == IPPROTO_TCP)
     json_object_object_add(my_object, Utils::jsonLabel(TCP_FLAGS, "TCP_FLAGS", jsonbuf, sizeof(jsonbuf)),
-			   json_object_new_int(tcp_flags));
+			   json_object_new_int(src2dst_tcp_flags | dst2src_tcp_flags));
 
   json_object_object_add(my_object, Utils::jsonLabel(IN_PKTS, "IN_PKTS", jsonbuf, sizeof(jsonbuf)),
 			 json_object_new_int64(partial_dump ? (cli2srv_packets - last_db_dump.cli2srv_packets) : cli2srv_packets));
@@ -1190,16 +1196,25 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 
 /* *************************************** */
 
-void Flow::updateTcpFlags(time_t when, u_int8_t flags) {
+void Flow::updateTcpFlags(time_t when, u_int8_t flags, bool src2dst_direction) {
   if((flags == TH_SYN)
-     && (tcp_flags == TH_SYN) /* SYN was already received */
+     && ((src2dst_tcp_flags | dst2src_tcp_flags) == TH_SYN) /* SYN was already received */
      && (cli2srv_packets > 2 /* We tolerate two SYN at the beginning of the connection */)
      && ((last_seen-first_seen) < 2 /* (sec) SYN flood must be quick */)
      && cli_host)
     cli_host->updateSynFlags(when, flags, this);
 
   /* The update below must be after the above check */
-  tcp_flags |= flags;
+  if(src2dst_direction)
+    src2dst_tcp_flags |= flags;
+  else
+    dst2src_tcp_flags |= flags;
+
+  if(flags == TH_SYN) {
+    cli2srv_direction = src2dst_direction;
+  } else if(flags == (TH_SYN|TH_ACK)) {
+    cli2srv_direction = !src2dst_direction;
+  }
 }
 
 /* *************************************** */
@@ -1269,3 +1284,5 @@ bool Flow::match(patricia_tree_t *ptree) {
   else
     return(false);
 };
+
+/* *************************************** */
