@@ -1952,7 +1952,7 @@ static int ntop_get_resolved_address(lua_State* vm) {
 static int ntop_snmpget(lua_State* vm) {
   char *agent_host, *oid, *community;
   u_int agent_port = 161, timeout = 5, request_id = time(NULL);
-  int sock, i = 0, rc = CONST_LUA_OK;
+  int sock, rc = CONST_LUA_OK;
   SNMPMessage *message;
   int len;
   unsigned char *buf;
@@ -1996,22 +1996,22 @@ static int ntop_snmpget(lua_State* vm) {
     char buf[BUFLEN];
     SNMPMessage *message;
     char *sender_host, *oid_str,  *value_str;
-    int sender_port, added = 0, len;
+    int sender_port, len;
 
     len = receive_udp_datagram(buf, BUFLEN, sock, &sender_host, &sender_port);
     message = snmp_parse_message(buf, len);
 
-    i = 0;
-    while(snmp_get_varbind_as_string(message, i, &oid_str, NULL, &value_str)) {
-      if(!added) lua_newtable(vm), added = 1;
-      lua_push_str_table_entry(vm, oid_str, value_str);
-      i++;
+    if(snmp_get_varbind_as_string(message, 0, &oid_str, NULL, &value_str)) {
+      lua_createtable(vm, 1 /* num_results */, 0);
+      lua_pushstring(vm, oid_str);
+      lua_rawseti (vm, -2, 0);
+      lua_pushstring(vm, value_str);
+      lua_rawseti (vm, -2, 1);
     }
 
     snmp_destroy_message(message);
   }
   close(sock);
-
 
   return(rc);
 }
