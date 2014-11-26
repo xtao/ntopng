@@ -431,97 +431,49 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 /* *************************************** */
 
 u_int64_t Flow::get_current_bytes_cli2srv() {
-  if((cli2srv_last_bytes == 0) && (prev_cli2srv_last_bytes == 0))
-    return(cli2srv_bytes);
-  else {
-    int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
-
-    if(diff > 0)
-      return(diff);
-
-    /*
-      We need to do this as due to concurrency issues,
-      we might have a negative value
-    */
-    diff = cli2srv_bytes - prev_cli2srv_last_bytes;
-
-    if(diff > 0)
-      return(diff);
-    else
-      return(0);
-  }
+  int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
+  
+  /*
+    We need to do this as due to concurrency issues,
+    we might have a negative value
+  */
+  return((diff > 0) ? diff : 0);
 };
 
 /* *************************************** */
 
 u_int64_t Flow::get_current_bytes_srv2cli() {
-  if((srv2cli_last_bytes == 0) && (prev_srv2cli_last_bytes == 0))
-    return(srv2cli_bytes);
-  else {
-    int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
-
-    if(diff > 0)
-      return(diff);
-
-    /*
-      We need to do this as due to concurrency issues,
-      we might have a negative value
-    */
-    diff = srv2cli_bytes - prev_srv2cli_last_bytes;
-
-    if(diff > 0)
-      return(diff);
-    else
-      return(0);
-  }
+  int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
+  
+  /*
+    We need to do this as due to concurrency issues,
+    we might have a negative value
+  */        
+  return((diff > 0) ? diff : 0);
 };
 
 /* *************************************** */
 
 u_int64_t Flow::get_current_packets_cli2srv() {
-  if((cli2srv_last_packets == 0) && (prev_cli2srv_last_packets == 0))
-    return(cli2srv_packets);
-  else {
-    int64_t diff = cli2srv_packets - cli2srv_last_packets;
-
-    if(diff > 0)
-      return(diff);
-
-    /*
-      We need to do this as due to concurrency issues,
-      we might have a negative value
-    */
-    diff = cli2srv_packets - prev_cli2srv_last_packets;
-
-    if(diff > 0)
-      return(diff);
-    else
-      return(0);
-  }
+  int64_t diff = cli2srv_packets - cli2srv_last_packets;
+  
+  /*
+    We need to do this as due to concurrency issues,
+    we might have a negative value
+  */
+  return((diff > 0) ? diff : 0);
 };
 
 /* *************************************** */
 
 u_int64_t Flow::get_current_packets_srv2cli() {
-  if((srv2cli_last_packets == 0) && (prev_srv2cli_last_packets == 0))
-    return(srv2cli_packets);
-  else {
-    int64_t diff = srv2cli_packets - srv2cli_last_packets;
-
-    if(diff > 0)
-      return(diff);
-
-    /*
-      We need to do this as due to concurrency issues,
-      we might have a negative value
-    */
-    diff = srv2cli_packets - prev_srv2cli_last_packets;
-
-    if(diff > 0)
-      return(diff);
-    else
-      return(0);
-  }
+  int64_t diff = srv2cli_packets - srv2cli_last_packets;
+  
+  /*
+    We need to do this as due to concurrency issues,
+    we might have a negative value
+  */
+  return((diff > 0) ? diff : 0);
 };
 
 
