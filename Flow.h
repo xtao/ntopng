@@ -95,7 +95,10 @@ class Flow : public GenericHashEntry {
   u_int32_t getFatherPid(bool client);
   char* get_username(bool client);
   char* get_proc_name(bool client);
-  void updateTcpFlags(time_t when, u_int8_t flags, bool src2dst_direction);
+  void updateTcpFlags(const struct timeval *when, u_int8_t flags, bool src2dst_direction);
+  void updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num, 
+		       u_int32_t ack_seq_num, u_int8_t flags,
+		       u_int16_t payload_len, bool src2dst_direction);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(const char *json);

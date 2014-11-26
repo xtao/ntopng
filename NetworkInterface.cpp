@@ -390,8 +390,12 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
   if(flow == NULL) return;
 
   /* Check if this is an EPP flow" */
-  if(zflow->l4_proto == IPPROTO_TCP) 
-    flow->updateTcpFlags(last_pkt_rcvd, zflow->tcp_flags, src2dst_direction);
+  if(zflow->l4_proto == IPPROTO_TCP) {
+    struct timeval when;
+
+    when.tv_sec = last_pkt_rcvd, when.tv_usec = 0;
+    flow->updateTcpFlags((const struct timeval*)&when, zflow->tcp_flags, src2dst_direction);
+  }
 
   flow->addFlowStats(src2dst_direction,
 		     zflow->pkt_sampling_rate*zflow->in_pkts,
@@ -434,13 +438,14 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
 
 /* **************************************************** */
 
-void NetworkInterface::packet_processing(const u_int32_t when,
+void NetworkInterface::packet_processing(const struct timeval *when,
 					 const u_int64_t time,
 					 struct ndpi_ethhdr *eth,
 					 u_int16_t vlan_id,
 					 struct ndpi_iphdr *iph,
 					 struct ndpi_ip6_hdr *ip6,
-					 u_int16_t ipsize, u_int16_t rawsize)
+					 u_int16_t ipsize,
+					 u_int16_t rawsize)
 {
   bool src2dst_direction;
   u_int8_t l4_proto;
@@ -534,12 +539,18 @@ void NetworkInterface::packet_processing(const u_int32_t when,
 		 l4_proto, &src2dst_direction, last_pkt_rcvd, last_pkt_rcvd, &new_flow);
 
   if(flow == NULL) {
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN,
+	     rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     return;
   } else {
     flow->incStats(src2dst_direction, rawsize);
-    if(l4_proto == IPPROTO_TCP)
+
+    if(l4_proto == IPPROTO_TCP) {
       flow->updateTcpFlags(when, tcp_flags, src2dst_direction);
+      flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq), 
+			    tcp_flags, l4_packet_len - (4 * tcph->doff), 
+			    src2dst_direction);
+    }
   }
 
   if(new_flow) {
@@ -781,7 +792,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       }
 
       try {
-	packet_processing(h->ts.tv_sec, time, ethernet, vlan_id, iph,
+	packet_processing(&h->ts, time, ethernet, vlan_id, iph,
 			  NULL, h->caplen - ip_offset, h->caplen);
       } catch(std::bad_alloc& ba) {
 	static bool oom_warning_sent = false;
@@ -803,7 +814,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 	return;
       } else {
 	try {
-	  packet_processing(h->ts.tv_sec, time, ethernet, vlan_id,
+	  packet_processing(&h->ts, time, ethernet, vlan_id,
 			    NULL, ip6, h->len - ip_offset, h->len);
 	} catch(std::bad_alloc& ba) {
 	  static bool oom_warning_sent = false;

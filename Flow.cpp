@@ -1148,13 +1148,13 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 
 /* *************************************** */
 
-void Flow::updateTcpFlags(time_t when, u_int8_t flags, bool src2dst_direction) {
+void Flow::updateTcpFlags(const struct timeval *when, u_int8_t flags, bool src2dst_direction) {
   if((flags == TH_SYN)
      && ((src2dst_tcp_flags | dst2src_tcp_flags) == TH_SYN) /* SYN was already received */
      && (cli2srv_packets > 2 /* We tolerate two SYN at the beginning of the connection */)
      && ((last_seen-first_seen) < 2 /* (sec) SYN flood must be quick */)
      && cli_host)
-    cli_host->updateSynFlags(when, flags, this);
+    cli_host->updateSynFlags(when->tv_sec, flags, this);
 
   /* The update below must be after the above check */
   if(src2dst_direction)
@@ -1167,6 +1167,15 @@ void Flow::updateTcpFlags(time_t when, u_int8_t flags, bool src2dst_direction) {
   } else if(flags == (TH_SYN|TH_ACK)) {
     cli2srv_direction = !src2dst_direction;
   }
+}
+
+/* *************************************** */
+
+void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num, 
+			   u_int32_t ack_seq_num, u_int8_t flags,
+			   u_int16_t payload_Len, bool src2dst_direction) {
+
+
 }
 
 /* *************************************** */

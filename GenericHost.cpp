@@ -194,8 +194,8 @@ bool GenericHost::triggerAlerts() {
  *
  * @param when Time of the event
  */
-void GenericHost::incFlowCount(time_t when, Flow *f) {
-  if(flow_count_alert->incHits(when)) {
+void GenericHost::incFlowCount(const struct timeval *when, Flow *f) {
+  if(flow_count_alert->incHits(when->tv_sec)) {
     char ip_buf[48], msg[512], *h;
     
     if(!triggerAlerts()) return;

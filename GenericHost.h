@@ -66,7 +66,7 @@ class GenericHost : public GenericHashEntry {
   inline NdpiStats* get_ndpi_stats()       { return(ndpiStats); };
   inline ActivityStats* getActivityStats() { return(&activityStats); };
   inline u_int16_t get_vlan_id()           { return(vlan_id);        };
-  void incFlowCount(time_t when, Flow *f);
+  void incFlowCount(const struct timeval *when, Flow *f);
   void incStats(u_int8_t l4_proto, u_int ndpi_proto, u_int64_t sent_packets, 
 		u_int64_t sent_bytes, u_int64_t rcvd_packets, u_int64_t rcvd_bytes);
   inline void incrContact(NetworkInterface *iface, u_int32_t me_serial, IpAddress *peer, 
