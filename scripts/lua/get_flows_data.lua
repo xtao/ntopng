@@ -449,6 +449,11 @@ for _key, _value in pairsByKeys(vals, funct) do
    if(value["category"] ~= nil) then print (", \"column_category\" : \"" .. getCategory(value["category"])) else print (",") end
    -- if (debug) then io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")   end
    print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
+
+   if(value["tcp.seq_problems"] == true) then
+      print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
+   end
+
    app = getApplicationLabel(value["proto.ndpi"])
    print ("\", \"column_ndpi\" : \"<A HREF=".. ntop.getHttpPrefix().."/lua/hosts_stats.lua?protocol=" .. value["proto.ndpi"] ..">"..app.." " .. formatBreed(value["proto.ndpi_breed"]) .."</A>")
    if(value["client_process"] ~= nil) then

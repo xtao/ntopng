@@ -36,6 +36,7 @@ class Flow : public GenericHashEntry {
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
+    
   struct {
     char *category;
     bool flow_categorized;
@@ -52,6 +53,27 @@ class Flow : public GenericHashEntry {
     char *name;
   } aggregationInfo;
 
+  /* TCP stats */
+  struct {
+    u_int32_t pktRetr, pktOOO, pktLost;
+    u_int64_t last, next;     
+  } tcp_stats_s2d;
+  
+  struct {
+    u_int32_t pktRetr, pktOOO, pktLost;
+    u_int64_t last, next;     
+  } tcp_stats_d2s;
+  
+  struct timeval synTime, synAckTime; /* network Latency (3-way handshake) */
+  struct timeval clientNwLatency; /* The RTT/2 between the client and nprobe */
+  struct timeval serverNwLatency; /* The RTT/2 between nprobe and the server */
+  struct timeval src2dstApplLatency, dst2srcApplLatency; /* Application Latency */
+  
+  struct {
+    struct timeval firstSeenSent, lastSeenSent;
+    struct timeval firstSeenRcvd, lastSeenRcvd;
+  }flowTimers;
+  
   /* Counter values at last host update */
   struct {
     u_int32_t cli2srv_packets, srv2cli_packets;
@@ -60,6 +82,7 @@ class Flow : public GenericHashEntry {
   } last_db_dump;
 
   struct timeval last_update_time;
+  
   float bytes_thpt, top_bytes_thpt, pkts_thpt, top_pkts_thpt;
   ValueTrend bytes_thpt_trend,pkts_thpt_trend;
   u_int64_t cli2srv_last_packets, srv2cli_last_packets,
@@ -67,12 +90,15 @@ class Flow : public GenericHashEntry {
   u_int64_t cli2srv_last_bytes, srv2cli_last_bytes,
     prev_cli2srv_last_bytes, prev_srv2cli_last_bytes;  
 
+    
+    //  tcpFlags = tp->th_flags, tcpSeqNum = ntohl(tp->th_seq), tcpAckNum = ntohl(tp->th_ack), tcpWin = ntohs(tp->th_win);
   char* intoaV4(unsigned int addr, char* buf, u_short bufLen);
   void processLua(lua_State* vm, ProcessInfo *proc, bool client);
   void processJson(bool is_src, json_object *my_object, ProcessInfo *proc);
   void checkBlacklistedFlow();
   void allocFlowMemory();
 
+  
  public:
   Flow(NetworkInterface *_iface,
        u_int16_t _vlanId, u_int8_t _protocol,
@@ -95,10 +121,18 @@ class Flow : public GenericHashEntry {
   u_int32_t getFatherPid(bool client);
   char* get_username(bool client);
   char* get_proc_name(bool client);
+  u_int32_t getNextTcpSeq ( u_int8_t tcpFlags, u_int32_t tcpSeqNum, u_int32_t payloadLen) ;
+
+  double toMs(const struct timeval *t);
+  void timeval_diff(struct timeval *begin, const struct timeval *end, struct timeval *result, u_short divide_by_two) ;
+  
   void updateTcpFlags(const struct timeval *when, u_int8_t flags, bool src2dst_direction);
+  
   void updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num, 
 		       u_int32_t ack_seq_num, u_int8_t flags,
 		       u_int16_t payload_len, bool src2dst_direction);
+  
+  void updateSeqNum(time_t when, u_int32_t sN, u_int32_t aN);
   void processDetectedProtocol();
   void setDetectedProtocol(u_int16_t proto_id);
   void setJSONInfo(const char *json);
@@ -118,6 +152,10 @@ class Flow : public GenericHashEntry {
   inline u_int8_t  get_protocol()                 { return(protocol);                        };
   inline u_int64_t get_bytes()                    { return(cli2srv_bytes+srv2cli_bytes);     };
   inline u_int64_t get_packets()                  { return(cli2srv_packets+srv2cli_packets); };
+  
+  /** */
+  /** */
+  
   inline char* get_protocol_name()                { return(Utils::l4proto2name(protocol));   };
   inline u_int16_t get_detected_protocol()        { return(ndpi_detected_protocol);          };
   inline char* get_detected_protocol_name()       { return(ndpi_get_proto_name(iface->get_ndpi_struct(), ndpi_detected_protocol)); };
@@ -128,6 +166,9 @@ class Flow : public GenericHashEntry {
   inline char* get_protocol_breed_name()       { return(ndpi_get_proto_breed_name(iface->get_ndpi_struct(), 
 										  ndpi_get_proto_breed(iface->get_ndpi_struct(), 
 												       ndpi_detected_protocol))); };
+  u_int32_t get_packetsLost ();
+  u_int32_t get_packetsRetr ();
+  u_int32_t get_packetsOOO ();
 
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();

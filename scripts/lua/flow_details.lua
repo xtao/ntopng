@@ -165,7 +165,17 @@ else
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
-   if( (flow["tcp_flags"] ~= nil) and (flow["tcp_flags"] > 0) ) then
+   if(flow["tcp.seq_problems"]) then
+      print("<tr><th width=30%>TCP Packet Analysis</th><td colspan=2>")
+      print("<table class=\"table table-bordered table-striped\">\n")
+      print("<tr><th width=30%>&nbsp;</th><th width=35%>Client to Server</th><th width=35%>Server to Client</th></tr>\n")
+      print("<tr><th>Retransmissions</th><td align=right>".. formatPackets(flow["cli2srv.retransmission"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.retransmission"]) .."</td></tr>\n")
+      print("<tr><th>Out of Order</th><td align=right>".. formatPackets(flow["cli2srv.out_of_order"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.out_of_order"]) .."</td></tr>\n")
+      print("<tr><th>Lost</th><td align=right>".. formatPackets(flow["cli2srv.lost"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.lost"]) .."</td></tr>\n")
+      print("</table></td></tr>\n")
+   end
+
+   if( (flow["tcp_flags"] ~= nil) and (flow["tcp_flags"] > 0)) then
       print("<tr><th width=30%>TCP Flags</th><td colspan=2>")
 
       flow_completed = false

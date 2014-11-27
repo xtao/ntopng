@@ -35,14 +35,14 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
   json_info = strdup("{}"), cli2srv_direction = true;
-  src2dst_tcp_flags = dst2src_tcp_flags = 0, last_update_time.tv_sec = 0, 
+  src2dst_tcp_flags = dst2src_tcp_flags = 0, last_update_time.tv_sec = 0,
     bytes_thpt = top_bytes_thpt = pkts_thpt = top_pkts_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
   cli2srv_last_packets = prev_cli2srv_last_packets = 0, srv2cli_last_packets = prev_srv2cli_last_packets = 0;
 
   last_db_dump.cli2srv_packets = 0, last_db_dump.srv2cli_packets = 0,
     last_db_dump.cli2srv_bytes = 0, last_db_dump.srv2cli_bytes = 0, last_db_dump.last_dump = 0;
-  
+
   iface->findFlowHosts(_vlanId, cli_mac, _cli_ip, &cli_host, srv_mac, _srv_ip, &srv_host);
   if(cli_host) { cli_host->incUses(); if(srv_host) cli_host->incrContact(srv_host, true);  }
   if(srv_host) { srv_host->incUses(); if(cli_host) srv_host->incrContact(cli_host, false); }
@@ -127,14 +127,14 @@ void Flow::checkBlacklistedFlow() {
        && (cli_host->is_blacklisted()
 	   || srv_host->is_blacklisted())) {
       char c_buf[64], s_buf[64], *c, *s, fbuf[256], alert_msg[1024];
-      
+
       c = cli_host->get_ip()->print(c_buf, sizeof(c_buf));
       s = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
-      
-      snprintf(alert_msg, sizeof(alert_msg), 
+
+      snprintf(alert_msg, sizeof(alert_msg),
 	       "%s <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> contacted %s host <A HREF='/lua/host_details.lua?host=%s&ifname=%s'>%s</A> [%s]",
 	       cli_host->is_blacklisted() ? "Blacklisted host" : "Host",
-	       c, iface->get_name(), cli_host->get_name() ? cli_host->get_name() : c, 
+	       c, iface->get_name(), cli_host->get_name() ? cli_host->get_name() : c,
 	       srv_host->is_blacklisted() ? "blacklisted" : "",
 	       s, iface->get_name(), srv_host->get_name() ? srv_host->get_name() : s,
 	       print(fbuf, sizeof(fbuf)));
@@ -304,16 +304,16 @@ void Flow::processDetectedProtocol() {
 	Host *srv = get_real_server();
 
 	/* Check if the name isn't numeric */
-	if(strcmp((const char*)ndpi_flow->host_server_name, 
+	if(strcmp((const char*)ndpi_flow->host_server_name,
 		  srv->get_ip()->print(buf, sizeof(buf)))) {
 	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
-	  
+
 	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
 					       buf, sizeof(buf), true) != NULL) {
 	    categorization.flow_categorized = true;
 	    categorization.category = strdup(buf);
 	  }
-	  
+
 	  if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
 	    srv->setName((char*)ndpi_flow->host_server_name, true);
 	    ntop->getRedis()->setResolvedAddress(srv->get_ip()->print(buf, sizeof(buf)),
@@ -373,7 +373,7 @@ void Flow::setDetectedProtocol(u_int16_t proto_id) {
 void Flow::setJSONInfo(const char *json) {
   if(json == NULL) return;
 
-  if (json_info != NULL) free(json_info);
+  if(json_info != NULL) free(json_info);
   json_info = strdup(json);
 }
 
@@ -412,10 +412,10 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
     *--cp = byte % 10 + '0';
     byte /= 10;
-    if (byte > 0) {
+    if(byte > 0) {
       *--cp = byte % 10 + '0';
       byte /= 10;
-      if (byte > 0)
+      if(byte > 0)
 	*--cp = byte + '0';
     }
     *--cp = '.';
@@ -432,7 +432,7 @@ char* Flow::intoaV4(unsigned int addr, char* buf, u_short bufLen) {
 
 u_int64_t Flow::get_current_bytes_cli2srv() {
   int64_t diff = cli2srv_bytes - cli2srv_last_bytes;
-  
+
   /*
     We need to do this as due to concurrency issues,
     we might have a negative value
@@ -444,11 +444,11 @@ u_int64_t Flow::get_current_bytes_cli2srv() {
 
 u_int64_t Flow::get_current_bytes_srv2cli() {
   int64_t diff = srv2cli_bytes - srv2cli_last_bytes;
-  
+
   /*
     We need to do this as due to concurrency issues,
     we might have a negative value
-  */        
+  */
   return((diff > 0) ? diff : 0);
 };
 
@@ -456,7 +456,7 @@ u_int64_t Flow::get_current_bytes_srv2cli() {
 
 u_int64_t Flow::get_current_packets_cli2srv() {
   int64_t diff = cli2srv_packets - cli2srv_last_packets;
-  
+
   /*
     We need to do this as due to concurrency issues,
     we might have a negative value
@@ -468,7 +468,7 @@ u_int64_t Flow::get_current_packets_cli2srv() {
 
 u_int64_t Flow::get_current_packets_srv2cli() {
   int64_t diff = srv2cli_packets - srv2cli_last_packets;
-  
+
   /*
     We need to do this as due to concurrency issues,
     we might have a negative value
@@ -533,7 +533,7 @@ void Flow::print_peers(lua_State* vm, patricia_tree_t * ptree, bool verbose) {
 	   dst->Host::get_name(buf2, sizeof(buf2), false));
 #else
   /*Use the ip@vlan_id as a key only in case of multi vlan_id, otherwise use only the ip as a key*/
-  if ((get_cli_host()->get_vlan_id() == 0) && (get_srv_host()->get_vlan_id() == 0)){
+  if((get_cli_host()->get_vlan_id() == 0) && (get_srv_host()->get_vlan_id() == 0)) {
     snprintf(buf, sizeof(buf), "%s %s",
 	     intoaV4(ntohl(get_cli_ipv4()), buf1, sizeof(buf1)),
 	     intoaV4(ntohl(get_srv_ipv4()), buf2, sizeof(buf2)));
@@ -595,7 +595,7 @@ void Flow::dumpFlow(bool partial_dump) {
 
     if(ntop->get_export_interface()) {
       char *json = serialize(partial_dump, false);
-      
+
       if(json) {
 	ntop->get_export_interface()->export_data(json);
 	free(json);
@@ -840,8 +840,8 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
      || iface->is_sprobe_interface()) {
     lua_push_str_table_entry(vm, "proto.ndpi", get_detected_protocol_name());
   } else {
-    lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);    
-  } 
+    lua_push_str_table_entry(vm, "proto.ndpi", (char*)CONST_TOO_EARLY);
+  }
   lua_push_str_table_entry(vm, "proto.ndpi_breed", get_protocol_breed_name());
 
   lua_push_int_table_entry(vm, "bytes", cli2srv_bytes+srv2cli_bytes);
@@ -858,9 +858,28 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
   lua_push_int_table_entry(vm, "cli2srv.packets", cli2srv_packets);
   lua_push_int_table_entry(vm, "srv2cli.packets", srv2cli_packets);
 
+  if(protocol == IPPROTO_TCP) {
+    lua_push_bool_table_entry(vm, "tcp.seq_problems", 
+			      (tcp_stats_s2d.pktRetr 
+			       | tcp_stats_s2d.pktOOO 
+			       | tcp_stats_s2d.pktLost
+			       | tcp_stats_d2s.pktRetr 
+			       | tcp_stats_d2s.pktOOO 
+			       | tcp_stats_d2s.pktLost) ? true : false);
+  }
+
   if(detailed_dump) {
     lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
     lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
+
+    if(protocol == IPPROTO_TCP) {
+      lua_push_int_table_entry(vm, "cli2srv.retransmission", tcp_stats_s2d.pktRetr);
+      lua_push_int_table_entry(vm, "cli2srv.out_of_order", tcp_stats_s2d.pktOOO);
+      lua_push_int_table_entry(vm, "cli2srv.lost", tcp_stats_s2d.pktLost);
+      lua_push_int_table_entry(vm, "srv2cli.retransmission", tcp_stats_d2s.pktRetr);
+      lua_push_int_table_entry(vm, "srv2cli.out_of_order", tcp_stats_d2s.pktOOO);
+      lua_push_int_table_entry(vm, "srv2cli.lost", tcp_stats_d2s.pktLost);
+    }
   }
 
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
@@ -880,7 +899,7 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
 
   if(!detailed_dump) {
     lua_Integer k = key();
-  
+
     lua_pushinteger(vm, k); // Index
     lua_insert(vm, -2);
     lua_settable(vm, -3);
@@ -929,11 +948,11 @@ bool Flow::isFlowPeer(char *numIP, u_int16_t vlanId) {
   if((!cli_host) || (!srv_host)) return(false);
 
   ret = cli_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if ((strcmp(ret, numIP) == 0) &&
+  if((strcmp(ret, numIP) == 0) &&
       (cli_host->get_vlan_id() == vlanId))return(true);
 
   ret = srv_host->get_ip()->print(s_buf, sizeof(s_buf));
-  if ((strcmp(ret, numIP) == 0) &&
+  if((strcmp(ret, numIP) == 0) &&
       (cli_host->get_vlan_id() == vlanId))return(true);
 
   return(false);
@@ -979,7 +998,7 @@ char* Flow::serialize(bool partial_dump, bool es_json) {
 
     /* JSON string */
     rsp = strdup(json_object_to_json_string(es_object));
-   
+
     /* Free memory (it will also free enclosed object my_object) */
     json_object_put(es_object);
   } else {
@@ -988,7 +1007,7 @@ char* Flow::serialize(bool partial_dump, bool es_json) {
     my_object = flow2json(partial_dump);
     rsp = strdup(json_object_to_json_string(my_object));
     ntop->getTrace()->traceEvent(TRACE_DEBUG, "Emitting Flow: %s", rsp);
-    
+
     /* Free memory */
     json_object_put(my_object);
   }
@@ -1090,7 +1109,7 @@ json_object* Flow::flow2json(bool partial_dump) {
   if(client_proc != NULL) processJson(true, my_object, client_proc);
   if(server_proc != NULL) processJson(false, my_object, server_proc);
 
-  if (0) { /* TODO */
+  if(0) { /* TODO */
     json_object_object_add(my_object, "throughput_bps", json_object_new_double(bytes_thpt));
     json_object_object_add(my_object, "throughput_trend_bps", json_object_new_string(Utils::trend2str(bytes_thpt_trend)));
 
@@ -1138,7 +1157,7 @@ void Flow::addFlowStats(bool cli2srv_direction, u_int in_pkts, u_int in_bytes,
 			u_int out_pkts, u_int out_bytes, time_t last_seen) {
   updateSeen(last_seen);
 
-  if (cli2srv_direction)
+  if(cli2srv_direction)
     cli2srv_packets += in_pkts, cli2srv_bytes += in_bytes, srv2cli_packets += out_pkts, srv2cli_bytes += out_bytes;
   else
     cli2srv_packets += out_pkts, cli2srv_bytes += out_bytes, srv2cli_packets += in_pkts, srv2cli_bytes += in_bytes;
@@ -1164,18 +1183,136 @@ void Flow::updateTcpFlags(const struct timeval *when, u_int8_t flags, bool src2d
 
   if(flags == TH_SYN) {
     cli2srv_direction = src2dst_direction;
+    memcpy(&synTime, when, sizeof(struct timeval));
   } else if(flags == (TH_SYN|TH_ACK)) {
     cli2srv_direction = !src2dst_direction;
+    memcpy(&synAckTime, when, sizeof(struct timeval));
   }
 }
 
 /* *************************************** */
 
-void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num, 
+void Flow::timeval_diff(struct timeval *begin, const struct timeval *end,
+			struct timeval *result, u_short divide_by_two) {
+  if(end->tv_sec >= begin->tv_sec) {
+    result->tv_sec = end->tv_sec-begin->tv_sec;
+
+    if((end->tv_usec - begin->tv_usec) < 0) {
+      result->tv_usec = 1000000 + end->tv_usec - begin->tv_usec;
+      if(result->tv_usec > 1000000) begin->tv_usec = 1000000;
+      result->tv_sec--;
+    } else
+      result->tv_usec = end->tv_usec-begin->tv_usec;
+
+    if(divide_by_two)
+      result->tv_sec /= 2, result->tv_usec /= 2;
+  } else
+    result->tv_sec = 0, result->tv_usec = 0;
+}
+
+/* *************************************** */
+
+double Flow::toMs(const struct timeval *t) {
+  return(((double)t->tv_sec)*1000+((double)t->tv_usec)/1000);
+}
+
+/* *************************************** */
+
+u_int32_t Flow::getNextTcpSeq ( u_int8_t tcpFlags,
+				u_int32_t tcpSeqNum,
+				u_int32_t payloadLen) {
+  return(tcpSeqNum + ((tcpFlags & TH_SYN) ? 1 : 0) + payloadLen);
+}
+
+/* *************************************** */
+
+void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num,
 			   u_int32_t ack_seq_num, u_int8_t flags,
 			   u_int16_t payload_Len, bool src2dst_direction) {
+  u_int32_t next_seq_num;
+  bool update_last_seqnum = true;
+  bool debug = false;
 
+  next_seq_num = getNextTcpSeq(flags, seq_num, payload_Len);
 
+  if(src2dst_direction == true) {
+    double msLatency, lastLatency;
+
+    if((tcp_stats_s2d.next == seq_num)
+       && (tcp_stats_d2s.next == ack_seq_num)
+       && (synTime.tv_sec == 0)
+       && (clientNwLatency.tv_sec == 0) && (clientNwLatency.tv_usec == 0)) {
+      msLatency = toMs(when) - toMs(&(flowTimers.lastSeenRcvd));
+      lastLatency = toMs(&clientNwLatency);
+
+      if((msLatency < lastLatency) || (lastLatency == 0))
+	timeval_diff(&(flowTimers.lastSeenRcvd), when, &clientNwLatency, 1);
+    } else {
+      if((tcp_stats_d2s.next == seq_num)
+	 && (tcp_stats_s2d.next == ack_seq_num)
+	 && ((serverNwLatency.tv_sec == 0) && (serverNwLatency.tv_usec == 0))) {
+	/* This is what we waited for */
+	msLatency = toMs(when) - toMs(&(flowTimers.lastSeenSent));
+	lastLatency = toMs(&serverNwLatency);
+
+	if((msLatency < lastLatency) || (lastLatency == 0))
+	  timeval_diff(&(flowTimers.lastSeenSent), when, &serverNwLatency, 1);
+      }
+    }
+  }
+
+  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[act: %u][ack: %u]", seq_num, ack_seq_num);
+
+  if(src2dst_direction == true) {
+    if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_s2d.last, tcp_stats_s2d.next);
+
+    if(tcp_stats_s2d.next > 0) {
+      if((tcp_stats_s2d.next != seq_num) 
+	 && (tcp_stats_s2d.next != (seq_num-1))) {
+	if(tcp_stats_s2d.last == seq_num) {
+	  tcp_stats_s2d.pktRetr++;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet retransmission");
+	} else if((tcp_stats_s2d.last > seq_num)
+		  && (seq_num < tcp_stats_s2d.next)) {
+	  tcp_stats_s2d.pktLost++;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet lost [last: %u][act: %u]", tcp_stats_s2d.last, seq_num);
+	} else {
+	  tcp_stats_s2d.pktOOO++;
+
+	  update_last_seqnum = ((seq_num - 1) > tcp_stats_s2d.last) ? true : false;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet OOO [last: %u][act: %u]", tcp_stats_s2d.last, seq_num);
+	}
+      }
+    }
+
+    tcp_stats_s2d.next = next_seq_num;
+    if(update_last_seqnum) tcp_stats_s2d.last = seq_num;
+  } else {
+    if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_d2s.last, tcp_stats_d2s.next);
+
+    if(tcp_stats_d2s.next > 0) {
+      if((tcp_stats_d2s.next != seq_num) 
+	 && (tcp_stats_d2s.next != (seq_num-1))) {
+	if(tcp_stats_d2s.last == seq_num) {
+	  tcp_stats_d2s.pktRetr++;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet retransmission");
+	  // bytes
+	} else if((tcp_stats_d2s.last > seq_num)
+		  && (seq_num < tcp_stats_d2s.next)) {
+	  tcp_stats_d2s.pktLost++;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet lost [last: %u][act: %u]", tcp_stats_d2s.last, seq_num);
+	} else {
+	  tcp_stats_d2s.pktOOO++;
+	  update_last_seqnum = ((seq_num - 1) > tcp_stats_d2s.last) ? true : false;
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_d2s.last, tcp_stats_d2s.next);	  
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet OOO [last: %u][act: %u]", tcp_stats_d2s.last, seq_num);
+	}
+      }
+    }
+
+    tcp_stats_d2s.next = next_seq_num;
+    if(update_last_seqnum) tcp_stats_d2s.last = seq_num;
+  }
 }
 
 /* *************************************** */
@@ -1238,8 +1375,8 @@ char* Flow::get_proc_name(bool client) {
 
 /* *************************************** */
 
-bool Flow::match(patricia_tree_t *ptree) { 
-  if((cli_host && cli_host->match(ptree))	
+bool Flow::match(patricia_tree_t *ptree) {
+  if((cli_host && cli_host->match(ptree))
      || (srv_host && srv_host->match(ptree)))
     return(true);
   else
