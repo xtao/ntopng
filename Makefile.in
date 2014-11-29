@@ -64,7 +64,7 @@ ifeq ($(HAS_ZEROMQ), 0)
 		ZEROMQ_LIB = $(ZMQ_STATIC)
 	endif
 else
-	ZEROMQ_HOME=./third-party/zeromq-3.2.4
+	ZEROMQ_HOME=./third-party/zeromq-4.0.5
 	ZEROMQ_INC=-I$(ZEROMQ_HOME)/include
 	ZEROMQ_LIB=$(ZEROMQ_HOME)/src/.libs/libzmq.a
 endif
