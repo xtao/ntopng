@@ -52,6 +52,7 @@ Flow::Flow(NetworkInterface *_iface,
   pkts_thpt_trend = trend_unknown;
   protocol_processed = false;
 
+  memset(&tcp_stats_s2d, 0, sizeof(tcp_stats_s2d)), memset(&tcp_stats_d2s, 0, sizeof(tcp_stats_d2s));
   aggregationInfo.name = NULL;
   /*
     NOTE
