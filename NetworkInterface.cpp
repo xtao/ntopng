@@ -293,7 +293,6 @@ Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t 
 		     src_eth, src_ip, src_port,
 		     dst_eth, dst_ip, dst_port,
 		     first_seen, last_seen);
-
     } catch(std::bad_alloc& ba) {
       static bool oom_warning_sent = false;
 
@@ -394,7 +393,8 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
     struct timeval when;
 
     when.tv_sec = last_pkt_rcvd, when.tv_usec = 0;
-    flow->updateTcpFlags((const struct timeval*)&when, zflow->tcp_flags, src2dst_direction);
+    flow->updateTcpFlags((const struct timeval*)&when,
+			 zflow->tcp_flags, src2dst_direction);
   }
 
   flow->addFlowStats(src2dst_direction,
@@ -624,7 +624,9 @@ void NetworkInterface::packet_processing(const struct timeval *when,
 
 	ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 				      ip, ipsize, (u_int32_t)time,
-				      cli, srv);
+				      src2dst_direction ? cli : srv,
+				      src2dst_direction ? srv : cli);
+
 	if(ndpi_flow->protos.dns.ret_code != 0) {
 	  /*
 	    This is a negative reply thus we notify the system that
