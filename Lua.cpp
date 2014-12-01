@@ -1949,10 +1949,10 @@ static int ntop_get_resolved_address(lua_State* vm) {
 
 /* ****************************************** */
 
-static int ntop_snmpget(lua_State* vm) {
+static int ntop_snmp_get_fctn(lua_State* vm, int operation) {
   char *agent_host, *oid, *community;
   u_int agent_port = 161, timeout = 5, request_id = time(NULL);
-  int sock, rc = CONST_LUA_OK;
+  int sock, i = 0, rc = CONST_LUA_OK;
   SNMPMessage *message;
   int len;
   unsigned char *buf;
@@ -1973,11 +1973,18 @@ static int ntop_snmpget(lua_State* vm) {
   message = snmp_create_message();
   snmp_set_version(message, 0);
   snmp_set_community(message, community);
-  snmp_set_pdu_type(message, SNMP_GET_REQUEST_TYPE);
+  snmp_set_pdu_type(message, operation);
   snmp_set_request_id(message, request_id);
   snmp_set_error(message, 0);
   snmp_set_error_index(message, 0);
   snmp_add_varbind_null(message, oid);
+
+  /* Add additional OIDs */
+  i = 4; 
+  while(lua_type(vm, i) == LUA_TSTRING) {
+    snmp_add_varbind_null(message, (char*)lua_tostring(vm, i));
+    i++;
+  }
 
   len = snmp_message_length(message);
   buf = (unsigned char*)malloc(len);
@@ -1996,25 +2003,31 @@ static int ntop_snmpget(lua_State* vm) {
     char buf[BUFLEN];
     SNMPMessage *message;
     char *sender_host, *oid_str,  *value_str;
-    int sender_port, len;
+    int sender_port, added = 0, len;
 
     len = receive_udp_datagram(buf, BUFLEN, sock, &sender_host, &sender_port);
     message = snmp_parse_message(buf, len);
 
-    if(snmp_get_varbind_as_string(message, 0, &oid_str, NULL, &value_str)) {
-      lua_createtable(vm, 1 /* num_results */, 0);
-      lua_pushstring(vm, oid_str);
-      lua_rawseti (vm, -2, 0);
-      lua_pushstring(vm, value_str);
-      lua_rawseti (vm, -2, 1);
+    i = 0;
+    while(snmp_get_varbind_as_string(message, i, &oid_str, NULL, &value_str)) {
+      if(!added) lua_newtable(vm), added = 1;
+      lua_push_str_table_entry(vm, oid_str, value_str);
+      i++;
     }
 
     snmp_destroy_message(message);
+
+    if(!added) 
+      lua_pushnil(vm), rc = CONST_LUA_ERROR;
   }
   close(sock);
 
   return(rc);
 }
+/* ****************************************** */
+
+static int ntop_snmpget(lua_State* vm)     { return(ntop_snmp_get_fctn(vm, SNMP_GET_REQUEST_TYPE)); }
+static int ntop_snmpgetnext(lua_State* vm) { return(ntop_snmp_get_fctn(vm, SNMP_GETNEXT_REQUEST_TYPE)); }
 
 /* ****************************************** */
 
@@ -2833,6 +2846,7 @@ static const luaL_Reg ntop_reg[] = {
 
   /* SNMP */
   { "snmpget",        ntop_snmpget },
+  { "snmpgetnext",    ntop_snmpgetnext },
 
   /* SQLite */
   { "execQuery",      ntop_sqlite_exec_query },

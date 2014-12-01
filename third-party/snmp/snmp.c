@@ -237,6 +237,7 @@ SNMPMessage *snmp_parse_message(void *buffer, int len)
       switch (type)
         {
 	case ASN1_NULL_TYPE:
+	case ASN1_OID_TYPE: // <--- FIX
 	  asn1_parse_primitive_value(parser, NULL, &value);
 	  snmp_add_varbind_null(message, oid);
 	  break;
