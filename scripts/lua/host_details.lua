@@ -431,6 +431,12 @@ end
 
    print("<tr><th>Flows 'As Client' / 'As Server'</th><td><span id=flows_as_client>" .. formatValue(host["flows.as_client"]) .. "</span> <span id=as_client_trend></span></td><td><span id=flows_as_server>" .. formatValue(host["flows.as_server"]) .. "</span> <span id=as_server_trend></td></tr>\n")
 
+   if(host["tcp.packets.seq_problems"]) then
+      print("<tr><th width=30% rowspan=3>TCP Packets Sent Analysis</th><th>Retransmissions</th><td align=right><span id=pkt_retransmissions>".. formatPackets(host["tcp.packets.retransmissions"]) .."</span> <span id=pkt_retransmissions_trend></span></td></tr>\n")
+      print("<tr></th><th>Out of Order</th><td align=right><span id=pkt_ooo>".. formatPackets(host["tcp.packets.out_of_order"]) .."</span> <span id=pkt_ooo_trend></span></td></tr>\n")
+      print("<tr></th><th>Lost</th><td align=right><span id=pkt_lost>".. formatPackets(host["tcp.packets.lost"]) .."</span> <span id=pkt_lost_trend></span></td></tr>\n")
+   end
+
    if(host["json"] ~= nil) then print("<tr><th><A HREF=http://en.wikipedia.org/wiki/JSON>JSON</A></th><td colspan=2><i class=\"fa fa-download fa-lg\"></i> <A HREF="..ntop.getHttpPrefix().."/lua/host_get_json.lua?ifname="..ifId.."&"..hostinfo2url(host_info)..">Download<A></td></tr>\n") end
 
    print [[
@@ -1947,6 +1953,9 @@ print("var last_pkts_rcvd = " .. host["packets.rcvd"] .. ";\n")
 print("var last_num_alerts = " .. host["num_alerts"] .. ";\n")
 print("var last_flows_as_server = " .. host["flows.as_server"] .. ";\n")
 print("var last_flows_as_client = " .. host["flows.as_client"] .. ";\n")
+print("var last_tcp_retransmissions = " .. host["tcp.packets.retransmissions"] .. ";\n")
+print("var last_tcp_ooo = " .. host["tcp.packets.out_of_order"] .. ";\n")
+print("var last_tcp_lost = " .. host["tcp.packets.lost"] .. ";\n")
 
 if(host["dns"] ~= nil) then
    print("var last_dns_sent_num_queries = " .. host["dns"]["sent"]["num_queries"] .. ";\n")
@@ -1983,6 +1992,9 @@ print [[/lua/host_stats.lua',
 			$('#pkts_rcvd').html(formatPackets(host["packets.rcvd"]));
 			$('#bytes_sent').html(bytesToVolume(host["bytes.sent"]));
 			$('#bytes_rcvd').html(bytesToVolume(host["bytes.rcvd"]));
+			$('#pkt_retransmissions').html(formatPackets(host["tcp.packets.retransmissions"]));
+			$('#pkt_ooo').html(formatPackets(host["tcp.packets.out_of_order"]));
+			$('#pkt_lost').html(formatPackets(host["tcp.packets.lost"]));
 			if(!host["name"]) { 
 			   $('#name').html(host["ip"]); 
 			} else { 
@@ -2132,11 +2144,33 @@ print [[
 			   $('#rcvd_trend').html("<i class=\"fa fa-arrow-up\"></i>");
 			}
 
+			if(host["tcp.packets.retransmissions"] == last_tcp_retransmissions) {
+			   $('#pkt_retransmissions_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#pkt_retransmissions_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+			}
+
+			if(host["tcp.packets.out_of_order"] == last_tcp_ooo) {
+			   $('#pkt_ooo_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#pkt_ooo_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+			}
+
+			if(host["tcp.packets.lost"] == last_tcp_lost) {
+			   $('#pkt_lost_trend').html("<i class=\"fa fa-minus\"></i>");
+			} else {
+			   $('#pkt_lost_trend').html("<i class=\"fa fa-arrow-up\"></i>");
+			}
+
 			last_num_alerts = host["num_alerts"];
 			last_pkts_sent = host["packets.sent"];
 			last_pkts_rcvd = host["packets.rcvd"];
 			last_flows_as_server = host["flows.as_server"];
 			last_flows_as_client = host["flows.as_client"];
+
+			last_tcp_retransmissions = host["tcp.packets.retransmissions"];
+			last_tcp_ooo = host["tcp.packets.out_of_order"];
+			last_tcp_lost = host["tcp.packets.lost"];
 		  ]]
 
 

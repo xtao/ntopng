@@ -45,6 +45,10 @@ class Host : public GenericHost {
   DnsStats *dns;
   EppStats *epp;
 
+  struct {
+    u_int32_t pktRetr, pktOOO, pktLost;
+  } tcpPacketStats; /* Sent packets */
+
   void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
   void refreshHTTPBL();
@@ -60,11 +64,14 @@ class Host : public GenericHost {
   Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip);
   ~Host();
 
-  inline int16_t get_local_network_id() { return(local_network_id); };
-  inline PacketStats* get_sent_stats()  { return(&sent_stats);      };
-  inline PacketStats* get_recv_stats()  { return(&recv_stats);      };
-  inline void set_ipv4(u_int32_t _ipv4)             { ip->set_ipv4(_ipv4); };
-  inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6); };
+  inline void incRetransmittedPkts(u_int32_t num)   { tcpPacketStats.pktRetr += num; };
+  inline void incOOOPkts(u_int32_t num)             { tcpPacketStats.pktOOO += num;  };
+  inline void incLostPkts(u_int32_t num)            { tcpPacketStats.pktLost += num; };
+  inline int16_t get_local_network_id()             { return(local_network_id);      };
+  inline PacketStats* get_sent_stats()              { return(&sent_stats);           };
+  inline PacketStats* get_recv_stats()              { return(&recv_stats);           };
+  inline void set_ipv4(u_int32_t _ipv4)             { ip->set_ipv4(_ipv4);           };
+  inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6);           };
   u_int32_t key();
   char* getJSON();
   inline void setOS(char *_os)                 { if(os[0] == '\0') snprintf(os, sizeof(os), "%s", _os); }

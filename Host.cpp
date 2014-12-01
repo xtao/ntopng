@@ -166,7 +166,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
-
+  
+  memset(&tcpPacketStats, 0, sizeof(tcpPacketStats));
   asn = 0, asname = NULL, country = NULL, city = NULL;
   longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
@@ -339,6 +340,15 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
       lua_push_int_table_entry(vm, "udp.bytes.rcvd", udp_rcvd.getNumBytes());
 
       lua_push_int_table_entry(vm, "tcp.packets.sent",  tcp_sent.getNumPkts());
+
+      lua_push_bool_table_entry(vm, "tcp.packets.seq_problems", 
+				(tcpPacketStats.pktRetr
+				 | tcpPacketStats.pktOOO
+				 | tcpPacketStats.pktLost) ? true : false);
+      lua_push_int_table_entry(vm, "tcp.packets.retransmissions", tcpPacketStats.pktRetr);
+      lua_push_int_table_entry(vm, "tcp.packets.out_of_order", tcpPacketStats.pktOOO);
+      lua_push_int_table_entry(vm, "tcp.packets.lost", tcpPacketStats.pktLost);
+
       lua_push_int_table_entry(vm, "tcp.bytes.sent", tcp_sent.getNumBytes());
       lua_push_int_table_entry(vm, "tcp.packets.rcvd",  tcp_rcvd.getNumPkts());
       lua_push_int_table_entry(vm, "tcp.bytes.rcvd", tcp_rcvd.getNumBytes());

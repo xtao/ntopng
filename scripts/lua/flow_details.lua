@@ -73,12 +73,15 @@ dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
 
 a = _GET["label"]
 
-patterns = {
-   ['_'] = "",
-   ['-_'] = " <i class=\"fa fa-exchange fa-lg\"></i> "
-}
-for search,replace in pairs(patterns) do
-   a = string.gsub(a, search, replace)
+if((a ~= nil) and (a ~= "")) then
+   patterns = {
+      ['_'] = "",
+      ['-_'] = " <i class=\"fa fa-exchange fa-lg\"></i> "
+   }
+
+   for search,replace in pairs(patterns) do
+      a = string.gsub(a, search, replace)
+   end
 end
 
 print [[
@@ -162,14 +165,30 @@ else
    print('<div class="progress"><div class="progress-bar progress-bar-warning" style="width: ' .. cli2srv.. '%;">'.. cli_name..'</div><div class="progress-bar progress-bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. srv_name .. '</div></div>')
    print("</td></tr>\n")
 
+   if(flow["tcp.nw_latency.client"] ~= nil) then
+      s = flow["tcp.nw_latency.client"] + flow["tcp.nw_latency.server"]
+      
+      if(s > 0) then
+	 print("<tr><th width=30%>Network Latency Breakdown</th><td colspan=2>")
+	 cli2srv = round(((flow["tcp.nw_latency.client"] * 100) / s), 0)
+	 
+	 c = string.format("%.3f", flow["tcp.nw_latency.client"])
+	 print('<div class="progress"><div class="progress-bar progress-bar-warning" style="width: ' .. cli2srv.. '%;">'.. c ..' ms (client)</div>')
+	 
+	 s = string.format("%.3f", flow["tcp.nw_latency.server"])
+	 print('<div class="progress-bar progress-bar-info" style="width: ' .. (100-cli2srv) .. '%;">' .. s .. ' ms (server)</div></div>')
+	 print("</td></tr>\n")
+      end
+   end
+
    print("<tr><th width=30%>Client to Server Traffic</th><td colspan=2><span id=cli2srv>" .. formatPackets(flow["cli2srv.packets"]) .. " / ".. bytesToSize(flow["cli2srv.bytes"]) .. "</span> <span id=sent_trend></span></td></tr>\n")
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
    if(flow["tcp.seq_problems"]) then
-      print("<tr><th width=30%>TCP Packet Analysis</th><td colspan=2>")
+      print("<tr><th width=30%>TCP Packet Analysis</th><td colspan=2 cellpadding='0' width='100%' cellspacing='0' style='padding-top: 0px; padding-left: 0px;padding-bottom: 0px; padding-right: 0px;'>")
       print("<table class=\"table table-bordered table-striped\">\n")
       print("<tr><th width=30%>&nbsp;</th><th width=35%>Client to Server</th><th width=35%>Server to Client</th></tr>\n")
-      print("<tr><th>Retransmissions</th><td align=right>".. formatPackets(flow["cli2srv.retransmission"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.retransmission"]) .."</td></tr>\n")
+      print("<tr><th>Retransmissions</th><td align=right>".. formatPackets(flow["cli2srv.retransmissions"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.retransmissions"]) .."</td></tr>\n")
       print("<tr><th>Out of Order</th><td align=right>".. formatPackets(flow["cli2srv.out_of_order"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.out_of_order"]) .."</td></tr>\n")
       print("<tr><th>Lost</th><td align=right>".. formatPackets(flow["cli2srv.lost"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.lost"]) .."</td></tr>\n")
       print("</table></td></tr>\n")

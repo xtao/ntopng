@@ -419,7 +419,6 @@ for _key, _value in pairsByKeys(vals, funct) do
    print ("'><span class='label label-info'>Info</span></A>")
    print ("\", \"column_client\" : \"" .. src_key)
 
-
    info = interface.getHostInfo(value["cli.ip"])
    if(info ~= nil) then
       if((info["country"] ~= nil) and (info["country"] ~= "")) then
@@ -428,6 +427,10 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 
    print(src_port)
+
+   if((value["tcp.nw_latency.client"] ~= nil) and (value["tcp.nw_latency.client"] > 0)) then
+      print(" ("..string.format("%.3f", value["tcp.nw_latency.client"]).." ms)")
+   end
 
    print ("\", \"column_server\" : \"" .. dst_key)
 
@@ -440,6 +443,10 @@ for _key, _value in pairsByKeys(vals, funct) do
 
    print(dst_port)
 
+   if((value["tcp.nw_latency.server"] ~= nil) and (value["tcp.nw_latency.server"] > 0)) then
+      print(" ("..string.format("%.3f", value["tcp.nw_latency.server"]).." ms)")
+   end
+
    if((value["vlan"] ~= nil)) then
       print("\", \"column_vlan\" : \""..value["vlan"].."\"")
    else
@@ -448,10 +455,13 @@ for _key, _value in pairsByKeys(vals, funct) do
 
    if(value["category"] ~= nil) then print (", \"column_category\" : \"" .. getCategory(value["category"])) else print (",") end
    -- if (debug) then io.write(value["category"].."[" .. getCategory(value["category"]).. "]\n")   end
-   print ("\"column_proto_l4\" : \"" .. value["proto.l4"])
+   print ("\"column_proto_l4\" : \"")
+
 
    if(value["tcp.seq_problems"] == true) then
-      print(" <i class='fa fa-warning fa-lg' style='color: #B94A48;'></i>")
+      print("<font color=#B94A48>"..value["proto.l4"].."</font>")
+   else
+      print(value["proto.l4"])
    end
 
    app = getApplicationLabel(value["proto.ndpi"])

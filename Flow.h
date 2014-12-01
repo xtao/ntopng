@@ -24,6 +24,10 @@
 
 #include "ntop_includes.h"
 
+typedef struct {
+  u_int32_t pktRetr, pktOOO, pktLost;
+  u_int64_t last, next;     
+} TCPPacketStats;
 
 class Flow : public GenericHashEntry {
  private:
@@ -32,7 +36,7 @@ class Flow : public GenericHashEntry {
   u_int16_t vlanId;
   u_int8_t protocol, src2dst_tcp_flags, dst2src_tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
-  bool detection_completed, protocol_processed, blacklist_alarm_emitted, cli2srv_direction;
+  bool detection_completed, protocol_processed, blacklist_alarm_emitted, cli2srv_direction, twh_over;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -54,20 +58,11 @@ class Flow : public GenericHashEntry {
   } aggregationInfo;
 
   /* TCP stats */
-  struct {
-    u_int32_t pktRetr, pktOOO, pktLost;
-    u_int64_t last, next;     
-  } tcp_stats_s2d;
+  TCPPacketStats tcp_stats_s2d, tcp_stats_d2s;
   
-  struct {
-    u_int32_t pktRetr, pktOOO, pktLost;
-    u_int64_t last, next;     
-  } tcp_stats_d2s;
-  
-  struct timeval synTime, synAckTime; /* network Latency (3-way handshake) */
+  struct timeval synTime, synAckTime, ackTime; /* network Latency (3-way handshake) */
   struct timeval clientNwLatency; /* The RTT/2 between the client and nprobe */
   struct timeval serverNwLatency; /* The RTT/2 between nprobe and the server */
-  struct timeval src2dstApplLatency, dst2srcApplLatency; /* Application Latency */
   
   struct {
     struct timeval firstSeenSent, lastSeenSent;
