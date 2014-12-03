@@ -54,7 +54,7 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    rsp = ""
 
    interface.find(ifname)
-   hosts_stats = interface.getFlowsInfo()
+   hosts_stats = interface.getHostsInfo()
 
    sent = {}
    _sent = {}
@@ -62,35 +62,8 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    _rcvd = {}
 
    for _key, value in pairs(hosts_stats) do
-      key = hostinfo2hostkey(hosts_stats[_key],"cli")
-      if(key ~= nil) then
-	 old = _sent[key]
-	 if(old == nil) then old = 0 end
-	 _sent[key] = old + hosts_stats[_key]["cli2srv.bytes"]
-      end
-
-      key = hostinfo2hostkey(hosts_stats[_key],"srv")
-      if(key ~= nil) then
-	 old = _rcvd[key]
-	 if(old == nil) then old = 0 end
-	 _rcvd[key] = old + hosts_stats[_key]["cli2srv.bytes"]
-      end
-
-      -- ###########################
-
-      key = hostinfo2hostkey(hosts_stats[_key],"srv")
-      if(key ~= nil) then
-	 old = _sent[key]	
-	 if(old == nil) then old = 0 end
-	 _sent[key] = old + hosts_stats[_key]["srv2cli.bytes"]
-
-         key = hostinfo2hostkey(hosts_stats[_key],"cli")
-	 if(key ~= nil) then
-	    old = _rcvd[key]
-	    if(old == nil) then old = 0 end
-	    _rcvd[key] = old + hosts_stats[_key]["srv2cli.bytes"]
-	 end
-      end
+      _sent[_key] = value["bytes.sent"]
+      _rcvd[_key] = value["bytes.rcvd"]
    end
 
    if(mode == nil) then
