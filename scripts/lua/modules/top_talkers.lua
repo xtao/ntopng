@@ -49,6 +49,73 @@ end
 
 -- #################################################
 
+function getTop(stats, sort_field_key, max_num_entries, lastdump_dir)
+   local _filtered_stats, filtered_stats, counter, total,
+         threshold, low_threshold
+
+   -- stats is a hash of hashes organized as follows:
+   -- { "id1" : { "key1": "value1", "key2": "value2", ...}, "id2 : { ... } }
+   -- filter out the needed values
+   _filtered_stats = {}
+   for id,content in pairs(stats) do
+      _filtered_stats[id] = content[sort_field_key]
+   end
+
+   -- Read the lastdump; the name of the lastdump file has the following
+   -- format: <lastdump_dir>/.<sort_field_key>_lastdump
+   lastdump = lastdump_dir .. "/."..sort_field_key.."_lastdump"
+   last = nil
+   if(ntop.exists(lastdump)) then
+      last = persistence.load(lastdump)
+   end
+   if(last == nil) then last = {} end
+
+   persistence.store(lastdump, _filtered_stats);
+
+   for key, value in pairs(_filtered_stats) do
+      if(last[key] ~= nil) then
+         v = _filtered_stats[key]-last[key]
+         if(v < 0) then v = 0 end
+         _filtered_stats[key] = v
+      end
+   end
+
+   -- order the filtered stats by using the value (bytes sent/received during
+   -- the last time interval) as key
+   filtered_stats = {}
+   for key, value in pairs(_filtered_stats) do
+      filtered_stats[value] = key
+   end
+
+   -- Compute traffic
+   total = 0
+   for _value,_ in pairsByKeys(filtered_stats, rev) do
+      total = total + _value
+   end
+
+   threshold = total / 10 -- 10 %
+   low_threshold = total * 0.05  -- 5%
+
+   -- build a new hashtable sorted by the required field
+   top_stats = {}
+   counter = 0
+   for _value,_id in pairsByKeys(filtered_stats, rev) do
+      if ((_value == 0) or (_value < low_threshold) or
+          ((_value < threshold) and (counter > max_num_entries / 2))) then
+         break
+      end
+      top_stats[_value] = _id -- still keep it in order
+      counter = counter + 1
+      if (counter == max_num_entries) then
+        break
+      end
+   end
+
+   return top_stats
+end
+
+-- #####################################################
+
 function getActualTopTalkers(ifid, ifname, mode, epoch)
    max_num_entries = 10
    rsp = ""
@@ -56,14 +123,9 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()
 
-   sent = {}
-   _sent = {}
-   rcvd = {}
-   _rcvd = {}
-
-   for _key, value in pairs(hosts_stats) do
-      _sent[_key] = value["bytes.sent"]
-      _rcvd[_key] = value["bytes.rcvd"]
+   talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
+   if(not(ntop.exists(talkers_dir))) then
+      ntop.mkdir(talkers_dir)
    end
 
    if(mode == nil) then
@@ -75,58 +137,14 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
 
    --print("Hello\n")
    if((mode == nil) or (mode == "senders")) then
-      talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
-      if(not(ntop.exists(talkers_dir))) then   
-	 ntop.mkdir(talkers_dir)
-      end
-
-      -- Read the lastdump      
-      lastdump = talkers_dir .. "/.sent_lastdump"
-      last = nil
-      if(ntop.exists(lastdump)) then
-	 last = persistence.load(lastdump)      
-      end
-      if(last == nil) then last = {} end
-
-      persistence.store(lastdump, _sent);
-      
-      for key, value in pairs(_sent) do
-	 if(last[key] ~= nil) then
-	    v = _sent[key]-last[key]
-
-	    if(v < 0) then v = 0 end
-	    _sent[key] = v
-	 end
-      end
-
-      for key, value in pairs(_sent) do
-	 sent[value] = key
-      end
-
-      -- Compute traffic
-      total = 0
+      top_senders = getTop(hosts_stats, "bytes.sent", max_num_entries, talkers_dir)
       num = 0
-      for _key, _value in pairsByKeys(sent, rev) do
-	 total = total + _key
-      end
-
-      -- 10 %
-      threshold = total / 10
-      low_threshold = total * 0.05  -- 5%
-
-      num = 0
-      for _key, _value in pairsByKeys(sent, rev) do
-	 key   = sent[_key]
-	 value = _key
-
-	 if((value == 0) or (value <  low_threshold) or ((value < threshold) and (num > 5))) then break end
+      for value,id in pairsByKeys(top_senders, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key .. '", "url": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..id.. '", "url": "'
+               ..ntop.getHttpPrefix()..
+               '/lua/host_details.lua?host='..id..'", "value": '..value
 	 num = num + 1
-
-	 if(num == max_num_entries) then
-	    break
-	 end
       end
    end
 
@@ -137,53 +155,14 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    end
 
    if((mode == nil) or (mode == "receivers")) then
-      -- Read the lastdump
-      lastdump = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers/.rcvd_lastdump")
-      last = nil
-      if(ntop.exists(lastdump)) then
-	 last = persistence.load(lastdump)
-      end
-      if(last == nil) then last = {} end
-
-      persistence.store(lastdump, _rcvd);
-
-      for key, value in pairs(_rcvd) do
-	 -- io.write(key.."\n")
-	 if(last[key] ~= nil) then
-	    v = _rcvd[key]-last[key]
-
-	    if(v < 0) then v = 0 end
-	    _rcvd[key] = v
-	 end
-      end
-
-      for key, value in pairs(_rcvd) do
-	 rcvd[value] = key
-      end
-
-      -- Compute traffic
-      total = 0
+      top_receivers = getTop(hosts_stats, "bytes.rcvd", max_num_entries, talkers_dir)
       num = 0
-      for _key, _value in pairsByKeys(rcvd, rev) do
-	 total = total + _key
-      end
-
-      -- 10 %
-      threshold = total / 10
-
-      num = 0
-      for _key, _value in pairsByKeys(rcvd, rev) do
-	 key   = rcvd[_key]
-	 value = _key
-
-	 if((value == 0) or ((value < threshold) and (num > 5))) then break end
+      for value,id in pairsByKeys(top_receivers, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..key.. '", "url": "'..ntop.getHttpPrefix()..'/lua/host_details.lua?host='..key..'", "value": '..value
+	 rsp = rsp .. '\n\t\t { "label": "'..id.. '", "url": "'
+               ..ntop.getHttpPrefix()..
+               '/lua/host_details.lua?host='..id..'", "value": '..value
 	 num = num + 1
-
-	 if(num == max_num_entries) then
-	    break
-	 end
       end
    end
 
