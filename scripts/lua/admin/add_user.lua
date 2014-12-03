@@ -29,6 +29,6 @@ if(haveAdminPrivileges()) then
    if(ntop.addUser(username, full_name, password, host_role, networks)) then
       print ("{ \"result\" : 0, \"message\" : \"User added successfully\" }")
    else
-      print ("{ \"result\" : -1, \"message\" : \"Error adding new user\" }")
+      print ("{ \"result\" : -1, \"message\" : \"Error while adding new user\" }")
    end
 end

@@ -527,20 +527,17 @@ bool Ntop::addUser(char *username, char *full_name, char *password, char *host_r
   char key[64], val[64];
   char password_hash[33];
 
-  mg_md5(password_hash, password, NULL);
-
+  snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   if(ntop->getRedis()->get(key, val, sizeof(val)) >= 0)
     return(false); // user already exists
-  else
-    ntop->getRedis()->set(key, full_name, 0);
 
-  snprintf(key, sizeof(key), CONST_STR_USER_FULL_NAME, username);
   ntop->getRedis()->set(key, full_name, 0);
 
   snprintf(key, sizeof(key), CONST_STR_USER_GROUP, username);
   ntop->getRedis()->set(key, (char*) host_role, 0);
 
   snprintf(key, sizeof(key), CONST_STR_USER_PASSWORD, username);
+  mg_md5(password_hash, password, NULL);
   ntop->getRedis()->set(key, password_hash, 0);
 
   snprintf(key, sizeof(key), CONST_STR_USER_NETS, username);

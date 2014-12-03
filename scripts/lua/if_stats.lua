@@ -129,12 +129,19 @@ if((page == "overview") or (page == nil)) then
 
   if(ifstats.name ~= nil) then
     label = ntop.getCache('ntopng.prefs.'..ifstats.name..'.name')
+    if(isAdministrator()) then
+       print("<td>")
+    else
+       print("<td colspan=2>")
+    end
+
     print [[
-    <td>
     <form class="form-inline" style="margin-bottom: 0px;">
        <input type="hidden" name="if_name" value="]]
           print(ifstats.name)
 	  print [[">]]
+
+   if(isAdministrator()) then
 print('<input id="csrf" name="csrf" type="hidden" value="'..ntop.getRandomCSRFValue()..'" />\n')
 print [[
        <input type="text" name="custom_name" placeholder="Custom Name" value="]]
@@ -144,8 +151,10 @@ print [[
     </form>
     </td></tr>
        ]]
+ else
+    print("</td></tr>")
+end
   end
-
    if(ifstats.name ~= ifstats.description) then
       print("<tr><th>Description</th><td colspan=2>" .. ifstats.description .. "</td></tr>\n")
    end

@@ -1578,17 +1578,27 @@ end
 
 -- ############################################## 
 
-function haveAdminPrivileges()
+function isAdministrator()
       local user_group = ntop.getUserGroup()
       
       if(user_group == "administrator") then 
 	 return(true)
       else
-	 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
-	 dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-	 print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Access forbidden</div>")
 	 return(false)
       end
+end
+
+-- ############################################## 
+
+function haveAdminPrivileges()
+   if(isAdministrator) then
+      return(true)
+   else
+      ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
+      dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
+      print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Access forbidden</div>")
+      return(false)
+   end
 end
 
 -- ############################################## 

@@ -381,7 +381,13 @@ print [[
 
    if(host["ip"] ~= nil) then
       if(host["name"] == nil) then host["name"] = ntop.getResolvedAddress(host["ip"]) end
-      print("<tr><th>Name</th><td><A HREF=\"http://" .. host["name"] .. "\"> <span id=name>")
+      print("<tr><th>Name</th>")
+
+      if(isAdministrator()) then
+	 print("<td><A HREF=\"http://" .. host["name"] .. "\"> <span id=name>")
+      else
+	 print("<td colspan=2>")
+      end
 
       if(host["ip"] == host["name"]) then
 	 print("<img border=0 src=/img/throbber.gif style=\"vertical-align:text-top;\" id=throbber> ")
@@ -395,8 +401,11 @@ print [[
    end
 
 if(host["ip"] ~= nil) then
+
+    if(isAdministrator()) then
+       print("<td>")
+
 print [[
-<td>
 <form class="form-inline" style="margin-bottom: 0px;">
       	 <input type="hidden" name="host" value="]]
       print(host_info["host"])
@@ -411,6 +420,9 @@ print [[</form>
 </td></tr>
    ]]
 end
+    else
+--       print("<td colspan=2>"..host_info["host"].."</td></tr>")	  
+    end
 
 
 if(host["num_alerts"] > 0) then

@@ -75,10 +75,20 @@ print [[
 
 <script>
 
+  function isValid(str) { return /^\w+$/.test(str); }
+
   var frmadduser = $('#form_add_user');
 
+  function resetAddUserForm() {
+	$("#username_input").val("");
+        $("#full_name_input").val("");
+	$("#password_input").val("");
+        $("#confirm_password_input").val("");
+	$("#allowed_networks_input").val("0.0.0.0/0,::/0");
+	
+  }
 
-function isValid(str) { return /^\w+$/.test(str); }
+  resetAddUserForm();
 
   frmadduser.submit(function () {
                           if(!isValid($("#username_input").val())) {
@@ -140,7 +150,7 @@ function isValid(str) { return /^\w+$/.test(str); }
         frmadduser[0].reset();
       }
     });
-			       }
+   }
    });
 
 
