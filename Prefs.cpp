@@ -655,7 +655,7 @@ int Prefs::loadFromCLI(int argc, char *argv[]) {
   u_char c;
 
   while((c = getopt_long(argc, argv,
-			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:F:G:HLI:S:U:X:W:VZ:",
+			 "c:k:eg:hi:w:r:sg:m:n:p:qd:x:1:2:3:lvA:B:CD:E:F:G:HI:S:U:X:W:VZ:",
 			 long_options, NULL)) != '?') {
     if(c == 255) break;
     setOption(c, optarg);
