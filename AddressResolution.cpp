@@ -245,14 +245,28 @@ void AddressResolution::resolveHostName(char *numeric_ip, char *symbolic, u_int 
     struct sockaddr_in6 in6;
     int rc, len;
 
-    if(strchr(numeric_ip, '.') != NULL) {
-      in4.sin_family = AF_INET, in4.sin_addr.s_addr = inet_addr(numeric_ip);
-      len = sizeof(struct sockaddr_in), sa = (struct sockaddr*)&in4;
-    } else {
-      memset(&in6, 0, sizeof(struct sockaddr_in6));
+    if(strchr(numeric_ip, ':') != NULL) {
+      struct in6_addr addr6;
 
-      in6.sin6_family = AF_INET6, inet_pton(AF_INET6, numeric_ip, &in6.sin6_addr);
-      len = sizeof(struct sockaddr_in6), sa = (struct sockaddr*)&in6;
+      if(inet_pton(AF_INET6, numeric_ip, &addr6) == 1) {
+	memset(&in6, 0, sizeof(struct sockaddr_in6));
+	
+	in6.sin6_family = AF_INET6, inet_pton(AF_INET6, numeric_ip, &in6.sin6_addr);
+	len = sizeof(struct sockaddr_in6), sa = (struct sockaddr*)&in6;
+      } else {
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Invalid IPv6 address to resolve '%s': already symbolic?", numeric_ip);
+	return; /* Invalid format */
+      }
+    } else {
+      u_int ip4_0 = 0, ip4_1 = 0, ip4_2 = 0, ip4_3 = 0;
+
+      if(sscanf(numeric_ip, "%u.%u.%u.%u", &ip4_0, &ip4_1, &ip4_2, &ip4_3) == 4) {
+	in4.sin_family = AF_INET, in4.sin_addr.s_addr = inet_addr(numeric_ip);
+	len = sizeof(struct sockaddr_in), sa = (struct sockaddr*)&in4;
+      } else  {
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Invalid IPv4 address to resolve '%s': already symbolic?", numeric_ip);
+	return; /* Invalid format */
+      }
     }
 
     if((rc = getnameinfo(sa, len, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD)) == 0) {

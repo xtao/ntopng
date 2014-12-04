@@ -633,6 +633,9 @@ int Redis::setResolvedAddress(char *numeric_ip, char *symbolic_ip) {
   char key[CONST_MAX_LEN_REDIS_KEY], numeric[256], *w, *h;
   int rc;
 
+  if(strcmp(symbolic_ip, "broadcasthost") == 0)
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "********");
+
   snprintf(numeric, sizeof(numeric), "%s", numeric_ip);
 
   h = strtok_r(numeric, ";", &w);

@@ -185,13 +185,11 @@ else
    print("<tr><th width=30%>Server to Client Traffic</th><td colspan=2><span id=srv2cli>" .. formatPackets(flow["srv2cli.packets"]) .. " / ".. bytesToSize(flow["srv2cli.bytes"]) .. "</span> <span id=rcvd_trend></span></td></tr>\n")
 
    if(flow["tcp.seq_problems"]) then
-      print("<tr><th width=30%>TCP Packet Analysis</th><td colspan=2 cellpadding='0' width='100%' cellspacing='0' style='padding-top: 0px; padding-left: 0px;padding-bottom: 0px; padding-right: 0px;'>")
-      print("<table class=\"table table-bordered table-striped\">\n")
-      print("<tr><th width=30%>&nbsp;</th><th width=35%>Client to Server</th><th width=35%>Server to Client</th></tr>\n")
-      print("<tr><th>Retransmissions</th><td align=right>".. formatPackets(flow["cli2srv.retransmissions"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.retransmissions"]) .."</td></tr>\n")
-      print("<tr><th>Out of Order</th><td align=right>".. formatPackets(flow["cli2srv.out_of_order"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.out_of_order"]) .."</td></tr>\n")
-      print("<tr><th>Lost</th><td align=right>".. formatPackets(flow["cli2srv.lost"]) .."</td><td align=right>".. formatPackets(flow["srv2cli.lost"]) .."</td></tr>\n")
-      print("</table></td></tr>\n")
+      print("<tr><th width=30% rowspan=5>TCP Packet Analysis</th><td colspan=2 cellpadding='0' width='100%' cellspacing='0' style='padding-top: 0px; padding-left: 0px;padding-bottom: 0px; padding-right: 0px;'>")
+      print("<tr><th>&nbsp;</th><th>Client to Server / Server to Client</th></tr>\n")
+      print("<tr><th>Retransmissions</th><td align=right><span id=c2sretr>".. formatPackets(flow["cli2srv.retransmissions"]) .."</span> / <span id=s2cretr>".. formatPackets(flow["srv2cli.retransmissions"]) .."</span></td></tr>\n")
+      print("<tr><th>Out of Order</th><td align=right><span id=c2sOOO>".. formatPackets(flow["cli2srv.out_of_order"]) .."</span> / <span id=s2cOOO>".. formatPackets(flow["srv2cli.out_of_order"]) .."</span></td></tr>\n")
+      print("<tr><th>Lost</th><td align=right><span id=c2slost>".. formatPackets(flow["cli2srv.lost"]) .."</span> / <span id=s2clost>".. formatPackets(flow["srv2cli.lost"]) .."</span></td></tr>\n")
    end
 
    if( (flow["tcp_flags"] ~= nil) and (flow["tcp_flags"] > 0)) then
@@ -318,6 +316,17 @@ print [[/lua/flow_stats.lua',
 			$('#cli2srv').html(addCommas(rsp["cli2srv.packets"])+" Pkts / "+bytesToVolume(rsp["cli2srv.bytes"]));
 			$('#srv2cli').html(addCommas(rsp["srv2cli.packets"])+" Pkts / "+bytesToVolume(rsp["srv2cli.bytes"]));
 			$('#throughput').html(rsp.throughput);
+						
+
+			$('#c2sOOO').html(formatPackets(rsp["c2sOOO"]));
+			$('#s2cOOO').html(formatPackets(rsp["s2cOOO"]));
+			$('#c2slost').html(formatPackets(rsp["c2slost"]));
+			$('#s2clost').html(formatPackets(rsp["s2clost"]));
+			$('#c2sretr').html(formatPackets(rsp["c2sretr"]));
+			$('#s2cretr').html(formatPackets(rsp["s2cretr"]));
+
+
+
 
 			/* **************************************** */
 

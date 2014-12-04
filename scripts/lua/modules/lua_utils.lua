@@ -1038,20 +1038,14 @@ function flowinfo2hostname(flow_info, host_type, show_vlan)
     name = flow_info[host_type..".ip"]
   end
 
-  alt_name = getHostAltName(name)
-
-  if(name == alt_name) then
-      name = ntop.getResolvedAddress(name)
-  else
-      name = alt_name
-  end
-
+  name = getHostAltName(name)
+  
   -- io.write(host_type.. " / " .. flow_info[host_type..".host"].." / "..name.."\n")
-
+  
   if(show_vlan and (flow_info["vlan"] > 0)) then
-    name = name .. '@' .. flow_info["vlan"]
+     name = name .. '@' .. flow_info["vlan"]
   end
-
+  
   return name
 end
 

@@ -44,6 +44,14 @@ else
     .. '"seen.first": "'.. formatEpoch(flow["seen.first"]) .. ' ['.. secondsToTime(diff0) .. ' ago]"' 
     .. ', "bytes": ' .. flow["bytes"] .. ', "cli2srv.packets": ' .. flow["cli2srv.packets"] .. ', "srv2cli.packets": ' .. flow["srv2cli.packets"] .. ', "cli2srv.bytes": ' .. flow["cli2srv.bytes"] .. ', "srv2cli.bytes": ' .. flow["srv2cli.bytes"].. ', "throughput": "' .. thpt_display..'", "top_throughput_display": "'.. top_thpt_display ..'", "throughput_raw": ' .. thpt)
 
+    if(flow["proto.l4"] == "TCP") then
+       print(', "c2sOOO":'.. flow["cli2srv.out_of_order"] )
+       print(', "c2slost":'..flow["cli2srv.lost"] )
+       print(', "c2sretr":'..flow["cli2srv.retransmissions"] )
+       print(', "s2cOOO":'.. flow["srv2cli.out_of_order"] )
+       print(', "s2clost":'..flow["srv2cli.lost"] )
+       print(', "s2cretr":'..flow["srv2cli.retransmissions"] )
+    end
 
     -- Processes information
     show_processes = false
