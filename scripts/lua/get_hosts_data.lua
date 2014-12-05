@@ -36,8 +36,8 @@ if ((sortColumn == nil) or (sortColumn == "column_"))then
   sortColumn = getDefaultTableSort("hosts")
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
-    and (sortColumn ~= "")) then  
-      tablePreferences("sort_hosts",sortColumn) 
+    and (sortColumn ~= "")) then
+      tablePreferences("sort_hosts",sortColumn)
   end
 end
 
@@ -45,8 +45,8 @@ if(sortOrder == nil) then
   sortOrder = getDefaultTableSortOrder("hosts")
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
-    and (sortColumn ~= "")) then  
-    tablePreferences("sort_order_hosts",sortOrder) 
+    and (sortColumn ~= "")) then
+    tablePreferences("sort_order_hosts",sortOrder)
   end
 end
 
@@ -107,12 +107,12 @@ if(mode == "network") then
 
       if(h["local_network_name"] ~= nil) then
 	 -- io.write(nw_name.."\n")
-	 
+
 	 if(nw_name ~= nil) then
 	    if(my_networks[nw_name] == nil) then
 	       h["ip"] = nw_name
 	       h["name"] = nw_name -- FIX
-	       
+
 	       my_networks[nw_name] = h
 	    else
 	       my_networks[nw_name]["num_alerts"] = my_networks[nw_name]["num_alerts"] + h["num_alerts"]
@@ -120,7 +120,7 @@ if(mode == "network") then
 	       my_networks[nw_name]["throughput_pps"] = my_networks[nw_name]["throughput_pps"] + h["throughput_pps"]
 	       my_networks[nw_name]["bytes.sent"] = my_networks[nw_name]["bytes.sent"] + h["bytes.sent"]
 	       my_networks[nw_name]["bytes.rcvd"] = my_networks[nw_name]["bytes.rcvd"] + h["bytes.rcvd"]
-	       
+
 	       if(my_networks[nw_name]["seen.first"] > h["seen.first"]) then
 		  my_networks[nw_name]["seen.first"] = h["seen.first"]
 	       end
@@ -312,7 +312,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    if((aggregation == nil) and (aggregated == nil)) then
 	       if(value["name"] == nil) then value["name"] = ntop.getResolvedAddress(key) end
 	    end
-	    
+
 	    print(shortHostName(value["name"]))
 
 	    if (value["ip"] ~= nil) then
