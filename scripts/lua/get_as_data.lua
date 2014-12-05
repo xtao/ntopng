@@ -19,20 +19,20 @@ sortOrder   = _GET["sortOrder"]
 throughput_type = getThroughputType()
 
 if ((sortColumn == nil) or (sortColumn == "column_"))then
-  sortColumn = getDefaultTableSort("hosts")
+  sortColumn = getDefaultTableSort("asn")
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
     and (sortColumn ~= "")) then
-      tablePreferences("sort_hosts",sortColumn)
+      tablePreferences("sort_asn",sortColumn)
   end
 end
 
 if(sortOrder == nil) then
-  sortOrder = getDefaultTableSortOrder("hosts")
+  sortOrder = getDefaultTableSortOrder("asn")
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
     and (sortColumn ~= "")) then
-    tablePreferences("sort_order_hosts",sortOrder)
+    tablePreferences("sort_order_asn",sortOrder)
   end
 end
 

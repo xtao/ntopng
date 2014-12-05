@@ -1489,6 +1489,7 @@ function tablePreferences(key, value)
   else
     -- Set preferences
     ntop.setHashCache(table_key, key, value)
+    return(value)
   end
 end
 
