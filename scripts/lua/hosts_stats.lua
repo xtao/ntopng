@@ -13,6 +13,7 @@ ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 
 protocol = _GET["protocol"]
 net      = _GET["net"]
+asn      = _GET["asn"]
 
 mode = _GET["mode"]
 if(mode == nil) then mode = "all" end
@@ -40,6 +41,10 @@ end
 
 if(net ~= nil) then
    print('&net='..net)
+end
+
+if(asn ~= nil) then
+   print('&asn='..asn)
 end
 
 print ('";')

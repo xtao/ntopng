@@ -6,7 +6,6 @@ dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 require "lua_utils"
 
-
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
 -- Table parameters
@@ -26,6 +25,9 @@ tracked     = _GET["tracked"]
 
 -- Only for aggregations
 client      = _GET["client"]
+
+-- Used when filtering by ASn
+asn         = _GET["asn"]
 
 -- table_id = _GET["table"]
 
@@ -262,16 +264,15 @@ num = 0
 for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]
 
-   if((key ~= nil) and (not(key == ""))) then
+   if((key ~= nil) and (not(key == "")) and
+      ((asn == nil) or (asn == tostring(hosts_stats[key]["asn"])))) then
       value = hosts_stats[key]
 
       if(to_skip > 0) then
 	 to_skip = to_skip-1
       else
 	 if((num < perPage) or (all ~= nil))then
-	    if(num > 0) then
-	       print ",\n"
-	    end
+	    if(num > 0) then print ",\n" end
       print ('{ ')
       print ('\"key\" : \"'..hostinfo2jqueryid(hosts_stats[key])..'\",')
 	    print ("\"column_ip\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
@@ -430,7 +431,6 @@ for _key, _value in pairsByKeys(vals, funct) do
       total = total + 1
    end
 end -- for
-
 
 print ("\n], \"perPage\" : " .. perPage .. ",\n")
 
