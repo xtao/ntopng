@@ -138,7 +138,7 @@
 #define	TH_URG	0x20
 #endif
 
-#define MAX_NUM_DEFINED_INTERFACES 16
+#define MAX_NUM_DEFINED_INTERFACES 32
 #define MAX_NUM_DB_SPINS            5 /* sec */
 
 #ifndef MAX_PATH
