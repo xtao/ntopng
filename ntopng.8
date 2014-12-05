@@ -305,7 +305,13 @@ ixia \(em Timestamped packets by ixiacom.com hardware devices.
 
 .It \-Z|\-\-http\-prefix\ <prefix>
 HTTP prefix to be prepended to URLs. This is useful when using ntopng behind a proxy.
-.\" TODO: Add example script
+E.g. if you want to make the ntopng web interface accessible through a proxy
+at a certain IP address with the /ntopng/ base URL and you have the following
+lines in your proxy's configuration:
+    ProxyPass /ntopng/ http://192.168.0.3:3000/ntopng/
+    ProxyPassReverse /ntopng/ http://192.168.0.3:3000/ntopng/
+.br
+you must use ntopng with \-Z "/ntopng/"
 
 .It \-v|\-\-verbose
 Verbose tracing.
