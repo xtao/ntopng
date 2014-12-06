@@ -115,6 +115,7 @@ extern "C" {
 #include "ActivityStats.h"
 #include "NdpiStats.h"
 #include "DnsStats.h"
+#include "HTTPStats.h"
 #include "EppStats.h"
 #include "TrafficStats.h"
 #include "PacketStats.h"

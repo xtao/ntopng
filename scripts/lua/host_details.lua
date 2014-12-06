@@ -168,6 +168,15 @@ else
    end
 end
 
+if(page == "http") then
+  print("<li class=\"active\"><a href=\"#\">HTTP</a></li>\n")
+else
+   if((host["http"] ~= nil)
+   and ((host["http"]["req.total"]+ host["http"]["rsp.total"]) > 0)) then
+      print("<li><a href=\""..url.."&page=http\">HTTP</a></li>")
+   end
+end
+
 if(page == "epp") then
   print("<li class=\"active\"><a href=\"#\">EPP</a></li>\n")
 else

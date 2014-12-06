@@ -452,7 +452,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
   Flow *flow;
   u_int8_t *eth_src = eth->h_source, *eth_dst = eth->h_dest;
   IpAddress src_ip, dst_ip;
-  u_int16_t src_port, dst_port;
+  u_int16_t src_port, dst_port, payload_len;
   struct ndpi_tcphdr *tcph = NULL;
   struct ndpi_udphdr *udph = NULL;
   u_int16_t l4_packet_len;
@@ -490,21 +490,25 @@ void NetworkInterface::packet_processing(const struct timeval *when,
   }
 
   if((l4_proto == IPPROTO_TCP) && (l4_packet_len >= 20)) {
+    u_int tcp_len;
     /* tcp */
     tcph = (struct ndpi_tcphdr *)l4;
     src_port = tcph->source, dst_port = tcph->dest;
     tcp_flags = l4[13];
-    payload = &l4[sizeof(struct ndpi_tcphdr)];
+    tcp_len = min_val(4*tcph->doff, l4_packet_len);
+    payload = &l4[tcp_len];
+    payload_len = max_val(0, l4_packet_len-4*tcph->doff);
   } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
     /* udp */
     udph = (struct ndpi_udphdr *)l4;
     src_port = udph->source,  dst_port = udph->dest;
     payload = &l4[sizeof(struct ndpi_udphdr)];
+    payload_len = max_val(0, l4_packet_len-sizeof(struct ndpi_udphdr));
   } else {
     /* non tcp/udp protocols */
 
     src_port = dst_port = 0;
-    payload = NULL;
+    payload = NULL, payload_len = 0;
   }
 
   if(iph != NULL) {
@@ -582,6 +586,11 @@ void NetworkInterface::packet_processing(const struct timeval *when,
   if(flow->isDetectionCompleted()) {
     /* Handle aggregations here */
     switch(flow->get_detected_protocol()) {
+    case NDPI_PROTOCOL_HTTP:
+      if(payload_len > 0)
+	flow->dissectHTTP(src2dst_direction, (char*)payload, payload_len);
+      break;
+
     case NDPI_PROTOCOL_DNS:
       struct ndpi_flow_struct *ndpi_flow = flow->get_ndpi_flow();
       struct dns_packet_header {

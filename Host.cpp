@@ -98,6 +98,7 @@ Host::~Host() {
   }
 
   if(dns)            delete dns;
+  if(http)           delete http;
   if(epp)            delete epp;
 
   if(symbolic_name)  free(symbolic_name);
@@ -172,7 +173,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   longitude = 0, latitude = 0;
   k = get_string_key(key, sizeof(key));
   snprintf(redis_key, sizeof(redis_key), "%s.%d.json", k, vlan_id);
-  dns = NULL, epp = NULL;
+  dns = NULL, http = NULL, epp = NULL;
 
   if(init_all) {
     if(ip) {
@@ -396,8 +397,9 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
       sent_stats.lua(vm, "pktStats.sent");
       recv_stats.lua(vm, "pktStats.recv");
 
-      if(dns) dns->lua(vm);
-      if(epp) epp->lua(vm);
+      if(dns)  dns->lua(vm);
+      if(http) http->lua(vm);
+      if(epp)  epp->lua(vm);
     }
 
     if(!returnHost) {
@@ -650,8 +652,9 @@ char* Host::serialize() {
   json_object_object_add(my_object, "contacts", contacts->getJSONObject());
   json_object_object_add(my_object, "activityStats", activityStats.getJSONObject());
 
-  if(dns) json_object_object_add(my_object, "dns", dns->getJSONObject());
-  if(epp) json_object_object_add(my_object, "epp", epp->getJSONObject());
+  if(dns)  json_object_object_add(my_object, "dns", dns->getJSONObject());
+  if(http) json_object_object_add(my_object, "http", http->getJSONObject());
+  if(epp)  json_object_object_add(my_object, "epp", epp->getJSONObject());
 
   //ntop->getTrace()->traceEvent(TRACE_WARNING, "%s()", __FUNCTION__);
   rsp = strdup(json_object_to_json_string(my_object));
@@ -726,6 +729,11 @@ bool Host::deserialize(char *json_str) {
   if(json_object_object_get_ex(o, "dns", &obj)) {
     allocDNS();
     if(dns) dns->deserialize(obj);
+  }
+
+  if(json_object_object_get_ex(o, "http", &obj)) {
+    allocHTTP();
+    if(http) http->deserialize(obj);
   }
 
   if(json_object_object_get_ex(o, "epp", &obj)) {

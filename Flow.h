@@ -36,7 +36,8 @@ class Flow : public GenericHashEntry {
   u_int16_t vlanId;
   u_int8_t protocol, src2dst_tcp_flags, dst2src_tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
-  bool detection_completed, protocol_processed, blacklist_alarm_emitted, cli2srv_direction, twh_over;
+  bool detection_completed, protocol_processed, blacklist_alarm_emitted,
+    cli2srv_direction, twh_over, dissect_next_http_packet;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -161,9 +162,9 @@ class Flow : public GenericHashEntry {
   inline char* get_protocol_breed_name()       { return(ndpi_get_proto_breed_name(iface->get_ndpi_struct(), 
 										  ndpi_get_proto_breed(iface->get_ndpi_struct(), 
 												       ndpi_detected_protocol))); };
-  u_int32_t get_packetsLost ();
-  u_int32_t get_packetsRetr ();
-  u_int32_t get_packetsOOO ();
+  u_int32_t get_packetsLost();
+  u_int32_t get_packetsRetr();
+  u_int32_t get_packetsOOO();
 
   u_int64_t get_current_bytes_cli2srv();
   u_int64_t get_current_bytes_srv2cli();
@@ -189,6 +190,7 @@ class Flow : public GenericHashEntry {
   bool match(patricia_tree_t *ptree);
   inline Host* get_real_client() { return(cli2srv_direction ? cli_host : srv_host); };
   inline Host* get_real_server() { return(cli2srv_direction ? srv_host : cli_host); };
+  void dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len);
 };
 
 #endif /* _FLOW_H_ */

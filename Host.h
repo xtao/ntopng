@@ -43,6 +43,7 @@ class Host : public GenericHost {
   PacketStats sent_stats, recv_stats;
   u_int32_t num_flows_as_client, num_flows_as_server;
   DnsStats *dns;
+  HTTPStats *http;
   EppStats *epp;
 
   struct {
@@ -54,8 +55,9 @@ class Host : public GenericHost {
   void refreshHTTPBL();
   void refreshCategory();
   void computeHostSerial();
-  inline void allocDNS() { if(dns == NULL) dns = new DnsStats(); }
-  inline void allocEPP() { if(epp == NULL) epp = new EppStats(); }
+  inline void allocDNS()  { if(dns == NULL)  dns = new DnsStats(); }
+  inline void allocHTTP() { if(http == NULL) http = new HTTPStats(); }
+  inline void allocEPP()  { if(epp == NULL)  epp = new EppStats(); }
 
  public:
   Host(NetworkInterface *_iface);
@@ -70,6 +72,7 @@ class Host : public GenericHost {
   inline int16_t get_local_network_id()             { return(local_network_id);      };
   inline PacketStats* get_sent_stats()              { return(&sent_stats);           };
   inline PacketStats* get_recv_stats()              { return(&recv_stats);           };
+  inline HTTPStats* getHTTPStats()                  { allocHTTP(); return(http);     };
   inline void set_ipv4(u_int32_t _ipv4)             { ip->set_ipv4(_ipv4);           };
   inline void set_ipv6(struct ndpi_in6_addr *_ipv6) { ip->set_ipv6(_ipv6);           };
   u_int32_t key();

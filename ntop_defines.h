@@ -56,6 +56,16 @@
 
 /* ***************************************************** */
 
+#ifndef min_val
+#define min_val(a, b) ((a > b) ? b : a)
+#endif
+
+#ifndef max_val
+#define max_val(a, b) ((a > b) ? a : b)
+#endif
+
+/* ***************************************************** */
+
 #ifdef WIN32
 #ifdef _WIN64
 #define PACKAGE_OSNAME            "Win64"
