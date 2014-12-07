@@ -77,10 +77,10 @@ for key,value in pairs(hosts_stats) do
    if (existing == nil) then
       stats_by_as[asn] = {}
       stats_by_as[asn]["id"] = asn
-      if (value["asname"] ~= nil) then
+      if (asn ~= 0) then
          stats_by_as[asn]["name"] = value["asname"]
       else
-         stats_by_as[asn]["name"] = "Hidden"
+         stats_by_as[asn]["name"] = "Private ASN"
       end
       stats_by_as[asn]["seen.first"] = value["seen.first"]
       stats_by_as[asn]["seen.last"] = value["seen.last"]
@@ -153,13 +153,11 @@ for _key, _value in pairsByKeys(vals, funct) do
 	    print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
 	    print(value["id"]..'</A> "')
 
-	    if(value["id"] == 0) then value["name"] = "Private ASN" end
             print(", \"column_name\" : \""..value["name"])
 
 	    if((value["country"] ~= nil) and (value["country"] ~= "")) then
                print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
             end
-
 
 	    print("\", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
 	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
