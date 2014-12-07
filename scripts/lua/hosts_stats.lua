@@ -68,14 +68,16 @@ print [[
 
 if(protocol == nil) then protocol = "" end
 
+if(_GET["asn"] ~= nil) then asn = " for AS ".._GET["asn"] else asn = "" end
+
 if(mode == "all") then
-   print('title: "All '..protocol..' Hosts",\n')
+   print('title: "All '..protocol..' Hosts'..asn..'",\n')
 elseif(mode == "local") then
-   print('title: "Local '..protocol..' Hosts",\n')
+   print('title: "Local '..protocol..' Hosts'..asn..'",\n')
 elseif(mode == "remote") then
-   print('title: "Remote '..protocol..' Hosts",\n')
+   print('title: "Remote '..protocol..' Hosts'..asn..'",\n')
 else
-   print('title: "Local Networks",\n')
+   print('title: "Local Networks'..asn..'",\n')
 end
 print ('rowCallback: function ( row ) { return host_table_setID(row); },')
 
@@ -97,7 +99,8 @@ print [[/lua/hosts_stats.lua?mode=local">Local Only</a></li><li><a href="]]
 print (ntop.getHttpPrefix())
 print [[/lua/hosts_stats.lua?mode=remote">Remote Only</a></li><li>&nbsp;</li><li><a href="]]
 print (ntop.getHttpPrefix())
-print [[/lua/hosts_stats.lua?mode=network">Local Networks</a></li></ul> </div>' ],
+print [[/lua/hosts_stats.lua?mode=network">Local Networks</a></li></ul>]]
+print [[</div>' ],
 	        columns: [
 	        	{
 	        		title: "Key",

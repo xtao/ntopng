@@ -130,7 +130,7 @@ function print_single_as(value)
    end
    print('", ')
 
-   print("\"column_name\" : \""..value["name"])
+   print("\"column_name\" : \""..printASN(tonumber(value["id"]), value["name"]))
    if((value["country"] ~= nil) and (value["country"] ~= "")) then
       print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
    end

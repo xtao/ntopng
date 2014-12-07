@@ -357,7 +357,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       if(value["asn"] == 0) then
 		  print(", \"column_asn\" : 0")
 	       else
-		  print(", \"column_asn\" : \"" .. printASN(value["asn"], value["asname"]) .."\"")
+		  print(", \"column_asn\" : \"<A HREF=" .. ntop.getHttpPrefix() .. "/lua/hosts_stats.lua?asn=".. value["asn"] ..">"..value["asname"].."</A>\"")
 	       end
 	    end
 

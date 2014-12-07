@@ -154,9 +154,9 @@ end
 
 function printASN(asn, asname)
   if(asn > 0) then
-    return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asn.."</A> <i class='fa fa-external-link fa-lg'></i>")
+    return("<A HREF='http://as.robtex.com/as"..asn..".html' title='"..asname.."'>"..asname.."</A> <i class='fa fa-external-link fa-lg'></i>")
   else
-    return("")
+    return(asname)
   end
 end
 
