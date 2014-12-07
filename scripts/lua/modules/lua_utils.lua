@@ -1629,3 +1629,9 @@ function formatBreed(breed)
       return("")
    end
 end
+
+-- GENERIC UTILS
+
+function ternary(cond, T, F)
+   if cond then return T else return F end
+end

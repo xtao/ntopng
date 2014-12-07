@@ -66,10 +66,6 @@ total = 0
 now = os.time()
 vals = {}
 
-function ternary(cond, T, F)
-   if cond then return T else return F end
-end
-
 stats_by_as = {}
 for key,value in pairs(hosts_stats) do
    asn = value["asn"]
