@@ -15,6 +15,8 @@ perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 
+as_n        = _GET["as"]
+
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
@@ -59,7 +61,9 @@ if (all ~= nil) then
   currentPage = 0
 end
 
-print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
+if (as_n == nil) then -- single AS info requested
+   print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
+end
 num = 0
 total = 0
 
@@ -68,12 +72,16 @@ vals = {}
 
 stats_by_as = {}
 for key,value in pairs(hosts_stats) do
+   -- Convert AS code to string to avoid type mismatches if the value is 0
+   -- (which would mean that the AS is private)
+   value["asn"] = tostring(value["asn"])
+
    asn = value["asn"]
    existing = stats_by_as[asn]
    if (existing == nil) then
       stats_by_as[asn] = {}
       stats_by_as[asn]["id"] = asn
-      if (asn ~= 0) then
+      if (asn ~= "0") then
          stats_by_as[asn]["name"] = value["asname"]
       else
          stats_by_as[asn]["name"] = "Private ASN"
@@ -102,6 +110,67 @@ for key,value in pairs(hosts_stats) do
    stats_by_as[asn]["bytes.rcvd"] = value["bytes.rcvd"] +
          ternary(existing, stats_by_as[asn]["bytes.rcvd"], 0)
    stats_by_as[asn]["country"] = value["country"]
+end
+
+function print_single_as(value)
+   print ('{ ')
+   print ('\"key\" : \"'..value["id"]..'\",')
+
+   print ("\"column_asn\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
+   print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
+   print(value["id"]..'</A>", ')
+
+   print('"column_hosts" : "' .. formatValue(value["num_hosts"]) ..'",')
+
+   print ("\"column_alerts\" : \"")
+   if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
+      print("<font color=#B94A48>"..formatValue(value["num_alerts"]).."</font>")
+   else
+      print("0")
+   end
+   print('", ')
+
+   print("\"column_name\" : \""..value["name"])
+   if((value["country"] ~= nil) and (value["country"] ~= "")) then
+      print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
+   end
+   print('", ')
+
+   print("\"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
+
+   sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
+   print ("\"column_breakdown\" : \"<div class='progress'><div class='progress-bar progress-bar-warning' style='width: "
+          .. sent2rcvd .."%;'>Sent</div><div class='progress-bar progress-bar-info' style='width: "
+          .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
+   print('", ')
+
+   if (throughput_type == "pps") then
+      print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")
+   else
+      print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
+   end
+   if(value["throughput_trend_bps_diff"] > 0) then
+      print("<i class='fa fa-arrow-up'></i>")
+   elseif(value["throughput_trend_bps_diff"] < 0) then
+      print("<i class='fa fa-arrow-down'></i>")
+   else
+      print("<i class='fa fa-minus'></i>")
+   end
+   print('", ')
+
+   print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
+
+   print("\" } ")
+end
+
+if (as_n ~= nil) then
+   as_val = stats_by_as[as_n]
+   if (as_val == nil) then
+      print('{}')
+   else
+      print_single_as(as_val)
+   end
+   stats_by_as = {}
 end
 
 for key,value in pairs(stats_by_as) do
@@ -146,51 +215,7 @@ for _key, _value in pairsByKeys(vals, funct) do
             if(num > 0) then
                print ",\n"
             end
-            print ('{ ')
-            print ('\"key\" : \"'..value["id"]..'\",')
-	    print ("\"column_asn\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
-	    print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
-	    print(value["id"]..'</A> "')
-
-            print(", \"column_name\" : \""..value["name"])
-
-	    if((value["country"] ~= nil) and (value["country"] ~= "")) then
-               print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
-            end
-
-	    print("\", \"column_since\" : \"" .. secondsToTime(now-value["seen.first"]+1) .. "\", ")
-	    print("\"column_last\" : \"" .. secondsToTime(now-value["seen.last"]+1) .. "\", ")
-
-            if (throughput_type == "pps") then
-               print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")
-            else
-               print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
-            end
-            if(value["throughput_trend_bps_diff"] > 0) then
-               print("<i class='fa fa-arrow-up'></i>")
-            elseif(value["throughput_trend_bps_diff"] < 0) then
-               print("<i class='fa fa-arrow-down'></i>")
-            else
-               print("<i class='fa fa-minus'></i>")
-            end
-            print("\",")
-
-            print("\"column_hosts\" : \"" .. formatValue(value["num_hosts"]) .."\",\n")
-            print("\"column_traffic\" : \"" .. bytesToSize(value["bytes.sent"]+value["bytes.rcvd"]))
-
-            print ("\", \"column_alerts\" : \"")
-            if((value["num_alerts"] ~= nil) and (value["num_alerts"] > 0)) then
-               print("<font color=#B94A48>"..formatValue(value["num_alerts"]).."</font>")
-            else
-               print("0")
-            end
-
-            sent2rcvd = round((value["bytes.sent"] * 100) / (value["bytes.sent"]+value["bytes.rcvd"]), 0)
-            print ("\", \"column_breakdown\" : \"<div class='progress'><div class='progress-bar progress-bar-warning' style='width: "
-                   .. sent2rcvd .."%;'>Sent</div><div class='progress-bar progress-bar-info' style='width: "
-                   .. (100-sent2rcvd) .. "%;'>Rcvd</div></div>")
-
-            print("\" } ")
+            print_single_as(value)
             num = num + 1
          end
       end
@@ -198,7 +223,9 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 end -- for
 
-print ("\n], \"perPage\" : " .. perPage .. ",\n")
+if (as_n == nil) then -- single AS info requested
+   print ("\n], \"perPage\" : " .. perPage .. ",\n")
+end
 
 if(sortColumn == nil) then
    sortColumn = ""
@@ -208,5 +235,7 @@ if(sortOrder == nil) then
    sortOrder = ""
 end
 
-print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
-print ("\"totalRows\" : " .. total .. " \n}")
+if (as_n == nil) then -- single AS info requested
+   print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
+   print ("\"totalRows\" : " .. total .. " \n}")
+end

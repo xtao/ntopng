@@ -32,7 +32,7 @@ print [[
 	 ]]
 
 print('title: "Autonomous Systems",\n')
-print ('rowCallback: function ( row ) { return host_table_setID(row); },')
+print ('rowCallback: function ( row ) { return as_table_setID(row); },')
 
 -- Set the preference table
 preference = tablePreferences("rows_number",_GET["perPage"])
