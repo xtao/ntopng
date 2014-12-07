@@ -372,6 +372,7 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
     lua_push_float_table_entry(vm, "throughput_bps", bytes_thpt);
     lua_push_float_table_entry(vm, "last_throughput_bps", last_bytes_thpt);
     lua_push_int_table_entry(vm, "throughput_trend_bps", bytes_thpt_trend);
+    lua_push_float_table_entry(vm, "throughput_trend_bps_diff", bytes_thpt_diff);
 
     // ntop->getTrace()->traceEvent(TRACE_NORMAL, "[bytes_thpt: %.2f] [bytes_thpt_trend: %d]", bytes_thpt,bytes_thpt_trend);
     lua_push_float_table_entry(vm, "throughput_pps", pkts_thpt);

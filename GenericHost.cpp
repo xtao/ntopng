@@ -151,6 +151,7 @@ void GenericHost::updateStats(struct timeval *tv) {
     if(bytes_thpt < bytes_msec)      bytes_thpt_trend = trend_up;
     else if(bytes_thpt > bytes_msec) bytes_thpt_trend = trend_down;
     else                        bytes_thpt_trend = trend_stable;
+    bytes_thpt_diff = bytes_msec - bytes_thpt;
 
     last_bytes_thpt = bytes_thpt, last_pkts_thpt = pkts_thpt;
     bytes_thpt = bytes_msec, last_bytes = new_bytes;

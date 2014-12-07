@@ -94,6 +94,9 @@ for key,value in pairs(hosts_stats) do
          ternary(existing, stats_by_as[asn]["throughput_bps"], 0)
    stats_by_as[asn]["throughput_pps"] = value["throughput_pps"] +
          ternary(existing, stats_by_as[asn]["throughput_pps"], 0)
+   stats_by_as[asn]["throughput_trend_bps_diff"] =
+         math.floor(value["throughput_trend_bps_diff"]) +
+         ternary(existing, stats_by_as[asn]["throughput_trend_bps_diff"], 0)
    stats_by_as[asn]["bytes.sent"] = value["bytes.sent"] +
          ternary(existing, stats_by_as[asn]["bytes.sent"], 0)
    stats_by_as[asn]["bytes.rcvd"] = value["bytes.rcvd"] +
@@ -162,6 +165,13 @@ for _key, _value in pairsByKeys(vals, funct) do
                print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")
             else
                print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
+            end
+            if(value["throughput_trend_bps_diff"] > 0) then
+               print("<i class='fa fa-arrow-up'></i>")
+            elseif(value["throughput_trend_bps_diff"] < 0) then
+               print("<i class='fa fa-arrow-down'></i>")
+            else
+               print("<i class='fa fa-minus'></i>")
             end
             print("\",")
 
