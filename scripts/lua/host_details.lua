@@ -172,7 +172,7 @@ if(page == "http") then
   print("<li class=\"active\"><a href=\"#\">HTTP</a></li>\n")
 else
    if((host["http"] ~= nil)
-   and ((host["http"]["req.total"]+ host["http"]["rsp.total"]) > 0)) then
+   and ((host["http"]["query.total"]+ host["http"]["response.total"]) > 0)) then
       print("<li><a href=\""..url.."&page=http\">HTTP</a></li>")
    end
 end
@@ -888,7 +888,6 @@ print [[/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print
            ]]
          end
 
-
 	 print("<tr><th>Rcvd</th><td class=\"text-right\"><span id=dns_rcvd_num_queries>".. formatValue(host["dns"]["rcvd"]["num_queries"]) .."</span> <span id=trend_rcvd_num_queries></span></td>")
 	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_ok>".. formatValue(host["dns"]["rcvd"]["num_replies_ok"]) .."</span> <span id=trend_rcvd_num_replies_ok></span></td>")
 	 print("<td class=\"text-right\"><span id=dns_rcvd_num_replies_error>".. formatValue(host["dns"]["rcvd"]["num_replies_error"]) .."</span> <span id=trend_rcvd_num_replies_error></span></td><td colspan=2>")
@@ -911,13 +910,51 @@ end
 
 	 print("</table>\n")
       end
+   elseif(page == "http") then
+      if(host["http"] ~= nil) then
+	 print("<table class=\"table table-bordered table-striped\">\n")
+	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods>HTTP Queries</A></th><th width=20%>Method</th><th width=20%>Requests</th><th>Distribution</th></tr>")
+	 print("<tr><th>GET</th><td style=\"text-align: right;\"><span id=http_query_num_get>".. formatValue(host["http"]["query.num_get"]) .."</span> <span id=trend_http_query_num_get></span></td><td rowspan=5>")
+
+print [[
+         <div class="pie-chart" id="httpQueries"></div>
+         <script type='text/javascript'>
+         
+	     do_pie("#httpQueries", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "queries" }, "", refresh);
+         </script>
+]]
+
+	 print("</td></tr>")
+	 print("<tr><th>POST</th><td style=\"text-align: right;\"><span id=http_query_num_post>".. formatValue(host["http"]["query.num_post"]) .."</span> <span id=trend_http_query_num_post></span></td></tr>")
+	 print("<tr><th>HEAD</th><td style=\"text-align: right;\"><span id=http_query_num_head>".. formatValue(host["http"]["query.num_head"]) .."</span> <span id=trend_http_query_num_head></span></td></tr>")
+	 print("<tr><th>PUT</th><td style=\"text-align: right;\"><span id=http_query_num_put>".. formatValue(host["http"]["query.num_put"]) .."</span> <span id=trend_http_query_num_put></span></td></tr>")
+	 print("<tr><th>Other Method</th><td style=\"text-align: right;\"><span id=http_query_num_other>".. formatValue(host["http"]["query.num_other"]) .."</span> <span id=trend_http_query_num_other></span></td></tr>")
+	 print("<tr><th colspan=4>&nbsp;</th></tr>")
+	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/List_of_HTTP_status_codes>HTTP Responses</A></th><th width=20%>Response code</th><th width=20%>Responses</th><th>Distribution</th></tr>")
+	 print("<tr><th>1xx (Informational)</th><td style=\"text-align: right;\"><span id=http_response_num_1xx>".. formatValue(host["http"]["response.num_1xx"]) .."</span> <span id=trend_http_response_num_1xx></span></td><td rowspan=5>")
+	 
+print [[
+         <div class="pie-chart" id="httpResponses"></div>
+         <script type='text/javascript'>
+         
+	     do_pie("#httpResponses", ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "responses" }, "", refresh);
+         </script>
+]]
+	 print("</td></tr>")
+	 print("<tr><th>2xx (Success)</th><td style=\"text-align: right;\"><span id=http_response_num_2xx>".. formatValue(host["http"]["response.num_2xx"]) .."</span> <span id=trend_http_response_num_2xx></span></td></tr>")
+	 print("<tr><th>3xx (Redirection)</th><td style=\"text-align: right;\"><span id=http_response_num_3xx>".. formatValue(host["http"]["response.num_3xx"]) .."</span> <span id=trend_http_response_num_3xx></span></td></tr>")
+	 print("<tr><th>4xx (Client Error)</th><td style=\"text-align: right;\"><span id=http_response_num_4xx>".. formatValue(host["http"]["response.num_4xx"]) .."</span> <span id=trend_http_response_num_4xx></span></td></tr>")
+	 print("<tr><th>5xx (Server Error)</th><td style=\"text-align: right;\"><span id=http_response_num_5xx>".. formatValue(host["http"]["response.num_5xx"]) .."</span> <span id=trend_http_response_num_5xx></span></td></tr>")
+	 print("</table>\n")
+      end
 
 
    elseif(page == "epp") then
-
       if(host["epp"] ~= nil) then
-
-
 	 print("<table class=\"table table-bordered table-striped\">\n")
 	 print("<tr><th>EPP Breakdown</th><th>Queries</th><th>Positive Replies</th><th>Error Replies</th><th colspan=2>Reply Breakdown</th></tr>")
 	 print("<tr><th>Sent</th><td class=\"text-right\"><span id=epp_sent_num_queries>".. formatValue(host["epp"]["sent"]["num_queries"]) .."</span> <span id=trend_sent_num_queries></span></td>")
@@ -1991,6 +2028,19 @@ if(host["dns"] ~= nil) then
    print("var last_dns_rcvd_num_replies_error = " .. host["dns"]["rcvd"]["num_replies_error"] .. ";\n")
 end
 
+if(host["http"] ~= nil) then
+   print("var last_http_query_num_get = " .. host["http"]["query.num_get"] .. ";\n")
+   print("var last_http_query_num_post = " .. host["http"]["query.num_post"] .. ";\n")
+   print("var last_http_query_num_head = " .. host["http"]["query.num_head"] .. ";\n")
+   print("var last_http_query_num_put = " .. host["http"]["query.num_put"] .. ";\n")
+   print("var last_http_query_num_other = " .. host["http"]["query.num_other"] .. ";\n")
+   print("var last_http_response_num_1xx = " .. host["http"]["response.num_1xx"] .. ";\n")
+   print("var last_http_response_num_2xx = " .. host["http"]["response.num_2xx"] .. ";\n")
+   print("var last_http_response_num_3xx = " .. host["http"]["response.num_3xx"] .. ";\n")
+   print("var last_http_response_num_4xx = " .. host["http"]["response.num_4xx"] .. ";\n")
+   print("var last_http_response_num_5xx = " .. host["http"]["response.num_5xx"] .. ";\n")
+end
+
 if(host["epp"] ~= nil) then
    print("var last_epp_sent_num_queries = " .. host["epp"]["sent"]["num_queries"] .. ";\n")
    print("var last_epp_sent_num_replies_ok = " .. host["epp"]["sent"]["num_replies_ok"] .. ";\n")
@@ -2081,6 +2131,22 @@ print [[
 			      $('#trend_rcvd_num_replies_error').html("<i class=\"fa fa-arrow-up\"></i>");
 			   }
 		     ]]
+end
+
+if(host["http"] ~= nil) then
+      methods = { "get", "post", "head", "put", "other" }
+      for i, method in ipairs(methods) do
+	 print('\t$("#http_query_num_'..method..'").html(addCommas(host["http"]["query.num_'..method..'"]));\n')
+	 print('\tif(host["http"]["query.num_'..method..'"] == last_http_query_num_'..method..') {\n\t$("#trend_http_query_num_'..method..'").html(\'<i class=\"fa fa-minus\"></i>\');\n')
+	 print('} else {\n\tlast_http_query_num_'..method..' = host["http"]["query.num_'..method..'"];$("#trend_http_query_num_'..method..'").html(\'<i class=\"fa fa-arrow-up\"></i>\'); }\n')
+      end
+
+      retcodes = { "1xx", "2xx", "3xx", "4xx", "5xx" }
+      for i, retcode in ipairs(retcodes) do
+	 print('\t$("#http_response_num_'..retcode..'").html(addCommas(host["http"]["response.num_'..retcode..'"]));\n')
+	 print('\tif(host["http"]["response.num_'..retcode..'"] == last_http_response_num_'..retcode..') {\n\t$("#trend_http_response_num_'..retcode..'").html(\'<i class=\"fa fa-minus\"></i>\');\n')
+	 print('} else {\n\tlast_http_response_num_'..retcode..' = host["http"]["response.num_'..retcode..'"];$("#trend_http_response_num_'..retcode..'").html(\'<i class=\"fa fa-arrow-up\"></i>\'); }\n')
+      end
 end
 
 if(host["epp"] ~= nil) then

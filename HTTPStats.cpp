@@ -24,8 +24,8 @@
 /* *************************************** */
 
 HTTPStats::HTTPStats() {
-  memset(&req, 0, sizeof(req));
-  memset(&rsp, 0, sizeof(rsp));
+  memset(&query, 0, sizeof(query));
+  memset(&response, 0, sizeof(response));
 }
 
 /* *************************************** */
@@ -33,19 +33,19 @@ HTTPStats::HTTPStats() {
 void HTTPStats::lua(lua_State *vm) {
   lua_newtable(vm);
 
-  lua_push_int_table_entry(vm, "req.total", req.num_get+req.num_get+req.num_post+req.num_head+req.num_put);
-  lua_push_int_table_entry(vm, "req.num_get", req.num_get);
-  lua_push_int_table_entry(vm, "req.num_post", req.num_post);
-  lua_push_int_table_entry(vm, "req.num_head", req.num_head);
-  lua_push_int_table_entry(vm, "req.num_put", req.num_put);
-  lua_push_int_table_entry(vm, "req.num_other", req.num_other);
+  lua_push_int_table_entry(vm, "query.total", query.num_get+query.num_get+query.num_post+query.num_head+query.num_put);
+  lua_push_int_table_entry(vm, "query.num_get", query.num_get);
+  lua_push_int_table_entry(vm, "query.num_post", query.num_post);
+  lua_push_int_table_entry(vm, "query.num_head", query.num_head);
+  lua_push_int_table_entry(vm, "query.num_put", query.num_put);
+  lua_push_int_table_entry(vm, "query.num_other", query.num_other);
 
-  lua_push_int_table_entry(vm, "rsp.total", rsp.num_100x+rsp.num_200x+rsp.num_300x+rsp.num_400x+rsp.num_500x);
-  lua_push_int_table_entry(vm, "rsp.num_100x", rsp.num_100x);
-  lua_push_int_table_entry(vm, "rsp.num_200x", rsp.num_200x);
-  lua_push_int_table_entry(vm, "rsp.num_300x", rsp.num_300x);
-  lua_push_int_table_entry(vm, "rsp.num_400x", rsp.num_400x);
-  lua_push_int_table_entry(vm, "rsp.num_500x", rsp.num_500x);
+  lua_push_int_table_entry(vm, "response.total", response.num_1xx+response.num_2xx+response.num_3xx+response.num_4xx+response.num_5xx);
+  lua_push_int_table_entry(vm, "response.num_1xx", response.num_1xx);
+  lua_push_int_table_entry(vm, "response.num_2xx", response.num_2xx);
+  lua_push_int_table_entry(vm, "response.num_3xx", response.num_3xx);
+  lua_push_int_table_entry(vm, "response.num_4xx", response.num_4xx);
+  lua_push_int_table_entry(vm, "response.num_5xx", response.num_5xx);
 
   lua_pushstring(vm, "http");
   lua_insert(vm, -2);
@@ -71,19 +71,19 @@ void HTTPStats::deserialize(json_object *o) {
 
   if(!o) return;
 
-  memset(&req, 0, sizeof(req)), memset(&rsp, 0, sizeof(rsp));
+  memset(&query, 0, sizeof(query)), memset(&response, 0, sizeof(response));
 
-  if(json_object_object_get_ex(o, "req.num_get", &obj))   req.num_get = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "req.num_post", &obj))  req.num_post = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "req.num_head", &obj))  req.num_head = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "req.num_put", &obj))   req.num_put = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "req.num_other", &obj)) req.num_other = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "query.num_get", &obj))   query.num_get = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "query.num_post", &obj))  query.num_post = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "query.num_head", &obj))  query.num_head = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "query.num_put", &obj))   query.num_put = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "query.num_other", &obj)) query.num_other = json_object_get_int64(obj);
 
-  if(json_object_object_get_ex(o, "rsp.num_100x", &obj)) rsp.num_100x = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "rsp.num_200x", &obj)) rsp.num_200x = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "rsp.num_300x", &obj)) rsp.num_300x = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "rsp.num_400x", &obj)) rsp.num_400x = json_object_get_int64(obj);
-  if(json_object_object_get_ex(o, "rsp.num_100x", &obj)) rsp.num_100x = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "response.num_1xx", &obj)) response.num_1xx = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "response.num_2xx", &obj)) response.num_2xx = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "response.num_3xx", &obj)) response.num_3xx = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "response.num_4xx", &obj)) response.num_4xx = json_object_get_int64(obj);
+  if(json_object_object_get_ex(o, "response.num_1xx", &obj)) response.num_1xx = json_object_get_int64(obj);
 }
 
 /* ******************************************* */
@@ -91,17 +91,17 @@ void HTTPStats::deserialize(json_object *o) {
 json_object* HTTPStats::getJSONObject() {
   json_object *my_object = json_object_new_object();
 
-  if(req.num_get > 0) json_object_object_add(my_object, "req.num_get", json_object_new_int64(req.num_get));
-  if(req.num_post > 0) json_object_object_add(my_object, "req.num_post", json_object_new_int64(req.num_post));
-  if(req.num_head > 0) json_object_object_add(my_object, "req.num_head", json_object_new_int64(req.num_head));
-  if(req.num_put > 0) json_object_object_add(my_object, "req.num_put", json_object_new_int64(req.num_put));
-  if(req.num_other > 0) json_object_object_add(my_object, "req.num_other", json_object_new_int64(req.num_other));
+  if(query.num_get > 0) json_object_object_add(my_object, "query.num_get", json_object_new_int64(query.num_get));
+  if(query.num_post > 0) json_object_object_add(my_object, "query.num_post", json_object_new_int64(query.num_post));
+  if(query.num_head > 0) json_object_object_add(my_object, "query.num_head", json_object_new_int64(query.num_head));
+  if(query.num_put > 0) json_object_object_add(my_object, "query.num_put", json_object_new_int64(query.num_put));
+  if(query.num_other > 0) json_object_object_add(my_object, "query.num_other", json_object_new_int64(query.num_other));
 
-  if(rsp.num_100x > 0) json_object_object_add(my_object, "rsp.num_100x", json_object_new_int64(rsp.num_100x));
-  if(rsp.num_200x > 0) json_object_object_add(my_object, "rsp.num_200x", json_object_new_int64(rsp.num_200x));
-  if(rsp.num_300x > 0) json_object_object_add(my_object, "rsp.num_300x", json_object_new_int64(rsp.num_300x));
-  if(rsp.num_400x > 0) json_object_object_add(my_object, "rsp.num_400x", json_object_new_int64(rsp.num_400x));
-  if(rsp.num_500x > 0) json_object_object_add(my_object, "rsp.num_500x", json_object_new_int64(rsp.num_500x));
+  if(response.num_1xx > 0) json_object_object_add(my_object, "response.num_1xx", json_object_new_int64(response.num_1xx));
+  if(response.num_2xx > 0) json_object_object_add(my_object, "response.num_2xx", json_object_new_int64(response.num_2xx));
+  if(response.num_3xx > 0) json_object_object_add(my_object, "response.num_3xx", json_object_new_int64(response.num_3xx));
+  if(response.num_4xx > 0) json_object_object_add(my_object, "response.num_4xx", json_object_new_int64(response.num_4xx));
+  if(response.num_5xx > 0) json_object_object_add(my_object, "response.num_5xx", json_object_new_int64(response.num_5xx));
 
   return(my_object);
 }
@@ -109,11 +109,11 @@ json_object* HTTPStats::getJSONObject() {
 /* ******************************************* */
 
 void HTTPStats::incRequest(char *method) {
-  if(method[0] == 'G') req.num_get++;
-  else if((method[0] == 'P') && (method[0] == 'O')) req.num_post++;
-  else if(method[0] == 'H') req.num_head++;
-  else if((method[0] == 'P') && (method[0] == 'U')) req.num_put++;
-  else req.num_other++;
+  if(method[0] == 'G') query.num_get++;
+  else if((method[0] == 'P') && (method[0] == 'O')) query.num_post++;
+  else if(method[0] == 'H') query.num_head++;
+  else if((method[0] == 'P') && (method[0] == 'U')) query.num_put++;
+  else query.num_other++;
 }
 
 /* ******************************************* */
@@ -125,10 +125,10 @@ void HTTPStats::incResponse(char *return_code) {
   if(!code) return;
 
   switch(code[1]) {
-  case '1': rsp.num_100x++; break;
-  case '2': rsp.num_200x++; break;
-  case '3': rsp.num_300x++; break;
-  case '4': rsp.num_400x++; break;
-  case '5': rsp.num_500x++; break;
+  case '1': response.num_1xx++; break;
+  case '2': response.num_2xx++; break;
+  case '3': response.num_3xx++; break;
+  case '4': response.num_4xx++; break;
+  case '5': response.num_5xx++; break;
   }
 }

@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2013-14 - ntop.org
+ * (C) 2014 - ntop.org
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,18 +24,18 @@
 
 #include "ntop_includes.h"
 
-struct http_request_stats {
+struct http_query_stats {
   u_int32_t num_get, num_post, num_head, num_put, num_other;
 };
 
-struct http_responses_stats {
-  u_int32_t num_100x, num_200x, num_300x, num_400x, num_500x;
+struct http_response_stats {
+  u_int32_t num_1xx, num_2xx, num_3xx, num_4xx, num_5xx;
 };
 
 class HTTPStats {
  private:
-  struct http_request_stats req;
-  struct http_responses_stats rsp;
+  struct http_query_stats query;
+  struct http_response_stats response;
 
  public:
   HTTPStats();

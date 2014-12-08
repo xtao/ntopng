@@ -1391,14 +1391,14 @@ void Flow::dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len)
 
   if(src2dst_direction) {
     // payload[10]=0; ntop->getTrace()->traceEvent(TRACE_WARNING, "[len: %u][%s]", payload_len, payload);
-    h = cli_host->getHTTPStats();
-    if(h) h->incRequest(payload);
+    h = cli_host->getHTTPStats(); if(h) h->incRequest(payload); /* Sent */
+    h = srv_host->getHTTPStats(); if(h) h->incRequest(payload); /* Rcvd */
     dissect_next_http_packet = true;
   } else {
     if(dissect_next_http_packet) {
       // payload[10]=0; ntop->getTrace()->traceEvent(TRACE_WARNING, "[len: %u][%s]", payload_len, payload);
-      h = srv_host->getHTTPStats();
-      if(h) h->incResponse(payload);    
+      h = cli_host->getHTTPStats(); if(h) h->incResponse(payload); /* Rcvd */
+      h = srv_host->getHTTPStats(); if(h) h->incResponse(payload); /* Sent */
       dissect_next_http_packet = false;
     }
   }
