@@ -1459,7 +1459,7 @@ void Flow::dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len)
       if((space = strchr(payload, ' ')) != NULL) {
 	payload = &space[1];
 	if((space = strchr(payload, ' ')) != NULL) {
-	  int l = min_val(space-payload, sizeof(tmp)-1);
+	  int l = min_val((int)(space-payload), (int)(sizeof(tmp)-1));
 	  
 	  strncpy(tmp, payload, l);
 	  tmp[l] = 0;
