@@ -41,7 +41,16 @@ class Flow : public GenericHashEntry {
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
-    
+
+  struct {
+    char *last_url, *last_method;
+    u_int16_t last_return_code;
+  } http;
+
+  struct {
+    char *last_query;
+  } dns;
+
   struct {
     char *category;
     bool flow_categorized;

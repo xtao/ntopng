@@ -254,6 +254,17 @@ else
       end
    end
 
+   if(flow["dns.last_query"] ~= nil) then
+      print("<tr><th width=30%>DNS Query</th><td colspan=2><A HREF=http://"..flow["dns.last_query"]..">"..flow["dns.last_query"].."</A> <i class='fa fa-external-link fa-lg'></i></td></tr>\n")
+   end
+
+   if(flow["http.last_url"] ~= nil) then
+      print("<tr><th width=30% rowspan=3>HTTP</th><th>HTTP Method</th><td>"..flow["http.last_method"].."</td></tr>\n")
+      print("<tr><th>URL</th><td>"..flow["http.last_url"].."</td></tr>\n")
+      print("<tr><th>Response Code</th><td>"..flow["http.last_return_code"].."</td></tr>\n")
+   end
+
+
    if (flow["moreinfo.json"] ~= nil) then
       local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)
 

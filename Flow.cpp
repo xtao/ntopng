@@ -53,9 +53,11 @@ Flow::Flow(NetworkInterface *_iface,
   pkts_thpt_trend = trend_unknown;
   protocol_processed = false;
 
+  memset(&http, 0, sizeof(http)), memset(&dns, 0, sizeof(dns));
   memset(&tcp_stats_s2d, 0, sizeof(tcp_stats_s2d)), memset(&tcp_stats_d2s, 0, sizeof(tcp_stats_d2s));
   memset(&clientNwLatency, 0, sizeof(clientNwLatency)), memset(&serverNwLatency, 0, sizeof(serverNwLatency)), 
   aggregationInfo.name = NULL;
+
   /*
     NOTE
 
@@ -116,6 +118,10 @@ Flow::~Flow() {
   if(json_info) free(json_info);
   if(client_proc) delete(client_proc);
   if(server_proc) delete(server_proc);
+
+  if(http.last_method) free(http.last_method);
+  if(http.last_url)    free(http.last_url);
+  if(dns.last_query)   free(dns.last_query);
 
   if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
@@ -235,6 +241,11 @@ void Flow::processDetectedProtocol() {
 
   switch(ndpi_detected_protocol) {
   case NDPI_PROTOCOL_DNS:
+    if(ndpi_flow->host_server_name[0] != '\0') {
+      if(dns.last_query) free(dns.last_query);
+      dns.last_query = strdup((const char*)ndpi_flow->host_server_name);
+    }
+
     if(ntop->getPrefs()->decode_dns_responses()) {
       if(ndpi_flow->host_server_name[0] != '\0') {
 	char delimiter = '@', *name = NULL;
@@ -886,6 +897,15 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
       lua_push_int_table_entry(vm, "srv2cli.out_of_order", tcp_stats_d2s.pktOOO);
       lua_push_int_table_entry(vm, "srv2cli.lost", tcp_stats_d2s.pktLost);
     }
+
+    if(dns.last_query)
+      lua_push_str_table_entry(vm, "dns.last_query", dns.last_query);
+
+    if(http.last_method && http.last_url) {
+      lua_push_str_table_entry(vm, "http.last_url", http.last_url);
+      lua_push_str_table_entry(vm, "http.last_method", http.last_method);
+      lua_push_int_table_entry(vm, "http.last_return_code", http.last_return_code);
+    }
   }
 
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
@@ -1111,6 +1131,13 @@ json_object* Flow::flow2json(bool partial_dump) {
   if(vlanId > 0) json_object_object_add(my_object,
 					Utils::jsonLabel(SRC_VLAN, "SRC_VLAN", jsonbuf, sizeof(jsonbuf)),
 					json_object_new_int(vlanId));
+
+  if(protocol == IPPROTO_TCP) {
+    json_object_object_add(my_object, Utils::jsonLabel(LAST_SWITCHED, "CLIENT_NW_LATENCY_MS", jsonbuf, sizeof(jsonbuf)),
+			   json_object_new_double(toMs(&clientNwLatency)));
+    json_object_object_add(my_object, Utils::jsonLabel(LAST_SWITCHED, "SERVER_NW_LATENCY_MS", jsonbuf, sizeof(jsonbuf)),
+			   json_object_new_double(toMs(&serverNwLatency)));
+  }
 
   if(client_proc != NULL) processJson(true, my_object, client_proc);
   if(server_proc != NULL) processJson(false, my_object, server_proc);
@@ -1390,16 +1417,55 @@ void Flow::dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len)
   HTTPStats *h;
 
   if(src2dst_direction) {
+    char *space;
+
     // payload[10]=0; ntop->getTrace()->traceEvent(TRACE_WARNING, "[len: %u][%s]", payload_len, payload);
     h = cli_host->getHTTPStats(); if(h) h->incRequest(payload); /* Sent */
     h = srv_host->getHTTPStats(); if(h) h->incRequest(payload); /* Rcvd */
     dissect_next_http_packet = true;
+
+    if((space = strchr(payload, ' ')) != NULL) {
+      u_int l = space-payload;
+
+      if((!strncmp(payload, "GET", 3))
+	 || (!strncmp(payload, "POST", 4))) {
+	if(http.last_method) free(http.last_method);
+	if((http.last_method = (char*)malloc(l+1)) != NULL) {
+	  strncpy(http.last_method, payload, l);
+	  http.last_method[l] = '\0';
+	}
+	
+	payload = &space[1];
+	if((space = strchr(payload, ' ')) != NULL) {
+	  u_int l = space-payload;
+	  
+	  if(http.last_url) free(http.last_url);
+	  if((http.last_url = (char*)malloc(l+1)) != NULL) {
+	    strncpy(http.last_url, payload, l);
+	    http.last_url[l] = '\0';
+	  }
+	}
+      }
+    }
   } else {
     if(dissect_next_http_packet) {
+      char *space, tmp[32];
+
       // payload[10]=0; ntop->getTrace()->traceEvent(TRACE_WARNING, "[len: %u][%s]", payload_len, payload);
       h = cli_host->getHTTPStats(); if(h) h->incResponse(payload); /* Rcvd */
       h = srv_host->getHTTPStats(); if(h) h->incResponse(payload); /* Sent */
       dissect_next_http_packet = false;
+
+      if((space = strchr(payload, ' ')) != NULL) {
+	payload = &space[1];
+	if((space = strchr(payload, ' ')) != NULL) {
+	  int l = min_val(space-payload, sizeof(tmp)-1);
+	  
+	  strncpy(tmp, payload, l);
+	  tmp[l] = 0;
+	  http.last_return_code = atoi(tmp);
+	}
+      }
     }
   }
 }

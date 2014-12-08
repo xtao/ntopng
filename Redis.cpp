@@ -1315,7 +1315,7 @@ void Redis::indexESdata() {
     u_int l = llen(CONST_ES_QUEUE_NAME);
 
     if(l >= watermark) {
-      u_int len;
+      u_int len, num_flows;
       char index_name[64], header[256];
       struct tm* tm_info;
       struct timeval tv;
@@ -1331,15 +1331,16 @@ void Redis::indexESdata() {
       snprintf(header, sizeof(header),
 	       "{\"index\": {\"_type\": \"%s\", \"_index\": \"%s\"}}", 
 	       ntop->getPrefs()->get_es_type(), index_name);
-      len = 0;
+      len = 0, num_flows = 0;
 
       for(u_int i=0; (i<watermark) && ((sizeof(postbuf)-len) > min_buf_size); i++) {
 	char rsp[4096];
 	int rc = lpop(CONST_ES_QUEUE_NAME, rsp, sizeof(rsp));
 
-	if(rc >= 0)
-	  len += snprintf(&postbuf[len], sizeof(postbuf)-len, "%s\n%s\n", header, rsp);	
-	else
+	if(rc >= 0) {
+	  // ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", rsp);
+	  len += snprintf(&postbuf[len], sizeof(postbuf)-len, "%s\n%s\n", header, rsp), num_flows++;
+	} else
 	  break;
       } /* for */      
 
@@ -1351,7 +1352,8 @@ void Redis::indexESdata() {
 				  postbuf)) {
 	/* Post failure */
 	sleep(1);
-      }
+      } else
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Sent %u flow(s) to ES", num_flows);
     } else
       sleep(1);
   } /* while */
