@@ -26,8 +26,9 @@ tracked     = _GET["tracked"]
 -- Only for aggregations
 client      = _GET["client"]
 
--- Used when filtering by ASn
+-- Used when filtering by ASn or VLAN
 asn         = _GET["asn"]
+vlan        = _GET["vlan"]
 
 -- table_id = _GET["table"]
 
@@ -265,7 +266,8 @@ for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]
 
    if((key ~= nil) and (not(key == "")) and
-      ((asn == nil) or (asn == tostring(hosts_stats[key]["asn"])))) then
+      ((asn == nil) or (asn == tostring(hosts_stats[key]["asn"]))) and
+      ((vlan == nil) or (vlan == tostring(hosts_stats[key]["vlan"])))) then
       value = hosts_stats[key]
 
       if(to_skip > 0) then

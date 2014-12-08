@@ -15,26 +15,32 @@ perPage     = _GET["perPage"]
 sortColumn  = _GET["sortColumn"]
 sortOrder   = _GET["sortOrder"]
 
+group_col   = _GET["grouped_by"]
 as_n        = _GET["as"]
+vlan_n      = _GET["vlan"]
+
+if (group_col == nil) then
+   group_col = "asn"
+end
 
 -- Get from redis the throughput type bps or pps
 throughput_type = getThroughputType()
 
 if ((sortColumn == nil) or (sortColumn == "column_"))then
-  sortColumn = getDefaultTableSort("asn")
+  sortColumn = getDefaultTableSort(group_col)
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
     and (sortColumn ~= "")) then
-      tablePreferences("sort_asn",sortColumn)
+      tablePreferences("sort_"..group_col,sortColumn)
   end
 end
 
 if(sortOrder == nil) then
-  sortOrder = getDefaultTableSortOrder("asn")
+  sortOrder = getDefaultTableSortOrder(group_col)
 else
   if ((aggregated == nil) and (sortColumn ~= "column_")
     and (sortColumn ~= "")) then
-    tablePreferences("sort_order_asn",sortOrder)
+    tablePreferences("sort_order_"..group_col,sortOrder)
   end
 end
 
@@ -61,7 +67,7 @@ if (all ~= nil) then
   currentPage = 0
 end
 
-if (as_n == nil) then -- single AS info requested
+if (as_n == nil and vlan_n == nil) then -- single group info requested
    print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 end
 num = 0
@@ -70,54 +76,65 @@ total = 0
 now = os.time()
 vals = {}
 
-stats_by_as = {}
+stats_by_group_col = {}
 for key,value in pairs(hosts_stats) do
-   -- Convert AS code to string to avoid type mismatches if the value is 0
-   -- (which would mean that the AS is private)
-   value["asn"] = tostring(value["asn"])
+   -- Convert grouping identifier to string to avoid type mismatches if the
+   -- value is 0 (which would mean that the AS is private)
+   value[group_col] = tostring(value[group_col])
 
-   asn = value["asn"]
-   existing = stats_by_as[asn]
+   id = value[group_col]
+   existing = stats_by_group_col[id]
    if (existing == nil) then
-      stats_by_as[asn] = {}
-      stats_by_as[asn]["id"] = asn
-      if (asn ~= "0") then
-         stats_by_as[asn]["name"] = value["asname"]
+      stats_by_group_col[id] = {}
+      stats_by_group_col[id]["id"] = id
+      if (group_col == "asn") then
+         if (id ~= "0") then
+            stats_by_group_col[id]["name"] = value["asname"]
+         else
+            stats_by_group_col[id]["name"] = "Private ASN"
+         end
       else
-         stats_by_as[asn]["name"] = "Private ASN"
+         stats_by_group_col[id]["name"] = "VLAN"
       end
-      stats_by_as[asn]["seen.first"] = value["seen.first"]
-      stats_by_as[asn]["seen.last"] = value["seen.last"]
+      stats_by_group_col[id]["seen.first"] = value["seen.first"]
+      stats_by_group_col[id]["seen.last"] = value["seen.last"]
    else
-      stats_by_as[asn]["seen.first"] =
-         math.min(stats_by_as[asn]["seen.first"], value["seen.first"])
-      stats_by_as[asn]["seen.last"] =
-         math.max(stats_by_as[asn]["seen.last"], value["seen.last"])
+      stats_by_group_col[id]["seen.first"] =
+         math.min(stats_by_group_col[id]["seen.first"], value["seen.first"])
+      stats_by_group_col[id]["seen.last"] =
+         math.max(stats_by_group_col[id]["seen.last"], value["seen.last"])
    end
-   stats_by_as[asn]["num_hosts"] = 1 +
-         ternary(existing, stats_by_as[asn]["num_hosts"], 0)
-   stats_by_as[asn]["num_alerts"] = value["num_alerts"] +
-         ternary(existing, stats_by_as[asn]["num_alerts"], 0)
-   stats_by_as[asn]["throughput_bps"] = value["throughput_bps"] +
-         ternary(existing, stats_by_as[asn]["throughput_bps"], 0)
-   stats_by_as[asn]["throughput_pps"] = value["throughput_pps"] +
-         ternary(existing, stats_by_as[asn]["throughput_pps"], 0)
-   stats_by_as[asn]["throughput_trend_bps_diff"] =
+   stats_by_group_col[id]["num_hosts"] = 1 +
+         ternary(existing, stats_by_group_col[id]["num_hosts"], 0)
+   stats_by_group_col[id]["num_alerts"] = value["num_alerts"] +
+         ternary(existing, stats_by_group_col[id]["num_alerts"], 0)
+   stats_by_group_col[id]["throughput_bps"] = value["throughput_bps"] +
+         ternary(existing, stats_by_group_col[id]["throughput_bps"], 0)
+   stats_by_group_col[id]["throughput_pps"] = value["throughput_pps"] +
+         ternary(existing, stats_by_group_col[id]["throughput_pps"], 0)
+   stats_by_group_col[id]["throughput_trend_bps_diff"] =
          math.floor(value["throughput_trend_bps_diff"]) +
-         ternary(existing, stats_by_as[asn]["throughput_trend_bps_diff"], 0)
-   stats_by_as[asn]["bytes.sent"] = value["bytes.sent"] +
-         ternary(existing, stats_by_as[asn]["bytes.sent"], 0)
-   stats_by_as[asn]["bytes.rcvd"] = value["bytes.rcvd"] +
-         ternary(existing, stats_by_as[asn]["bytes.rcvd"], 0)
-   stats_by_as[asn]["country"] = value["country"]
+         ternary(existing,
+                 stats_by_group_col[id]["throughput_trend_bps_diff"], 0)
+   stats_by_group_col[id]["bytes.sent"] = value["bytes.sent"] +
+         ternary(existing, stats_by_group_col[id]["bytes.sent"], 0)
+   stats_by_group_col[id]["bytes.rcvd"] = value["bytes.rcvd"] +
+         ternary(existing, stats_by_group_col[id]["bytes.rcvd"], 0)
+   stats_by_group_col[id]["country"] = value["country"]
 end
 
-function print_single_as(value)
+function print_single_group(value)
    print ('{ ')
    print ('\"key\" : \"'..value["id"]..'\",')
 
-   print ("\"column_asn\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
-   print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
+   print ("\"column_id\" : \"<A HREF='"..ntop.getHttpPrefix().."/lua/")
+   if (group_col == "asn" or as_n ~= nil) then
+      print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
+   elseif (group_col == "vlan" or vlan_n ~= nil) then
+      print("hosts_stats.lua?vlan="..value["id"].."'>")
+   else
+      print("hosts_stats.lua'>")
+   end
    print(value["id"]..'</A>", ')
 
    print('"column_hosts" : "' .. formatValue(value["num_hosts"]) ..'",')
@@ -130,7 +147,12 @@ function print_single_as(value)
    end
    print('", ')
 
-   print("\"column_name\" : \""..printASN(tonumber(value["id"]), value["name"]))
+   --- TODO: name for VLANs?
+   if (group_col == "asn" or as_n ~= nil) then
+      print("\"column_name\" : \""..printASN(tonumber(value["id"]), value["name"]))
+   else
+      print("\"column_name\" : \""..value["name"])
+   end
    if((value["country"] ~= nil) and (value["country"] ~= "")) then
       print("&nbsp;<img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>")
    end
@@ -164,32 +186,41 @@ function print_single_as(value)
 end
 
 if (as_n ~= nil) then
-   as_val = stats_by_as[as_n]
+   as_val = stats_by_group_col[as_n]
    if (as_val == nil) then
       print('{}')
    else
-      print_single_as(as_val)
+      print_single_group(as_val)
    end
-   stats_by_as = {}
+   stats_by_group_col = {}
+elseif (vlan_n ~= nil) then
+   vlan_val = stats_by_group_col[vlan_n]
+   if (vlan_val == nil) then
+      print('{}')
+   else
+      print_single_group(vlan_val)
+   end
+   stats_by_group_col = {}
 end
 
-for key,value in pairs(stats_by_as) do
-   if(sortColumn == "column_asn") then
+for key,value in pairs(stats_by_group_col) do
+   if(sortColumn == "column_id") then
       vals[key] = key
    elseif(sortColumn == "column_name") then
-      vals[stats_by_as[key]["name"]] = key
+      vals[stats_by_group_col[key]["name"]] = key
    elseif(sortColumn == "column_since") then
-      vals[(now-stats_by_as[key]["seen.first"])] = key
+      vals[(now-stats_by_group_col[key]["seen.first"])] = key
    elseif(sortColumn == "column_alerts") then
-      vals[(now-stats_by_as[key]["num_alerts"])] = key
+      vals[(now-stats_by_group_col[key]["num_alerts"])] = key
    elseif(sortColumn == "column_last") then
-      vals[(now-stats_by_as[key]["seen.last"]+1)] = key
+      vals[(now-stats_by_group_col[key]["seen.last"]+1)] = key
    elseif(sortColumn == "column_thpt") then
-      vals[stats_by_as[key]["throughput_"..throughput_type]] = key
+      vals[stats_by_group_col[key]["throughput_"..throughput_type]] = key
    elseif(sortColumn == "column_queries") then
-      vals[stats_by_as[key]["queries.rcvd"]] = key
+      vals[stats_by_group_col[key]["queries.rcvd"]] = key
    else
-      vals[(stats_by_as[key]["bytes.sent"]+stats_by_as[key]["bytes.rcvd"])] = key
+      vals[(stats_by_group_col[key]["bytes.sent"] +
+            stats_by_group_col[key]["bytes.rcvd"])] = key
    end
 end
 
@@ -206,7 +237,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    key = vals[_key]
 
    if((key ~= nil) and (not(key == ""))) then
-      value = stats_by_as[key]
+      value = stats_by_group_col[key]
 
       if(to_skip > 0) then
          to_skip = to_skip-1
@@ -215,7 +246,7 @@ for _key, _value in pairsByKeys(vals, funct) do
             if(num > 0) then
                print ",\n"
             end
-            print_single_as(value)
+            print_single_group(value)
             num = num + 1
          end
       end
@@ -223,7 +254,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 end -- for
 
-if (as_n == nil) then -- single AS info requested
+if (as_n == nil and vlan_n == nil) then -- single group info requested
    print ("\n], \"perPage\" : " .. perPage .. ",\n")
 end
 
@@ -235,7 +266,7 @@ if(sortOrder == nil) then
    sortOrder = ""
 end
 
-if (as_n == nil) then -- single AS info requested
+if (as_n == nil and vlan_n == nil) then -- single group info requested
    print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
    print ("\"totalRows\" : " .. total .. " \n}")
 end
