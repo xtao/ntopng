@@ -195,9 +195,17 @@ function getHistoricalTopASs(ifid, ifname, epoch)
    return (getHistoricalTopFromFile(filename))
 end
 
+function getHistoricalTopVLANs(ifid, ifname, epoch)
+   epoch = epoch - (epoch % 60)
+   dirs = ntop.getDirs()
+   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/vlan-%M.json", epoch))
+
+   return (getHistoricalTopFromFile(filename))
+end
+
 -- #####################################################
 
-function getActualTopXASs(ifid, ifname, max_num_entries, use_threshold, use_delta)
+function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold, use_delta, col)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end
@@ -210,43 +218,47 @@ function getActualTopXASs(ifid, ifname, max_num_entries, use_threshold, use_delt
       ntop.mkdir(talkers_dir)
    end
 
-   _asn = {}
+   _group = {}
    total = 0
 
-   -- Group hosts info by AS
+   -- Group hosts info by the required column
    for _key, value in pairs(hosts_stats) do
-      key = hosts_stats[_key]["asn"]
+      key = hosts_stats[_key][col]
 
-      if (_asn[key] == nil) then
-         _asn[key] = {}
+      if (_group[key] == nil) then
+         _group[key] = {}
          old = 0
       else
-         assert(_asn[key]["as_bytes"] ~= nil)
-         old = _asn[key]["as_bytes"]
+         assert(_group[key][col.."_bytes"] ~= nil)
+         old = _group[key][col.."_bytes"]
       end
 
-      if(key == 0) then
-         _asn[key]["name"] = "[Local/Unknown]"
-      else
-         _asn[key]["name"] = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]"
+      if (col == "asn") then
+         if(key == 0) then
+            _group[key]["name"] = "[Local/Unknown]"
+         else
+            _group[key]["name"] = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]"
+         end
+      elseif (col == "vlan") then
+         _group[key]["name"] = "VLAN"
       end
       val = hosts_stats[_key]["bytes.sent"] + hosts_stats[_key]["bytes.rcvd"]
       total = total + val
-      _asn[key]["as_bytes"] = old + val
+      _group[key][col.."_bytes"] = old + val
    end
 
    rsp = rsp .. "[\n"
 
-   -- Get top ASs
-   top_as = getTop(_asn, "as_bytes", max_num_entries, talkers_dir)
+   -- Get top groups
+   top_groups = getTop(_group, col.."_bytes", max_num_entries, talkers_dir)
 
    num = 0
-   for _value,_key in pairsByKeys(top_as, rev) do
+   for _value,_key in pairsByKeys(top_groups, rev) do
       if(num > 0) then rsp = rsp .. " }," end
       rsp = rsp .. '\n\t\t { "label": "'.._key..'", "url": "'
             ..ntop.getHttpPrefix()..
-            '/lua/hosts_stats.lua?asn='.._key..'", "name": "'
-            .._asn[_key]["name"]..'", "value": '.._value
+            '/lua/hosts_stats.lua?'..col..'='.._key..'", "name": "'
+            .._group[_key]["name"]..'", "value": '.._value
       num = num + 1
    end
 
@@ -262,9 +274,18 @@ function getTopASs(ifid, ifname, epoch)
    if(epoch ~= nil) then
       rsp = getHistoricalTopASs(ifid, ifname, epoch)
    else
-      rsp = getActualTopXASs(ifid, ifname, 10, true, false)
+      rsp = getActualTopGroups(ifid, ifname, 10, true, false, "asn")
    end
 
    return(rsp)
 end
 
+function getTopVLANs(ifid, ifname, epoch)
+   if(epoch ~= nil) then
+      rsp = getHistoricalTopVLANs(ifid, ifname, epoch)
+   else
+      rsp = getActualTopGroups(ifid, ifname, 10, true, false, "vlan")
+   end
+
+   return(rsp)
+end

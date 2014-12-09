@@ -183,7 +183,8 @@ end
 
 -- ########################################################
 
-function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL, asInfoURL)
+function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries,
+                 selectedEpoch, xInfoURL, asInfoURL, vlanInfoURL)
    dirs = ntop.getDirs()
    rrdname = getRRDName(ifid, host, rrdFile)
    names =  {}
@@ -602,6 +603,31 @@ if(asInfoURL) then
                                    if(items == 0) infoHTML += "<li>Autonomous Systems [Avg Traffic/sec]<ol>"; 
 				   if(items < 3)
 				     infoHTML += "<li><a href='hosts_stats.lua?asn="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
+				   items++;
+				});
+                                if(items > 0)
+                                   infoHTML += "</ol></li></ul>";
+			}
+		});
+    ]]
+end
+if(vlanInfoURL) then
+  print [[
+	   $.ajax({
+			type: 'GET',
+			url: ']]
+  print(vlanInfoURL)
+  print [[',
+			data: { epoch: point.value.x },
+			async: false,
+			success: function(content) {
+				var info = jQuery.parseJSON(content);
+                                infoHTML += "<ul>";
+				var items = 0;
+				$.each(info, function(i, n) {
+                                   if(items == 0) infoHTML += "<li>VLANs [Avg Traffic/sec]<ol>"; 
+				   if(items < 3)
+				     infoHTML += "<li><a href='hosts_stats.lua?vlan="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
 				   items++;
 				});
                                 if(items > 0)
