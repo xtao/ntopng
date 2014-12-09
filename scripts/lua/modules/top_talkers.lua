@@ -181,7 +181,32 @@ end
 
 -- #####################################################
 
-function getActualTopXASs(ifname, max_num_entries, use_threshold, use_delta)
+function getHistoricalTopASs(ifid, ifname, epoch)
+   epoch = epoch - (epoch % 60)
+   dirs = ntop.getDirs()
+   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/as-%M.json", epoch))
+
+   --print(filename)
+   if(ntop.exists(filename)) then
+      f = io.open(filename, "r")
+      if(f) then
+	 rsp = ""
+	 while(true) do
+	    line = f:read()
+
+	    if(line == nil) then break end
+	    rsp = rsp .. line.."\n"
+	 end
+	 f:close()
+      end
+
+      return(rsp)
+   else
+      return("[ ]\n")
+   end
+end
+
+function getActualTopXASs(ifid, ifname, max_num_entries, use_threshold, use_delta)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end
@@ -189,61 +214,66 @@ function getActualTopXASs(ifname, max_num_entries, use_threshold, use_delta)
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()
 
+   talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
+   if(not(ntop.exists(talkers_dir))) then
+      ntop.mkdir(talkers_dir)
+   end
+
    _asn = {}
    total = 0
 
+   -- Group hosts info by AS
    for _key, value in pairs(hosts_stats) do
       key = hosts_stats[_key]["asn"]
 
-      if(key == 0) then
-	 key = key .." [Local/Unknown]"
+      if (_asn[key] == nil) then
+         _asn[key] = {}
+         old = 0
       else
-	 if(hosts_stats[_key]["asname"] ~= nil) then key = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]" end
+         assert(_asn[key]["as_bytes"] ~= nil)
+         old = _asn[key]["as_bytes"]
       end
-      old = _asn[key]
-      if(old == nil) then old = 0 end
+
+      if(key == 0) then
+         _asn[key]["name"] = "[Local/Unknown]"
+      else
+         _asn[key]["name"] = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]"
+      end
       val = hosts_stats[_key]["bytes.sent"] + hosts_stats[_key]["bytes.rcvd"]
       total = total + val
-      _asn[key] = old + val
-   end
-
-   asn = {}
-   for _key, value in pairs(_asn) do
-      asn[value] = _key
+      _asn[key]["as_bytes"] = old + val
    end
 
    rsp = rsp .. "[\n"
 
-   -- 10 %
-   threshold = total / 10
-   low_threshold = total * 0.050
+   -- Get top ASs
+   top_as = getTop(_asn, "as_bytes", max_num_entries, talkers_dir)
 
    num = 0
-   for _key, _value in pairsByKeys(asn, rev) do
-      key   = asn[_key]
-      value = _key
-
-      if(value == 0) then break end
-      
-      if(use_threshold) then
-	 if((value < low_threshold) or ((value < threshold) and (num > 2))) then break end
-      end
-
+   for _value,_key in pairsByKeys(top_as, rev) do
       if(num > 0) then rsp = rsp .. " }," end
-      k = string.split(key, " ")
-      rsp = rsp .. '\n\t\t { "asn": "'..k[1].. '", "label": "'..key..'", "value": '..value
+      rsp = rsp .. '\n\t\t { "label": "'.._key..'", "url": "'
+            ..ntop.getHttpPrefix()..
+            '/lua/hosts_stats.lua?asn='.._key..'", "name": "'
+            .._asn[_key]["name"]..'", "value": '.._value
       num = num + 1
-
-      if(num == max_num_entries) then break end
    end
 
-   rsp = rsp .. " }\n"
+   if (num > 0) then
+      rsp = rsp .. " }\n"
+   end
    rsp = rsp .. "\n]\n"
 
    return(rsp)
 end
 
-function getTopASs(ifname)
-   return(getActualTopXASs(ifname, 10, true, false))
+function getTopASs(ifid, ifname, epoch)
+   if(epoch ~= nil) then
+      rsp = getHistoricalTopASs(ifid, ifname, epoch)
+   else
+      rsp = getActualTopXASs(ifid, ifname, 10, true, false)
+   end
+
+   return(rsp)
 end
 

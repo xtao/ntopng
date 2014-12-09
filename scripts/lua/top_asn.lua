@@ -10,4 +10,4 @@ require "top_talkers"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
-print(getTopASs(ifname))
+print(getTopASs(getInterfaceId(ifname), ifname, _GET["epoch"]))

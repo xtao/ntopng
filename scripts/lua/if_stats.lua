@@ -273,7 +273,7 @@ print [[
 elseif(page == "historical") then
    rrd_file = _GET["rrd_file"]
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
-   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], ntop.getHttpPrefix().."/lua/top_talkers.lua")
+   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], ntop.getHttpPrefix().."/lua/top_talkers.lua", ntop.getHttpPrefix().."/lua/top_asn.lua")
 
 --
 --  Historical Interface configuration page

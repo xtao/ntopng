@@ -183,7 +183,7 @@ end
 
 -- ########################################################
 
-function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL)
+function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, xInfoURL, asInfoURL)
    dirs = ntop.getDirs()
    rrdname = getRRDName(ifid, host, rrdFile)
    names =  {}
@@ -581,6 +581,31 @@ if(xInfoURL) then
 				  infoHTML += "</ol></li>";
 				});
 				infoHTML += "</ul>";
+			}
+		});
+    ]]
+end
+if(asInfoURL) then
+  print [[
+	   $.ajax({
+			type: 'GET',
+			url: ']]
+  print(asInfoURL)
+  print [[',
+			data: { epoch: point.value.x },
+			async: false,
+			success: function(content) {
+				var info = jQuery.parseJSON(content);
+                                infoHTML += "<ul>";
+                                console.log(info);
+				infoHTML += "<li>ASs [Avg Traffic/sec]<ol>";
+				  var items = 0;
+				  $.each(info, function(i, n) {
+				    if(items < 3)
+				      infoHTML += "<li><a href='hosts_stats.lua?asn="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
+				    items++;
+				  });
+				infoHTML += "</ol></li></ul>";
 			}
 		});
     ]]
