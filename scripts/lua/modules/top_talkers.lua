@@ -22,11 +22,7 @@ end
 
 -- #################################################
 
-function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
-   epoch = epoch - (epoch % 60)
-   dirs = ntop.getDirs()
-   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
-
+function getHistoricalTopFromFile(filename)
    --print(filename)
    if(ntop.exists(filename)) then
       f = io.open(filename, "r")
@@ -45,6 +41,16 @@ function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
    else
       return("[ ]\n")
    end
+end
+
+-- #################################################
+
+function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
+   epoch = epoch - (epoch % 60)
+   dirs = ntop.getDirs()
+   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
+
+   return (getHistoricalTopFromFile(filename))
 end
 
 -- #################################################
@@ -186,25 +192,10 @@ function getHistoricalTopASs(ifid, ifname, epoch)
    dirs = ntop.getDirs()
    filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/as-%M.json", epoch))
 
-   --print(filename)
-   if(ntop.exists(filename)) then
-      f = io.open(filename, "r")
-      if(f) then
-	 rsp = ""
-	 while(true) do
-	    line = f:read()
-
-	    if(line == nil) then break end
-	    rsp = rsp .. line.."\n"
-	 end
-	 f:close()
-      end
-
-      return(rsp)
-   else
-      return("[ ]\n")
-   end
+   return (getHistoricalTopFromFile(filename))
 end
+
+-- #####################################################
 
 function getActualTopXASs(ifid, ifname, max_num_entries, use_threshold, use_delta)
    rsp = ""
