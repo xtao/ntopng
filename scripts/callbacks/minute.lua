@@ -83,7 +83,7 @@ for _,_ifname in pairs(ifnames) do
    if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."]===============================\n["..__FILE__()..":"..__LINE__().."] Processing interface " .. _ifname .. " ["..ifstats.id.."]") end
    -- Dump topTalkers every minute
 
-   if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknwon")) then
+   if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknown")) then
       talkers = getTopTalkers(ifstats.id, _ifname)
       basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when))
       filename = fixPath(basedir .. os.date("/%M.json", when))
