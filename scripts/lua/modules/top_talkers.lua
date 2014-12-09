@@ -240,7 +240,7 @@ function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold, use_de
             _group[key]["name"] = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]"
          end
       elseif (col == "vlan") then
-         _group[key]["name"] = "VLAN"
+         _group[key]["name"] = "VLAN"..ternary(key == 0, "", hosts_stats[_key]["vlan"])
       end
       val = hosts_stats[_key]["bytes.sent"] + hosts_stats[_key]["bytes.rcvd"]
       total = total + val
