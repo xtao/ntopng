@@ -597,15 +597,15 @@ if(asInfoURL) then
 			success: function(content) {
 				var info = jQuery.parseJSON(content);
                                 infoHTML += "<ul>";
-                                console.log(info);
-				infoHTML += "<li>ASs [Avg Traffic/sec]<ol>";
-				  var items = 0;
-				  $.each(info, function(i, n) {
-				    if(items < 3)
-				      infoHTML += "<li><a href='hosts_stats.lua?asn="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
-				    items++;
-				  });
-				infoHTML += "</ol></li></ul>";
+				var items = 0;
+				$.each(info, function(i, n) {
+                                   if(items == 0) infoHTML += "<li>Autonomous Systems [Avg Traffic/sec]<ol>"; 
+				   if(items < 3)
+				     infoHTML += "<li><a href='hosts_stats.lua?asn="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
+				   items++;
+				});
+                                if(items > 0)
+                                   infoHTML += "</ol></li></ul>";
 			}
 		});
     ]]
