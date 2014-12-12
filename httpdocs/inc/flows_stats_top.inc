@@ -9,7 +9,7 @@
            }
          },
          {
-           title: "Info",
+           title: "",
          field: "column_key",
                  css: { 
               textAlign: 'center'

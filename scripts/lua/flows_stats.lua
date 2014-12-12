@@ -119,7 +119,7 @@ end
 
 print [[",
          showFilter: true,
-	       showPagination: true,
+         showPagination: true,
 ]]
 
 -- Automatic default sorted. NB: the column must be exists.

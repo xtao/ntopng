@@ -296,6 +296,16 @@ if (debug and (not process)) then io.write("Stop Host\n")end
    vkey = flows_stats[key]["vlan"]+postfix
    elseif(sortColumn == "column_bytes_last") then
    vkey = flows_stats[key]["bytes.last"]+postfix
+   elseif(sortColumn == "column_info") then
+   info = ""
+   if(flows_stats[key]["dns.last_query"] ~= nil) then 
+      info = shortenString(flows_stats[key]["dns.last_query"])
+      elseif(flows_stats[key]["http.last_url"] ~= nil) then
+      info = shortenString(flows_stats[key]["http.last_url"])
+   end
+
+   flows_stats[key]["info"] = info
+   vkey = info .. postfix
    elseif(sortColumn == "column_ndpi") then
    vkey = flows_stats[key]["proto.ndpi"]..postfix
    elseif(sortColumn == "column_server_process") then
@@ -368,6 +378,14 @@ for _key, _value in pairsByKeys(vals, funct) do
    if(cli_name == nil) then cli_name = "???" end
    if(srv_name == nil) then srv_name = "???" end
 
+   if((value["tcp.nw_latency.client"] ~= nil) and (value["tcp.nw_latency.client"] > 0)) then
+      cli_tooltip = "client nw latency: "..string.format("%.3f", value["tcp.nw_latency.client"]).." ms"
+   end
+
+   if((value["tcp.nw_latency.server"] ~= nil) and (value["tcp.nw_latency.server"] > 0)) then
+      srv_tooltip = "server nw latency: "..string.format("%.3f", value["tcp.nw_latency.server"]).." ms"
+   end
+
    if(value["cli.allowed_host"]) then
       src_key="<A HREF='"..ntop.getHttpPrefix().."/lua/host_details.lua?" .. hostinfo2url(value,"cli").. "' data-toggle='tooltip' title='" ..cli_tooltip.. "' >".. abbreviateString(cli_name, 20)
       if(value["cli.systemhost"] == true) then src_key = src_key .. "&nbsp;<i class='fa fa-flag'></i>" end
@@ -428,10 +446,6 @@ for _key, _value in pairsByKeys(vals, funct) do
 
    print(src_port)
 
-   if((value["tcp.nw_latency.client"] ~= nil) and (value["tcp.nw_latency.client"] > 0)) then
-      print(" ("..string.format("%.3f", value["tcp.nw_latency.client"]).." ms)")
-   end
-
    print ("\", \"column_server\" : \"" .. dst_key)
 
    info = interface.getHostInfo(value["srv.ip"])
@@ -442,10 +456,6 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 
    print(dst_port)
-
-   if((value["tcp.nw_latency.server"] ~= nil) and (value["tcp.nw_latency.server"] > 0)) then
-      print(" ("..string.format("%.3f", value["tcp.nw_latency.server"]).." ms)")
-   end
 
    if((value["vlan"] ~= nil)) then
       print("\", \"column_vlan\" : \""..value["vlan"].."\"")
@@ -507,9 +517,10 @@ for _key, _value in pairsByKeys(vals, funct) do
    cli2srv = round((value["cli2srv.bytes"] * 100) / value["bytes"], 0)
    print (", \"column_breakdown\" : \"<div class='progress'><div class='progress-bar progress-bar-warning' style='width: " .. cli2srv .."%;'>Client</div><div class='progress-bar progress-bar-info' style='width: " .. (100-cli2srv) .. "%;'>Server</div></div>")
 
-   print ("\" }\n")
+   print ("\", \"column_info\" : \"".. value["info"] .. "\" }\n")
+   
    num = num + 1
-      end
+end
    end
 end -- for
 

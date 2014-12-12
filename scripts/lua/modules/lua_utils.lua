@@ -160,6 +160,15 @@ function printASN(asn, asname)
   end
 end
 
+function shortenString(name)
+   max_len = 24
+    if(string.len(name) < max_len) then
+      return(name)
+   else
+      return(string.sub(name, 1, max_len).."...")
+   end
+end
+
 function shortHostName(name)
   local chunks = {name:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")}
   if(#chunks == 4) then

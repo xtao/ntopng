@@ -21,6 +21,14 @@
 	 	             css: { 
 			        textAlign: 'right'
 			     }
+				 },
+{
+			     title: "Info",
+				 field: "column_info",
+				 sortable: true,
+	 	             css: { 
+			        textAlign: 'left'
+			     }
 				 }
 			     ]
 	       });

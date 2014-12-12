@@ -906,6 +906,12 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
       lua_push_str_table_entry(vm, "http.last_method", http.last_method);
       lua_push_int_table_entry(vm, "http.last_return_code", http.last_return_code);
     }
+  } else {
+    if(dns.last_query)
+      lua_push_str_table_entry(vm, "dns.last_query", dns.last_query);
+    
+    if(http.last_method && http.last_url)
+      lua_push_str_table_entry(vm, "http.last_url", http.last_url);
   }
 
   lua_push_str_table_entry(vm, "moreinfo.json", get_json_info());
