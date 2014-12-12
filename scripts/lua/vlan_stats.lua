@@ -58,7 +58,7 @@ print [[
                                 }
            },
                          {
-			     title: "VLAN number",
+			     title: "VLAN ID",
 				 field: "column_id",
 				 sortable: true,
                              css: {

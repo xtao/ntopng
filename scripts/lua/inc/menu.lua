@@ -79,9 +79,15 @@ print [[/lua/hosts_stats.lua">Hosts List</a></li>
   if not (is_historical) then
 	 print('<li><a href="'..ntop.getHttpPrefix()..'/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
-print('<li><a href="'..ntop.getHttpPrefix()..'/lua/as_stats.lua">AS List</a></li>')
-print('<li><a href="'..ntop.getHttpPrefix()..'/lua/vlan_stats.lua">VLAN List</a></li>')
 
+  if(ntop.hasGeoIP()) then
+     print('<li><a href="'..ntop.getHttpPrefix()..'/lua/as_stats.lua">AS List</a></li>')
+  end
+
+  if(ntop.hasVLANs()) then
+     print('<li><a href="'..ntop.getHttpPrefix()..'/lua/vlan_stats.lua">VLAN List</a></li>')
+  end
+  
 if(_ifstats.iface_sprobe) then
    print('<li><a href="'..ntop.getHttpPrefix()..'/lua/processes_stats.lua">Processes List</a></li>')
 end

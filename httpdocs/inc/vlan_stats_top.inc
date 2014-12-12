@@ -13,17 +13,7 @@
 				 sortable: true,
                              css: {
 			        textAlign: 'center'
-			     }
-
-				 },
-			     {
-			     title: "Name",
-				 field: "column_name",
-				 sortable: true,
-                             css: {
-			        textAlign: 'left'
-			     }
-
+			     }				 
 				 },
 			     {
 			     title: "Seen Since",

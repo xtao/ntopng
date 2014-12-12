@@ -541,6 +541,42 @@ static int ntop_get_file_last_change(lua_State* vm) {
 /* ****************************************** */
 
 /**
+ * @brief Check if ntop has seen VLAN tagged packets on this interface.
+ *
+ * @param vm The lua state.
+ * @return CONST_LUA_OK.
+ */
+static int ntop_has_vlans(lua_State* vm) {
+  NetworkInterface *ntop_interface = get_ntop_interface(vm);
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_interface)
+    lua_pushboolean(vm, ntop_interface->hasSeenVlanTaggedPackets());
+  else
+    lua_pushboolean(vm, 0);
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+/**
+ * @brief Check if ntop has loaded ASN information (via GeoIP)
+ *
+ * @param vm The lua state.
+ * @return CONST_LUA_OK.
+ */
+static int ntop_has_geoip(lua_State* vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  lua_pushboolean(vm, ntop->getGeolocation() ? 1 : 0);
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
+/**
  * @brief Check if ntop is running on windows.
  * @details Push into lua stack 1 if ntop is running on windows, 0 otherwise.
  *
@@ -2851,7 +2887,11 @@ static const luaL_Reg ntop_reg[] = {
   /* SQLite */
   { "execQuery",      ntop_sqlite_exec_query },
 
+  /* Runtime */
+  { "hasVLANs",       ntop_has_vlans },
+  { "hasGeoIP",       ntop_has_geoip },
   { "isWindows",      ntop_is_windows },
+
   { NULL,          NULL}
 };
 

@@ -11,7 +11,7 @@ influx_pwd  = ""
 influx_url  = "http://localhost:8086/db/ntopng/series?u=root&p=root"
 
 -- Local variables
-local influx_debug = false
+local influx_debug = true
 local influx_old_value  = { }
 local influx_curr_value = { }
 local json = require ("dkjson")
