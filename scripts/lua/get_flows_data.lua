@@ -276,7 +276,13 @@ for key, value in pairs(flows_stats) do
 
 if (debug and (not process)) then io.write("Stop Host\n")end
 
-
+   info = ""
+   if(flows_stats[key]["dns.last_query"] ~= nil) then 
+      info = shortenString(flows_stats[key]["dns.last_query"])
+      elseif(flows_stats[key]["http.last_url"] ~= nil) then
+      info = shortenString(flows_stats[key]["http.last_url"])
+   end
+   flows_stats[key]["info"] = info
 
    ---------------- TABLE SORTING ----------------
    if(process) then
@@ -297,14 +303,6 @@ if (debug and (not process)) then io.write("Stop Host\n")end
    elseif(sortColumn == "column_bytes_last") then
    vkey = flows_stats[key]["bytes.last"]+postfix
    elseif(sortColumn == "column_info") then
-   info = ""
-   if(flows_stats[key]["dns.last_query"] ~= nil) then 
-      info = shortenString(flows_stats[key]["dns.last_query"])
-      elseif(flows_stats[key]["http.last_url"] ~= nil) then
-      info = shortenString(flows_stats[key]["http.last_url"])
-   end
-
-   flows_stats[key]["info"] = info
    vkey = info .. postfix
    elseif(sortColumn == "column_ndpi") then
    vkey = flows_stats[key]["proto.ndpi"]..postfix
