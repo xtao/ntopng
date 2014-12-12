@@ -18,6 +18,7 @@ sortOrder   = _GET["sortOrder"]
 group_col   = _GET["grouped_by"]
 as_n        = _GET["as"]
 vlan_n      = _GET["vlan"]
+network_n   = _GET["network"]
 
 if (group_col == nil) then
    group_col = "asn"
@@ -67,7 +68,7 @@ if (all ~= nil) then
   currentPage = 0
 end
 
-if (as_n == nil and vlan_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
    print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 end
 num = 0
@@ -76,10 +77,14 @@ total = 0
 now = os.time()
 vals = {}
 
+f = io.open("log.txt", "w")
+
 stats_by_group_col = {}
 for key,value in pairs(hosts_stats) do
+   f:write("****************\n");
    -- Convert grouping identifier to string to avoid type mismatches if the
    -- value is 0 (which would mean that the AS is private)
+   f:write(tostring(value["local_network_id"]).."\n")
    value[group_col] = tostring(value[group_col])
 
    id = value[group_col]
@@ -93,6 +98,12 @@ for key,value in pairs(hosts_stats) do
          else
             stats_by_group_col[id]["name"] = "Private ASN"
          end
+      elseif (group_col == "local_network_id") then
+         stats_by_group_col[id]["name"] = value["local_network_name"]
+         if (stats_by_group_col[id]["name"] == nil) then
+            stats_by_group_col[id]["name"] = "Unknown network"
+         end
+         f:write(stats_by_group_col[id]["name"].."\n")
       else
          stats_by_group_col[id]["name"] = "VLAN"
       end
@@ -121,7 +132,9 @@ for key,value in pairs(hosts_stats) do
    stats_by_group_col[id]["bytes.rcvd"] = value["bytes.rcvd"] +
          ternary(existing, stats_by_group_col[id]["bytes.rcvd"], 0)
    stats_by_group_col[id]["country"] = value["country"]
+   f:write("****************\n");
 end
+f:close()
 
 function print_single_group(value)
    print ('{ ')
@@ -132,10 +145,16 @@ function print_single_group(value)
       print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
    elseif (group_col == "vlan" or vlan_n ~= nil) then
       print("hosts_stats.lua?vlan="..value["id"].."'>")
+   elseif (group_col == "local_network_id" or network_n ~= nil) then
+      print("hosts_stats.lua?network="..value["id"].."'>")
    else
       print("hosts_stats.lua'>")
    end
-   print(value["id"]..'</A>", ')
+   if (group_col == "local_network_id" or network_n ~= nil) then
+      print(value["name"]..'</A>", ')
+   else
+      print(value["id"]..'</A>", ')
+   end
 
    print('"column_hosts" : "' .. formatValue(value["num_hosts"]) ..'",')
 
@@ -201,6 +220,14 @@ elseif (vlan_n ~= nil) then
       print_single_group(vlan_val)
    end
    stats_by_group_col = {}
+elseif (network_n ~= nil) then
+   network_val = stats_by_group_col[network_n]
+   if (network_val == nil) then
+      print('{}')
+   else
+      print_single_group(network_val)
+   end
+   stats_by_group_col = {}
 end
 
 for key,value in pairs(stats_by_group_col) do
@@ -254,7 +281,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 end -- for
 
-if (as_n == nil and vlan_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
    print ("\n], \"perPage\" : " .. perPage .. ",\n")
 end
 
@@ -266,7 +293,7 @@ if(sortOrder == nil) then
    sortOrder = ""
 end
 
-if (as_n == nil and vlan_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
    print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
    print ("\"totalRows\" : " .. total .. " \n}")
 end

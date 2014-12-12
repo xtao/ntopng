@@ -80,6 +80,8 @@ print [[/lua/hosts_stats.lua">Hosts List</a></li>
 	 print('<li><a href="'..ntop.getHttpPrefix()..'/lua/top_hosts.lua"><i class="fa fa-trophy"></i> Top Hosts (Local)</a></li>')
   end
 
+  print('<li><a href="'..ntop.getHttpPrefix()..'/lua/network_stats.lua">Networks List</a></li>')
+
   if(ntop.hasGeoIP()) then
      print('<li><a href="'..ntop.getHttpPrefix()..'/lua/as_stats.lua">AS List</a></li>')
   end

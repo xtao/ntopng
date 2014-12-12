@@ -15,6 +15,7 @@ protocol = _GET["protocol"]
 net      = _GET["net"]
 asn      = _GET["asn"]
 vlan     = _GET["vlan"]
+network  = _GET["network"]
 
 mode = _GET["mode"]
 if(mode == nil) then mode = "all" end
@@ -50,6 +51,10 @@ end
 
 if(vlan ~= nil) then
    print('&vlan='..vlan)
+end
+
+if(network ~= nil) then
+   print('&network='..network)
 end
 
 print ('";')
