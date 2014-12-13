@@ -8,7 +8,7 @@ use_influx = false
 
 influx_user = ""
 influx_pwd  = ""
-influx_url  = "http://localhost:8086/db/ntopng/series?u=root&p=root"
+influx_url  = "http://localhost:8086/db/ntopng/series?u=ntopng&p=ntopng"
 
 -- Local variables
 local influx_debug = false
