@@ -29,6 +29,14 @@ SVN_RELEASE="${PACKAGE_VERSION}"
 SVN_DATE=`date`
 fi
 
+if test -d "pro"; then :
+PRO_SVN_RELEASE=`svn info pro | grep "^Revision"|cut -d " " -f 2`
+SVN_PRO_DATE=`svn info pro | grep "^Last Changed Date"|cut -d " " -f 4-`
+AC_DEFINE_UNQUOTED(NTOPNG_PRO, 1, [Building ntopng professional])
+AC_DEFINE_UNQUOTED(NTOPNG_PRO_SVN_RELEASE, "r${PRO_SVN_RELEASE}", [ntopng professional release])
+AC_DEFINE_UNQUOTED(NTOPNG_PRO_SVN_DATE, "${SVN_PRO_DATE}", [ntopng professional date])
+fi
+
 AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
 AC_DEFINE_UNQUOTED(NTOPNG_SVN_DATE, "${SVN_DATE}", [Last SVN change])
 

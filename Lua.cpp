@@ -1883,6 +1883,22 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_is_pro(lua_State *vm) {
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  lua_pushboolean(vm, 
+#ifdef NTOPNG_PRO
+		  1
+#else
+		  0
+#endif
+		  );
+
+  return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static int ntop_get_dirs(lua_State* vm) {
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
@@ -1931,6 +1947,10 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "version.geoip", (char*)GeoIP_lib_version());
 #endif
   lua_push_str_table_entry(vm, "version.ndpi", ndpi_revision());
+
+#ifdef NTOPNG_PRO
+  lua_push_str_table_entry(vm, "pro.release", NTOPNG_PRO_SVN_RELEASE);
+#endif
 
   zmq_version(&major, &minor, &patch);
   snprintf(rsp, sizeof(rsp), "%d.%d.%d", major, minor, patch);
@@ -2833,6 +2853,9 @@ static const luaL_Reg ntop_reg[] = {
   { "deleteQueuedAlert",    ntop_delete_queued_alert },
   { "flushAllQueuedAlerts", ntop_flush_all_queued_alerts },
   { "queueAlert",           ntop_queue_alert },
+
+  /* Pro */
+  { "isPro",          ntop_is_pro },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

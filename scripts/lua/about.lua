@@ -22,7 +22,17 @@ print("<table class=\"table table-bordered table-striped\">\n")
 print("<tr><th>Copyright</th><td>"..info["copyright"].."</td></tr>\n")
 print("<tr><th>License</th><td><A HREF=http://www.gnu.org/licenses/gpl.html>"..info["license"].."</A>")
 
-print("<tr><th>Version</th><td>"..info["version"].."</td></tr>\n")
+print("<tr><th>Version</th><td>"..info["version"])
+
+if(info["pro.release"] == nil) then
+   print(" - Community Edition")
+else
+   print(" - Professional Edition ("..info["pro.release"]..")")
+end
+
+print("</td></tr>\n")
+
+
 print("<tr><th>Platform</th><td>"..info["platform"].."</td></tr>\n")
 print("<tr><th>Currently Logged User</th><td><i class='fa fa-user fa-lg'></i> ".._SESSION["user"].."</td></tr>\n")
 print("<tr><th>Uptime</th><td><i class='fa fa-clock-o fa-lg'></i> "..secondsToTime(info["uptime"]).."</td></tr>\n")

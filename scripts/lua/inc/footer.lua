@@ -25,7 +25,15 @@ is_historical = interface.isHistoricalInterface(iface_id)
 interface.find(ifname)
 ifstats = interface.getStats()
 
-print ("v."..info["version"].." </br>for user ")
+if(info["pro.release"] == nil) then
+   print(" Community ")
+else
+   print(" Professional ")
+end
+
+print("v."..info["version"])
+
+print("</br>for user ")
 print('<a href="'..ntop.getHttpPrefix()..'/lua/admin/users.lua">'.._SESSION["user"].. '</a> and interface <a href="'..ntop.getHttpPrefix()..'/lua/if_stats.lua?if_name='.. ifname..'">' .. ifstats.description..'</a>')
 
 key = 'ntopng.prefs.'..ifname..'.name'
@@ -255,7 +263,7 @@ print (ntop.getHttpPrefix())
 print [[/lua/show_alerts.lua><i class=\"fa fa-warning fa-lg\" style=\"color: #B94A48;\"></i> <span class=\"label label-danger\">"+rsp.alerts+" Alert";
 		   if(rsp.alerts > 1) msg += "s";
 
-		   msg += "</span></A><br>";
+		   msg += "</span></A> ";
 		}
 
 		var alarm_threshold_low = 60;  /* 60% */
