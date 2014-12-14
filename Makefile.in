@@ -156,9 +156,8 @@ cert:
 	cat privkey.pem cert.pem > httpdocs/ssl/ntopng-cert.pem
 	/bin/rm -f privkey.pem cert.pem
 
-veryclean:
+veryclean: clean
 	-rm -rf nDPI
-
 
 geoip:
 	@if test -d ~/dat_files ; then \
