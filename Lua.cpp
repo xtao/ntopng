@@ -2313,13 +2313,14 @@ static int ntop_stats_get_sampling_fs(int ifid, time_t epoch, string *sampling) 
   strftime(filepath, MAX_PATH,
            "%Y/%m/%d/%H/%M.json", localtime(&epoch));
 
-  sprintf(buffer, "%s%c%d%ctop_talkers%c%s", ntop->get_working_dir(), CONST_PATH_SEP,
-                                             ifid, CONST_PATH_SEP, CONST_PATH_SEP,
-                                             filepath);
+  snprintf(buffer, sizeof(buffer),
+           "%s%c%d%ctop_talkers%c%s", ntop->get_working_dir(), CONST_PATH_SEP,
+                                      ifid, CONST_PATH_SEP, CONST_PATH_SEP,
+                                      filepath);
   ntop->fixPath(buffer);
 
   in.open(buffer);
-  if(!in)
+  if(in.fail())
     return 0;
 
   sstream << in.rdbuf();
