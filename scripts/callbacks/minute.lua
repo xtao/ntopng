@@ -85,21 +85,7 @@ for _,_ifname in pairs(ifnames) do
 
    if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknown")) then
       talkers = getTopTalkers(ifstats.id, _ifname)
-      basedir = fixPath(dirs.workingdir .. "/" .. ifstats.id .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", when))
-      filename = fixPath(basedir .. os.date("/%M.json", when))
-
-      if(not(ntop.exists(basedir))) then
-	 if(verbose) then print('\n["..__FILE__()..":"..__LINE__().."] Creating base directory ', basedir, '\n') end
-	 ntop.mkdir(basedir)
-      end
-
-      if(verbose) then print("\n["..__FILE__()..":"..__LINE__().."] Creating "..filename.."\n") end
-
-      f = io.open(filename, "w")
-      if(f) then
-	 f:write(talkers)
-	 f:close()
-      end
+      ntop.insertNewSampling(ifstats.id, talkers)
 
       -- Run RRD update every 5 minutes
       -- Use 30 just to avoid rounding issues

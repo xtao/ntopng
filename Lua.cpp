@@ -2207,6 +2207,154 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
+static const int NTOP_SAMPLING_FILEPATH_MAX_LEN = 50;
+static const int NTOP_SAMPLING_FILENAME_MAX_LEN = 10;
+
+/**
+ * @brief Filesystem interface to add a new stats sampling
+ * @details This function implements the filesystem-specific layer for
+ *          the historical database.
+ *
+ * @param ifid Number of the interface to store data for.
+ * @param timeinfo Localtime representation of the sampling point.
+ * @param sampling String to be written at specified sampling point.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+static int ntop_stats_insert_new_sampling_fs(int ifid, tm *timeinfo, char *sampling) {
+  char filepath[NTOP_SAMPLING_FILEPATH_MAX_LEN], buffer[NTOP_SAMPLING_FILEPATH_MAX_LEN],
+       filename[NTOP_SAMPLING_FILENAME_MAX_LEN];
+
+#ifdef WIN32
+  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
+           "%Y\%m\%d\%H\\", timeinfo);
+#else
+  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
+           "%Y/%m/%d/%H/", timeinfo);
+#endif
+
+  if(!Utils::mkdir_tree(filepath))
+	return 1;
+
+  strftime(filename, NTOP_SAMPLING_FILENAME_MAX_LEN, "%M.json", timeinfo);
+
+  sprintf(buffer, "%s%c%d%ctop_talkers%c%s%c%s", ntop->get_working_dir(),
+                                                 CONST_PATH_SEP, ifid,
+                                                 CONST_PATH_SEP, CONST_PATH_SEP,
+                                                 filepath, CONST_PATH_SEP,
+                                                 filename);
+
+  ofstream out(buffer);
+  out << sampling;
+  out.close();
+
+  return 0;
+}
+
+/**
+ * @brief Insert a new sampling in the historical database
+ * @details Given a certain sampling point, store statistics for said
+ *          sampling point.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_insert_new_sampling(lua_State *vm) {
+  char *sampling;
+  time_t rawtime;
+  tm *timeinfo;
+  int ifid;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((sampling = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+
+  if(ntop_stats_insert_new_sampling_fs(ifid, timeinfo, sampling))
+    return(CONST_LUA_ERROR);
+
+  return(CONST_LUA_OK);
+}
+
+/**
+ * @brief Filesystem interface to retrieve a stats sampling
+ * @details This function implements the filesystem-specific layer for
+ *          the historical database.
+ *
+ * @param ifid Number of the interface to get data for.
+ * @param epoch Sampling point expressed in number of seconds from epoch.
+ * @param sampling Pointer to a string to be filled with retrieved data.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+static int ntop_stats_get_sampling_fs(int ifid, time_t epoch, string *sampling) {
+  char filepath[NTOP_SAMPLING_FILEPATH_MAX_LEN], buffer[NTOP_SAMPLING_FILEPATH_MAX_LEN];
+  ifstream in;
+  stringstream sstream;
+
+  *sampling = "[ ]";
+
+#ifdef WIN32
+  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
+           "%Y\%m\%d\%H\%M.json", localtime(&epoch));
+#else
+  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
+           "%Y/%m/%d/%H/%M.json", localtime(&epoch));
+#endif
+
+  sprintf(buffer, "%s%c%d%ctop_talkers%c%s", ntop->get_working_dir(), CONST_PATH_SEP,
+                                             ifid, CONST_PATH_SEP, CONST_PATH_SEP,
+                                             filepath);
+
+  in.open(buffer);
+  if(!in)
+    return 0;
+  sstream << in.rdbuf();
+  *sampling = sstream.str();
+  in.close();
+
+  return 0;
+}
+
+/**
+ * @brief Get a sampling from the historical database
+ * @details Given a certain sampling point, get statistics for said
+ *          sampling point.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_get_sampling(lua_State *vm) {
+  time_t epoch;
+  string sampling;
+  int ifid;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  epoch = (time_t)lua_tointeger(vm, 2);
+
+  if (ntop_stats_get_sampling_fs(ifid, epoch, &sampling))
+    return(CONST_LUA_ERROR);
+
+  lua_pushstring(vm, sampling.c_str());
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
@@ -2856,6 +3004,10 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Pro */
   { "isPro",          ntop_is_pro },
+
+  /* Historical database */
+  { "insertNewSampling",    ntop_stats_insert_new_sampling },
+  { "getSampling",          ntop_stats_get_sampling },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

@@ -34,10 +34,7 @@ end
 
 function getHistoricalTop(ifid, ifname, epoch)
    epoch = epoch - (epoch % 60)
-   dirs = ntop.getDirs()
-   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
-
-   return (getHistoricalTopFromFile(filename))
+   return(ntop.getSampling(ifid, epoch))
 end
 
 -- #################################################
