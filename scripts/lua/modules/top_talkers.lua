@@ -7,19 +7,6 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 
 require "persistence"
 
-function getTopTalkers(ifid, ifname, mode, epoch)
-   -- if(ifname == nil) then ifname = "any" end
-
-   if(epoch ~= nil) then
-      rsp = getHistoricalTopTalkers(ifid, ifname, mode, epoch)
-   else
-      rsp = getActualTopTalkers(ifid, ifname, mode)
-   end
-
-   return(rsp)
-end
-
-
 -- #################################################
 
 function getHistoricalTopFromFile(filename)
@@ -45,7 +32,7 @@ end
 
 -- #################################################
 
-function getHistoricalTopTalkers(ifid, ifname, mode, epoch)
+function getHistoricalTop(ifid, ifname, epoch)
    epoch = epoch - (epoch % 60)
    dirs = ntop.getDirs()
    filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/%M.json", epoch))
@@ -122,7 +109,7 @@ end
 
 -- #####################################################
 
-function getActualTopTalkers(ifid, ifname, mode, epoch)
+function getActualTopTalkers(ifid, ifname, concat, mode)
    max_num_entries = 10
    rsp = ""
 
@@ -133,6 +120,11 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
    if(not(ntop.exists(talkers_dir))) then
       ntop.mkdir(talkers_dir)
    end
+
+   if(concat == false) then
+      rsp = rsp.."{\n"
+   end
+   rsp = rsp..'\t"hosts": [\n'
 
    if(mode == nil) then
       rsp = rsp .. "{\n"
@@ -181,31 +173,19 @@ function getActualTopTalkers(ifid, ifname, mode, epoch)
       rsp = rsp .. "\n]\n"
    end
 
+   rsp = rsp.."]"
+   if(concat == false) then
+      rsp = rsp.."\n}"
+   end
+
    --print(rsp.."\n")
    return(rsp)
 end
 
 -- #####################################################
 
-function getHistoricalTopASs(ifid, ifname, epoch)
-   epoch = epoch - (epoch % 60)
-   dirs = ntop.getDirs()
-   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/as-%M.json", epoch))
-
-   return (getHistoricalTopFromFile(filename))
-end
-
-function getHistoricalTopVLANs(ifid, ifname, epoch)
-   epoch = epoch - (epoch % 60)
-   dirs = ntop.getDirs()
-   filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/vlan-%M.json", epoch))
-
-   return (getHistoricalTopFromFile(filename))
-end
-
--- #####################################################
-
-function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold, use_delta, col)
+function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
+                            use_delta, col, concat)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end
@@ -247,6 +227,10 @@ function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold, use_de
       _group[key][col.."_bytes"] = old + val
    end
 
+   if(concat == true) then
+      rsp = rsp..'"'..col..'": '
+   end
+
    rsp = rsp .. "[\n"
 
    -- Get top groups
@@ -265,26 +249,27 @@ function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold, use_de
    if (num > 0) then
       rsp = rsp .. " }\n"
    end
-   rsp = rsp .. "\n]\n"
+   rsp = rsp .. "\n]"
 
    return(rsp)
 end
 
-function getTopASs(ifid, ifname, epoch)
-   if(epoch ~= nil) then
-      rsp = getHistoricalTopASs(ifid, ifname, epoch)
-   else
-      rsp = getActualTopGroups(ifid, ifname, 10, true, false, "asn")
-   end
-
-   return(rsp)
+function getActualTopTalkersAll(ifid, ifname)
+      rsp = "{\n"
+      rsp = rsp..getActualTopTalkers(ifid, ifname, true)
+      rsp = rsp..",\n"
+      rsp = rsp..getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
+      rsp = rsp..",\n"
+      rsp = rsp..getActualTopGroups(ifid, ifname, 10, true, false, "vlan", true)
+      rsp = rsp.."\n}"
+      return(rsp)
 end
 
-function getTopVLANs(ifid, ifname, epoch)
+function getTopTalkers(ifid, ifname, epoch)
    if(epoch ~= nil) then
-      rsp = getHistoricalTopVLANs(ifid, ifname, epoch)
+      rsp = getHistoricalTop(ifid, ifname, epoch)
    else
-      rsp = getActualTopGroups(ifid, ifname, 10, true, false, "vlan")
+      rsp = getActualTopTalkersAll(ifid, ifname)
    end
 
    return(rsp)
