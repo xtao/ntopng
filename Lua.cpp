@@ -2207,9 +2207,6 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
   return(CONST_LUA_OK);
 }
 
-static const int NTOP_SAMPLING_FILEPATH_MAX_LEN = 50;
-static const int NTOP_SAMPLING_FILENAME_MAX_LEN = 10;
-
 /**
  * @brief Filesystem interface to add a new stats sampling
  * @details This function implements the filesystem-specific layer for
@@ -2222,33 +2219,44 @@ static const int NTOP_SAMPLING_FILENAME_MAX_LEN = 10;
  * @return Zero in case of success, nonzero in case of error.
  */
 static int ntop_stats_insert_new_sampling_fs(int ifid, tm *timeinfo, char *sampling) {
-  char filepath[NTOP_SAMPLING_FILEPATH_MAX_LEN], buffer[NTOP_SAMPLING_FILEPATH_MAX_LEN],
-       filename[NTOP_SAMPLING_FILENAME_MAX_LEN];
+  char filepath[MAX_PATH], buffer[MAX_PATH], filename[10];
+  u_int len;
 
-#ifdef WIN32
-  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
-           "%Y\%m\%d\%H\\", timeinfo);
-#else
-  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
-           "%Y/%m/%d/%H/", timeinfo);
-#endif
+  strftime(filepath, MAX_PATH,
+           "%Y/%m/%d/%H", timeinfo);
 
-  if(!Utils::mkdir_tree(filepath))
-	return 1;
+  strftime(filename, sizeof(filename), "%M.json", timeinfo);
+  
+  snprintf(buffer, sizeof(buffer), "%s/%d/top_talkers/%s", 
+	   ntop->get_working_dir(), ifid, filepath);
 
-  strftime(filename, NTOP_SAMPLING_FILENAME_MAX_LEN, "%M.json", timeinfo);
+  ntop->fixPath(buffer);
 
-  sprintf(buffer, "%s%c%d%ctop_talkers%c%s%c%s", ntop->get_working_dir(),
-                                                 CONST_PATH_SEP, ifid,
-                                                 CONST_PATH_SEP, CONST_PATH_SEP,
-                                                 filepath, CONST_PATH_SEP,
-                                                 filename);
+  if(!Utils::mkdir_tree(buffer)) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
+				 "Unable to create directory %s", buffer);
+    return(-1);
+  } else
+    len = strlen(buffer);
 
-  ofstream out(buffer);
-  out << sampling;
-  out.close();
+  if(len < sizeof(buffer)) { 
+    FILE *fd;
 
-  return 0;
+    snprintf(&buffer[len], sizeof(buffer)-len, "/%s", filename);
+    ntop->fixPath(&buffer[len]);
+
+    if((fd = fopen(buffer, "w")) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to create file %s", buffer);
+    } else {
+      fwrite(sampling, strlen(sampling), 1, fd);
+      fclose(fd);
+    }      
+    
+    return(0);
+  } else {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Buffer too short");
+    return(-1);
+  }
 }
 
 /**
@@ -2296,27 +2304,24 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
  * @return Zero in case of success, nonzero in case of error.
  */
 static int ntop_stats_get_sampling_fs(int ifid, time_t epoch, string *sampling) {
-  char filepath[NTOP_SAMPLING_FILEPATH_MAX_LEN], buffer[NTOP_SAMPLING_FILEPATH_MAX_LEN];
+  char filepath[MAX_PATH], buffer[MAX_PATH];
   ifstream in;
   stringstream sstream;
 
   *sampling = "[ ]";
 
-#ifdef WIN32
-  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
-           "%Y\%m\%d\%H\%M.json", localtime(&epoch));
-#else
-  strftime(filepath, NTOP_SAMPLING_FILEPATH_MAX_LEN,
+  strftime(filepath, MAX_PATH,
            "%Y/%m/%d/%H/%M.json", localtime(&epoch));
-#endif
 
   sprintf(buffer, "%s%c%d%ctop_talkers%c%s", ntop->get_working_dir(), CONST_PATH_SEP,
                                              ifid, CONST_PATH_SEP, CONST_PATH_SEP,
                                              filepath);
+  ntop->fixPath(buffer);
 
   in.open(buffer);
   if(!in)
     return 0;
+
   sstream << in.rdbuf();
   *sampling = sstream.str();
   in.close();

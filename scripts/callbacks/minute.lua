@@ -18,7 +18,6 @@ local verbose = ntop.verboseTrace()
 if(use_influx) then
    cache_key = "minute.lua.cache"
    load_last_influx(cache_key)
-   when = os.time().."000"
    host_header = '[\n  {\n "name" : "hosts",\n "columns" : ["time", "interface", "host", "proto", "sent", "rcvd"],\n "points" : [\n'
    if_header = '[\n  {\n "name" : "interfaces.l7",\n "columns" : ["time", "interface", "proto", "sent", "rcvd"],\n "points" : [\n'
    num_host_points = 0
@@ -33,7 +32,7 @@ function influx_add_interface_point(ifname, key, sent, rcvd)
    
    if((s > 0) or (r > 0)) then
       if(num_if_points > 0) then if_header = if_header .. ',\n' end
-      if_header = if_header .. '\t['.. when .. ', "' .. ifname .. '","' .. key .. '",' .. s .. ',' .. r .. ']'
+      if_header = if_header .. '\t['.. when .. '000, "' .. ifname .. '","' .. key .. '",' .. s .. ',' .. r .. ']'
       num_if_points = num_if_points + 1
    end
 end
@@ -50,7 +49,7 @@ function influx_add_host_point(ifname, host, key, sent, rcvd)
 
    if((s > 0) or (r > 0)) then
       if(num_host_points > 0) then host_header = host_header .. ',\n' end
-      host_header = host_header .. '\t['.. when .. ', "' .. ifname .. '","' .. host .. '","' .. key .. '",' .. s .. ',' .. r .. ']'
+      host_header = host_header .. '\t['.. when .. '000, "' .. ifname .. '","' .. host .. '","' .. key .. '",' .. s .. ',' .. r .. ']'
       -- io.write(ifname.."|"..host.."|"..key.."|"..s.."|"..r.."\n")
       num_host_points = num_host_points + 1
    end

@@ -77,14 +77,14 @@ total = 0
 now = os.time()
 vals = {}
 
-f = io.open("log.txt", "w")
+-- f = io.open("log.txt", "w")
 
 stats_by_group_col = {}
 for key,value in pairs(hosts_stats) do
-   f:write("****************\n");
+   -- f:write("****************\n");
    -- Convert grouping identifier to string to avoid type mismatches if the
    -- value is 0 (which would mean that the AS is private)
-   f:write(tostring(value["local_network_id"]).."\n")
+   -- f:write(tostring(value["local_network_id"]).."\n")
    value[group_col] = tostring(value[group_col])
 
    id = value[group_col]
@@ -103,7 +103,7 @@ for key,value in pairs(hosts_stats) do
          if (stats_by_group_col[id]["name"] == nil) then
             stats_by_group_col[id]["name"] = "Unknown network"
          end
-         f:write(stats_by_group_col[id]["name"].."\n")
+         -- f:write(stats_by_group_col[id]["name"].."\n")
       else
          stats_by_group_col[id]["name"] = "VLAN"
       end
@@ -132,9 +132,9 @@ for key,value in pairs(hosts_stats) do
    stats_by_group_col[id]["bytes.rcvd"] = value["bytes.rcvd"] +
          ternary(existing, stats_by_group_col[id]["bytes.rcvd"], 0)
    stats_by_group_col[id]["country"] = value["country"]
-   f:write("****************\n");
+   -- f:write("****************\n");
 end
-f:close()
+-- f:close()
 
 function print_single_group(value)
    print ('{ ')
