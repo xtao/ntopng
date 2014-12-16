@@ -36,7 +36,7 @@ private:
     int ifid;
     char filePath[MAX_PATH], fileFullPath[MAX_PATH], fileName[MAX_PATH];
     Mutex m;
-    sqlite3 *db = NULL;
+    sqlite3 *db;
     int exec_query(char *db_query,
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
