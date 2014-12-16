@@ -130,6 +130,7 @@ extern "C" {
 #include "SimpleStringHost.h"
 #include "StringHost.h"
 #include "StringHash.h"
+#include "StatsManager.h"
 #include "NetworkInterface.h"
 #include "PcapInterface.h"
 #ifdef HAVE_PF_RING

@@ -33,8 +33,7 @@ end
 -- #################################################
 
 function getHistoricalTop(ifid, ifname, epoch)
-   epoch = epoch - (epoch % 60)
-   return(ntop.getSampling(ifid, epoch))
+   return(ntop.getSampling(ifid, tonumber(epoch)))
 end
 
 -- #################################################

@@ -96,6 +96,7 @@ class NetworkInterface {
   StringHash *strings_hash; /**< Hash used to memorize the aggregation information.*/
   bool purge_idle_flows_hosts, sprobe_interface;
   DB *db;
+  StatsManager *statsManager;
   bool has_vlan_packets;
   struct ndpi_detection_module_struct *ndpi_struct;
   time_t last_pkt_rcvd, next_idle_flow_purge, next_idle_host_purge, next_idle_aggregated_host_purge;
@@ -227,6 +228,7 @@ class NetworkInterface {
   void addAllAvailableInterfaces();
   inline bool idle() { return(is_idle); }
   inline void setIdleState(bool new_state) { is_idle = new_state; }
+  inline StatsManager *getStatsManager() { return statsManager; }
 
 };
 

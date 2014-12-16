@@ -151,6 +151,9 @@ NetworkInterface::NetworkInterface(const char *name) {
     running = false, sprobe_interface = false;
 
     db = new DB(this);
+
+    statsManager = new StatsManager(id, "top_talkers.db");
+
     checkIdle();
   }
 }
@@ -205,6 +208,7 @@ NetworkInterface::~NetworkInterface() {
 
   deleteDataStructures();
   delete db;
+  delete statsManager;
 }
 
 /* **************************************************** */

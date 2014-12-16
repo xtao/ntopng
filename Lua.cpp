@@ -2208,58 +2208,6 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
 }
 
 /**
- * @brief Filesystem interface to add a new stats sampling
- * @details This function implements the filesystem-specific layer for
- *          the historical database.
- *
- * @param ifid Number of the interface to store data for.
- * @param timeinfo Localtime representation of the sampling point.
- * @param sampling String to be written at specified sampling point.
- *
- * @return Zero in case of success, nonzero in case of error.
- */
-static int ntop_stats_insert_new_sampling_fs(int ifid, tm *timeinfo, char *sampling) {
-  char filepath[MAX_PATH], buffer[MAX_PATH], filename[10];
-  u_int len;
-
-  strftime(filepath, MAX_PATH,
-           "%Y/%m/%d/%H", timeinfo);
-
-  strftime(filename, sizeof(filename), "%M.json", timeinfo);
-  
-  snprintf(buffer, sizeof(buffer), "%s/%d/top_talkers/%s", 
-	   ntop->get_working_dir(), ifid, filepath);
-
-  ntop->fixPath(buffer);
-
-  if(!Utils::mkdir_tree(buffer)) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING,
-				 "Unable to create directory %s", buffer);
-    return(-1);
-  } else
-    len = strlen(buffer);
-
-  if(len < sizeof(buffer)) { 
-    FILE *fd;
-
-    snprintf(&buffer[len], sizeof(buffer)-len, "/%s", filename);
-    ntop->fixPath(&buffer[len]);
-
-    if((fd = fopen(buffer, "w")) == NULL) {
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to create file %s", buffer);
-    } else {
-      fwrite(sampling, strlen(sampling), 1, fd);
-      fclose(fd);
-    }      
-    
-    return(0);
-  } else {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Buffer too short");
-    return(-1);
-  }
-}
-
-/**
  * @brief Insert a new sampling in the historical database
  * @details Given a certain sampling point, store statistics for said
  *          sampling point.
@@ -2284,50 +2232,13 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
   if((sampling = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
   time(&rawtime);
+  rawtime -= (rawtime % 60);
   timeinfo = localtime(&rawtime);
 
-  if(ntop_stats_insert_new_sampling_fs(ifid, timeinfo, sampling))
+  if (ntop->getInterfaceById(ifid)->getStatsManager()->insertSampling(timeinfo, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
-}
-
-/**
- * @brief Filesystem interface to retrieve a stats sampling
- * @details This function implements the filesystem-specific layer for
- *          the historical database.
- *
- * @param ifid Number of the interface to get data for.
- * @param epoch Sampling point expressed in number of seconds from epoch.
- * @param sampling Pointer to a string to be filled with retrieved data.
- *
- * @return Zero in case of success, nonzero in case of error.
- */
-static int ntop_stats_get_sampling_fs(int ifid, time_t epoch, string *sampling) {
-  char filepath[MAX_PATH], buffer[MAX_PATH];
-  ifstream in;
-  stringstream sstream;
-
-  *sampling = "[ ]";
-
-  strftime(filepath, MAX_PATH,
-           "%Y/%m/%d/%H/%M.json", localtime(&epoch));
-
-  snprintf(buffer, sizeof(buffer),
-           "%s%c%d%ctop_talkers%c%s", ntop->get_working_dir(), CONST_PATH_SEP,
-                                      ifid, CONST_PATH_SEP, CONST_PATH_SEP,
-                                      filepath);
-  ntop->fixPath(buffer);
-
-  in.open(buffer);
-  if(in.fail())
-    return 0;
-
-  sstream << in.rdbuf();
-  *sampling = sstream.str();
-  in.close();
-
-  return 0;
 }
 
 /**
@@ -2352,8 +2263,9 @@ static int ntop_stats_get_sampling(lua_State *vm) {
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   epoch = (time_t)lua_tointeger(vm, 2);
+  epoch -= (epoch % 60);
 
-  if (ntop_stats_get_sampling_fs(ifid, epoch, &sampling))
+  if(ntop->getInterfaceById(ifid)->getStatsManager()->getSampling(epoch, &sampling))
     return(CONST_LUA_ERROR);
 
   lua_pushstring(vm, sampling.c_str());
