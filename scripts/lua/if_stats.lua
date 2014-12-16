@@ -482,7 +482,7 @@ print [[
 
     $('#form_from').val( from_unix);
     $('#form_to').val(to_unix );
-    $('#form_interface_id').val($('#interface_displayed').val());
+    $('#form_interface_id').val($('#interface_displayed').text());
 
     return submit;
 
