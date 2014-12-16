@@ -242,6 +242,8 @@ SNMPMessage *snmp_parse_message(void *buffer, int len)
 	  snmp_add_varbind_null(message, oid);
 	  break;
 
+	case SNMP_GAUGE_TYPE:
+	case SNMP_COUNTER_TYPE:
 	case SNMP_TIMETICKS_TYPE:
 	case ASN1_INTEGER_TYPE:
 	  asn1_parse_integer_type(parser, NULL, &value.int_value);

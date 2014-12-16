@@ -1949,7 +1949,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "version.ndpi", ndpi_revision());
 
 #ifdef NTOPNG_PRO
-  lua_push_str_table_entry(vm, "pro.release", NTOPNG_PRO_SVN_RELEASE);
+  lua_push_str_table_entry(vm, "pro.release", (char*)NTOPNG_PRO_SVN_RELEASE);
 #endif
 
   zmq_version(&major, &minor, &patch);
