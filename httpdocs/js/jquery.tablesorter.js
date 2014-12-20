@@ -333,6 +333,13 @@
                     tableBody = $(table.tBodies[0]),
                     rows = [];
 
+                /*
+                 * Even if the function is called "appendToTable",
+                 * it totally seems to be willing to rebuild the
+                 * table; let it do so.
+                 */
+                for (var i = totalRows; i > 0 ; i--)
+                    table.deleteRow(i);
 
                 for (var i = 0; i < totalRows; i++) {
                     var pos = n[i][checkCell];
@@ -787,13 +794,15 @@
                     // apply easy methods that trigger binded events
                     $this.bind("update", function () {
                         var me = this;
-                        setTimeout(function () {
+                        //setTimeout(function () {
                             // rebuild parsers.
                             me.config.parsers = buildParserCache(
                             me, $headers);
                             // rebuild the cache map
                             cache = buildCache(me);
-                        }, 1);
+                        //}, 1);
+                        setHeadersCss(this, $headers, config.sortList, sortCSS);
+                        appendToTable(this, multisort(this, config.sortList, cache));
                     }).bind("updateCell", function (e, cell) {
                         var config = this.config;
                         // get position from the dom.
@@ -926,6 +935,23 @@
                 }
             }
             return $.tablesorter.formatFloat(r);
+        }, type: "numeric"
+    });
+
+    ts.addParser({
+        id: "bytesUnit",
+        is: function (s) {
+            return /^\d*(\.\d+)?\s[A-Za-z]+$/.test(s);
+        }, format: function (s) {
+            s = s.split(" ");
+            if (s[1] == "KB")
+                return $.tablesorter.formatFloat(s[0])*1000;
+            else if (s[1] == "MB")
+                return $.tablesorter.formatFloat(s[0])*1000000;
+            else if (s[1] == "GB")
+                return $.tablesorter.formatFloat(s[0])*1000000000;
+            else
+                return $.tablesorter.formatFloat(s[0]);
         }, type: "numeric"
     });
 

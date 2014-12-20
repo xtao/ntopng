@@ -255,6 +255,8 @@ print [[/lua/if_stats_ndpi.lua',
     data: { ifname: "]] print(tostring(interface.name2id(ifstats.name))) print [[" },
     success: function(content) {
       $('#if_stats_ndpi_tbody').html(content);
+      // Let the TableSorter plugin know that we updated the table
+      $('#if_stats_ndpi_tbody').trigger("update");
     }
   });
 }
