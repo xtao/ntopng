@@ -549,7 +549,31 @@ int asn1_parse_string_type(ASN1Parser *parser, int *type, char **dest)
       (*dest)[i] = v;
     }
   (*dest)[i] = 0;
-    
+  
+  /* Patch for detecting MAC addresses and thus format them properly */
+  if(size == 6) {
+    u_int all_printable = 1;
+
+    for(i = 0; i<size; i++) {
+      if(!isprint((*dest)[i])) {
+	all_printable = 0;
+	break;
+      }
+    }
+
+    if(!all_printable) {
+      /* This looks like a MAC address */
+      char tmp[24];
+
+      snprintf(tmp, sizeof(tmp), "%02X:%02X:%02X:%02X:%02X:%02X",
+	       (*dest)[0] & 0xFF, (*dest)[1] & 0xFF, (*dest)[2] & 0xFF, 
+	       (*dest)[3] & 0xFF, (*dest)[4] & 0xFF, (*dest)[5] & 0xFF);
+
+      free(*dest);
+      *dest = strdup(tmp);
+    }
+  }
+  
   consume(parser);
   return 1;
 }
