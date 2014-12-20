@@ -153,6 +153,8 @@ NetworkInterface::NetworkInterface(const char *name) {
     db = new DB(this);
 
     statsManager = new StatsManager(id, "top_talkers.db");
+    if (!statsManager)
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Could not allocate StatsManager");
 
     checkIdle();
   }

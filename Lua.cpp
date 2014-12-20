@@ -2221,6 +2221,8 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
   time_t rawtime;
   tm *timeinfo;
   int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
@@ -2231,11 +2233,15 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((sampling = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
   time(&rawtime);
   rawtime -= (rawtime % 60);
   timeinfo = localtime(&rawtime);
 
-  if (ntop->getInterfaceById(ifid)->getStatsManager()->insertSampling(timeinfo, sampling))
+  if (sm->insertSampling(timeinfo, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
@@ -2254,6 +2260,8 @@ static int ntop_stats_get_sampling(lua_State *vm) {
   time_t epoch;
   string sampling;
   int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
@@ -2265,7 +2273,11 @@ static int ntop_stats_get_sampling(lua_State *vm) {
   epoch = (time_t)lua_tointeger(vm, 2);
   epoch -= (epoch % 60);
 
-  if(ntop->getInterfaceById(ifid)->getStatsManager()->getSampling(epoch, &sampling))
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  if(sm->getSampling(epoch, &sampling))
     return(CONST_LUA_ERROR);
 
   lua_pushstring(vm, sampling.c_str());

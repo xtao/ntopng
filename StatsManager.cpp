@@ -191,6 +191,8 @@ int StatsManager::insertSamplingFs(tm *timeinfo, char *sampling) {
  * @return Zero in case of success, nonzero in case of failure.
  */
 int StatsManager::insertSampling(tm *timeinfo, char *sampling) {
+  if (!timeinfo || !sampling)
+    return -1;
   return insertSamplingDb(timeinfo, sampling);
 }
 
@@ -298,5 +300,7 @@ int StatsManager::getSamplingFs(time_t epoch, string *sampling) {
  * @return Zero in case of success, nonzero in case of failure.
  */
 int StatsManager::getSampling(time_t epoch, string *sampling) {
+  if (!sampling)
+    return -1;
   return getSamplingDb(epoch, sampling);
 }
