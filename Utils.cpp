@@ -188,6 +188,14 @@ bool Utils::mkdir_tree(char *path) {
 	if((i > 1) && (path[i-1] == ':')) continue;
 #endif
 
+        /*
+         * If we are already handling the final portion
+         * of a path, e.g. because the path has a trailing
+         * CONST_PATH_SEP, do not create the final
+         * directory: it will be created later.
+         */
+        if (path[i+1] == '\0')
+          break;
 	path[i] = '\0';
 	rc = ntop_mkdir(path, permission);
 	path[i] = CONST_PATH_SEP;
