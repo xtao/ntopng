@@ -2285,6 +2285,45 @@ static int ntop_stats_get_sampling(lua_State *vm) {
   return(CONST_LUA_OK);
 }
 
+/**
+ * @brief Delete stats older than a certain number of days.
+ * @details Given a number of days, delete stats for the current interface that
+ *          are older than a certain number of days.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_delete_older_than(lua_State *vm) {
+  int num_days;
+  string sampling;
+  int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num_days = lua_tointeger(vm, 2);
+  if(num_days < 0)
+    return(CONST_LUA_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  if(sm->deleteStatsOlderThan(num_days))
+    return(CONST_LUA_ERROR);
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
@@ -2938,6 +2977,7 @@ static const luaL_Reg ntop_reg[] = {
   /* Historical database */
   { "insertNewSampling",    ntop_stats_insert_new_sampling },
   { "getSampling",          ntop_stats_get_sampling },
+  { "deleteStatsOlderThan", ntop_stats_delete_older_than },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

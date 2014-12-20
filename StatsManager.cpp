@@ -77,6 +77,44 @@ int StatsManager::exec_query(char *db_query,
 }
 
 /**
+ * @brief Database interface to implement stats purging.
+ * @details This function implements the database-specific code
+ *          to delete stats older than a certain number of days.
+ *
+ * @todo Compute years better.
+ *
+ * @param num_days Number of days to use to purge statistics.
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::deleteStatsOlderThan(unsigned num_days) {
+  unsigned years = num_days / 365, days = num_days % 365;
+  char key[MAX_KEY], query[MAX_QUERY];
+  time_t rawtime;
+  tm *timeinfo;
+  int rc;
+
+  if (!db)
+    return -1;
+
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  timeinfo->tm_hour -= years;
+  timeinfo->tm_mday -= days;
+  strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
+
+  snprintf(query, sizeof(query), "DELETE FROM MINUTE_STATS WHERE "
+                                 "CAST(TSTAMP AS INTEGER) < %s", key);
+
+  m.lock(__FILE__, __LINE__);
+
+  rc = exec_query(query, NULL, NULL);
+
+  m.unlock(__FILE__, __LINE__);
+
+  return rc;
+}
+
+/**
  * @brief Database interface to add a new stats sampling
  * @details This function implements the database-specific layer for
  *          the historical database (as of now using SQLite3).

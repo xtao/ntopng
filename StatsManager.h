@@ -30,6 +30,7 @@ public:
     ~StatsManager();
     int insertSampling(tm *timeinfo, char *sampling);
     int getSampling(time_t epoch, string *sampling);
+    int deleteStatsOlderThan(unsigned num_days);
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
