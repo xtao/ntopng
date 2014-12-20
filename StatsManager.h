@@ -34,7 +34,7 @@ private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
     int ifid;
-    char filePath[MAX_PATH], fileFullPath[MAX_PATH], fileName[MAX_PATH];
+    char filePath[MAX_PATH]; /* legacy FS interface only */
     Mutex m;
     sqlite3 *db;
     int exec_query(char *db_query,

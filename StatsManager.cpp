@@ -22,6 +22,8 @@
 #include "ntop_includes.h"
 
 StatsManager::StatsManager(int ifid, const char *filename) {
+  char fileFullPath[MAX_PATH], fileName[MAX_PATH];
+
   this->ifid = ifid;
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
 	   ntop->get_working_dir(), ifid);
@@ -31,11 +33,14 @@ StatsManager::StatsManager(int ifid, const char *filename) {
   ntop->fixPath(filePath);
   ntop->fixPath(fileFullPath);
 
-  if (sqlite3_open(fileFullPath, &db)) {
-    printf("Unable to open %s: %s\n", fileFullPath, sqlite3_errmsg(db));
+  if(!Utils::mkdir_tree(filePath)) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING,
+				 "Unable to create directory %s", filePath);
+    return;
+  }
+  if (sqlite3_open(fileFullPath, &db))
     ntop->getTrace()->traceEvent(TRACE_INFO, "Unable to open %s: %s",
                                 fileFullPath, sqlite3_errmsg(db));
-  }
 }
 
 StatsManager::~StatsManager() {
@@ -87,11 +92,8 @@ int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling) {
   sqlite3_stmt *stmt;
   int rc = 0;
 
-  if(!Utils::mkdir_tree(filePath)) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING,
-				 "Unable to create directory %s", filePath);
+  if (!db)
     return -1;
-  }
 
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
@@ -234,15 +236,14 @@ static int get_sampling_db_callback(void *data, int argc,
 int StatsManager::getSamplingDb(time_t epoch, string *sampling) {
 
   char key[MAX_KEY], query[MAX_QUERY];
-  struct stat buf;
   int rc;
 
   *sampling = "[ ]";
 
-  strftime(key, sizeof(key), "%Y%m%d%H%M", localtime(&epoch));
+  if (!db)
+    return -1;
 
-  if (stat(fileFullPath, &buf))
-    return 0;
+  strftime(key, sizeof(key), "%Y%m%d%H%M", localtime(&epoch));
 
   snprintf(query, sizeof(query), "SELECT STATS FROM MINUTE_STATS WHERE TSTAMP = %s",
            key);
