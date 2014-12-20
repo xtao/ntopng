@@ -23,6 +23,7 @@
 
 StatsManager::StatsManager(int ifid, const char *filename) {
   char fileFullPath[MAX_PATH], fileName[MAX_PATH];
+  char *table_query;
 
   this->ifid = ifid;
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
@@ -38,9 +39,25 @@ StatsManager::StatsManager(int ifid, const char *filename) {
 				 "Unable to create directory %s", filePath);
     return;
   }
-  if (sqlite3_open(fileFullPath, &db))
-    ntop->getTrace()->traceEvent(TRACE_INFO, "Unable to open %s: %s",
+  if (sqlite3_open(fileFullPath, &db)) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to open %s: %s",
                                 fileFullPath, sqlite3_errmsg(db));
+    return;
+  }
+
+  table_query = strndup("CREATE TABLE IF NOT EXISTS MINUTE_STATS ("  \
+                "TSTAMP VARCHAR PRIMARY KEY NOT NULL," \
+                "STATS  TEXT NOT NULL);", MAX_QUERY);
+
+  m.lock(__FILE__, __LINE__);
+
+  if (exec_query(table_query, NULL, NULL))
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Failed to create table %s: %s",
+                                fileFullPath, sqlite3_errmsg(db));
+
+  m.unlock(__FILE__, __LINE__);
+
+  free(table_query);
 }
 
 StatsManager::~StatsManager() {
@@ -126,7 +143,6 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days) {
  */
 int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling) {
   char key[MAX_KEY], query[MAX_QUERY];
-  char *table_query;
   sqlite3_stmt *stmt;
   int rc = 0;
 
@@ -135,19 +151,10 @@ int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling) {
 
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
-  table_query = strndup("CREATE TABLE IF NOT EXISTS MINUTE_STATS ("  \
-                "TSTAMP VARCHAR PRIMARY KEY NOT NULL," \
-                "STATS  TEXT NOT NULL);", MAX_QUERY);
-
   strncpy(query, "INSERT INTO MINUTE_STATS (TSTAMP, STATS) VALUES(?,?)",
           sizeof(query));
 
   m.lock(__FILE__, __LINE__);
-
-  if (exec_query(table_query, NULL, NULL)) {
-    rc = 1;
-    goto out_unlock;
-  }
 
   if (sqlite3_prepare(db, query, -1, &stmt, 0) ||
       sqlite3_bind_text(stmt, 1, key, strlen(key), SQLITE_TRANSIENT) ||
@@ -170,8 +177,6 @@ out:
 
 out_unlock:
   m.unlock(__FILE__, __LINE__);
-
-  free(table_query);
 
   return rc;
 }
