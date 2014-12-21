@@ -203,10 +203,11 @@ void GenericHost::incFlowCount(const struct timeval *when, Flow *f) {
 
     h = get_string_key(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a flooder [%u new flows in the last %u sec]", 
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a flooder [%u new flows in the last %u sec] (uptime %u sec)", 
 	     h, iface->get_name(), h, 
 	     flow_count_alert->getCurrentHits(),
-	     flow_count_alert->getOverThresholdDuration());
+	     flow_count_alert->getOverThresholdDuration(),
+	     ntop->getGlobals()->getUptime());
     
     ntop->getTrace()->traceEvent(TRACE_INFO, "Flow flood: %s", msg);
     ntop->getRedis()->queueAlert(alert_level_error, alert_flow_flood, msg);
