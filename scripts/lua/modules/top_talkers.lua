@@ -9,29 +9,6 @@ require "persistence"
 
 -- #################################################
 
-function getHistoricalTopFromFile(filename)
-   --print(filename)
-   if(ntop.exists(filename)) then
-      f = io.open(filename, "r")
-      if(f) then
-	 rsp = ""
-	 while(true) do
-	    line = f:read()
-
-	    if(line == nil) then break end
-	    rsp = rsp .. line.."\n"
-	 end
-	 f:close()
-      end
-
-      return(rsp)
-   else
-      return("[ ]\n")
-   end
-end
-
--- #################################################
-
 function getHistoricalTop(ifid, ifname, epoch)
    return(ntop.getSampling(ifid, tonumber(epoch)))
 end

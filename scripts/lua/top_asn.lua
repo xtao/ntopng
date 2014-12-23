@@ -13,10 +13,6 @@ sendHTTPHeader('text/html; charset=iso-8859-1')
 top_talkers = getTopTalkers(getInterfaceId(ifname), ifname, _GET["epoch"])
 correct_section_beginning = string.find(top_talkers, '"asn"')
 if (correct_section_beginning == nil) then
-  if (epoch ~= nil) then
-    filename = fixPath(dirs.workingdir .. "/".. ifid .. "/top_talkers/" .. os.date("%Y/%m/%d/%H", epoch) .. os.date("/as-%M.json", epoch))
-    top_talkers = getHistoricalTopFromFile(filename)
-  end
   print(top_talkers)
 else
   correct_section = string.sub(top_talkers, correct_section_beginning)
