@@ -94,6 +94,7 @@ extern "C" {
 #include "lualib.h"
 #ifdef HAVE_PF_RING
 #include "pfring.h"
+#include "pfring_zc.h"
 #endif
 #include "json.h"
 #include <sqlite3.h>
@@ -135,6 +136,9 @@ extern "C" {
 #include "PcapInterface.h"
 #ifdef HAVE_PF_RING
 #include "PF_RINGInterface.h"
+#endif
+#ifdef NTOPNG_PRO
+#include "PF_RINGBridge.h"
 #endif
 #include "ParserInterface.h"
 #include "CollectorInterface.h"

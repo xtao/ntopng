@@ -30,11 +30,18 @@ SVN_DATE=`date`
 fi
 
 if test -d "pro"; then :
+PRO_OBJECTS='$(patsubst pro/%.cpp, pro/%.o, $(wildcard pro/*.cpp))'
+PRO_HEADERS='$(wildcard pro/*.h)'
+PWD=`pwd`
+CPPFLAGS="${CPPFLAGS} -I${PWD} -I${PWD}/pro"
 PRO_SVN_RELEASE=`svn info pro | grep "^Revision"|cut -d " " -f 2`
 SVN_PRO_DATE=`svn info pro | grep "^Last Changed Date"|cut -d " " -f 4-`
 AC_DEFINE_UNQUOTED(NTOPNG_PRO, 1, [Building ntopng professional])
 AC_DEFINE_UNQUOTED(NTOPNG_PRO_SVN_RELEASE, "r${PRO_SVN_RELEASE}", [ntopng professional release])
 AC_DEFINE_UNQUOTED(NTOPNG_PRO_SVN_DATE, "${SVN_PRO_DATE}", [ntopng professional date])
+else
+PRO_OBJECTS=
+PRO_HEADERS=
 fi
 
 AC_DEFINE_UNQUOTED(NTOPNG_SVN_RELEASE, "r${SVN_RELEASE}", [SVN Release])
@@ -257,6 +264,8 @@ AC_SUBST(INSTALL_DIR)
 AC_SUBST(MAN_DIR)
 AC_SUBST(HIREDIS_INC)
 AC_SUBST(HIREDIS_LIB)
+AC_SUBST(PRO_OBJECTS)
+AC_SUBST(PRO_HEADERS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(packages/ntopng.spec)
 AC_CONFIG_FILES(packages/ntopng-data.spec)

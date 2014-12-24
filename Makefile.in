@@ -115,8 +115,8 @@ default: $(NDPI_LIB_DEP) $(LIB_TARGETS) $(TARGET)
 
 all: default
 
-OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
-HEADERS = $(wildcard *.h)
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) @PRO_OBJECTS@
+HEADERS = $(wildcard *.h) @PRO_HEADERS@
 
 %.o: %.c $(HEADERS) Makefile
 	$(GPP) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
