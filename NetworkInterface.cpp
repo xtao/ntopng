@@ -583,7 +583,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
 
     flow->setDetectedProtocol(ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 							    ip, ipsize, (u_int32_t)time,
-							    cli, srv));
+							    cli, srv, src2dst_direction));
   } else {
     // FIX - only handle unfragmented packets
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
@@ -640,7 +640,8 @@ void NetworkInterface::packet_processing(const struct timeval *when,
 	ndpi_detection_process_packet(ndpi_struct, ndpi_flow,
 				      ip, ipsize, (u_int32_t)time,
 				      src2dst_direction ? cli : srv,
-				      src2dst_direction ? srv : cli);
+				      src2dst_direction ? srv : cli,
+				      src2dst_direction);
 
 	if(ndpi_flow->protos.dns.ret_code != 0) {
 	  /*
