@@ -177,8 +177,8 @@ class NetworkInterface {
   Flow* findFlowByKey(u_int32_t key, patricia_tree_t *allowed_hosts);
   void findHostsByName(lua_State* vm, patricia_tree_t *allowed_hosts, char *key);
   void flushHostContacts();
-  void packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
-  void packet_processing(const struct timeval *when,
+  bool packet_dissector(const struct pcap_pkthdr *h, const u_char *packet);
+  bool packet_processing(const struct timeval *when,
 			 const u_int64_t time,
 			 struct ndpi_ethhdr *eth,
 			 u_int16_t vlan_id,

@@ -140,6 +140,11 @@ int main(int argc, char *argv[])
     } else {
 #ifdef HAVE_PF_RING
       try {
+#ifdef NTOPNG_PRO
+	if(strncmp(ifName, "bridge:", 7) == 0)
+	  iface = new PF_RINGBridge(ifName);
+	else
+#endif
 	iface = new PF_RINGInterface(ifName);
       } catch (int) {
 #endif

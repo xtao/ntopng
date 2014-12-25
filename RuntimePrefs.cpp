@@ -28,15 +28,15 @@ RuntimePrefs::RuntimePrefs() {
   are_local_hosts_rrd_created();
   are_hosts_ndpi_rrd_created();
 
-  if (are_alerts_syslog_enable())
-      ntop->getTrace()->traceEvent(TRACE_NORMAL, "Dump alerts into syslog");
+  if(are_alerts_syslog_enable())
+    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Dumping alerts into syslog");
 }
 
 /* ******************************************* */
 
 void RuntimePrefs::set_alerts_syslog(bool enable) {
   ntop->getRedis()->set((char*)CONST_RUNTIME_PREFS_ALERT_SYSLOG,
-      enable ? (char*)"1" : (char*)"0", 0);
+			enable ? (char*)"1" : (char*)"0", 0);
 
 }
 
@@ -46,7 +46,7 @@ bool RuntimePrefs::are_alerts_syslog_enable() {
   char rsp[32];
 
   if(ntop->getRedis()->get((char*)CONST_RUNTIME_PREFS_ALERT_SYSLOG,
-         rsp, sizeof(rsp)) < 0) {
+			   rsp, sizeof(rsp)) < 0) {
     set_alerts_syslog(true);
     return(true);
   } else

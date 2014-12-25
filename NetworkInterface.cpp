@@ -444,7 +444,7 @@ void NetworkInterface::flow_processing(ZMQ_Flow *zflow) {
 
 /* **************************************************** */
 
-void NetworkInterface::packet_processing(const struct timeval *when,
+bool NetworkInterface::packet_processing(const struct timeval *when,
 					 const u_int64_t time,
 					 struct ndpi_ethhdr *eth,
 					 u_int16_t vlan_id,
@@ -465,12 +465,13 @@ void NetworkInterface::packet_processing(const struct timeval *when,
   u_int8_t *l4, tcp_flags = 0, *payload;
   u_int8_t *ip;
   bool is_fragment = false, new_flow;
+  bool pass_verdict = true;
 
   if(iph != NULL) {
     /* IPv4 */
     if(ipsize < 20) {
       incStats(ETHERTYPE_IP, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-      return;
+      return(pass_verdict);
     }
 
     if((iph->ihl * 4) > ipsize || ipsize < ntohs(iph->tot_len)
@@ -486,7 +487,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
     /* IPv6 */
     if(ipsize < sizeof(const struct ndpi_ip6_hdr)) {
       incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-      return;
+      return(pass_verdict);
     }
 
     l4_packet_len = ntohs(ip6->ip6_ctlun.ip6_un1.ip6_un1_plen);
@@ -540,7 +541,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
       showMsg = true;
     }
 
-    return;
+    return(pass_verdict);
   }
 #endif
 
@@ -551,7 +552,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
   if(flow == NULL) {
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN,
 	     rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-    return;
+    return(pass_verdict);
   } else {
     flow->incStats(src2dst_direction, rawsize);
 
@@ -560,7 +561,7 @@ void NetworkInterface::packet_processing(const struct timeval *when,
       flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq), 
 			    tcp_flags, l4_packet_len - (4 * tcph->doff), 
 			    src2dst_direction);
-    }
+    }    
   }
 
   if(new_flow) {
@@ -668,9 +669,13 @@ void NetworkInterface::packet_processing(const struct timeval *when,
       flow->deleteFlowMemory();
 
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-    return;
+
+    pass_verdict = flow->getVerdict();
+
   } else
     incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+
+  return(pass_verdict);
 }
 
 /* **************************************************** */
@@ -697,13 +702,14 @@ void NetworkInterface::purgeIdle(time_t when) {
 
 /* **************************************************** */
 
-void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
+bool NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_char *packet) {
   struct ndpi_ethhdr *ethernet, dummy_ethernet;
   u_int64_t time;
   static u_int64_t lasttime = 0;
   u_int16_t eth_type, ip_offset, vlan_id = 0;
   u_int32_t res = ntop->getGlobals()->get_detection_tick_resolution(), null_type;
   int pcap_datalink_type = get_datalink();
+  bool pass_verdict = true;
 
   setTimeLastPktRcvd(h->ts.tv_sec);
 
@@ -726,7 +732,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       break;
     default:
       incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-      return; /* Any other non IP protocol */
+      return(pass_verdict); /* Any other non IP protocol */
     }
 
     memset(&dummy_ethernet, 0, sizeof(dummy_ethernet));
@@ -744,7 +750,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
     incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
   } else {
     incStats(0, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
-    return;
+    return(pass_verdict);
   }
 
   while(true) {
@@ -775,7 +781,7 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
       if(iph->version != 4) {
 	/* This is not IPv4 */
-	return;
+	return(pass_verdict);
       } else
 	frag_off = ntohs(iph->frag_off);
 
@@ -802,15 +808,15 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
 	    if(iph->version != 4) {
 	      /* FIX - Add IPv6 support */
-	      return;
+	      return(pass_verdict);
 	    }
 	  }
 	}
       }
 
       try {
-	packet_processing(&h->ts, time, ethernet, vlan_id, iph,
-			  NULL, h->caplen - ip_offset, h->caplen);
+	pass_verdict = packet_processing(&h->ts, time, ethernet, vlan_id, iph,
+					 NULL, h->caplen - ip_offset, h->caplen);
       } catch(std::bad_alloc& ba) {
 	static bool oom_warning_sent = false;
 
@@ -828,11 +834,11 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
 
       if((ntohl(ip6->ip6_ctlun.ip6_un1.ip6_un1_flow) & 0xF0000000) != 0x60000000) {
 	/* This is not IPv6 */
-	return;
+	return(pass_verdict);
       } else {
 	try {
-	  packet_processing(&h->ts, time, ethernet, vlan_id,
-			    NULL, ip6, h->len - ip_offset, h->len);
+	  pass_verdict = packet_processing(&h->ts, time, ethernet, vlan_id,
+					   NULL, ip6, h->len - ip_offset, h->len);
 	} catch(std::bad_alloc& ba) {
 	  static bool oom_warning_sent = false;
 
@@ -864,6 +870,8 @@ void NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
   }
 
   purgeIdle(last_pkt_rcvd);
+
+  return(pass_verdict);
 }
 
 /* **************************************************** */

@@ -37,7 +37,7 @@ class Flow : public GenericHashEntry {
   u_int8_t protocol, src2dst_tcp_flags, dst2src_tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
   bool detection_completed, protocol_processed, blacklist_alarm_emitted,
-    cli2srv_direction, twh_over, dissect_next_http_packet;
+    cli2srv_direction, twh_over, dissect_next_http_packet, pass_verdict;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;
@@ -102,7 +102,7 @@ class Flow : public GenericHashEntry {
   void processJson(bool is_src, json_object *my_object, ProcessInfo *proc);
   void checkBlacklistedFlow();
   void allocFlowMemory();
-
+  void makeVerdict();
   
  public:
   Flow(NetworkInterface *_iface,
@@ -122,6 +122,7 @@ class Flow : public GenericHashEntry {
   json_object* flow2json(bool partial_dump);
   json_object* flow2es(json_object *flow_object);
   inline u_int8_t getTcpFlags() { return(src2dst_tcp_flags | dst2src_tcp_flags);  };
+  inline bool getVerdict()      { return(pass_verdict);                           };
   u_int32_t getPid(bool client);
   u_int32_t getFatherPid(bool client);
   char* get_username(bool client);

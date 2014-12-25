@@ -35,7 +35,7 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
   json_info = strdup("{}"), cli2srv_direction = true, twh_over = false,
-    dissect_next_http_packet = false;
+    dissect_next_http_packet = false, pass_verdict = true;
   src2dst_tcp_flags = dst2src_tcp_flags = 0, last_update_time.tv_sec = 0,
     bytes_thpt = top_bytes_thpt = pkts_thpt = top_pkts_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
@@ -350,6 +350,21 @@ void Flow::processDetectedProtocol() {
      /* For DNS we delay the memory free so that we can let nDPI analyze all the packets of the flow */
      && (ndpi_detected_protocol != NDPI_PROTOCOL_DNS))
     deleteFlowMemory();
+
+  makeVerdict();
+}
+
+/* *************************************** */
+
+/* This method is used to decide whether this flow must pass or not */
+void Flow::makeVerdict() {
+
+  /* Dummy */
+  switch(ndpi_detected_protocol) {
+  case NDPI_PROTOCOL_SKYPE:
+    pass_verdict = false;// FIX FIX FIX
+    break;
+  }
 }
 
 /* *************************************** */
