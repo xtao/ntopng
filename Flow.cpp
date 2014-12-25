@@ -290,11 +290,17 @@ void Flow::processDetectedProtocol() {
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
       protocol_processed = true;
-      aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
+      aggregateInfo((char*)ndpi_flow->host_server_name, 
+		    ndpi_detected_protocol, aggregation_domain_name, true);
     }
     break;
 
   case NDPI_PROTOCOL_SSL:
+    if(ndpi_flow->host_server_name[0] == '\0')
+      ndpi_detected_protocol = NDPI_PROTOCOL_SSL_NO_CERT;
+    break;
+
+    /* No break here !*/
   case NDPI_PROTOCOL_HTTP:
   case NDPI_PROTOCOL_HTTP_PROXY:
   case NDPI_SERVICE_GOOGLE:
@@ -357,14 +363,38 @@ void Flow::processDetectedProtocol() {
 /* *************************************** */
 
 /* This method is used to decide whether this flow must pass or not */
-void Flow::makeVerdict() {
 
-  /* Dummy */
+#if 0
+static u_int is_skype_asn(int asn) {
+  switch(asn) {
+  case 8075:
+  case 9763:
+    return(true);
+  }
+
+  return(false);
+}
+#endif
+
+void Flow::makeVerdict() {
+#if 0
+  /* Dummy: test skype block */
   switch(ndpi_detected_protocol) {
+  case NDPI_PROTOCOL_UNKNOWN:
+    if(get_cli_host() && get_srv_host()) {
+      if(is_skype_asn(get_cli_host()->get_asn())
+	 || is_skype_asn(get_srv_host()->get_asn()))
+	pass_verdict = false;
+    }
+    break;
+
+  case NDPI_PROTOCOL_SSL_NO_CERT:
   case NDPI_PROTOCOL_SKYPE:
-    pass_verdict = false;// FIX FIX FIX
+    pass_verdict = false;
     break;
   }
+#endif
+
 }
 
 /* *************************************** */
@@ -374,8 +404,10 @@ void Flow::guessProtocol() {
 
   /* We can guess the protocol */
   ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							  ntohl(cli_host->get_ip()->get_ipv4()), ntohs(cli_port),
-							  ntohl(srv_host->get_ip()->get_ipv4()), ntohs(srv_port));
+							  ntohl(cli_host->get_ip()->get_ipv4()), 
+							  ntohs(cli_port),
+							  ntohl(srv_host->get_ip()->get_ipv4()),
+							  ntohs(srv_port));
 }
 
 /* *************************************** */
@@ -886,6 +918,7 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
 
   lua_push_int_table_entry(vm, "cli2srv.packets", cli2srv_packets);
   lua_push_int_table_entry(vm, "srv2cli.packets", srv2cli_packets);
+  lua_push_bool_table_entry(vm, "verdict.pass", pass_verdict);
 
   if(protocol == IPPROTO_TCP) {
     lua_push_bool_table_entry(vm, "tcp.seq_problems", 

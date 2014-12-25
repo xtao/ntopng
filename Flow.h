@@ -37,7 +37,8 @@ class Flow : public GenericHashEntry {
   u_int8_t protocol, src2dst_tcp_flags, dst2src_tcp_flags;
   struct ndpi_flow_struct *ndpi_flow;
   bool detection_completed, protocol_processed, blacklist_alarm_emitted,
-    cli2srv_direction, twh_over, dissect_next_http_packet, pass_verdict;
+    cli2srv_direction, twh_over, dissect_next_http_packet, pass_verdict,
+    ssl_flow_without_certificate_name;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
   char *json_info;

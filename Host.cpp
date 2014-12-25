@@ -742,8 +742,15 @@ bool Host::deserialize(char *json_str) {
     if(epp) epp->deserialize(obj);
   }
 
-  if(ndpiStats) { delete ndpiStats; ndpiStats = NULL; }
-  if(json_object_object_get_ex(o, "ndpiStats", &obj)) { ndpiStats = new NdpiStats(); ndpiStats->deserialize(iface, obj); }
+  if(ndpiStats) { 
+    delete ndpiStats; 
+    ndpiStats = NULL; 
+  }
+
+  if(json_object_object_get_ex(o, "ndpiStats", &obj)) { 
+    ndpiStats = new NdpiStats(); 
+    ndpiStats->deserialize(iface, obj); 
+  }
 
   activityStats.reset();
   if(json_object_object_get_ex(o, "activityStats", &obj)) activityStats.deserialize(obj);
