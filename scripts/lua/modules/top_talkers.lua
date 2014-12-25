@@ -88,7 +88,7 @@ function getActualTopTalkers(ifid, ifname, concat, mode)
       ntop.mkdir(talkers_dir)
    end
 
-   if(concat == false) then
+   if(concat == false and mode == nil) then
       rsp = rsp.."{\n"
    end
    rsp = rsp..'\t"hosts": [\n'
@@ -96,8 +96,6 @@ function getActualTopTalkers(ifid, ifname, concat, mode)
    if(mode == nil) then
       rsp = rsp .. "{\n"
       rsp = rsp .. '\t"senders": ['
-   else
-      rsp = rsp .. "[\n"
    end
 
    --print("Hello\n")
@@ -136,12 +134,11 @@ function getActualTopTalkers(ifid, ifname, concat, mode)
       rsp = rsp .. "\n\t]\n"
       rsp = rsp .. "\n}\n"
    else
-       if(num > 0) then rsp = rsp .. " }\n" end
-      rsp = rsp .. "\n]\n"
+      if(num > 0) then rsp = rsp .. " }\n" end
    end
 
    rsp = rsp.."]"
-   if(concat == false) then
+   if(concat == false and mode == nil) then
       rsp = rsp.."\n}"
    end
 

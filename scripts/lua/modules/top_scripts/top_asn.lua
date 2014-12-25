@@ -10,7 +10,17 @@ require "top_talkers"
 local top_asn_intf = {}
 
 local function getTopAS(ifid, ifname)
-      return getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
+  return getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
+end
+
+local function getTopASClean(ifid, ifname, param)
+  top = getActualTopGroups(ifid, ifname, 10, true, false, "asn", false)
+  section_beginning = string.find(top, '%[')
+  if (section_beginning == nil) then
+    return("[ ]\n")
+  else
+    return(string.sub(top, section_beginning))
+  end
 end
 
 local function getTopASFromJSON(content)
@@ -45,6 +55,7 @@ top_asn_intf.name = "Autonomous Systems"
 top_asn_intf.infoScript = "hosts_stats.lua"
 top_asn_intf.key = "asn"
 top_asn_intf.getTop = getTopAS
+top_asn_intf.getTopClean = getTopASClean
 top_asn_intf.getTopFromJSON = getTopASFromJSON
 top_asn_intf.getHistoricalTop = getHistoricalTopAS
 top_asn_intf.numLevels = 1

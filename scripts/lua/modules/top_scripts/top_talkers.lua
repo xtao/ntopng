@@ -13,6 +13,16 @@ local function getTopTalkers(ifid, ifname)
   return getActualTopTalkers(ifid, ifname, true)
 end
 
+local function getTopTalkersClean(ifid, ifname, param)
+  top = getActualTopTalkers(ifid, ifname, false, param)
+  section_beginning = string.find(top, '%[')
+  if (section_beginning == nil) then
+    return("[ ]\n")
+  else
+    return(string.sub(top, section_beginning))
+  end
+end
+
 local function getTopTalkersFromJSON(content)
   correct_section_beginning = string.find(content, '"hosts"')
   if (correct_section_beginning == nil) then
@@ -47,6 +57,7 @@ top_talkers_intf.name = "Top Talkers"
 top_talkers_intf.infoScript = "host_details.lua"
 top_talkers_intf.key = "host"
 top_talkers_intf.getTop = getTopTalkers
+top_talkers_intf.getTopClean = getTopTalkersClean
 top_talkers_intf.getTopFromJSON = getTopTalkersFromJSON
 top_talkers_intf.getHistoricalTop = getHistoricalTopTalkers
 top_talkers_intf.numLevels = 2
