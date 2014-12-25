@@ -9,12 +9,6 @@ require "persistence"
 
 -- #################################################
 
-function getHistoricalTop(ifid, ifname, epoch)
-   return(ntop.getSampling(ifid, tonumber(epoch)))
-end
-
--- #################################################
-
 function getTop(stats, sort_field_key, max_num_entries, lastdump_dir)
    local _filtered_stats, filtered_stats, counter, total,
          threshold, low_threshold
@@ -223,27 +217,6 @@ function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
       rsp = rsp .. " }\n"
    end
    rsp = rsp .. "\n]"
-
-   return(rsp)
-end
-
-function getActualTopTalkersAll(ifid, ifname)
-      rsp = "{\n"
-      rsp = rsp..getActualTopTalkers(ifid, ifname, true)
-      rsp = rsp..",\n"
-      rsp = rsp..getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
-      rsp = rsp..",\n"
-      rsp = rsp..getActualTopGroups(ifid, ifname, 10, true, false, "vlan", true)
-      rsp = rsp.."\n}"
-      return(rsp)
-end
-
-function getTopTalkers(ifid, ifname, epoch)
-   if(epoch ~= nil) then
-      rsp = getHistoricalTop(ifid, ifname, epoch)
-   else
-      rsp = getActualTopTalkersAll(ifid, ifname)
-   end
 
    return(rsp)
 end

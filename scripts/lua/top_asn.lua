@@ -10,9 +10,16 @@ require "top_talkers"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
-top_asn = getTopTalkers(getInterfaceId(ifname), ifname, _GET["epoch"])
+ifid = getInterfaceId(ifname)
+epoch = _GET["epoch"]
 mod = require("top_scripts.top_asn")
 if (type(mod) == type(true)) then
   print("[ ]\n")
+else
+  if (epoch ~= nil) then
+    top_asn = mod.getHistoricalTop(ifid, ifname, epoch)
+  else
+    top_asn = mod.getTop(ifid, ifname, epoch)
+  end
+  print(top_asn)
 end
-print(mod.getTopFromJSON(top_asn))

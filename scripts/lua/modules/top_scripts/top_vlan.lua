@@ -34,7 +34,15 @@ local function getTopVLANFromJSON(content)
   end
 end
 
+local function getHistoricalTopVLAN(ifid, ifname, epoch)
+  if (epoch == nil) then
+    return("[ ]\n")
+  end
+  return getTopVLANFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
+end
+
 top_vlan_intf.getTop = getTopVLAN
 top_vlan_intf.getTopFromJSON = getTopVLANFromJSON
+top_vlan_intf.getHistoricalTop = getHistoricalTopVLAN
 
 return top_vlan_intf

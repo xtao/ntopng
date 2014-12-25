@@ -34,7 +34,15 @@ local function getTopASFromJSON(content)
   end
 end
 
+local function getHistoricalTopAS(ifid, ifname, epoch)
+  if (epoch == nil) then
+    return("[ ]\n")
+  end
+  return getTopASFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
+end
+
 top_asn_intf.getTop = getTopAS
 top_asn_intf.getTopFromJSON = getTopASFromJSON
+top_asn_intf.getHistoricalTop = getHistoricalTopAS
 
 return top_asn_intf

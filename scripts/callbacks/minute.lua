@@ -73,7 +73,7 @@ end
 host_rrd_creation = ntop.getCache("ntopng.prefs.host_rrd_creation")
 host_ndpi_rrd_creation = ntop.getCache("ntopng.prefs.host_ndpi_rrd_creation")
 
-function getTopTalkersJSON(ifid, ifname)
+function makeTopJSON(ifid, ifname)
       path = dirs.installdir .. "/scripts/lua/modules/top_scripts"
       path = fixPath(path)
       local files = ntop.readdir(path)
@@ -106,7 +106,7 @@ for _,_ifname in pairs(ifnames) do
    -- Dump topTalkers every minute
 
    if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknown")) then
-      talkers = getTopTalkersJSON(ifstats.id, _ifname)
+      talkers = makeTopJSON(ifstats.id, _ifname)
       ntop.insertNewSampling(ifstats.id, talkers)
 
       -- Run RRD update every 5 minutes

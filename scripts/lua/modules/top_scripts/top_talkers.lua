@@ -36,7 +36,15 @@ local function getTopTalkersFromJSON(content)
   end
 end
 
+local function getHistoricalTopTalkers(ifid, ifname, epoch)
+  if (epoch == nil) then
+    return("[ ]\n")
+  end
+  return getTopTalkersFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
+end
+
 top_talkers_intf.getTop = getTopTalkers
 top_talkers_intf.getTopFromJSON = getTopTalkersFromJSON
+top_talkers_intf.getHistoricalTop = getHistoricalTopTalkers
 
 return top_talkers_intf
