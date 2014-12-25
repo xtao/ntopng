@@ -43,8 +43,12 @@ local function getHistoricalTopTalkers(ifid, ifname, epoch)
   return getTopTalkersFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
 end
 
+top_talkers_intf.name = "Top Talkers"
+top_talkers_intf.infoScript = "host_details.lua"
+top_talkers_intf.key = "host"
 top_talkers_intf.getTop = getTopTalkers
 top_talkers_intf.getTopFromJSON = getTopTalkersFromJSON
 top_talkers_intf.getHistoricalTop = getHistoricalTopTalkers
+top_talkers_intf.numLevels = 2
 
 return top_talkers_intf

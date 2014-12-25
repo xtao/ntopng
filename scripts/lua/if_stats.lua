@@ -11,6 +11,29 @@ require "graph_utils"
 
 sendHTTPHeader('text/html; charset=iso-8859-1')
 
+local function makeTopStatsScriptsArray()
+      path = dirs.installdir .. "/scripts/lua/modules/top_scripts"
+      path = fixPath(path)
+      local files = ntop.readdir(path)
+      topArray = {}
+
+      for k,v in pairs(files) do
+        if (v ~= nil) then
+          value = {}
+          fn,ext = v:match("([^.]+).([^.]+)")
+          mod = require("top_scripts."..fn)
+          if (type(mod) ~= type(true)) then
+            value["name"] = mod.name
+            value["script"] = mod.infoScript
+            value["key"] = mod.key
+            value["levels"] = mod.numLevels
+            topArray[fn] = value
+          end
+        end
+      end
+      return(topArray)
+end
+
 ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
 print("<link href=\"/css/tablesorted.css\" rel=\"stylesheet\">")
 active_page = "if_stats"
@@ -277,7 +300,8 @@ elseif(page == "historical") then
    if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    selected_epoch = _GET["epoch"]
    if (selected_epoch == nil) then selected_epoch = "" end
-   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], ntop.getHttpPrefix().."/lua/top_talkers.lua?epoch="..selected_epoch, ntop.getHttpPrefix().."/lua/top_asn.lua?epoch="..selected_epoch, ntop.getHttpPrefix().."/lua/top_vlan.lua?epoch="..selected_epoch)
+   topArray = makeTopStatsScriptsArray()
+   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], selected_epoch, topArray)
 
 --
 --  Historical Interface configuration page

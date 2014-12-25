@@ -41,8 +41,12 @@ local function getHistoricalTopVLAN(ifid, ifname, epoch)
   return getTopVLANFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
 end
 
+top_vlan_intf.name = "VLANs"
+top_vlan_intf.infoScript = "hosts_stats.lua"
+top_vlan_intf.key = "vlan"
 top_vlan_intf.getTop = getTopVLAN
 top_vlan_intf.getTopFromJSON = getTopVLANFromJSON
 top_vlan_intf.getHistoricalTop = getHistoricalTopVLAN
+top_vlan_intf.numLevels = 1
 
 return top_vlan_intf

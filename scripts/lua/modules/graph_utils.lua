@@ -184,7 +184,7 @@ end
 -- ########################################################
 
 function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries,
-                 selectedEpoch, xInfoURL, asInfoURL, vlanInfoURL)
+                 selectedEpoch, selected_epoch_sanitized, topArray)
    dirs = ntop.getDirs()
    rrdname = getRRDName(ifid, host, rrdFile)
    names =  {}
@@ -559,13 +559,21 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
 		var infoHTML = "";
 ]]
-if(xInfoURL) then
+for n,v in pairs(topArray) do
+  modulename = n
+  sectionname = v["name"]
+  levels = v["levels"]
+  scriptname = v["script"]
+  key = v["key"]
+  -- Support only 1 or 2 levels by now
+  if (levels < 1 or levels > 2) then goto continue end
   print [[
 		$.ajax({
 			type: 'GET',
 			url: ']]
-  print(xInfoURL)
-  print [[',
+  print(ntop.getHttpPrefix().."/lua/top_generic.lua?m="..modulename.."&epoch="..selected_epoch_sanitized)
+  if (levels == 2) then
+    print [[',
 			data: { epoch: point.value.x },
 			async: false,
 			success: function(content) {
@@ -576,7 +584,9 @@ if(xInfoURL) then
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if(items < 3)
-				      infoHTML += "<li><a href='host_details.lua?host="+m.label+"'>"+m.label+"</a> ("+fbits((m.value*8)/60)+")</li>";
+				      infoHTML += "<li><a href=']]
+    print(scriptname.."?"..key.."=")
+    print[["+m.label+"'>"+m.label+"</a> ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
 				  infoHTML += "</ol></li>";
@@ -585,14 +595,8 @@ if(xInfoURL) then
 			}
 		});
     ]]
-end
-if(asInfoURL) then
-  print [[
-	   $.ajax({
-			type: 'GET',
-			url: ']]
-  print(asInfoURL)
-  print [[',
+    elseif (levels == 1) then
+    print [[',
 			data: { epoch: point.value.x },
 			async: false,
 			success: function(content) {
@@ -600,9 +604,13 @@ if(asInfoURL) then
                                 infoHTML += "<ul>";
 				var items = 0;
 				$.each(info, function(i, n) {
-                                   if(items == 0) infoHTML += "<li>Autonomous Systems [Avg Traffic/sec]<ol>"; 
+    ]]
+    print('if(items == 0) infoHTML += "<li>'..sectionname..' [Avg Traffic/sec]<ol>";')
+    print[[
 				   if(items < 3)
-				     infoHTML += "<li><a href='hosts_stats.lua?asn="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
+				     infoHTML += "<li><a href=']]
+    print(scriptname.."?"..key.."=")
+    print[["+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
 				   items++;
 				});
                                 if(items > 0)
@@ -610,31 +618,8 @@ if(asInfoURL) then
 			}
 		});
     ]]
-end
-if(vlanInfoURL) then
-  print [[
-	   $.ajax({
-			type: 'GET',
-			url: ']]
-  print(vlanInfoURL)
-  print [[',
-			data: { epoch: point.value.x },
-			async: false,
-			success: function(content) {
-				var info = jQuery.parseJSON(content);
-                                infoHTML += "<ul>";
-				var items = 0;
-				$.each(info, function(i, n) {
-                                   if(items == 0) infoHTML += "<li>VLANs [Avg Traffic/sec]<ol>"; 
-				   if(items < 3)
-				     infoHTML += "<li><a href='hosts_stats.lua?vlan="+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
-				   items++;
-				});
-                                if(items > 0)
-                                   infoHTML += "</ol></li></ul>";
-			}
-		});
-    ]]
+    end
+    ::continue::
 end
 print [[
 		this.element.innerHTML = '';
