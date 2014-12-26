@@ -37,7 +37,7 @@ print [[
 
 </style>
 
-<div id="chart"></div>
+<div id="chart" style="width:800px; margin-left: auto; margin-right: auto;"></div>
 <script src="]] print(ntop.getHttpPrefix()) print[[/js/sankey.js"></script>
 
 <script>
