@@ -37,7 +37,6 @@ private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
     int ifid;
-    char filePath[MAX_PATH]; /* legacy FS interface only */
     /*
      * map has O(log(n)) access time, but we suppose the number
      * of caches is not huge
@@ -49,9 +48,7 @@ private:
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
     int insertSamplingDb(tm *timeinfo, char *sampling, const char *cache_name);
-    int insertSamplingFs(tm *timeinfo, char *sampling);
     int getSamplingDb(time_t epoch, string *sampling, const char *cache_name);
-    int getSamplingFs(time_t epoch, string *sampling);
 };
 
 #endif /* _STATS_MANAGER_H_ */

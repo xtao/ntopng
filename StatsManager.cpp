@@ -22,11 +22,11 @@
 #include "ntop_includes.h"
 
 StatsManager::StatsManager(int ifid, const char *filename) {
-  char fileFullPath[MAX_PATH], fileName[MAX_PATH];
+  char filePath[MAX_PATH], fileFullPath[MAX_PATH], fileName[MAX_PATH];
 
   this->ifid = ifid;
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
-	   ntop->get_working_dir(), ifid);
+           ntop->get_working_dir(), ifid);
   strncpy(fileName, filename, sizeof(fileName));
   snprintf(fileFullPath, sizeof(fileFullPath), "%s/%d/top_talkers/%s",
 	   ntop->get_working_dir(), ifid, filename);
@@ -213,50 +213,6 @@ out_unlock:
 }
 
 /**
- * @brief Filesystem interface to add a new stats sampling
- * @details This function implements the filesystem-specific layer for
- *          the historical database.
- *
- * @param timeinfo Localtime representation of the sampling point.
- * @param sampling String to be written at specified sampling point.
- *
- * @return Zero in case of success, nonzero in case of error.
- */
-int StatsManager::insertSamplingFs(tm *timeinfo, char *sampling) {
-  char innerpath[MAX_PATH], buffer[MAX_PATH], filename[10];
-  u_int len;
-
-  strftime(innerpath, sizeof(innerpath), "%Y/%m/%d/%H", timeinfo);
-  strftime(filename, sizeof(filename), "%M.json", timeinfo);
-
-  snprintf(buffer, sizeof(buffer), "%s%s", filePath, innerpath);
-
-  if(!Utils::mkdir_tree(buffer)) {
-    ntop->getTrace()->traceEvent(TRACE_WARNING,
-				 "Unable to create directory %s", buffer);
-    return(-1);
-  } else
-    len = strlen(buffer);
-
-  if(len < sizeof(buffer)) {
-    FILE *fd;
-
-    snprintf(&buffer[len], sizeof(buffer)-len, "%c%s", CONST_PATH_SEP, filename);
-
-    if((fd = fopen(buffer, "w")) == NULL)
-      ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to create file %s", buffer);
-    else {
-      fwrite(sampling, strlen(sampling), 1, fd);
-      fclose(fd);
-    }
-    return(0);
-  } else {
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Buffer too short");
-    return(-1);
-  }
-}
-
-/**
  * @brief Interface function for insertion of a new sampling
  * @details This public method implements insertion of a new sampling,
  *          hiding the actual backend used to store it.
@@ -336,38 +292,6 @@ int StatsManager::getSamplingDb(time_t epoch, string *sampling,
   m.unlock(__FILE__, __LINE__);
 
   return rc;
-}
-
-/**
- * @brief Filesystem interface to retrieve a stats sampling
- * @details This function implements the filesystem-specific layer for
- *          the historical database.
- *
- * @param epoch Sampling point expressed in number of seconds from epoch.
- * @param sampling Pointer to a string to be filled with retrieved data.
- *
- * @return Zero in case of success, nonzero in case of error.
- */
-int StatsManager::getSamplingFs(time_t epoch, string *sampling) {
-  char innerpath[MAX_PATH], buffer[MAX_PATH];
-  ifstream in;
-  stringstream sstream;
-
-  *sampling = "[ ]";
-
-  strftime(innerpath, MAX_PATH, "%Y/%m/%d/%H/%M.json", localtime(&epoch));
-
-  snprintf(buffer, sizeof(buffer), "%s%s", filePath, innerpath);
-
-  in.open(buffer);
-  if(in.fail())
-    return 0;
-
-  sstream << in.rdbuf();
-  *sampling = sstream.str();
-  in.close();
-
-  return 0;
 }
 
 /**
