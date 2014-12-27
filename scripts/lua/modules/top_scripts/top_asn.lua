@@ -48,7 +48,7 @@ local function getHistoricalTopAS(ifid, ifname, epoch)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopASFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
+  return getTopASFromJSON(ntop.getSampling(ifid, tonumber(epoch), "MINUTE_STATS"))
 end
 
 top_asn_intf.name = "Autonomous Systems"

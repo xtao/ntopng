@@ -107,7 +107,7 @@ for _,_ifname in pairs(ifnames) do
 
    if((ifstats.type ~= "pcap dump") and (ifstats.type ~= "unknown")) then
       talkers = makeTopJSON(ifstats.id, _ifname)
-      ntop.insertNewSampling(ifstats.id, talkers)
+      ntop.insertNewSampling(ifstats.id, talkers, "MINUTE_STATS")
 
       -- Run RRD update every 5 minutes
       -- Use 30 just to avoid rounding issues

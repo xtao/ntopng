@@ -23,27 +23,34 @@
 #define _STATS_MANAGER_H_
 
 #include "ntop_includes.h"
+#include <map>
 
 class StatsManager {
 public:
     StatsManager(int ifid, const char *dbname);
     ~StatsManager();
-    int insertSampling(tm *timeinfo, char *sampling);
-    int getSampling(time_t epoch, string *sampling);
-    int deleteStatsOlderThan(unsigned num_days);
+    int insertSampling(tm *timeinfo, char *sampling, const char *cache_name);
+    int getSampling(time_t epoch, string *sampling, const char *cache_name);
+    int openCache(const char *cache_name);
+    int deleteStatsOlderThan(unsigned num_days, const char *cache_name);
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
     int ifid;
     char filePath[MAX_PATH]; /* legacy FS interface only */
+    /*
+     * map has O(log(n)) access time, but we suppose the number
+     * of caches is not huge
+     */
+    std::map<string, bool> caches;
     Mutex m;
     sqlite3 *db;
     int exec_query(char *db_query,
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
-    int insertSamplingDb(tm *timeinfo, char *sampling);
+    int insertSamplingDb(tm *timeinfo, char *sampling, const char *cache_name);
     int insertSamplingFs(tm *timeinfo, char *sampling);
-    int getSamplingDb(time_t epoch, string *sampling);
+    int getSamplingDb(time_t epoch, string *sampling, const char *cache_name);
     int getSamplingFs(time_t epoch, string *sampling);
 };
 

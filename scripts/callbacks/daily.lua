@@ -35,7 +35,7 @@ ifnames = interface.getIfNames()
 for _,_ifname in pairs(ifnames) do
    interface.find(purifyInterfaceName(_ifname))
    interface.flushHostContacts()
-   ntop.deleteStatsOlderThan(_ifname, 365)
+   ntop.deleteStatsOlderThan(_ifname, 365, "MINUTE_STATS")
 end
 
 -- os.execute("sleep 300")

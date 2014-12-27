@@ -48,7 +48,7 @@ local function getHistoricalTopVLAN(ifid, ifname, epoch)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopVLANFromJSON(ntop.getSampling(ifid, tonumber(epoch)))
+  return getTopVLANFromJSON(ntop.getSampling(ifid, tonumber(epoch), "MINUTE_STATS"))
 end
 
 top_vlan_intf.name = "VLANs"

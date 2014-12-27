@@ -23,7 +23,6 @@
 
 StatsManager::StatsManager(int ifid, const char *filename) {
   char fileFullPath[MAX_PATH], fileName[MAX_PATH];
-  char *table_query;
 
   this->ifid = ifid;
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
@@ -39,25 +38,9 @@ StatsManager::StatsManager(int ifid, const char *filename) {
 				 "Unable to create directory %s", filePath);
     return;
   }
-  if (sqlite3_open(fileFullPath, &db)) {
+  if (sqlite3_open(fileFullPath, &db))
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to open %s: %s",
                                 fileFullPath, sqlite3_errmsg(db));
-    return;
-  }
-
-  table_query = strndup("CREATE TABLE IF NOT EXISTS MINUTE_STATS ("  \
-                "TSTAMP VARCHAR PRIMARY KEY NOT NULL," \
-                "STATS  TEXT NOT NULL);", MAX_QUERY);
-
-  m.lock(__FILE__, __LINE__);
-
-  if (exec_query(table_query, NULL, NULL))
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Failed to create table %s: %s",
-                                fileFullPath, sqlite3_errmsg(db));
-
-  m.unlock(__FILE__, __LINE__);
-
-  free(table_query);
 }
 
 StatsManager::~StatsManager() {
@@ -94,6 +77,44 @@ int StatsManager::exec_query(char *db_query,
 }
 
 /**
+ * @brief Opens a new cache to be used to store statistics.
+ * @brief This function implements opening a new cache to store stats
+ *        in; it is as of now based on SQLite3, and equals a new cache
+ *        to a new table.
+ *
+ * @param cache_name Name of the cache to be opened.
+ *
+ * @return Zero in case of success, nonzero in case of failure.
+ */
+int StatsManager::openCache(const char *cache_name)
+{
+  char table_query[MAX_QUERY];
+  int rc;
+
+  if (!db)
+    return 1;
+
+  if (caches[cache_name])
+    return 0;
+
+  snprintf(table_query, sizeof(table_query),
+                       "CREATE TABLE IF NOT EXISTS %s "
+                       "(TSTAMP VARCHAR PRIMARY KEY NOT NULL,"
+                       "STATS TEXT NOT NULL);", cache_name);
+
+  m.lock(__FILE__, __LINE__);
+
+  rc = exec_query(table_query, NULL, NULL);
+
+  if (!rc)
+    caches[cache_name] = true;
+
+  m.unlock(__FILE__, __LINE__);
+
+  return rc;
+}
+
+/**
  * @brief Database interface to implement stats purging.
  * @details This function implements the database-specific code
  *          to delete stats older than a certain number of days.
@@ -101,9 +122,10 @@ int StatsManager::exec_query(char *db_query,
  * @todo Compute years better.
  *
  * @param num_days Number of days to use to purge statistics.
+ * @param cache_name Name of the cache to purge statistics from.
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::deleteStatsOlderThan(unsigned num_days) {
+int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name) {
   unsigned years = num_days / 365, days = num_days % 365;
   char key[MAX_KEY], query[MAX_QUERY];
   time_t rawtime;
@@ -113,14 +135,18 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days) {
   if (!db)
     return -1;
 
+  if (openCache(cache_name))
+    return -1;
+
   time(&rawtime);
   timeinfo = localtime(&rawtime);
   timeinfo->tm_hour -= years;
   timeinfo->tm_mday -= days;
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
-  snprintf(query, sizeof(query), "DELETE FROM MINUTE_STATS WHERE "
-                                 "CAST(TSTAMP AS INTEGER) < %s", key);
+  snprintf(query, sizeof(query), "DELETE FROM %s WHERE "
+                                 "CAST(TSTAMP AS INTEGER) < %s",
+                                 cache_name, key);
 
   m.lock(__FILE__, __LINE__);
 
@@ -138,10 +164,12 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days) {
  *
  * @param timeinfo Localtime representation of the sampling point.
  * @param sampling String to be written at specified sampling point.
+ * @param cache_name Name of the table to write the entry to.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling) {
+int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling,
+                                   const char *cache_name) {
   char key[MAX_KEY], query[MAX_QUERY];
   sqlite3_stmt *stmt;
   int rc = 0;
@@ -149,16 +177,19 @@ int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling) {
   if (!db)
     return -1;
 
+  if (openCache(cache_name))
+    return -1;
+
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
-  strncpy(query, "INSERT INTO MINUTE_STATS (TSTAMP, STATS) VALUES(?,?)",
-          sizeof(query));
+  snprintf(query, sizeof(query), "INSERT INTO %s (TSTAMP, STATS) VALUES(?,?)",
+                                 cache_name);
 
   m.lock(__FILE__, __LINE__);
 
   if (sqlite3_prepare(db, query, -1, &stmt, 0) ||
       sqlite3_bind_text(stmt, 1, key, strlen(key), SQLITE_TRANSIENT) ||
-      sqlite3_bind_text(stmt, 2, sampling, strlen(sampling), SQLITE_STATIC)) {
+      sqlite3_bind_text(stmt, 2, sampling, strlen(sampling), SQLITE_TRANSIENT)) {
     rc = 1;
     goto out_unlock;
   }
@@ -232,13 +263,15 @@ int StatsManager::insertSamplingFs(tm *timeinfo, char *sampling) {
  *
  * @param timeinfo The sampling point expressed in localtime format.
  * @param sampling Pointer to a string keeping the sampling.
+ * @param cache_name Name of the cache to insert the sampling in.
  *
  * @return Zero in case of success, nonzero in case of failure.
  */
-int StatsManager::insertSampling(tm *timeinfo, char *sampling) {
-  if (!timeinfo || !sampling)
+int StatsManager::insertSampling(tm *timeinfo, char *sampling,
+                                 const char *cache_name) {
+  if (!timeinfo || !sampling || !cache_name)
     return -1;
-  return insertSamplingDb(timeinfo, sampling);
+  return insertSamplingDb(timeinfo, sampling, cache_name);
 }
 
 /* *************************************************************** */
@@ -273,10 +306,12 @@ static int get_sampling_db_callback(void *data, int argc,
  *
  * @param epoch Sampling point expressed in number of seconds from epoch.
  * @param sampling Pointer to a string to be filled with retrieved data.
+ * @param cache_name Name of the cache to retrieve stats from.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::getSamplingDb(time_t epoch, string *sampling) {
+int StatsManager::getSamplingDb(time_t epoch, string *sampling,
+                                const char *cache_name) {
 
   char key[MAX_KEY], query[MAX_QUERY];
   int rc;
@@ -286,10 +321,13 @@ int StatsManager::getSamplingDb(time_t epoch, string *sampling) {
   if (!db)
     return -1;
 
+  if (openCache(cache_name))
+    return -1;
+
   strftime(key, sizeof(key), "%Y%m%d%H%M", localtime(&epoch));
 
-  snprintf(query, sizeof(query), "SELECT STATS FROM MINUTE_STATS WHERE TSTAMP = %s",
-           key);
+  snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE TSTAMP = %s",
+           cache_name, key);
 
   m.lock(__FILE__, __LINE__);
 
@@ -340,11 +378,13 @@ int StatsManager::getSamplingFs(time_t epoch, string *sampling) {
  * @param epoch The sampling point expressed as number of seconds
  *              from epoch.
  * @param sampling Pointer to a string to be filled with the sampling.
+ * @param cache_name Name of the cache to get stats from.
  *
  * @return Zero in case of success, nonzero in case of failure.
  */
-int StatsManager::getSampling(time_t epoch, string *sampling) {
-  if (!sampling)
+int StatsManager::getSampling(time_t epoch, string *sampling,
+                              const char *cache_name) {
+  if (!sampling || !cache_name)
     return -1;
-  return getSamplingDb(epoch, sampling);
+  return getSamplingDb(epoch, sampling, cache_name);
 }
