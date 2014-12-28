@@ -9,6 +9,15 @@ require "top_talkers"
 
 local top_asn_intf = {}
 
+if (ntop.isPro()) then
+  package.path = dirs.installdir .. "/pro/scripts/lua/modules/top_scripts/?.lua;" .. package.path
+  local new = require("top_aggregate")
+  -- Add pro methods to local method table
+  for k,v in pairs(new) do
+    top_asn_intf[k] = v
+  end
+end
+
 local function getTopAS(ifid, ifname)
   return getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
 end

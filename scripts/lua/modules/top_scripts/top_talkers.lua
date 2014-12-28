@@ -9,6 +9,15 @@ require "top_talkers"
 
 local top_talkers_intf = {}
 
+if (ntop.isPro()) then
+  package.path = dirs.installdir .. "/pro/scripts/lua/modules/top_scripts/?.lua;" .. package.path
+  local new = require("top_aggregate")
+  -- Add pro methods to local method table
+  for k,v in pairs(new) do
+    top_talkers_intf[k] = v
+  end
+end
+
 local function getTopTalkers(ifid, ifname)
   return getActualTopTalkers(ifid, ifname, true)
 end
