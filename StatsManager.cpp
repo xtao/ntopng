@@ -126,7 +126,7 @@ int StatsManager::openCache(const char *cache_name)
  * @return Zero in case of success, nonzero in case of error.
  */
 int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name) {
-  unsigned years = num_days / 365, days = num_days % 365;
+  unsigned years, months, days;
   char key[MAX_KEY], query[MAX_QUERY];
   time_t rawtime;
   tm *timeinfo;
@@ -138,9 +138,15 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name
   if (openCache(cache_name))
     return -1;
 
+  months = num_days / 30;
+  days = num_days % 30;
+  years = months / 12;
+  months = months % 12;
+
   time(&rawtime);
   timeinfo = localtime(&rawtime);
-  timeinfo->tm_hour -= years;
+  timeinfo->tm_year -= years;
+  timeinfo->tm_mon -= months;
   timeinfo->tm_mday -= days;
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
