@@ -233,11 +233,11 @@ int StatsManager::insertSampling(tm *timeinfo, char *sampling,
 /* *************************************************************** */
 
 /**
- * @brief Callback for completion of minute stata retrieval.
+ * @brief Callback for completion of minute stats retrieval.
  *
  * @param data Pointer to exchange data used by SQLite and the callback.
- * @param argc Number of retrieved rows.
- * @param argv Content of retrieved rows.
+ * @param argc Number of retrieved columns.
+ * @param argv Content of retrieved columns.
  * @param azColName Retrieved columns name.
  *
  * @return Zero in case of success, nonzero in case of error.
