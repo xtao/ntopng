@@ -163,6 +163,89 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name
   return rc;
 }
 
+struct statsManagerRetrieval {
+  vector<string> rows;
+  int num_vals;
+};
+
+/**
+ * @brief Callback for completion of retrieval of an interval of stats
+ *
+ * @param data Pointer to exchange data used by SQLite and the callback.
+ * @param argc Number of retrieved columns.
+ * @param argv Content of retrieved columns.
+ * @param azColName Retrieved columns name.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+static int get_samplings_db(void *data, int argc,
+                            char **argv, char **azColName) {
+  struct statsManagerRetrieval *retr = (struct statsManagerRetrieval *)data;
+
+  if (argc > 1) return -1;
+
+  retr->rows.push_back(argv[0]);
+  retr->num_vals++;
+
+  return 0;
+}
+
+/**
+ * @brief Retrieve an interval of sampling from the database
+ * @details This function implements the database-specific code
+ *          to retrieve an interval of samplings.
+ *
+ * @param epoch_start Left boundary of the interval.
+ * @param epoch_end Right boundary of the interval.
+ * @param vals Pointer to a string array that will keep the result.
+ * @param num_vals Pointer to an integer that will keep the number
+ *        of retrieved sampling points.
+ * @param cache_name Pointer to the name of the cache to retrieve
+ *        stats from.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::retrieveStatsInterval(time_t epoch_start,
+				        time_t epoch_end,
+					char ***vals,
+                                        int *num_vals,
+					const char *cache_name) {
+  char key_start[MAX_KEY], key_end[MAX_KEY], query[MAX_QUERY];
+  struct statsManagerRetrieval retvals;
+  vector<string> rows;
+  int rc;
+
+  if (!db)
+    return -1;
+
+  if (openCache(cache_name))
+    return -1;
+
+  memset(&retvals, 0, sizeof(retvals));
+
+  strftime(key_start, sizeof(key_start), "%Y%m%d%H%M", localtime(&epoch_start));
+  strftime(key_end, sizeof(key_end), "%Y%m%d%H%M", localtime(&epoch_end));
+
+  snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE TSTAMP >= %s "
+				 "AND TSTAMP <= %s",
+           cache_name, key_start, key_end);
+
+  m.lock(__FILE__, __LINE__);
+
+  rc = exec_query(query, get_samplings_db, (void *)&retvals);
+
+  m.unlock(__FILE__, __LINE__);
+
+  if (retvals.num_vals > 0)
+    *vals = (char**) malloc(retvals.num_vals * sizeof(char*));
+  for (unsigned i = 0 ; i < retvals.rows.size() ; i++)
+    (*vals)[i] = strndup(retvals.rows[i].c_str(), MAX_QUERY);
+
+  *num_vals = retvals.num_vals;
+
+  return rc;
+}
+
 /**
  * @brief Database interface to add a new stats sampling
  * @details This function implements the database-specific layer for

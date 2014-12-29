@@ -2332,6 +2332,133 @@ static int ntop_stats_delete_older_than(lua_State *vm) {
   return(CONST_LUA_OK);
 }
 
+/**
+ * @brief Get an interval of samplings from the historical database
+ * @details Given a certain interval of sampling points, get statistics for said
+ *          sampling points.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_get_samplings_interval(lua_State *vm) {
+  time_t epoch_start, epoch_end;
+  char *cache_name, **vals;
+  int ifid, num_vals;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  epoch_start = lua_tointeger(vm, 2);
+  epoch_start -= (epoch_start % 60);
+  if (epoch_start < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  epoch_end = lua_tointeger(vm, 3);
+  epoch_end -= (epoch_end % 60);
+  if (epoch_end < 0)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((cache_name = (char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  if(sm->retrieveStatsInterval(epoch_start, epoch_end, &vals, &num_vals, cache_name))
+    return(CONST_LUA_ERROR);
+
+  lua_newtable(vm);
+
+  for(int i = 0; i < num_vals; i++) {
+    lua_push_str_table_entry(vm, vals[i], (char*)"");
+    free(vals[i]);
+  }
+  free(vals);
+
+  return(CONST_LUA_OK);
+}
+
+/**
+ * @brief Given an epoch, get sampling for the latest n minutes
+ * @details Given a certain sampling point, get statistics for that point and
+ *          for all timepoints spanning an interval of a given number of
+ *          minutes.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
+  time_t epoch;
+  unsigned num_minutes, minutes, hours, days, months, years;
+  char *cache_name, **vals;
+  int ifid, num_vals = 0;
+  NetworkInterface* iface;
+  StatsManager *sm;
+  tm *timeinfo;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  epoch = lua_tointeger(vm, 2);
+  epoch -= (epoch % 60);
+  if (epoch < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num_minutes = lua_tointeger(vm, 3);
+  if (num_minutes < 0)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((cache_name = (char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  timeinfo = localtime(&epoch);
+  hours = num_minutes / 60;
+  minutes = num_minutes % 60;
+  days = hours / 24;
+  hours = hours % 24;
+  months = days / 30;
+  days = days % 30;
+  years = months / 12;
+  months = months % 12;
+  timeinfo->tm_year -= years;
+  timeinfo->tm_mon -= months;
+  timeinfo->tm_mday -= days;
+  timeinfo->tm_hour -= hours;
+  timeinfo->tm_min -= minutes;
+
+  if(sm->retrieveStatsInterval(mktime(timeinfo), epoch, &vals, &num_vals, cache_name))
+    return(CONST_LUA_ERROR);
+
+  lua_newtable(vm);
+
+  for(int i = 0; i < num_vals; i++) {
+    lua_push_str_table_entry(vm, vals[i], (char*)"");
+    free(vals[i]);
+  }
+  if (num_vals > 0) free(vals);
+
+  return(CONST_LUA_OK);
+}
+
 /* ****************************************** */
 
 static int ntop_mkdir_tree(lua_State* vm) {
@@ -2986,6 +3113,8 @@ static const luaL_Reg ntop_reg[] = {
   { "insertNewSampling",    ntop_stats_insert_new_sampling },
   { "getSampling",          ntop_stats_get_sampling },
   { "deleteStatsOlderThan", ntop_stats_delete_older_than },
+  { "getNSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
+  { "getSamplingsInterval", ntop_stats_get_samplings_interval },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

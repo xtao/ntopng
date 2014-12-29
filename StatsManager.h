@@ -33,6 +33,9 @@ public:
     int getSampling(time_t epoch, string *sampling, const char *cache_name);
     int openCache(const char *cache_name);
     int deleteStatsOlderThan(unsigned num_days, const char *cache_name);
+    int retrieveStatsInterval(time_t epoch_start, time_t epoch_end,
+			      char ***vals, int *num_vals,
+			      const char *cache_name);
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
