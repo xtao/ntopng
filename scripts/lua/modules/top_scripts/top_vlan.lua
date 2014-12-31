@@ -33,7 +33,7 @@ local function getTopVlanClean(ifid, ifname, param)
 end
 
 local function getTopVLANFromJSON(content)
-  correct_section_beginning = string.find(content, '"vlan"')
+  correct_section_beginning = string.find(content, '"'..top_vlan_intf.JSONkey..'"')
   if (correct_section_beginning == nil) then
     return("[ ]\n")
   else
@@ -63,6 +63,7 @@ end
 top_vlan_intf.name = "VLANs"
 top_vlan_intf.infoScript = "hosts_stats.lua"
 top_vlan_intf.key = "vlan"
+top_vlan_intf.JSONkey = "vlan"
 top_vlan_intf.getTop = getTopVLAN
 top_vlan_intf.getTopClean = getTopVLANClean
 top_vlan_intf.getTopFromJSON = getTopVLANFromJSON

@@ -33,7 +33,7 @@ local function getTopASClean(ifid, ifname, param)
 end
 
 local function getTopASFromJSON(content)
-  correct_section_beginning = string.find(content, '"asn"')
+  correct_section_beginning = string.find(content, '"'..top_asn_intf.JSONkey..'"')
   if (correct_section_beginning == nil) then
     return("[ ]\n")
   else
@@ -63,6 +63,7 @@ end
 top_asn_intf.name = "ASN"
 top_asn_intf.infoScript = "hosts_stats.lua"
 top_asn_intf.key = "asn"
+top_asn_intf.JSONkey = "asn"
 top_asn_intf.getTop = getTopAS
 top_asn_intf.getTopClean = getTopASClean
 top_asn_intf.getTopFromJSON = getTopASFromJSON
