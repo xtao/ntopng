@@ -64,7 +64,7 @@ end
 
 top_talkers_intf.name = "Top Talkers"
 top_talkers_intf.infoScript = "host_details.lua"
-top_talkers_intf.key = "host"
+top_talkers_intf.key = "hosts"
 top_talkers_intf.getTop = getTopTalkers
 top_talkers_intf.getTopClean = getTopTalkersClean
 top_talkers_intf.getTopFromJSON = getTopTalkersFromJSON
