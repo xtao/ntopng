@@ -2237,6 +2237,46 @@ static int ntop_stats_insert_minute_sampling(lua_State *vm) {
 }
 
 /**
+ * @brief Insert a new hour sampling in the historical database
+ * @details Given a certain sampling point, store statistics for said
+ *          sampling point.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_insert_hour_sampling(lua_State *vm) {
+  char *sampling;
+  time_t rawtime;
+  tm *timeinfo;
+  int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  if((sampling = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  time(&rawtime);
+  rawtime -= (rawtime % 60);
+  timeinfo = localtime(&rawtime);
+
+  if (sm->insertHourSampling(timeinfo, sampling))
+    return(CONST_LUA_ERROR);
+
+  return(CONST_LUA_OK);
+}
+
+/**
  * @brief Get a minute sampling from the historical database
  * @details Given a certain sampling point, get statistics for said
  *          sampling point.
@@ -3086,6 +3126,7 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Historical database */
   { "insertMinuteSampling",    ntop_stats_insert_minute_sampling },
+  { "insertHourSampling",    ntop_stats_insert_hour_sampling },
   { "getMinuteSampling",          ntop_stats_get_minute_sampling },
   { "deleteMinuteStatsOlderThan", ntop_stats_delete_minute_older_than },
   { "getMinuteSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },

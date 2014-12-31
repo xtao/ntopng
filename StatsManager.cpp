@@ -26,6 +26,7 @@ StatsManager::StatsManager(int ifid, const char *filename) {
 
   this->ifid = ifid;
   MINUTE_CACHE_NAME = "MINUTE_STATS";
+  HOUR_CACHE_NAME = "HOUR_STATS";
 
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
            ntop->get_working_dir(), ifid);
@@ -358,6 +359,27 @@ int StatsManager::insertMinuteSampling(tm *timeinfo, char *sampling) {
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
   return insertSampling(sampling, MINUTE_CACHE_NAME, key);
+}
+
+/**
+ * @brief Interface function for insertion of a new hour stats sampling
+ * @details This public method implements insertion of a new sampling,
+ *          hiding cache-specific details related to hour stats.
+ *
+ * @param timeinfo The sampling point expressed in localtime format.
+ * @param sampling Pointer to a string keeping the sampling.
+ *
+ * @return Zero in case of success, nonzero in case of failure.
+ */
+int StatsManager::insertHourSampling(tm *timeinfo, char *sampling) {
+  char key[MAX_KEY];
+
+  if (!timeinfo || !sampling)
+    return -1;
+
+  strftime(key, sizeof(key), "%Y%m%d%H", timeinfo);
+
+  return insertSampling(sampling, HOUR_CACHE_NAME, key);
 }
 
 /* *************************************************************** */

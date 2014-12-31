@@ -30,6 +30,7 @@ public:
     StatsManager(int ifid, const char *dbname);
     ~StatsManager();
     int insertMinuteSampling(tm *timeinfo, char *sampling);
+    int insertHourSampling(tm *timeinfo, char *sampling);
     int getMinuteSampling(time_t epoch, string *sampling);
     int openCache(const char *cache_name);
     int retrieveMinuteStatsInterval(time_t epoch_start, time_t epoch_end,
@@ -38,7 +39,7 @@ public:
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
-    const char *MINUTE_CACHE_NAME; // see constructor for initialization
+    const char *MINUTE_CACHE_NAME, *HOUR_CACHE_NAME; // see constructor for initialization
     int ifid;
     /*
      * map has O(log(n)) access time, but we suppose the number
