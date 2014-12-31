@@ -2208,7 +2208,7 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
 }
 
 /**
- * @brief Insert a new sampling in the historical database
+ * @brief Insert a new minute sampling in the historical database
  * @details Given a certain sampling point, store statistics for said
  *          sampling point.
  *
@@ -2216,8 +2216,8 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
  * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
-static int ntop_stats_insert_new_sampling(lua_State *vm) {
-  char *sampling, *cache_name;
+static int ntop_stats_insert_minute_sampling(lua_State *vm) {
+  char *sampling;
   time_t rawtime;
   tm *timeinfo;
   int ifid;
@@ -2232,8 +2232,6 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_ERROR);
   if((sampling = (char*)lua_tostring(vm, 2)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((cache_name = (char*)lua_tostring(vm, 3)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
@@ -2243,14 +2241,14 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
   rawtime -= (rawtime % 60);
   timeinfo = localtime(&rawtime);
 
-  if (sm->insertSampling(timeinfo, sampling, cache_name))
+  if (sm->insertMinuteSampling(timeinfo, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
 }
 
 /**
- * @brief Get a sampling from the historical database
+ * @brief Get a minute sampling from the historical database
  * @details Given a certain sampling point, get statistics for said
  *          sampling point.
  *
@@ -2258,10 +2256,9 @@ static int ntop_stats_insert_new_sampling(lua_State *vm) {
  * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
-static int ntop_stats_get_sampling(lua_State *vm) {
+static int ntop_stats_get_minute_sampling(lua_State *vm) {
   time_t epoch;
   string sampling;
-  char *cache_name;
   int ifid;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2275,14 +2272,12 @@ static int ntop_stats_get_sampling(lua_State *vm) {
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   epoch = (time_t)lua_tointeger(vm, 2);
   epoch -= (epoch % 60);
-  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((cache_name = (char*)lua_tostring(vm, 3)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
 
-  if(sm->getSampling(epoch, &sampling, cache_name))
+  if(sm->getMinuteSampling(epoch, &sampling))
     return(CONST_LUA_ERROR);
 
   lua_pushstring(vm, sampling.c_str());
@@ -2291,7 +2286,7 @@ static int ntop_stats_get_sampling(lua_State *vm) {
 }
 
 /**
- * @brief Delete stats older than a certain number of days.
+ * @brief Delete minute stats older than a certain number of days.
  * @details Given a number of days, delete stats for the current interface that
  *          are older than a certain number of days.
  *
@@ -2299,10 +2294,9 @@ static int ntop_stats_get_sampling(lua_State *vm) {
  * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
-static int ntop_stats_delete_older_than(lua_State *vm) {
+static int ntop_stats_delete_minute_older_than(lua_State *vm) {
   int num_days;
   string sampling;
-  char *cache_name;
   int ifid;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2319,21 +2313,19 @@ static int ntop_stats_delete_older_than(lua_State *vm) {
   num_days = lua_tointeger(vm, 2);
   if(num_days < 0)
     return(CONST_LUA_ERROR);
-  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((cache_name = (char*)lua_tostring(vm, 3)) == NULL)  return(CONST_LUA_PARAM_ERROR);
 
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
 
-  if(sm->deleteStatsOlderThan(num_days, cache_name))
+  if(sm->deleteMinuteStatsOlderThan(num_days))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
 }
 
 /**
- * @brief Get an interval of samplings from the historical database
+ * @brief Get an interval of minute stats samplings from the historical database
  * @details Given a certain interval of sampling points, get statistics for said
  *          sampling points.
  *
@@ -2341,9 +2333,9 @@ static int ntop_stats_delete_older_than(lua_State *vm) {
  * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
-static int ntop_stats_get_samplings_interval(lua_State *vm) {
+static int ntop_stats_get_minute_samplings_interval(lua_State *vm) {
   time_t epoch_start, epoch_end;
-  char *cache_name, **vals;
+  char **vals;
   int ifid, num_vals;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2366,14 +2358,11 @@ static int ntop_stats_get_samplings_interval(lua_State *vm) {
   if (epoch_end < 0)
     return(CONST_LUA_ERROR);
 
-  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((cache_name = (char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
 
-  if(sm->retrieveStatsInterval(epoch_start, epoch_end, &vals, &num_vals, cache_name))
+  if(sm->retrieveMinuteStatsInterval(epoch_start, epoch_end, &vals, &num_vals))
     return(CONST_LUA_ERROR);
 
   lua_newtable(vm);
@@ -2388,7 +2377,7 @@ static int ntop_stats_get_samplings_interval(lua_State *vm) {
 }
 
 /**
- * @brief Given an epoch, get sampling for the latest n minutes
+ * @brief Given an epoch, get minute stats for the latest n minutes
  * @details Given a certain sampling point, get statistics for that point and
  *          for all timepoints spanning an interval of a given number of
  *          minutes.
@@ -2400,7 +2389,7 @@ static int ntop_stats_get_samplings_interval(lua_State *vm) {
 static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
   time_t epoch;
   unsigned num_minutes, minutes, hours, days, months, years;
-  char *cache_name, **vals;
+  char **vals;
   int ifid, num_vals = 0;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2423,9 +2412,6 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
   if (num_minutes < 0)
     return(CONST_LUA_ERROR);
 
-  if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_ERROR);
-  if((cache_name = (char*)lua_tostring(vm, 4)) == NULL)  return(CONST_LUA_PARAM_ERROR);
-
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
@@ -2445,7 +2431,7 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
   timeinfo->tm_hour -= hours;
   timeinfo->tm_min -= minutes;
 
-  if(sm->retrieveStatsInterval(mktime(timeinfo), epoch, &vals, &num_vals, cache_name))
+  if(sm->retrieveMinuteStatsInterval(mktime(timeinfo), epoch, &vals, &num_vals))
     return(CONST_LUA_ERROR);
 
   lua_newtable(vm);
@@ -3110,11 +3096,11 @@ static const luaL_Reg ntop_reg[] = {
   { "isPro",          ntop_is_pro },
 
   /* Historical database */
-  { "insertNewSampling",    ntop_stats_insert_new_sampling },
-  { "getSampling",          ntop_stats_get_sampling },
-  { "deleteStatsOlderThan", ntop_stats_delete_older_than },
-  { "getNSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
-  { "getSamplingsInterval", ntop_stats_get_samplings_interval },
+  { "insertMinuteSampling",    ntop_stats_insert_minute_sampling },
+  { "getMinuteSampling",          ntop_stats_get_minute_sampling },
+  { "deleteMinuteStatsOlderThan", ntop_stats_delete_minute_older_than },
+  { "getMinuteSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
+  { "getMinuteSamplingsInterval", ntop_stats_get_minute_samplings_interval },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

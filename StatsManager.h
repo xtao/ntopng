@@ -29,16 +29,16 @@ class StatsManager {
 public:
     StatsManager(int ifid, const char *dbname);
     ~StatsManager();
-    int insertSampling(tm *timeinfo, char *sampling, const char *cache_name);
-    int getSampling(time_t epoch, string *sampling, const char *cache_name);
+    int insertMinuteSampling(tm *timeinfo, char *sampling);
+    int getMinuteSampling(time_t epoch, string *sampling);
     int openCache(const char *cache_name);
-    int deleteStatsOlderThan(unsigned num_days, const char *cache_name);
-    int retrieveStatsInterval(time_t epoch_start, time_t epoch_end,
-			      char ***vals, int *num_vals,
-			      const char *cache_name);
+    int retrieveMinuteStatsInterval(time_t epoch_start, time_t epoch_end,
+			            char ***vals, int *num_vals);
+    int deleteMinuteStatsOlderThan(unsigned num_days);
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
+    const char *MINUTE_CACHE_NAME; // see constructor for initialization
     int ifid;
     /*
      * map has O(log(n)) access time, but we suppose the number
@@ -50,8 +50,11 @@ private:
     int exec_query(char *db_query,
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
-    int insertSamplingDb(tm *timeinfo, char *sampling, const char *cache_name);
-    int getSamplingDb(time_t epoch, string *sampling, const char *cache_name);
+    int insertSampling(char *sampling, const char *cache_name, const char *key);
+    int getSampling(string *sampling, const char *cache_name, const char *key);
+    int deleteStatsOlderThan(const char *cache_name, const char *key);
+    int retrieveStatsInterval(char ***vals, int *num_vals, const char *cache_name,
+                              const char *key_start, const char *key_end);
 };
 
 #endif /* _STATS_MANAGER_H_ */

@@ -25,6 +25,8 @@ StatsManager::StatsManager(int ifid, const char *filename) {
   char filePath[MAX_PATH], fileFullPath[MAX_PATH], fileName[MAX_PATH];
 
   this->ifid = ifid;
+  MINUTE_CACHE_NAME = "MINUTE_STATS";
+
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
            ntop->get_working_dir(), ifid);
   strncpy(fileName, filename, sizeof(fileName));
@@ -121,15 +123,13 @@ int StatsManager::openCache(const char *cache_name)
  *
  * @todo Compute years better.
  *
- * @param num_days Number of days to use to purge statistics.
  * @param cache_name Name of the cache to purge statistics from.
+ * @param key Key to use as boundary.
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name) {
-  unsigned years, months, days;
-  char key[MAX_KEY], query[MAX_QUERY];
-  time_t rawtime;
-  tm *timeinfo;
+int StatsManager::deleteStatsOlderThan(const char *cache_name,
+				       const char *key) {
+  char query[MAX_QUERY];
   int rc;
 
   if (!db)
@@ -137,6 +137,33 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name
 
   if (openCache(cache_name))
     return -1;
+
+  snprintf(query, sizeof(query), "DELETE FROM %s WHERE "
+                                 "CAST(TSTAMP AS INTEGER) < %s",
+                                 cache_name, key);
+
+  m.lock(__FILE__, __LINE__);
+
+  rc = exec_query(query, NULL, NULL);
+
+  m.unlock(__FILE__, __LINE__);
+
+  return rc;
+}
+
+/**
+ * @brief Minute stats interface to database purging.
+ * @details This function hides cache-specific details (e.g. building the key
+ *          for the minute stats cache.
+ *
+ * @param num_days Number of days to use to purge statistics.
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::deleteMinuteStatsOlderThan(unsigned num_days) {
+  unsigned years, months, days;
+  char key[MAX_KEY];
+  time_t rawtime;
+  tm *timeinfo;
 
   months = num_days / 30;
   days = num_days % 30;
@@ -150,17 +177,7 @@ int StatsManager::deleteStatsOlderThan(unsigned num_days, const char *cache_name
   timeinfo->tm_mday -= days;
   strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
-  snprintf(query, sizeof(query), "DELETE FROM %s WHERE "
-                                 "CAST(TSTAMP AS INTEGER) < %s",
-                                 cache_name, key);
-
-  m.lock(__FILE__, __LINE__);
-
-  rc = exec_query(query, NULL, NULL);
-
-  m.unlock(__FILE__, __LINE__);
-
-  return rc;
+  return deleteStatsOlderThan(MINUTE_CACHE_NAME, key);
 }
 
 struct statsManagerRetrieval {
@@ -191,26 +208,26 @@ static int get_samplings_db(void *data, int argc,
 }
 
 /**
- * @brief Retrieve an interval of sampling from the database
+ * @brief Retrieve an interval of samplings from a database
  * @details This function implements the database-specific code
  *          to retrieve an interval of samplings.
  *
- * @param epoch_start Left boundary of the interval.
- * @param epoch_end Right boundary of the interval.
  * @param vals Pointer to a string array that will keep the result.
  * @param num_vals Pointer to an integer that will keep the number
  *        of retrieved sampling points.
  * @param cache_name Pointer to the name of the cache to retrieve
  *        stats from.
+ * @param key_start Key to use as left boundary.
+ * @param key_end Key to use as right boundary.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::retrieveStatsInterval(time_t epoch_start,
-				        time_t epoch_end,
-					char ***vals,
+int StatsManager::retrieveStatsInterval(char ***vals,
                                         int *num_vals,
-					const char *cache_name) {
-  char key_start[MAX_KEY], key_end[MAX_KEY], query[MAX_QUERY];
+					const char *cache_name,
+                                        const char *key_start,
+                                        const char *key_end) {
+  char query[MAX_QUERY];
   struct statsManagerRetrieval retvals;
   vector<string> rows;
   int rc;
@@ -222,9 +239,6 @@ int StatsManager::retrieveStatsInterval(time_t epoch_start,
     return -1;
 
   memset(&retvals, 0, sizeof(retvals));
-
-  strftime(key_start, sizeof(key_start), "%Y%m%d%H%M", localtime(&epoch_start));
-  strftime(key_end, sizeof(key_end), "%Y%m%d%H%M", localtime(&epoch_end));
 
   snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE TSTAMP >= %s "
 				 "AND TSTAMP <= %s",
@@ -247,19 +261,45 @@ int StatsManager::retrieveStatsInterval(time_t epoch_start,
 }
 
 /**
+ * @brief Retrieve an interval of samplings from the minute stats cache
+ * @details This function implements the database-specific code
+ *          to retrieve an interval of samplings masking out cache-specific
+ *          details concerning the minute stats cache.
+ *
+ * @param epoch_start Left boundary of the interval.
+ * @param epoch_end Right boundary of the interval.
+ * @param vals Pointer to a string array that will keep the result.
+ * @param num_vals Pointer to an integer that will keep the number
+ *        of retrieved sampling points.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::retrieveMinuteStatsInterval(time_t epoch_start,
+				              time_t epoch_end,
+					      char ***vals,
+                                              int *num_vals) {
+  char key_start[MAX_KEY], key_end[MAX_KEY];
+
+  strftime(key_start, sizeof(key_start), "%Y%m%d%H%M", localtime(&epoch_start));
+  strftime(key_end, sizeof(key_end), "%Y%m%d%H%M", localtime(&epoch_end));
+
+  return retrieveStatsInterval(vals, num_vals, MINUTE_CACHE_NAME, key_start, key_end);
+}
+
+/**
  * @brief Database interface to add a new stats sampling
  * @details This function implements the database-specific layer for
  *          the historical database (as of now using SQLite3).
  *
- * @param timeinfo Localtime representation of the sampling point.
  * @param sampling String to be written at specified sampling point.
  * @param cache_name Name of the table to write the entry to.
+ * @param key Key to use to insert the sampling.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling,
-                                   const char *cache_name) {
-  char key[MAX_KEY], query[MAX_QUERY];
+int StatsManager::insertSampling(char *sampling, const char *cache_name,
+                                 const char *key) {
+  char query[MAX_QUERY];
   sqlite3_stmt *stmt;
   int rc = 0;
 
@@ -268,8 +308,6 @@ int StatsManager::insertSamplingDb(tm *timeinfo, char *sampling,
 
   if (openCache(cache_name))
     return -1;
-
-  strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
 
   snprintf(query, sizeof(query), "INSERT INTO %s (TSTAMP, STATS) VALUES(?,?)",
                                  cache_name);
@@ -302,21 +340,24 @@ out_unlock:
 }
 
 /**
- * @brief Interface function for insertion of a new sampling
+ * @brief Interface function for insertion of a new minute stats sampling
  * @details This public method implements insertion of a new sampling,
- *          hiding the actual backend used to store it.
+ *          hiding cache-specific details related to minute stats.
  *
  * @param timeinfo The sampling point expressed in localtime format.
  * @param sampling Pointer to a string keeping the sampling.
- * @param cache_name Name of the cache to insert the sampling in.
  *
  * @return Zero in case of success, nonzero in case of failure.
  */
-int StatsManager::insertSampling(tm *timeinfo, char *sampling,
-                                 const char *cache_name) {
-  if (!timeinfo || !sampling || !cache_name)
+int StatsManager::insertMinuteSampling(tm *timeinfo, char *sampling) {
+  char key[MAX_KEY];
+
+  if (!timeinfo || !sampling)
     return -1;
-  return insertSamplingDb(timeinfo, sampling, cache_name);
+
+  strftime(key, sizeof(key), "%Y%m%d%H%M", timeinfo);
+
+  return insertSampling(sampling, MINUTE_CACHE_NAME, key);
 }
 
 /* *************************************************************** */
@@ -349,16 +390,16 @@ static int get_sampling_db_callback(void *data, int argc,
  * @details This function implements the database-specific layer for
  *          the historical database (as of now using SQLite3).
  *
- * @param epoch Sampling point expressed in number of seconds from epoch.
  * @param sampling Pointer to a string to be filled with retrieved data.
  * @param cache_name Name of the cache to retrieve stats from.
+ * @param key Key used to retrieve the sampling.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
-int StatsManager::getSamplingDb(time_t epoch, string *sampling,
-                                const char *cache_name) {
+int StatsManager::getSampling(string *sampling, const char *cache_name,
+                              const char *key) {
 
-  char key[MAX_KEY], query[MAX_QUERY];
+  char query[MAX_QUERY];
   int rc;
 
   *sampling = "[ ]";
@@ -368,8 +409,6 @@ int StatsManager::getSamplingDb(time_t epoch, string *sampling,
 
   if (openCache(cache_name))
     return -1;
-
-  strftime(key, sizeof(key), "%Y%m%d%H%M", localtime(&epoch));
 
   snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE TSTAMP = %s",
            cache_name, key);
@@ -384,20 +423,23 @@ int StatsManager::getSamplingDb(time_t epoch, string *sampling,
 }
 
 /**
- * @brief Interface function for retrieval of a sampling
+ * @brief Interface function for retrieval of a minute stats sampling
  * @details This public method implements retrieval of an existing
- *          sampling, hiding the actual backend used to store it.
+ *          sampling, hiding cache-specific details related to minute stats.
  *
  * @param epoch The sampling point expressed as number of seconds
  *              from epoch.
  * @param sampling Pointer to a string to be filled with the sampling.
- * @param cache_name Name of the cache to get stats from.
  *
  * @return Zero in case of success, nonzero in case of failure.
  */
-int StatsManager::getSampling(time_t epoch, string *sampling,
-                              const char *cache_name) {
-  if (!sampling || !cache_name)
+int StatsManager::getMinuteSampling(time_t epoch, string *sampling) {
+  char key[MAX_KEY];
+
+  if (!sampling)
     return -1;
-  return getSamplingDb(epoch, sampling, cache_name);
+
+  strftime(key, sizeof(key), "%Y%m%d%H%M", localtime(&epoch));
+
+  return getSampling(sampling, MINUTE_CACHE_NAME, key);
 }

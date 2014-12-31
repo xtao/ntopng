@@ -59,7 +59,7 @@ local function getHistoricalTopTalkers(ifid, ifname, epoch)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopTalkersFromJSON(ntop.getSampling(ifid, tonumber(epoch), "MINUTE_STATS"))
+  return getTopTalkersFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)))
 end
 
 top_talkers_intf.name = "Top Talkers"
