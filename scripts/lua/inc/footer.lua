@@ -25,10 +25,10 @@ is_historical = interface.isHistoricalInterface(iface_id)
 interface.find(ifname)
 ifstats = interface.getStats()
 
-if(info["pro.release"] == nil) then
-   print(" Community ")
-else
+if(info["pro.release"]) then
    print(" Professional ")
+else
+   print(" Community ")
 end
 
 print("v."..info["version"])

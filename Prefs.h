@@ -41,7 +41,7 @@ class Prefs {
   bool enable_dns_resolution, sniff_dns_responses, disable_host_persistency,
     categorization_enabled, httpbl_enabled, resolve_all_host_ip, change_user, daemonize,
     dump_timeline, shorten_aggregation_names, enable_auto_logout,
-    disable_alerts, enable_ixia_timestamps;
+    disable_alerts, enable_ixia_timestamps, pro_edition;
   LocationPolicy dump_hosts_to_db, dump_aggregations_to_db, sticky_hosts;
   u_int16_t non_local_host_max_idle, local_host_max_idle, flow_max_idle,
     host_max_new_flows_sec_threshold, host_max_num_syn_sec_threshold;
@@ -80,6 +80,7 @@ class Prefs {
   Prefs(Ntop *_ntop);
   ~Prefs();
 
+  inline bool  is_pro_edition()                         { return(pro_edition);            };
   inline char* get_local_networks()                     { return(local_networks);         };
   inline FILE* get_log_fd()                             { return(logFd);                  };
   inline LocationPolicy get_host_stickness()            { return(sticky_hosts);           };

@@ -109,7 +109,7 @@ preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 if not is_historical then
-  print(" title: \"Active Flows")
+   print(" title: \"Active ".. (application or "").." Flows")
 else
   print(" title: \"All Flows")
 end

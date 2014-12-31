@@ -198,12 +198,22 @@ bool GenericHost::triggerAlerts() {
 void GenericHost::incFlowCount(const struct timeval *when, Flow *f) {
   if(flow_count_alert->incHits(when->tv_sec)) {
     char ip_buf[48], msg[512], *h;
+    u_int uptime  = ntop->getGlobals()->getUptime();
     
-    if(!triggerAlerts()) return;
+    if((!triggerAlerts())
+       || (uptime < 30 /* 
+			  Do not emit alerts for the first 30 secs 
+			  as at startup ntopng creates flows for
+			  existing connections and it might trigger
+			  alerts for situations where actually there
+			  is no need to trigger anything
+			*/))
+      return;
 
     h = get_string_key(ip_buf, sizeof(ip_buf));
     snprintf(msg, sizeof(msg),
-	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a flooder [%u new flows in the last %u sec] (uptime %u sec)", 
+	     "Host <A HREF=/lua/host_details.lua?host=%s&ifname=%s>%s</A> is a flooder "
+	     "[%u new flows in the last %u sec] (uptime %u sec)", 
 	     h, iface->get_name(), h, 
 	     flow_count_alert->getCurrentHits(),
 	     flow_count_alert->getOverThresholdDuration(),

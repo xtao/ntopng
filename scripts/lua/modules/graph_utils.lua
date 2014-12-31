@@ -2,12 +2,18 @@
 -- (C) 2013-14 - ntop.org
 --
 
+if(ntop.isPro()) then
+   package.path = dirs.installdir .. "/pro/scripts/lua/modules/?.lua;" .. package.path 
+   require "nv_graph_utils"
+end
+
 -- ########################################################
 
-function navigatedir(url, label, base, path, go_deep)
+function navigatedir(url, label, base, path, go_deep, print_html)
    local shown = false
    local to_skip = false
    --print("<li> <b>(d)</b> "..path.."  </li>\n")
+   local ret = { } 
 
    rrds = ntop.readdir(path)   
    for k,v in pairs(rrds) do
@@ -15,30 +21,42 @@ function navigatedir(url, label, base, path, go_deep)
 	 p = fixPath(path .. "/" .. v)
 	 
 	 if(ntop.isdir(p)) then
-	    if(go_deep) then navigatedir(url, label.."/"..v, base, p) end
-	 else
-	    if(label == "*") then
-	       to_skip = true
-	    else
-	       if(not(shown) and not(to_skip)) then
-		  print('<li class="dropdown-submenu"><a tabindex="-1" href="#">'..label..'</a>\n<ul class="dropdown-menu">\n')
-		  shown = true
+	    if(go_deep) then 
+	       r = navigatedir(url, label.."/"..v, base, p, print_html) 
+	       for k,v in pairs(r) do
+		  ret[k] = v
 	       end
 	    end
-	    
-	    what = string.sub(path.."/"..v, string.len(base)+2)
-	    
-	    label = string.sub(v,  1, string.len(v)-4)
-	    label = l4Label(string.gsub(label, "_", " "))
+	 else
+	    if((v ~= "bytes.rrd") and (v ~= "packets.rrd")) then
+	       if(label == "*") then
+		  to_skip = true
+	       else
+		  if(not(shown) and not(to_skip)) then
+		     if(print_html) then 
+			print('<li class="dropdown-submenu"><a tabindex="-1" href="#">'..label..'</a>\n<ul class="dropdown-menu">\n')
+		     end
+		     shown = true
+		  end
+	       end
+	       
+	       what = string.sub(path.."/"..v, string.len(base)+2)
+	       
+	       label = string.sub(v,  1, string.len(v)-4)
+	       label = l4Label(string.gsub(label, "_", " "))
+	       ret[label] = what
 
-	    print("<li> <A HREF="..url..what..">"..label.."</A>  </li>\n")
+	       if(print_html) then print("<li> <A HREF="..url..what..">"..label.."</A>  </li>\n") end
+	    end
 	 end
       end
    end
 
    if(shown) then
-      print('</ul></li>\n')
+      if(print_html) then print('</ul></li>\n') end
    end
+
+   return(ret)
 end
 
 -- ########################################################
@@ -88,9 +106,9 @@ zoom_vals = {
    { "1d",  "now-1d",   60*60*24 },
    { "1w",  "now-1w",   60*60*24*7 },
    { "2w",  "now-2w",   60*60*24*14 },
-   { "1m",  "now-1mon", 60*60*24*31 },
-   { "6m",  "now-6mon", 60*60*24*31*6 },
-   { "1y",  "now-1y",   60*60*24*366 }
+   { "1M",  "now-1mon", 60*60*24*31 },
+   { "6M",  "now-6mon", 60*60*24*31*6 },
+   { "1Y",  "now-1y",   60*60*24*366 }
 }
 
 -- ########################################################
@@ -185,6 +203,11 @@ end
 
 function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries,
                  selectedEpoch, selected_epoch_sanitized, topArray)
+   if(ntop.isPro()) then    
+      drawNvGraph(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries, selectedEpoch, selected_epoch_sanitized, topArray)
+      return
+   end
+
    dirs = ntop.getDirs()
    rrdname = getRRDName(ifid, host, rrdFile)
    names =  {}
@@ -256,7 +279,6 @@ function drawRRD(ifid, host, rrdFile, zoomLevel, baseurl, show_timeseries,
       end
 
       id = 0
-      fend = 0
       sampling = 0
       --sample_rate = 1
       sample_rate = sample_rate-1
@@ -374,7 +396,7 @@ if(show_timeseries == 1) then
    end
    d = fixPath(p)
    
-   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, go_deep)
+   navigatedir(baseurl .. '&graph_zoom=' .. zoomLevel .. '&epoch=' .. (selectedEpoch or '')..'&rrd_file=', "*", d, d, go_deep, true)
    
    print [[
   </ul>
@@ -559,6 +581,8 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 		var formattedYValue = fbits(point.value.y); // point.formattedYValue;
 		var infoHTML = "";
 ]]
+
+if(topArray ~= nil) then
 for n,v in pairs(topArray) do
   modulename = n
   sectionname = v["name"]
@@ -697,6 +721,7 @@ print[['+hover.selected_epoch;
 else
   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> File "..rrdname.." cannot be found</div>")
 
+end
 end
 end
 

@@ -1885,15 +1885,7 @@ static int ntop_get_interface_stats(lua_State* vm) {
 
 static int ntop_is_pro(lua_State *vm) {
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
-
-  lua_pushboolean(vm, 
-#ifdef NTOPNG_PRO
-		  1
-#else
-		  0
-#endif
-		  );
-
+  lua_pushboolean(vm, ntop->getPrefs()->is_pro_edition());
   return(CONST_LUA_OK);
 }
 
@@ -1947,10 +1939,7 @@ static int ntop_get_info(lua_State* vm) {
   lua_push_str_table_entry(vm, "version.geoip", (char*)GeoIP_lib_version());
 #endif
   lua_push_str_table_entry(vm, "version.ndpi", ndpi_revision());
-
-#ifdef NTOPNG_PRO
-  lua_push_str_table_entry(vm, "pro.release", (char*)NTOPNG_PRO_SVN_RELEASE);
-#endif
+  lua_push_bool_table_entry(vm, "pro.release", ntop->getPrefs()->is_pro_edition());
 
   zmq_version(&major, &minor, &patch);
   snprintf(rsp, sizeof(rsp), "%d.%d.%d", major, minor, patch);
@@ -3093,7 +3082,7 @@ static const luaL_Reg ntop_reg[] = {
   { "queueAlert",           ntop_queue_alert },
 
   /* Pro */
-  { "isPro",          ntop_is_pro },
+  { "isPro",                ntop_is_pro },
 
   /* Historical database */
   { "insertMinuteSampling",    ntop_stats_insert_minute_sampling },

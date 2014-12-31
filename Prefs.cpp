@@ -66,6 +66,14 @@ Prefs::Prefs(Ntop *_ntop) {
   export_endpoint = NULL;
   enable_ixia_timestamps = false;
 
+  pro_edition = 
+#ifdef NTOPNG_PRO
+    true
+#else
+    false
+#endif
+    ;
+  
   /* Defaults */
   non_local_host_max_idle = MAX_REMOTE_HOST_IDLE /* sec */;
   local_host_max_idle     = MAX_LOCAL_HOST_IDLE /* sec */;
@@ -210,6 +218,9 @@ void usage() {
 	 "                                    |        hardware devices\n"
 	 "[--http-prefix|-Z] <prefix>         | HTTP prefix to be prepended to URLs. This is\n"
 	 "                                    | useful when using ntopng behind a proxy.\n"
+#ifdef NTOPNG_PRO
+	 "[--community]                       | Start ntopng in community edition (debug only).\n"
+#endif
 	 "[--verbose|-v]                      | Verbose tracing\n"
 	 "[--version|-V]                      | Print version and quit\n"
 	 "[--help|-h]                         | Help\n"
@@ -297,6 +308,9 @@ static const struct option long_options[] = {
   { "scripts-dir",                       required_argument, NULL, '2' },
   { "callbacks-dir",                     required_argument, NULL, '3' },
   { "hw-timestamp-mode",                 required_argument, NULL, 212 },
+#ifdef NTOPNG_PRO
+  { "community-edition",                 no_argument,       NULL, 254 },
+#endif
 
   /* End of options */
   { NULL,                                no_argument,       NULL,  0 }
@@ -599,6 +613,12 @@ int Prefs::setOption(int optkey, char *optarg) {
       ntop->getTrace()->traceEvent(TRACE_WARNING,
 				   "Unknown --hw-timestamp-mode mode, it has been ignored\n");
     break;
+
+#ifdef NTOPNG_PRO
+  case 254:
+    pro_edition = false;
+    break;
+#endif
 
   default:
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Unknown option -%c: Ignored.", (char)optkey);

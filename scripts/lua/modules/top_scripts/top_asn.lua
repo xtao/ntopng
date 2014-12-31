@@ -60,7 +60,7 @@ local function getHistoricalTopAS(ifid, ifname, epoch)
   return getTopASFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)))
 end
 
-top_asn_intf.name = "Autonomous Systems"
+top_asn_intf.name = "ASN"
 top_asn_intf.infoScript = "hosts_stats.lua"
 top_asn_intf.key = "asn"
 top_asn_intf.getTop = getTopAS

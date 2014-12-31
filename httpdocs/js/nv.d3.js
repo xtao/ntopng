@@ -5440,6 +5440,10 @@ nv.models.lineChart = function() {
 
   //============================================================
 
+  // Luca - ntop
+  chart.mouseMoveHandler = function(_) {
+      ;
+  };
 
   //============================================================
   // Private Variables
@@ -5685,7 +5689,7 @@ nv.models.lineChart = function() {
                   )();
 
           interactiveLayer.renderGuideLine(pointXLocation);
-
+	  chart.mouseMoveHandler(e); // ntop
       });
 
       interactiveLayer.dispatch.on("elementMouseout",function(e) {
@@ -5699,7 +5703,6 @@ nv.models.lineChart = function() {
 
 
       dispatch.on('changeState', function(e) {
-
         if (typeof e.disabled !== 'undefined' && data.length === e.disabled.length) {
           data.forEach(function(series,i) {
             series.disabled = e.disabled[i];

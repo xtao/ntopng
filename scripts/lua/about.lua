@@ -24,10 +24,10 @@ print("<tr><th>License</th><td><A HREF=http://www.gnu.org/licenses/gpl.html>"..i
 
 print("<tr><th>Version</th><td>"..info["version"])
 
-if(info["pro.release"] == nil) then
+if(info["pro.release"] == false) then
    print(" - Community Edition")
 else
-   print(" - Professional Edition ("..info["pro.release"]..")")
+   print(" - Professional Edition")
 end
 
 print("</td></tr>\n")

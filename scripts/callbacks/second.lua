@@ -44,7 +44,7 @@ for _,ifname in pairs(ifnames) do
       name = fixPath(basedir .. "/" .. "packets.rrd")
       create_rrd(name, "packets")
       ntop.rrd_update(name, "N:".. ifstats.stats_packets)
-      if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name ..'\n') end
+      if(enable_second_debug == 1) then io.write('Updating RRD ['.. ifname..'] '.. name .. " " .. ifstats.stats_packets ..'\n') end
 
       if(use_influx and (ifstats.stats_bytes > 0)) then
 	 b = diff_value_influx(ifstats.name, "bytes", ifstats.stats_bytes)

@@ -131,7 +131,7 @@ function getJSONData(url, params, error_message) {
       jsonData = content; //jQuery.parseJSON(content);
     },
     error: function(content) {
-      console.log(error_message);
+      console.log(content);
     }
   });
 

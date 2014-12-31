@@ -43,3 +43,23 @@ if (/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1
 
 	       return(false);
 	    }
+
+function fbits(bits) {
+	var sizes = ['bps', 'Kbit/s', 'Mbit/s', 'Gbit/s', 'Tbit/s'];
+	if(bits == 0) return '0';
+	var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
+	return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+function fpackets(bits) {
+	var sizes = ['pps', 'Kpps', 'Mpps', 'Gpps', 'Tpps'];
+	if(bits == 0) return '0';
+	var i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)));
+	return Math.round(bits / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+function capitaliseFirstLetter(string)
+{
+   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+

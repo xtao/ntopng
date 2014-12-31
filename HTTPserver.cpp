@@ -313,7 +313,7 @@ static int handle_lua_request(struct mg_connection *conn) {
 	     (strlen(request_info->uri) == 1) ? "/lua/index.lua" : request_info->uri);
 
     ntop->fixPath(path);
-    if((stat(path, &buf) == 0) && (S_ISREG (buf.st_mode))) {
+    if((stat(path, &buf) == 0) && (S_ISREG(buf.st_mode))) {
       Lua *l = new Lua();
 
       ntop->getTrace()->traceEvent(TRACE_INFO, "[HTTP] %s [%s]", request_info->uri, path);

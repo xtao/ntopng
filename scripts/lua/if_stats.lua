@@ -4,7 +4,7 @@
 
 dirs = ntop.getDirs()
 package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
-if ( (dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
+if((dirs.scriptdir ~= nil) and (dirs.scriptdir ~= "")) then package.path = dirs.scriptdir .. "/lua/modules/?.lua;" .. package.path end
 
 require "lua_utils"
 require "graph_utils"
@@ -297,12 +297,17 @@ print [[
 
 elseif(page == "historical") then
    rrd_file = _GET["rrd_file"]
-   if(rrd_file == nil) then rrd_file = "bytes.rrd" end
    selected_epoch = _GET["epoch"]
    if (selected_epoch == nil) then selected_epoch = "" end
    topArray = makeTopStatsScriptsArray()
-   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], selected_epoch, topArray)
 
+   if(ntop.isPro()) then
+      if(rrd_file == nil) then rrd_file = "all" end
+   else
+      if(rrd_file == nil) then rrd_file = "bytes.rrd" end
+   end
+
+   drawRRD(ifstats.id, nil, rrd_file, _GET["graph_zoom"], url.."&page=historical", 1, _GET["epoch"], selected_epoch, topArray)
 --
 --  Historical Interface configuration page
 --
