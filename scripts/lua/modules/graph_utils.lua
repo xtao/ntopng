@@ -434,6 +434,7 @@ print [[
 <p><font color=lightgray><small>NOTE: Click on the graph to zoom.</small></font>
    <div id="y_axis"></div>
    <div id="chart" style="margin-right: 10px"></div>
+   <br>
 
    <table style="border: 0">
    <tr><td><div id="legend"></div></td><td><div id="chart_legend"></div></td></tr>
