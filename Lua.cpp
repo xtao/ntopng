@@ -2417,7 +2417,7 @@ static int ntop_stats_get_minute_samplings_interval(lua_State *vm) {
  */
 static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
   time_t epoch;
-  unsigned num_minutes, minutes, hours, days, months, years;
+  int num_minutes, minutes, hours, days, months, years;
   char **vals;
   int ifid, num_vals = 0;
   NetworkInterface* iface;
@@ -2438,6 +2438,7 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   num_minutes = lua_tointeger(vm, 3);
+
   if (num_minutes < 0)
     return(CONST_LUA_ERROR);
 
@@ -2868,7 +2869,7 @@ static int ntop_lua_cli_print(lua_State* vm) {
  *
  * @return CONST_LUA_OK.
  */
-static int is_historical_interface(lua_State* vm) {
+static int ntop_is_historical_interface(lua_State* vm) {
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
   if(ntop->getPrefs()->do_dump_flows_on_db()) {
@@ -2894,7 +2895,7 @@ static int is_historical_interface(lua_State* vm) {
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK
  */
-static int get_historical_info(lua_State* vm) {
+static int ntop_get_historical_info(lua_State* vm) {
   HistoricalInterface *iface = NULL;
   iface = (HistoricalInterface*) ntop->getHistoricalInterface();
 
@@ -2929,7 +2930,7 @@ static int get_historical_info(lua_State* vm) {
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK
  */
-static int set_historical_info(lua_State* vm) {
+static int ntop_set_historical_info(lua_State* vm) {
   u_int32_t from_epoch, to_epoch;
   u_int8_t iface_id = 0;
   HistoricalInterface *iface = NULL;
@@ -2967,7 +2968,7 @@ static int set_historical_info(lua_State* vm) {
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK and push the return code into the Lua stack
  */
-static int load_historical_interval(lua_State* vm) {
+static int ntop_load_historical_interval(lua_State* vm) {
   u_int32_t from_epoch, to_epoch;
   u_int8_t iface_id = 0;
   HistoricalInterface *iface = NULL;
@@ -3007,7 +3008,7 @@ static int load_historical_interval(lua_State* vm) {
  * @param vm The lua state.
  * @return @ref CONST_LUA_OK and push the return code into the Lua stack
  */
-static int load_historical_file(lua_State* vm) {
+static int ntop_load_historical_file(lua_State* vm) {
   char *file_name;
   bool cleanup;
   HistoricalInterface *iface = NULL;
@@ -3075,12 +3076,13 @@ static const luaL_Reg ntop_interface_reg[] = {
   { "isIdle",                 ntop_interface_is_idle },
   { "setInterfaceIdleState",  ntop_interface_set_idle },
   { "name2id",                ntop_interface_name2id },
+
   /* Historical Interface */
-  { "getHistorical",      get_historical_info },
-  { "setHistorical",      set_historical_info },
-  { "loadHistoricalInterval",      load_historical_interval },
-  { "loadHistoricalFile",      load_historical_file},
-  { "isHistoricalInterface",      is_historical_interface },
+  { "getHistorical",          ntop_get_historical_info },
+  { "setHistorical",          ntop_set_historical_info },
+  { "loadHistoricalInterval", ntop_load_historical_interval },
+  { "loadHistoricalFile",     ntop_load_historical_file},
+  { "isHistoricalInterface",  ntop_is_historical_interface },
   { NULL,                     NULL }
 };
 
@@ -3125,12 +3127,12 @@ static const luaL_Reg ntop_reg[] = {
   { "isPro",                ntop_is_pro },
 
   /* Historical database */
-  { "insertMinuteSampling",    ntop_stats_insert_minute_sampling },
-  { "insertHourSampling",    ntop_stats_insert_hour_sampling },
-  { "getMinuteSampling",          ntop_stats_get_minute_sampling },
-  { "deleteMinuteStatsOlderThan", ntop_stats_delete_minute_older_than },
+  { "insertMinuteSampling",        ntop_stats_insert_minute_sampling },
+  { "insertHourSampling",          ntop_stats_insert_hour_sampling },
+  { "getMinuteSampling",           ntop_stats_get_minute_sampling },
+  { "deleteMinuteStatsOlderThan",  ntop_stats_delete_minute_older_than },
   { "getMinuteSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
-  { "getMinuteSamplingsInterval", ntop_stats_get_minute_samplings_interval },
+  { "getMinuteSamplingsInterval",  ntop_stats_get_minute_samplings_interval },
 
   /* Time */
   { "gettimemsec",    ntop_gettimemsec },

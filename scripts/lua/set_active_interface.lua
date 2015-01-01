@@ -29,11 +29,9 @@ if((ifname ~= nil) and (_SESSION["session"] ~= nil)) then
 
    ntop.setCache(getRedisPrefix("ntopng.prefs")..'.iface', id)
 
-print [[
-<script>
-  window.setTimeout('window.location="/"; ', 3000);
-</script>
-]]
+   print('<script>window.setTimeout(\'window.location="')
+   print('/')
+   print('"; \', 3000);\n</script>\n')
 
 
 else

@@ -40,8 +40,15 @@ print [[/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></
       <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
       <li class="divider"></li>
       <li><a href="]]
+
 print(ntop.getHttpPrefix())
-print [[/lua/index.lua"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+if(ntop.isPro()) then
+   print("/lua/pro/dashboard.lua")
+else
+   print("/lua/index.lua")
+end
+
+print [["><i class="fa fa-dashboard"></i> Dashboard</a></li>
     </ul>
   </li>
 
