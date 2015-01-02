@@ -27,6 +27,7 @@ StatsManager::StatsManager(int ifid, const char *filename) {
   this->ifid = ifid;
   MINUTE_CACHE_NAME = "MINUTE_STATS";
   HOUR_CACHE_NAME = "HOUR_STATS";
+  DAY_CACHE_NAME = "DAY_STATS";
 
   snprintf(filePath, sizeof(filePath), "%s/%d/top_talkers/",
            ntop->get_working_dir(), ifid);
@@ -288,6 +289,33 @@ int StatsManager::retrieveMinuteStatsInterval(time_t epoch_start,
 }
 
 /**
+ * @brief Retrieve an interval of samplings from the hour stats cache
+ * @details This function implements the database-specific code
+ *          to retrieve an interval of samplings masking out cache-specific
+ *          details concerning the hour stats cache.
+ *
+ * @param epoch_start Left boundary of the interval.
+ * @param epoch_end Right boundary of the interval.
+ * @param vals Pointer to a string array that will keep the result.
+ * @param num_vals Pointer to an integer that will keep the number
+ *        of retrieved sampling points.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::retrieveHourStatsInterval(time_t epoch_start,
+					    time_t epoch_end,
+					    char ***vals,
+                                            int *num_vals) {
+  char key_start[MAX_KEY], key_end[MAX_KEY];
+
+  strftime(key_start, sizeof(key_start), "%Y%m%d%H", localtime(&epoch_start));
+  strftime(key_end, sizeof(key_end), "%Y%m%d%H", localtime(&epoch_end));
+
+  return retrieveStatsInterval(vals, num_vals, HOUR_CACHE_NAME, key_start, key_end);
+}
+
+
+/**
  * @brief Database interface to add a new stats sampling
  * @details This function implements the database-specific layer for
  *          the historical database (as of now using SQLite3).
@@ -380,6 +408,27 @@ int StatsManager::insertHourSampling(tm *timeinfo, char *sampling) {
   strftime(key, sizeof(key), "%Y%m%d%H", timeinfo);
 
   return insertSampling(sampling, HOUR_CACHE_NAME, key);
+}
+
+/**
+ * @brief Interface function for insertion of a new day stats sampling
+ * @details This public method implements insertion of a new sampling,
+ *          hiding cache-specific details related to day stats.
+ *
+ * @param timeinfo The sampling point expressed in localtime format.
+ * @param sampling Pointer to a string keeping the sampling.
+ *
+ * @return Zero in case of success, nonzero in case of failure.
+ */
+int StatsManager::insertDaySampling(tm *timeinfo, char *sampling) {
+  char key[MAX_KEY];
+
+  if (!timeinfo || !sampling)
+    return -1;
+
+  strftime(key, sizeof(key), "%Y%m%d", timeinfo);
+
+  return insertSampling(sampling, DAY_CACHE_NAME, key);
 }
 
 /* *************************************************************** */
