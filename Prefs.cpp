@@ -160,7 +160,7 @@ void usage() {
 	 "                                    | (e.g. -m \"192.168.0.0/24,172.16.0.0/16\")\n"
 	 "[--ndpi-protocols|-p] <file>.protos | Specify a nDPI protocol file\n"
 	 "                                    | (eg. protos.txt)\n"
-	 "[--disable-host-persistency|-P]     | Disable host persistency\n"
+	 "[--disable-host-persistency|-P]     | Disable host persistency in the Redis cache\n"
 	 "[--redis|-r] <redis host[:port]>    | Redis host[:port]\n"
 #ifdef linux
 	 "[--core-affinity|-g] <cpu core id>  | Bind the capture/processing thread to a\n"
