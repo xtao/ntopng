@@ -33,6 +33,8 @@ local function getTopTalkersClean(ifid, ifname, param)
 end
 
 local function getTopTalkersFromJSON(content)
+  local offset_b = 1
+  local offset_e = -3
   correct_section_beginning = string.find(content, '"'..top_talkers_intf.JSONkey..'"')
   if (correct_section_beginning == nil) then
     return("[ ]\n")
@@ -42,15 +44,48 @@ local function getTopTalkersFromJSON(content)
                                   '%[%s*{%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*}%s*%],')
     if (sbeginning == nil) then
       sbeginning,send = string.find(correct_section,
-                                  '%[%s*{%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*}%s*%]%s*}')
+                                    '%[%s*{%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*}%s*%],')
       if (sbeginning == nil) then
-        elements = "[ ]\n"
-      else
-        elements = string.sub(correct_section, sbeginning+1, send-3)
+        sbeginning,send = string.find(correct_section,
+                                      '{%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*},')
+        if (sbeginning == nil) then
+          sbeginning,send = string.find(correct_section,
+                                        '{%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*},')
+          if (sbeginning == nil) then
+            sbeginning,send = string.find(correct_section,
+                                          '{%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*}%s*}')
+            if (sbeginning == nil) then
+              sbeginning,send = string.find(correct_section,
+                                            '{%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*}%s*}')
+              if (sbeginning == nil) then
+                sbeginning,send = string.find(correct_section,
+                                              '%[%s*{%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*}%s*%]%s*}')
+                if (sbeginning == nil) then
+                  sbeginning,send = string.find(correct_section,
+                                                '%[%s*{%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*}%s*%]%s*}')
+                  if (sbeginning == nil) then
+                    return("[ ]\n")
+                  end
+                end
+              end
+            else -- {%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*}%s*}
+              offset_b = 0
+              offset_e = -1
+            end
+          else -- {%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*}%s*}
+            offset_b = 0
+            offset_e = -1
+          end
+        else -- {%s*"senders":%s*%[.*%],%s*"receivers":%s*%[.*%]%s*},
+          offset_b = 0
+          offset_e = -1
+        end
+      else -- {%s*"receivers":%s*%[.*%],%s*"senders":%s*%[.*%]%s*},
+        offset_b = 0
+        offset_e = -1
       end
-    else
-      elements = string.sub(correct_section, sbeginning+1, send-3)
     end
+    elements = string.sub(correct_section, sbeginning+offset_b, send+offset_e)
     return(elements)
   end
 end
