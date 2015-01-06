@@ -29,9 +29,9 @@ class StatsManager {
 public:
     StatsManager(int ifid, const char *dbname);
     ~StatsManager();
-    int insertMinuteSampling(tm *timeinfo, char *sampling);
-    int insertHourSampling(tm *timeinfo, char *sampling);
-    int insertDaySampling(tm *timeinfo, char *sampling);
+    int insertMinuteSampling(time_t epoch, char *sampling);
+    int insertHourSampling(time_t epoch, char *sampling);
+    int insertDaySampling(time_t epoch, char *sampling);
     int getMinuteSampling(time_t epoch, string *sampling);
     int openCache(const char *cache_name);
     int retrieveMinuteStatsInterval(time_t epoch_start, time_t epoch_end,
@@ -55,11 +55,11 @@ private:
     int exec_query(char *db_query,
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
-    int insertSampling(char *sampling, const char *cache_name, const char *key);
-    int getSampling(string *sampling, const char *cache_name, const char *key);
-    int deleteStatsOlderThan(const char *cache_name, const char *key);
+    int insertSampling(char *sampling, const char *cache_name, const int key);
+    int getSampling(string *sampling, const char *cache_name, const int key);
+    int deleteStatsOlderThan(const char *cache_name, const int key);
     int retrieveStatsInterval(char ***vals, int *num_vals, const char *cache_name,
-                              const char *key_start, const char *key_end);
+                              const int key_start, const int key_end);
 };
 
 #endif /* _STATS_MANAGER_H_ */

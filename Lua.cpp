@@ -2208,7 +2208,6 @@ static int ntop_sqlite_exec_query(lua_State* vm) {
 static int ntop_stats_insert_minute_sampling(lua_State *vm) {
   char *sampling;
   time_t rawtime;
-  tm *timeinfo;
   int ifid;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2228,9 +2227,8 @@ static int ntop_stats_insert_minute_sampling(lua_State *vm) {
 
   time(&rawtime);
   rawtime -= (rawtime % 60);
-  timeinfo = localtime(&rawtime);
 
-  if (sm->insertMinuteSampling(timeinfo, sampling))
+  if (sm->insertMinuteSampling(rawtime, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
@@ -2248,7 +2246,6 @@ static int ntop_stats_insert_minute_sampling(lua_State *vm) {
 static int ntop_stats_insert_hour_sampling(lua_State *vm) {
   char *sampling;
   time_t rawtime;
-  tm *timeinfo;
   int ifid;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2268,9 +2265,8 @@ static int ntop_stats_insert_hour_sampling(lua_State *vm) {
 
   time(&rawtime);
   rawtime -= (rawtime % 60);
-  timeinfo = localtime(&rawtime);
 
-  if (sm->insertHourSampling(timeinfo, sampling))
+  if (sm->insertHourSampling(rawtime, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
@@ -2288,7 +2284,6 @@ static int ntop_stats_insert_hour_sampling(lua_State *vm) {
 static int ntop_stats_insert_day_sampling(lua_State *vm) {
   char *sampling;
   time_t rawtime;
-  tm *timeinfo;
   int ifid;
   NetworkInterface* iface;
   StatsManager *sm;
@@ -2308,9 +2303,8 @@ static int ntop_stats_insert_day_sampling(lua_State *vm) {
 
   time(&rawtime);
   rawtime -= (rawtime % 60);
-  timeinfo = localtime(&rawtime);
 
-  if (sm->insertDaySampling(timeinfo, sampling))
+  if (sm->insertDaySampling(rawtime, sampling))
     return(CONST_LUA_ERROR);
 
   return(CONST_LUA_OK);
@@ -2456,13 +2450,12 @@ static int ntop_stats_get_minute_samplings_interval(lua_State *vm) {
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
 static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
-  time_t epoch;
-  int num_minutes, minutes, hours, days, months, years;
+  time_t epoch_start, epoch_end;
+  int num_minutes;
   char **vals;
   int ifid, num_vals = 0;
   NetworkInterface* iface;
   StatsManager *sm;
-  tm *timeinfo;
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
@@ -2472,13 +2465,12 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
     return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  epoch = lua_tointeger(vm, 2);
-  epoch -= (epoch % 60);
-  if (epoch < 0)
+  epoch_end = lua_tointeger(vm, 2);
+  epoch_end -= (epoch_end % 60);
+  if (epoch_end < 0)
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   num_minutes = lua_tointeger(vm, 3);
-
   if (num_minutes < 0)
     return(CONST_LUA_ERROR);
 
@@ -2486,22 +2478,9 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
 
-  timeinfo = localtime(&epoch);
-  hours = num_minutes / 60;
-  minutes = num_minutes % 60;
-  days = hours / 24;
-  hours = hours % 24;
-  months = days / 30;
-  days = days % 30;
-  years = months / 12;
-  months = months % 12;
-  timeinfo->tm_year -= years;
-  timeinfo->tm_mon -= months;
-  timeinfo->tm_mday -= days;
-  timeinfo->tm_hour -= hours;
-  timeinfo->tm_min -= minutes;
+  epoch_start = epoch_end - (60 * num_minutes);
 
-  if(sm->retrieveMinuteStatsInterval(mktime(timeinfo), epoch, &vals, &num_vals))
+  if(sm->retrieveMinuteStatsInterval(epoch_start, epoch_end, &vals, &num_vals))
     return(CONST_LUA_ERROR);
 
   lua_newtable(vm);
@@ -2526,13 +2505,12 @@ static int ntop_stats_get_samplings_of_minutes_from_epoch(lua_State *vm) {
  *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
  */
 static int ntop_stats_get_samplings_of_hours_from_epoch(lua_State *vm) {
-  time_t epoch;
-  int num_hours, hours, days, months, years;
+  time_t epoch_start, epoch_end;
+  int num_hours;
   char **vals;
   int ifid, num_vals = 0;
   NetworkInterface* iface;
   StatsManager *sm;
-  tm *timeinfo;
 
   ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
 
@@ -2542,13 +2520,12 @@ static int ntop_stats_get_samplings_of_hours_from_epoch(lua_State *vm) {
     return(CONST_LUA_ERROR);
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
-  epoch = lua_tointeger(vm, 2);
-  epoch -= (epoch % 60);
-  if (epoch < 0)
+  epoch_end = lua_tointeger(vm, 2);
+  epoch_end -= (epoch_end % 60);
+  if (epoch_end < 0)
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   num_hours = lua_tointeger(vm, 3);
-
   if (num_hours < 0)
     return(CONST_LUA_ERROR);
 
@@ -2556,20 +2533,9 @@ static int ntop_stats_get_samplings_of_hours_from_epoch(lua_State *vm) {
      !(sm = iface->getStatsManager()))
     return (CONST_LUA_ERROR);
 
-  timeinfo = localtime(&epoch);
-  days = num_hours / 24;
-  hours = hours % 24;
-  months = days / 30;
-  days = days % 30;
-  years = months / 12;
-  months = months % 12;
-  timeinfo->tm_year -= years;
-  timeinfo->tm_mon -= months;
-  timeinfo->tm_mday -= days;
-  timeinfo->tm_hour -= hours;
-  timeinfo->tm_min  = 0;
+  epoch_start = epoch_end - (num_hours * 60 * 60);
 
-  if(sm->retrieveHourStatsInterval(mktime(timeinfo), epoch, &vals, &num_vals))
+  if(sm->retrieveHourStatsInterval(epoch_start, epoch_end, &vals, &num_vals))
     return(CONST_LUA_ERROR);
 
   lua_newtable(vm);
