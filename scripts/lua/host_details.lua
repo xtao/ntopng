@@ -823,45 +823,46 @@ print [[/lua/iface_ndpi_stats.lua', { breed: "true", ifname: "]] print(ifId.."")
 <p>
 	]]
 
-      print("<tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr>\n")
-
-      total = host["bytes.sent"]+host["bytes.rcvd"]
-
-      vals = {}
-      for k in pairs(host["ndpi"]) do
-	 vals[k] = k
-	 -- print(k)
-      end
-      table.sort(vals)
-
-      print("<tr><th>Total</th><td class=\"text-right\">" .. bytesToSize(host["bytes.sent"]) .. "</td><td class=\"text-right\">" .. bytesToSize(host["bytes.rcvd"]) .. "</td>")
-
-      print("<td>")
-      breakdownBar(host["bytes.sent"], "Sent", host["bytes.rcvd"], "Rcvd")
-      print("</td>\n")
-
-      print("<td colspan=2 class=\"text-right\">" ..  bytesToSize(total).. "</td></tr>\n")
-
-      for _k in pairsByKeys(vals , desc) do
-	 k = vals[_k]
-	 print("<tr><th>")
-	 fname = getRRDName(ifId, hostinfo2hostkey(host_info), k..".rrd")
-	 if(ntop.exists(fname)) then
-	    print("<A HREF=\""..ntop.getHttpPrefix().."/lua/host_details.lua?ifname="..ifId.."&"..hostinfo2url(host_info) .. "&page=historical&rrd_file=".. k ..".rrd\">"..k.." "..formatBreed(host["ndpi"][k]["breed"]).."</A>")
-	 else
-	    print(k.." "..formatBreed(host["ndpi"][k]["breed"]))
-	 end
-	 t = host["ndpi"][k]["bytes.sent"]+host["ndpi"][k]["bytes.rcvd"]
-	 print("</th><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.sent"]) .. "</td><td class=\"text-right\">" .. bytesToSize(host["ndpi"][k]["bytes.rcvd"]) .. "</td>")
-
-	 print("<td>")
-	 breakdownBar(host["ndpi"][k]["bytes.sent"], "Sent", host["ndpi"][k]["bytes.rcvd"], "Rcvd")
-	 print("</td>\n")
-
-	 print("<td class=\"text-right\">" .. bytesToSize(t).. "</td><td class=\"text-right\">" .. round((t * 100)/total, 2).. " %</td></tr>\n")
-      end
-
       print("</table>\n")
+
+  print [[
+     <table id="myTable" class="table table-bordered table-striped tablesorter">
+     ]]
+
+     print("<thead><tr><th>Application Protocol</th><th>Sent</th><th>Received</th><th>Breakdown</th><th colspan=2>Total</th></tr></thead>\n")
+
+  print ('<tbody id="host_details_ndpi_tbody">\n')
+  print ("</tbody>")
+  print("</table>\n")
+
+  print [[
+<script>
+function update_ndpi_table() {
+  $.ajax({
+    type: 'GET',
+    url: ']]
+print (ntop.getHttpPrefix())
+print [[/lua/host_details_ndpi.lua',
+    data: { ifid: ]] print('"') print(tostring(ifId)) print('"') print(", hostip: ") print('"'..host["ip"]..'"') print [[ },
+    success: function(content) {
+      $('#host_details_ndpi_tbody').html(content);
+      // Let the TableSorter plugin know that we updated the table
+      $('#h_ndpi_tbody').trigger("update");
+    }
+  });
+}
+update_ndpi_table();
+]]
+
+--  Update interval ndpi table
+if not is_historical then print("setInterval(update_ndpi_table, 5000);") end
+
+print [[
+
+</script>
+
+]]
+
    end
 
    elseif(page == "dns") then
