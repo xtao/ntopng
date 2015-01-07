@@ -19,11 +19,11 @@ if (ntop.isPro()) then
 end
 
 local function getTopVLAN(ifid, ifname)
-  return getActualTopGroups(ifid, ifname, 10, true, false, "vlan", true)
+  return getActualTopGroups(ifid, ifname, 10, true, false, nil, nil, "vlan", true)
 end
 
 local function getTopVlanClean(ifid, ifname, param)
-  top = getActualTopGroups(ifid, ifname, 10, true, false, "vlan", false)
+  top = getActualTopGroups(ifid, ifname, 10, true, false, nil, nil, "vlan", false)
   section_beginning = string.find(top, '%[')
   if (section_beginning == nil) then
     return("[ ]\n")

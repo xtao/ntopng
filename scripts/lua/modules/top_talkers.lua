@@ -74,14 +74,31 @@ function getTop(stats, sort_field_key, max_num_entries, lastdump_dir)
    return top_stats
 end
 
+function filterBy(stats, col, val)
+  local filtered_by = {}
+
+  if (col == "" or col == nil or val == nil) then
+    return stats
+  end
+
+  for id,content in pairs(stats) do
+    if (content[col] == val) then
+      filtered_by[id] = content
+    end
+  end
+
+  return filtered_by
+end
+
 -- #####################################################
 
-function getActualTopTalkers(ifid, ifname, concat, mode)
+function getActualTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode)
    max_num_entries = 10
    rsp = ""
 
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()
+   hosts_stats = filterBy(hosts_stats, filter_col, filter_val)
 
    talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
    if(not(ntop.exists(talkers_dir))) then
@@ -149,13 +166,14 @@ end
 -- #####################################################
 
 function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
-                            use_delta, col, concat)
+                            use_delta, filter_col, filter_val, col, concat)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end
 
    interface.find(ifname)
    hosts_stats = interface.getHostsInfo()
+   hosts_stats = filterBy(hosts_stats, filter_col, filter_val)
 
    talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
    if(not(ntop.exists(talkers_dir))) then

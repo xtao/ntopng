@@ -19,11 +19,11 @@ if (ntop.isPro()) then
 end
 
 local function getTopAS(ifid, ifname)
-  return getActualTopGroups(ifid, ifname, 10, true, false, "asn", true)
+  return getActualTopGroups(ifid, ifname, 10, true, false, nil, nil, "asn", true)
 end
 
 local function getTopASClean(ifid, ifname, param)
-  top = getActualTopGroups(ifid, ifname, 10, true, false, "asn", false)
+  top = getActualTopGroups(ifid, ifname, 10, true, false, nil, nil, "asn", false)
   section_beginning = string.find(top, '%[')
   if (section_beginning == nil) then
     return("[ ]\n")
