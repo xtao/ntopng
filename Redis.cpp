@@ -1319,9 +1319,11 @@ void Redis::indexESdata() {
       char index_name[64], header[256];
       struct tm* tm_info;
       struct timeval tv;
+	  time_t t;
 
       gettimeofday(&tv, NULL);
-      tm_info = gmtime(&tv.tv_sec);
+	  t = tv.tv_sec;
+      tm_info = gmtime(&t);
       
       snprintf(index_name, sizeof(index_name), "%s-", 
 	       ntop->getPrefs()->get_es_index());

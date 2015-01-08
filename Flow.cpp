@@ -1103,9 +1103,10 @@ json_object* Flow::flow2es(json_object *flow_object) {
   char buf[64];
   struct tm* tm_info;
   int len;
+  const time_t t = tv.tv_sec;
 
   gettimeofday(&tv, NULL);
-  tm_info = gmtime(&tv.tv_sec);
+  tm_info = gmtime(&t);
 
   strftime(buf, sizeof(buf), "%FT%T", tm_info);
   len = strlen(buf);

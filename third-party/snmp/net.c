@@ -2,18 +2,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <errno.h>
+#endif
 
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
 
+#ifdef WIN32
+#define gethostbyname2(a, b) gethostbyname(a)
+#else
 #include <unistd.h>
+#endif
 
 #define BUFLEN 65535
 
@@ -51,7 +57,7 @@ int open_udp_socket(int port)
   if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
     return(-1); // diep("socket");
 
-  if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) != 0)
+  if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) != 0)
     return(-1); //diep("setsockaopt");
 
   memset((char *) &si_me, 0, sizeof(si_me));
@@ -78,7 +84,7 @@ void send_udp_datagram(void *buf, int len, int socket, char *target_host, int ta
     
   memmove(&target_si.sin_addr.s_addr, he->h_addr, he->h_length);
     
-  if (sendto(socket, buf, len, 0, (struct sockaddr *) &target_si, sizeof(target_si)) == -1)
+  if (sendto(socket, (const char*)buf, len, 0, (struct sockaddr *) &target_si, sizeof(target_si)) == -1)
     return; //diep("sendto");
 }    
 
@@ -88,7 +94,13 @@ int receive_udp_datagram(void *buf, int max, int socket, char **sender_host, int
   int slen = sizeof(sender_si);
   int nr;
     
-  nr = recvfrom(socket, buf, BUFLEN, MSG_DONTWAIT, (struct sockaddr *) &sender_si, (socklen_t*)&slen);
+  nr = recvfrom(socket, (char*)buf, BUFLEN, 
+#ifdef WIN32
+	  0,
+#else
+	  MSG_DONTWAIT, // TODO: add select() to avoid waiting forever
+#endif
+	  (struct sockaddr *) &sender_si, (socklen_t*)&slen);
   if (nr == -1)
     {
       if (errno == EAGAIN || errno == EWOULDBLOCK)

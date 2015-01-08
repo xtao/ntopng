@@ -35,6 +35,7 @@
 #include <process.h>
 #include <io.h>
 #include <stdio.h>
+#include <share.h>
 
 #ifdef __cplusplus
 extern "C" {

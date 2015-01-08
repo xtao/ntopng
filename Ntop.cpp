@@ -34,7 +34,7 @@ static const char* dirs[] = {
 #ifndef WIN32
   CONST_DEFAULT_INSTALL_DIR,
 #else
-  install_dir,
+  ntop->get_install_dir(),
 #endif
   CONST_ALT_INSTALL_DIR,
   NULL

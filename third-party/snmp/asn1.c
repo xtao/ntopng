@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define MAX_OID_PARTS   256
 
 static void *render_byte(int byte, void *dest)
 {
@@ -224,7 +225,7 @@ int oid_length(char *oid)
 {
   int data_len = 1;
   int num_parts = oid_parts(oid);
-  int parts[num_parts];
+  int parts[MAX_OID_PARTS];
   int i;
     
   oid_split(oid, parts);
@@ -240,7 +241,7 @@ int oid_length(char *oid)
 static void *render_oid(char *oid, void *dest)
 {
   int num_parts = oid_parts(oid);
-  int parts[num_parts];
+  int parts[MAX_OID_PARTS];
   int i;
   int first_two;
     
@@ -277,7 +278,7 @@ static void *read_oid_part(void *src, int *part)
 
 static void *read_oid(void *src, char **oid, int size)
 {
-  int parts[size+1];
+	int parts[MAX_OID_PARTS + 1];
   int first_byte;
   int i;
   void *endp = (unsigned char *)src + size;
