@@ -61,3 +61,7 @@ function fpackets(bits) {
 function capitaliseFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+String.prototype.startsWith = function (string) {
+    return(this.indexOf(string) === 0);
+};
