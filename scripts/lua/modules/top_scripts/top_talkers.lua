@@ -35,6 +35,9 @@ end
 local function getTopTalkersFromJSON(content)
   local offset_b = 1
   local offset_e = -3
+
+  if(content == nil) then return("[ ]\n") end
+
   correct_section_beginning = string.find(content, '"'..top_talkers_intf.JSONkey..'"')
   if (correct_section_beginning == nil) then
     return("[ ]\n")

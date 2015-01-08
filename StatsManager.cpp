@@ -52,7 +52,7 @@ char *strndup(const char *string, size_t s)
 StatsManager::StatsManager(int ifid, const char *filename) {
   char filePath[MAX_PATH], fileFullPath[MAX_PATH], fileName[MAX_PATH];
 
-  this->ifid = ifid;
+  this->ifid = ifid, db = NULL;
   MINUTE_CACHE_NAME = "MINUTE_STATS";
   HOUR_CACHE_NAME = "HOUR_STATS";
   DAY_CACHE_NAME = "DAY_STATS";
@@ -70,13 +70,16 @@ StatsManager::StatsManager(int ifid, const char *filename) {
 				 "Unable to create directory %s", filePath);
     return;
   }
-  if (sqlite3_open(fileFullPath, &db))
-    ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to open %s: %s",
-                                fileFullPath, sqlite3_errmsg(db));
+
+  if (sqlite3_open(fileFullPath, &db)) {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "Unable to open %s: %s",
+		  fileFullPath, sqlite3_errmsg(db));
+	  db = NULL;
+  }
 }
 
 StatsManager::~StatsManager() {
-  sqlite3_close(db);
+	if (db) sqlite3_close(db);
 }
 
 /**
@@ -97,6 +100,8 @@ int StatsManager::exec_query(char *db_query,
                              int (*callback)(void *, int, char **, char **),
                              void *payload) {
   char *zErrMsg = 0;
+
+  if (!db) return(-1);
 
   if(sqlite3_exec(db, db_query, callback, payload, &zErrMsg)) {
     printf("SQL error: %s\n", sqlite3_errmsg(db));

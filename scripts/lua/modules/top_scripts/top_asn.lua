@@ -33,6 +33,7 @@ local function getTopASClean(ifid, ifname, param)
 end
 
 local function getTopASFromJSON(content)
+  if(content == nil) then return("[ ]\n") end
   correct_section_beginning = string.find(content, '"'..top_asn_intf.JSONkey..'"')
   if (correct_section_beginning == nil) then
     return("[ ]\n")
