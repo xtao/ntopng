@@ -36,8 +36,8 @@ print [[
       <li><a href="]]
 print(ntop.getHttpPrefix())
 print [[/lua/about.lua"><i class="fa fa-question-circle"></i> About ntopng</a></li>
-      <li><a href="http://blog.ntop.org/"><i class="fa fa-globe"></i> ntop Blog</a></li>
-      <li><a href="http://bugzilla.ntop.org/"><i class="fa fa-bug"></i> Report an Issue</a></li>
+      <li><a href="http://blog.ntop.org/" target="_blank"><i class="fa fa-globe"></i> ntop Blog <i class="fa fa-external-link"></i></a></li>
+      <li><a href="http://bugzilla.ntop.org/" target="_blank"><i class="fa fa-bug"></i> Report an Issue <i class="fa fa-external-link"></i></a></li>
       <li class="divider"></li>
       <li><a href="]]
 
