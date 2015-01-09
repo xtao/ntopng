@@ -174,7 +174,7 @@ end
 
 function parseJSON(content)
   if (content == nil) then return {} end
-  table = parseElement(content, 1)
+  local table = parseElement(content, 1)
   --printTable(table)
   return table
 end
