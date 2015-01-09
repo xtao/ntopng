@@ -33,7 +33,7 @@ function makeTopJSON(ifid, ifname)
     file_cnt = 0
     for k,v in pairs(files) do
       if (v ~= nil) then
-        fn,ext = v:match("([^.]+).([^.]+)")
+        fn,ext = v:match("([^.]+).lua")
         local topClass = require("top_scripts."..fn)
         if (topClass.getTopBy ~= nil) then
           rsp = rsp..topClass.getTopBy(ifid, ifname, "vlan", key)
