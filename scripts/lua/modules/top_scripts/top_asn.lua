@@ -40,6 +40,53 @@ local function getTopASClean(ifid, ifname, param)
   end
 end
 
+local function topASSectionInTableOP(tblarray, arithOp)
+  local ret = {}
+  local num_glob = 1
+
+  for _,tbl in pairs(tblarray) do
+    for _,record in pairs(tbl) do
+      local found = false
+      for _,el in pairs(ret) do
+        if (found == false and el["label"] == record["label"]) then
+          el["value"] = arithOp(el["value"], record["value"])
+          found = true
+        end
+      end
+      if (found == false) then
+        ret[num_glob] = record
+        num_glob = num_glob + 1
+      end
+    end
+  end
+
+  return ret
+end
+
+local function printTopASTable(tbl)
+  local rsp = "[\n"
+
+  for ri,rv in pairs(tbl) do
+    rsp = rsp.."{ "
+    for k,v in pairs(rv) do
+      rsp = rsp..'"'..k..'": '
+      if (k == "value") then
+        rsp = rsp..tostring(v)
+      else
+        rsp = rsp..'"'..v..'"'
+      end
+      rsp = rsp..", "
+    end
+    rsp = string.sub(rsp, 1, -3)
+    rsp = rsp.."},\n"
+  end
+
+  rsp = string.sub(rsp, 1, -3)
+  rsp = rsp.."\n]\n"
+
+  return rsp
+end
+
 local function getTopASFromJSON(content)
   if(content == nil) then return("[ ]\n") end
   local table = parseJSON(content)
@@ -83,7 +130,9 @@ top_asn_intf.getTop = getTopAS
 top_asn_intf.getTopBy = getTopASBy
 top_asn_intf.getTopClean = getTopASClean
 top_asn_intf.getTopFromJSON = getTopASFromJSON
+top_asn_intf.printTopTable = printTopASTable
 top_asn_intf.getHistoricalTop = getHistoricalTopAS
+top_asn_intf.topSectionInTableOp = topASSectionInTableOP
 top_asn_intf.numLevels = 1
 
 return top_asn_intf

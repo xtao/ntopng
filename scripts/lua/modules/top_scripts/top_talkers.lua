@@ -37,6 +37,68 @@ local function getTopTalkersClean(ifid, ifname, param)
   end
 end
 
+local function printTopTalkersTable(tbl)
+  local rsp = "{\n"
+
+  for i,v in pairs(tbl) do
+    for dk,dv in pairs(v) do
+      rsp = rsp..'"'..dk..'": [\n'
+      for rk,rv in pairs(dv) do
+        rsp = rsp.."{ "
+        for k,v in pairs(rv) do
+          rsp = rsp..'"'..k..'": '
+          if (k == "value") then
+            rsp = rsp..tostring(v)
+          else
+            rsp = rsp..'"'..v..'"'
+          end
+          rsp = rsp..", "
+        end
+        rsp = string.sub(rsp, 1, -3)
+        rsp = rsp.."},\n"
+      end
+      rsp = string.sub(rsp, 1, -3)
+      rsp = rsp.."],\n"
+    end
+    rsp= string.sub(rsp, 1, -3)
+  end
+
+  rsp = rsp.."\n}"
+
+  return rsp
+
+end
+
+local function topTalkersSectionInTableOP(tblarray, arithOp)
+  local ret = {}
+  local outer_cnt = 1
+  local num_glob = 1
+
+  for _,tbl in pairs(tblarray) do
+    for _,outer in pairs(tbl) do
+      if (ret[outer_cnt] == nil) then ret[outer_cnt] = {} end
+      for key, value in pairs(outer) do
+        for _,record in pairs(value) do
+          local found = false
+          if (ret[outer_cnt][key] == nil) then ret[outer_cnt][key] = {} end
+          for _,el in pairs(ret[outer_cnt][key]) do
+            if (found == false and el["label"] == record["label"]) then
+              el["value"] = arithOp(el["value"], record["value"])
+              found = true
+            end
+          end
+          if (found == false) then
+            ret[outer_cnt][key][num_glob] = record
+            num_glob = num_glob + 1
+          end
+        end
+      end
+    end
+  end
+
+  return ret
+end
+
 local function getTopTalkersFromJSONDirection(table, wantedDir)
   local elements = ""
 
@@ -72,9 +134,7 @@ local function getTopTalkersFromJSONDirection(table, wantedDir)
   return elements
 end
 
-local function getTopTalkersFromJSON(content)
-  if(content == nil) then return("[ ]\n") end
-  local table = parseJSON(content)
+local function printTopTalkersFromTable(table)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
 
   local elements = "{\n"
@@ -89,6 +149,18 @@ local function getTopTalkersFromJSON(content)
   elements = elements.."}\n"
 
   return elements
+end
+
+local function getTopTalkersFromJSON(content)
+  if(content == nil) then return("[ ]\n") end
+  local table = parseJSON(content)
+  local rsp = printTopTalkersFromTable(table)
+  if (rsp == nil or rsp == "") then return "[ ]\n" end
+  return rsp
+end
+
+local function getTopTalkersFromJSONWithVLAN(content)
+  return getTopTalkersFromJSON(content, true)
 end
 
 local function getHistoricalTopTalkers(ifid, ifname, epoch)
@@ -106,7 +178,9 @@ top_talkers_intf.getTop = getTopTalkers
 top_talkers_intf.getTopBy = getTopTalkersBy
 top_talkers_intf.getTopClean = getTopTalkersClean
 top_talkers_intf.getTopFromJSON = getTopTalkersFromJSON
+top_talkers_intf.printTopTable = printTopTalkersTable
 top_talkers_intf.getHistoricalTop = getHistoricalTopTalkers
+top_talkers_intf.topSectionInTableOp = topTalkersSectionInTableOP
 top_talkers_intf.numLevels = 2
 
 return top_talkers_intf
