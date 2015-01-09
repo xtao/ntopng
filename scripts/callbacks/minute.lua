@@ -9,6 +9,7 @@ require "lua_utils"
 require "alert_utils"
 require "graph_utils"
 require "influx_utils"
+require "top_structure"
 
 when = os.time()
 
@@ -72,30 +73,6 @@ end
 
 host_rrd_creation = ntop.getCache("ntopng.prefs.host_rrd_creation")
 host_ndpi_rrd_creation = ntop.getCache("ntopng.prefs.host_ndpi_rrd_creation")
-
-function makeTopJSON(ifid, ifname)
-      path = dirs.installdir .. "/scripts/lua/modules/top_scripts"
-      path = fixPath(path)
-      local files = ntop.readdir(path)
-      local file_cnt = 0
-
-      rsp = "{\n"
-      for k,v in pairs(files) do
-        if (v ~= nil) then
-          fn,ext = v:match("([^.]+).([^.]+)")
-          local topClass = require("top_scripts."..fn)
-          rsp = rsp..topClass.getTop(ifid, ifname)
-          rsp = rsp..",\n"
-          file_cnt = file_cnt + 1
-        end
-      end
-      if (file_cnt > 0) then
-        -- Remove last return and comma to comply with JSON format
-        rsp = string.sub(rsp, 1, -3)
-      end
-      rsp = rsp.."\n}"
-      return(rsp)
-end
 
 -- id = 0
 for _,_ifname in pairs(ifnames) do

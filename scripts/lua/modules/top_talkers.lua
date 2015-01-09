@@ -165,24 +165,9 @@ end
 
 -- #####################################################
 
-function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
-                            use_delta, filter_col, filter_val, col, concat)
-   rsp = ""
-
-   --if(ifname == nil) then ifname = "any" end
-
-   interface.find(ifname)
-   hosts_stats = interface.getHostsInfo()
-   hosts_stats = filterBy(hosts_stats, filter_col, filter_val)
-
-   talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
-   if(not(ntop.exists(talkers_dir))) then
-      ntop.mkdir(talkers_dir)
-   end
-
-   _group = {}
-   total = 0
-
+function groupStatsByColumn(ifid, ifname, col)
+   local _group = {}
+   local total = 0
    -- Group hosts info by the required column
    for _key, value in pairs(hosts_stats) do
       key = hosts_stats[_key][col]
@@ -208,6 +193,25 @@ function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
       total = total + val
       _group[key][col.."_bytes"] = old + val
    end
+  return _group, total
+end
+
+function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
+                            use_delta, filter_col, filter_val, col, concat)
+   rsp = ""
+
+   --if(ifname == nil) then ifname = "any" end
+
+   interface.find(ifname)
+   hosts_stats = interface.getHostsInfo()
+   hosts_stats = filterBy(hosts_stats, filter_col, filter_val)
+
+   talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
+   if(not(ntop.exists(talkers_dir))) then
+      ntop.mkdir(talkers_dir)
+   end
+
+   _group, total = groupStatsByColumn(ifid, ifname, col)
 
    if(concat == true) then
       rsp = rsp..'"'..col..'": '
