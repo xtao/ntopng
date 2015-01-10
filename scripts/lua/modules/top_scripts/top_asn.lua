@@ -87,13 +87,15 @@ local function printTopASTable(tbl)
   return rsp
 end
 
-local function getTopASFromJSON(content)
+local function getTopASFromJSON(content, add_vlan)
   if(content == nil) then return("[ ]\n") end
   local table = parseJSON(content)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
   local elements = "[\n"
   -- For each VLAN, get ASN and concatenate them
   for i,vlan in pairs(table["vlan"]) do
+      local vlanname = vlan["name"]
+      local vlanid = vlan["label"]
       for k2,v2 in pairs(vlan[top_asn_intf.JSONkey]) do
         -- scan ASNs
         elements = elements.."{ "
@@ -106,6 +108,10 @@ local function getTopASFromJSON(content)
           end
           elements = elements..", "
         end
+        if (add_vlan ~= nil) then
+          elements = elements..'"vlan": "'..vlanid..'", '
+          elements = elements..'"vlanm": "'..vlanname..'", '
+        end
         elements = string.sub(elements, 1, -3)
         elements = elements.." },\n"
       end
@@ -115,11 +121,11 @@ local function getTopASFromJSON(content)
   return elements
 end
 
-local function getHistoricalTopAS(ifid, ifname, epoch)
+local function getHistoricalTopAS(ifid, ifname, epoch, add_vlan)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopASFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)))
+  return getTopASFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)), add_vlan)
 end
 
 top_asn_intf.name = "ASN"

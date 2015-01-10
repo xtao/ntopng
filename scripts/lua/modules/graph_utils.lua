@@ -596,7 +596,7 @@ for n,v in pairs(topArray) do
 		$.ajax({
 			type: 'GET',
 			url: ']]
-  print(ntop.getHttpPrefix().."/lua/top_generic.lua?m="..modulename.."&epoch="..selected_epoch_sanitized)
+  print(ntop.getHttpPrefix().."/lua/top_generic.lua?m="..modulename.."&epoch="..selected_epoch_sanitized.."&addvlan=true")
   if (levels == 2) then
     print [[',
 			data: { epoch: point.value.x },
@@ -611,7 +611,7 @@ for n,v in pairs(topArray) do
 				    if(items < 3)
 				      infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
-    print[["+m.label+"'>"+m.label+"</a> ("+fbits((m.value*8)/60)+")</li>";
+    print[["+m.label+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/60)+")</li>";
 				    items++;
 				  });
 				  infoHTML += "</ol></li>";
@@ -635,7 +635,13 @@ for n,v in pairs(topArray) do
 				   if(items < 3)
 				     infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
-    print[["+n.label+"'>"+n.name+"</a> ("+fbits((n.value*8)/60)+")</li>";
+    print[["+n.label+"'>"+n.name+"</a>";]]
+    if (sectionname ~= "VLANs") then
+      print[[if (n.vlan != "0") infoHTML += " ("+n.vlanm+")"+]]
+    else
+      print[[infoHTML +=]]
+    end
+    print[[" ("+fbits((n.value*8)/60)+")</li>";
 				   items++;
 				});
                                 if(items > 0)

@@ -187,7 +187,11 @@ function groupStatsByColumn(ifid, ifname, col)
             _group[key]["name"] = key .." ["..abbreviateString(hosts_stats[_key]["asname"], 10).."]"
          end
       elseif (col == "vlan") then
-         _group[key]["name"] = "VLAN"..ternary(key == 0, "", hosts_stats[_key]["vlan"])
+         if (key == 0) then
+           _group[key]["name"] = "No VLAN"
+         else
+           _group[key]["name"] = "VLAN"..hosts_stats[_key]["vlan"]
+         end
       end
       val = hosts_stats[_key]["bytes.sent"] + hosts_stats[_key]["bytes.rcvd"]
       total = total + val

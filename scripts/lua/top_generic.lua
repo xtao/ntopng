@@ -13,7 +13,7 @@ ifid = getInterfaceId(ifname)
 epoch = _GET["epoch"]
 module = _GET["m"]
 param = _GET["param"]
-
+add_vlan = _GET["addvlan"]
 
 if (module == nil) then
   print("[ ]\n")
@@ -24,7 +24,7 @@ else
     print("[ ]\n")
   else
     if (epoch ~= nil) then
-      top = mod.getHistoricalTop(ifid, ifname, epoch)
+      top = mod.getHistoricalTop(ifid, ifname, epoch, add_vlan)
     else
       top = mod.getTopClean(ifid, ifname, param)
     end

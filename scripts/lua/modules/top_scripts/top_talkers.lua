@@ -99,11 +99,13 @@ local function topTalkersSectionInTableOP(tblarray, arithOp)
   return ret
 end
 
-local function getTopTalkersFromJSONDirection(table, wantedDir)
+local function getTopTalkersFromJSONDirection(table, wantedDir, add_vlan)
   local elements = ""
 
   -- For each VLAN, get hosts and concatenate them
   for i,vlan in pairs(table["vlan"]) do
+      local vlanid = vlan["label"]
+      local vlanname = vlan["name"]
       -- XXX hosts is an array of (senders, receivers) pairs?
       for i2,hostpair in pairs(vlan[top_talkers_intf.JSONkey]) do
         -- hostpair is { "senders": [...], "receivers": [...] }
@@ -123,6 +125,10 @@ local function getTopTalkersFromJSONDirection(table, wantedDir)
               end
               elements = elements..", "
             end
+            if (add_vlan ~= nil) then
+              elements = elements..'"vlanm": "'..vlanname..'", '
+              elements = elements..'"vlan": "'..vlanid..'", '
+            end
             elements = string.sub(elements, 1, -3)
             elements = elements.." },\n"
           end
@@ -134,16 +140,16 @@ local function getTopTalkersFromJSONDirection(table, wantedDir)
   return elements
 end
 
-local function printTopTalkersFromTable(table)
+local function printTopTalkersFromTable(table, add_vlan)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
 
   local elements = "{\n"
   elements = elements..'"senders": [\n'
-  elements = elements..getTopTalkersFromJSONDirection(table, "senders")
+  elements = elements..getTopTalkersFromJSONDirection(table, "senders", add_vlan)
   elements = string.sub(elements, 1, -3) --remove comma
   elements = elements.."],\n"
   elements = elements..'"receivers": [\n'
-  elements = elements..getTopTalkersFromJSONDirection(table, "receivers")
+  elements = elements..getTopTalkersFromJSONDirection(table, "receivers", add_vlan)
   elements = string.sub(elements, 1, -3) --remove comma
   elements = elements.."]\n"
   elements = elements.."}\n"
@@ -151,23 +157,19 @@ local function printTopTalkersFromTable(table)
   return elements
 end
 
-local function getTopTalkersFromJSON(content)
+local function getTopTalkersFromJSON(content, add_vlan)
   if(content == nil) then return("[ ]\n") end
   local table = parseJSON(content)
-  local rsp = printTopTalkersFromTable(table)
+  local rsp = printTopTalkersFromTable(table, add_vlan)
   if (rsp == nil or rsp == "") then return "[ ]\n" end
   return rsp
 end
 
-local function getTopTalkersFromJSONWithVLAN(content)
-  return getTopTalkersFromJSON(content, true)
-end
-
-local function getHistoricalTopTalkers(ifid, ifname, epoch)
+local function getHistoricalTopTalkers(ifid, ifname, epoch, add_vlan)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopTalkersFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)))
+  return getTopTalkersFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)), add_vlan)
 end
 
 top_talkers_intf.name = "Top Talkers"

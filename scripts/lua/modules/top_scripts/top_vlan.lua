@@ -36,13 +36,17 @@ local function getTopVlanClean(ifid, ifname, param)
   end
 end
 
-local function getTopVLANFromJSON(content)
+local function getTopVLANFromJSON(content, add_vlan)
   if(content == nil) then return("[ ]\n") end
   local table = parseJSON(content)
   if (table == nil or table[top_vlan_intf.JSONkey] == nil) then return "[ ]\n" end
+  local nr_elements = 0
 
   local elements = "[\n"
   for i,vlan in pairs(table[top_vlan_intf.JSONkey]) do
+    if (add_vlan ~= nil and tostring(vlan["label"]) == "0") then
+      goto continue
+    end
     elements = elements.."{ "
     for k,v in pairs(vlan) do
       if (type(v) ~= "table") then
@@ -59,17 +63,21 @@ local function getTopVLANFromJSON(content)
     end
     elements = string.sub(elements, 1, -3)
     elements = elements.." },\n"
+    nr_elements = nr_elements + 1
+    ::continue::
   end
-  elements = string.sub(elements, 1, -3)
+  if (nr_elements > 0) then
+    elements = string.sub(elements, 1, -3)
+  end
   elements = elements.."\n]"
   return elements
 end
 
-local function getHistoricalTopVLAN(ifid, ifname, epoch)
+local function getHistoricalTopVLAN(ifid, ifname, epoch, add_vlan)
   if (epoch == nil) then
     return("[ ]\n")
   end
-  return getTopVLANFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)))
+  return getTopVLANFromJSON(ntop.getMinuteSampling(ifid, tonumber(epoch)), add_vlan)
 end
 
 top_vlan_intf.name = "VLANs"
