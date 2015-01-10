@@ -1103,7 +1103,7 @@ json_object* Flow::flow2es(json_object *flow_object) {
   char buf[64];
   struct tm* tm_info;
   int len;
-  const time_t t;
+  time_t t;
 
   gettimeofday(&tv, NULL);
   t = tv.tv_sec;
