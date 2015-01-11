@@ -21,11 +21,8 @@
 
 #include "ntop_includes.h"
 
-#include "third-party/htmlget.c"
-
 #define DEFAULT_CATEGORIZATION_KEY "9hoAtewwpC2tXRMJBfifrY24B"
-#define CATEGORIZATION_HOST        "service.block.si"
-#define CATEGORIZATION_URL         "/getRating"
+#define CATEGORIZATION_URL         "http://api.block.si/getRatingurl"
 #define NULL_CATEGORY              "''"
 
 /* **************************************** */
@@ -82,8 +79,12 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
       snprintf(url_buf, sizeof(url_buf), "%s?url=%s&apikey=%s", CATEGORIZATION_URL, _url, api_key);
 
-      if(http_get((char*)CATEGORIZATION_HOST, 80, url_buf, body, sizeof(body)) != NULL) {
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", url_buf);
+
+      if(Utils::httpGet(url_buf, body, sizeof(body))) {
 	char *doublecolumn;
+
+	ntop->getTrace()->traceEvent(TRACE_NORMAL, "%s", body);
 
 	if((doublecolumn = strrchr(body, ':')) != NULL) {
 	  char *end;
@@ -104,7 +105,8 @@ void Categorization::categorizeHostName(char *_url, char *buf, u_int buf_len) {
 
 	      doublecolumn = (char*)NULL_CATEGORY;
 	    } else	    
-	      ntop->getRedis()->set(key, doublecolumn, Categorization::default_expire_time); /* Save category into the cache */
+	      ntop->getRedis()->set(key, doublecolumn,
+				    Categorization::default_expire_time); /* Save category into the cache */
 
 	    snprintf(buf, buf_len, "%s", doublecolumn);
 	  }

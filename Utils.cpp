@@ -23,6 +23,11 @@
 
 #include <curl/curl.h>
 
+typedef struct {
+  char outbuf[16384];
+  u_int num_bytes;
+} DownloadState;
+
 /* ****************************************************** */
 
 char* Utils::jsonLabel(int label, const char *label_str,char *buf, u_int buf_len){
@@ -693,3 +698,159 @@ bool Utils::postHTTPJsonData(char *username, char *password, char *url, char *js
 
   return(ret);
 }
+
+/* **************************************** */
+
+/* curl calls this routine to get more data */
+static size_t curl_get_writefunc(char *buffer, size_t size,
+				 size_t nitems, void *userp) {
+  DownloadState *state = (DownloadState*)userp;
+  int len = size*nitems;
+  int diff = sizeof(state->outbuf) - state->num_bytes - 1;
+  
+  if(diff > 0) {
+    int buff_diff = min(diff, len);
+    
+    if(buff_diff > 0) {
+      strncpy(&state->outbuf[state->num_bytes], buffer, buff_diff);
+      state->num_bytes += buff_diff;
+      state->outbuf[state->num_bytes] = '\0';
+    }
+  }
+
+  return(len);
+}
+
+/* **************************************** */
+
+bool Utils::httpGet(lua_State* vm, char *url, char *username, 
+		    char *password, int timeout, 
+		    bool return_content) {
+  CURL *curl;
+  bool ret = true;
+
+  curl = curl_easy_init();
+  if(curl) {
+    curl_version_info_data *v;
+    DownloadState *state;
+    long response_code;
+    char *content_type, *redirection;
+    char ua[64];
+
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      if(username && (username[0] != '\0'))
+	curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+
+      if(password && (password[0] != '\0')) {
+	curl_easy_setopt(curl, CURLOPT_USERPWD, password);
+	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_DIGEST);
+      }
+
+      if(!strncmp(url, "https", 5)) {
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+      }
+
+      if(return_content) {
+	state = (DownloadState*)malloc(sizeof(DownloadState));
+	if(state != NULL) {
+	  memset(state, 0, sizeof(DownloadState));
+	  
+	  curl_easy_setopt(curl, CURLOPT_WRITEDATA, state);
+	  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_get_writefunc); 
+	} else {
+	  ntop->getTrace()->traceEvent(TRACE_WARNING, "Out of memory");
+	  curl_easy_cleanup(curl);
+	  return(false);
+	}
+      }
+      curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+      curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5);
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+
+      v = curl_version_info(CURLVERSION_NOW);
+      snprintf(ua, sizeof(ua), "ntopng v.%s (curl %s)", PACKAGE_VERSION, v->version);
+      curl_easy_setopt(curl, CURLOPT_USERAGENT, ua);
+
+      lua_newtable(vm);
+
+      if(curl_easy_perform(curl) == CURLE_OK) {
+	if(return_content) {
+	  lua_push_str_table_entry(vm, "CONTENT", state->outbuf);
+	  lua_push_int_table_entry(vm, "CONTENT_LEN", state->num_bytes);
+	}
+      }
+
+      if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) == CURLE_OK)
+	lua_push_int_table_entry(vm, "RESPONSE_CODE", response_code);
+    
+      if((curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &content_type) == CURLE_OK) && content_type)
+	lua_push_str_table_entry(vm, "CONTENT_TYPE", content_type);
+
+      if(curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &redirection) == CURLE_OK)
+	lua_push_str_table_entry(vm, "EFFECTIVE_URL", redirection);
+
+      if(return_content)
+	free(state);
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+
+  return(ret);
+}
+
+/* **************************************** */
+
+bool Utils::httpGet(char *url, char *ret_buf, u_int ret_buf_len) {
+  CURL *curl;
+  bool ret = true;
+
+  curl = curl_easy_init();
+  if(curl) {
+    curl_version_info_data *v;
+    DownloadState *state;
+    char ua[64];
+
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+
+      if(!strncmp(url, "https", 5)) {
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+      }
+
+      state = (DownloadState*)malloc(sizeof(DownloadState));
+      if(state != NULL) {
+	memset(state, 0, sizeof(DownloadState));
+	
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, state);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_get_writefunc); 
+      } else {
+	ntop->getTrace()->traceEvent(TRACE_WARNING, "Out of memory");
+	curl_easy_cleanup(curl);
+	return(false);
+      }
+      
+      curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+      curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5);
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10 /* sec */);
+
+      v = curl_version_info(CURLVERSION_NOW);
+      snprintf(ua, sizeof(ua), "ntopng v.%s (curl %s)", PACKAGE_VERSION, v->version);
+      curl_easy_setopt(curl, CURLOPT_USERAGENT, ua);
+
+      if(curl_easy_perform(curl) == CURLE_OK)
+	snprintf(ret_buf, ret_buf_len, "%s", state->outbuf);
+      else
+	ret_buf[0] = '\0';
+
+      free(state);
+    
+      /* always cleanup */
+      curl_easy_cleanup(curl);
+  }
+  
+  return(ret);
+}
+
+
