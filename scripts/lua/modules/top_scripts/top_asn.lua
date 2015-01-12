@@ -66,7 +66,9 @@ end
 local function printTopASTable(tbl)
   local rsp = ""
 
-  for ri,rv in pairs(tbl) do
+  local keys = getKeys(tbl, "value")
+  for tv,ti in pairsByKeys(keys, rev) do
+    rv = tbl[ti]
     rsp = rsp.."{ "
     for k,v in pairs(rv) do
       rsp = rsp..'"'..k..'": '

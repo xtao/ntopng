@@ -1620,6 +1620,11 @@ function getKeysSortedByValue(tbl, sortFunction)
   return keys
 end
 
+function getKeys(t, col)
+  local keys = {}
+  for k,v in pairs(t) do keys[tonumber(v[col])] = k end
+  return keys
+end
 
 -- ##############################################                                                                                                                                                  
 

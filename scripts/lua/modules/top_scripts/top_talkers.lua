@@ -43,7 +43,9 @@ local function printTopTalkersTable(tbl)
   for i,v in pairs(tbl) do
     for dk,dv in pairs(v) do
       rsp = rsp..'"'..dk..'": [\n'
-      for rk,rv in pairs(dv) do
+      local keys = getKeys(dv, "value")
+      for tv,tk in pairsByKeys(keys, rev) do
+        rv = dv[tk]
         rsp = rsp.."{ "
         for k,v in pairs(rv) do
           rsp = rsp..'"'..k..'": '
