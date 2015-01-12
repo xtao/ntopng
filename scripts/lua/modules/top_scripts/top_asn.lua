@@ -64,7 +64,7 @@ local function topASSectionInTableOP(tblarray, arithOp)
 end
 
 local function printTopASTable(tbl)
-  local rsp = "[\n"
+  local rsp = ""
 
   for ri,rv in pairs(tbl) do
     rsp = rsp.."{ "
@@ -82,7 +82,6 @@ local function printTopASTable(tbl)
   end
 
   rsp = string.sub(rsp, 1, -3)
-  rsp = rsp.."\n]\n"
 
   return rsp
 end
