@@ -57,6 +57,7 @@ Ntop::Ntop(char *appName) {
   start_time = 0; /* It will be initialized by start() */
   memset(iface, 0, sizeof(iface));
   httpd = NULL, runtimeprefs = NULL, geo = NULL;
+
 #ifdef WIN32
   if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
 		     SHGFP_TYPE_CURRENT, working_dir) != S_OK) {
@@ -267,6 +268,7 @@ void Ntop::loadLocalInterfaceAddress() {
   struct ifaddrs *local_addresses, *ifa;
   /* buf must be big enough for an IPv6 address(e.g. 3ffe:2fa0:1010:ca22:020a:95ff:fe8a:1cf8) */
   char buf[128], buf2[128];
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
 
   if(getifaddrs(&local_addresses) != 0) {
     ntop->getTrace()->traceEvent(TRACE_ERROR, "Unable to read interface addresses");
@@ -274,6 +276,10 @@ void Ntop::loadLocalInterfaceAddress() {
   }
 
   for(ifa = local_addresses; ifa != NULL; ifa = ifa->ifa_next) {
+    struct ifreq ifr;
+    u_int32_t netmask;
+    int cidr;
+
     if((ifa->ifa_addr == NULL)
        || ((ifa->ifa_flags & IFF_UP) == 0))
       continue;
@@ -284,9 +290,21 @@ void Ntop::loadLocalInterfaceAddress() {
       if(inet_ntop(ifa->ifa_addr->sa_family,(void *)&(s4->sin_addr), buf, sizeof(buf)) != NULL) {
 	int l = strlen(buf);
 	int16_t network_id;
+	
+	memset(&ifr, 0, sizeof(ifr));
+	ifr.ifr_addr.sa_family = AF_INET;
+	strncpy(ifr.ifr_name, ifa->ifa_name, sizeof(ifr.ifr_name));
+	ioctl(sock, SIOCGIFNETMASK, &ifr);
+	netmask = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
+	cidr = 0;
 
-	snprintf(&buf[l], sizeof(buf)-l, "%s", "/32");
-	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv4 interface address", buf);
+	while(netmask) {
+	  cidr += (netmask & 0x01);
+	  netmask >>= 1;
+	}
+
+	snprintf(&buf[l], sizeof(buf)-l, "/%u", cidr);
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s/%u as IPv4 interface address", buf, cidr);
 	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
 
@@ -303,8 +321,20 @@ void Ntop::loadLocalInterfaceAddress() {
 	int l = strlen(buf);
 	int16_t network_id;
 
-	snprintf(&buf[l], sizeof(buf)-l, "%s", "/128");
-	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s as IPv6 interface address", buf);
+	memset(&ifr, 0, sizeof(ifr));
+	ifr.ifr_addr.sa_family = AF_INET6;
+	strncpy(ifr.ifr_name, ifa->ifa_name, sizeof(ifr.ifr_name));
+	ioctl(sock, SIOCGIFNETMASK, &ifr);
+	netmask = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
+	cidr = 0;
+
+	while(netmask) {
+	  cidr += (netmask & 0x01);
+	  netmask >>= 1;
+	}
+
+	snprintf(&buf[l], sizeof(buf)-l, "/%u", cidr);
+	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s/%u as IPv6 interface address", buf, cidr);
 	strcpy(buf2, buf);
 	ptree_add_rule(local_interface_addresses, buf);
 
@@ -318,6 +348,8 @@ void Ntop::loadLocalInterfaceAddress() {
   }
 
   freeifaddrs(local_addresses);
+
+  close(sock);
 #endif
 }
 

@@ -132,7 +132,7 @@ patricia_node_t* ptree_add_rule(patricia_tree_t *ptree, char *line) {
   
   bits++;
 
-  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Rule '%s'/'%s'\n", ip, bits);
+  ntop->getTrace()->traceEvent(TRACE_DEBUG, "Rule %s/%s", ip, bits);
 
   if(strchr(ip, ':') != NULL) { /* IPv6 */
     if(inet_pton(AF_INET6, ip, &addr6) == 1)

@@ -153,7 +153,7 @@ NetworkInterface::NetworkInterface(const char *name) {
     db = new DB(this);
 
     statsManager = new StatsManager(id, "top_talkers.db");
-    if (!statsManager)
+    if(!statsManager)
       ntop->getTrace()->traceEvent(TRACE_WARNING, "Could not allocate StatsManager");
 
     checkIdle();
@@ -204,11 +204,14 @@ void NetworkInterface::deleteDataStructures() {
 
 NetworkInterface::~NetworkInterface() {
   if(getNumPackets() > 0) {
-    ntop->getTrace()->traceEvent(TRACE_NORMAL, "Flushing host contacts for interface %s", get_name());
+    ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				 "Flushing host contacts for interface %s",
+				 get_name());
     cleanup();
   }
 
   deleteDataStructures();
+
   delete db;
   delete statsManager;
 }
@@ -277,7 +280,8 @@ void NetworkInterface::dumpFlows() {
 
 /* **************************************************** */
 
-Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth, u_int16_t vlan_id,
+Flow* NetworkInterface::getFlow(u_int8_t *src_eth, u_int8_t *dst_eth,
+				u_int16_t vlan_id,
   				IpAddress *src_ip, IpAddress *dst_ip,
   				u_int16_t src_port, u_int16_t dst_port,
 				u_int8_t l4_proto,
@@ -451,8 +455,7 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
 					 struct ndpi_iphdr *iph,
 					 struct ndpi_ip6_hdr *ip6,
 					 u_int16_t ipsize,
-					 u_int16_t rawsize)
-{
+					 u_int16_t rawsize) {
   bool src2dst_direction;
   u_int8_t l4_proto;
   Flow *flow;
@@ -486,7 +489,8 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
   } else {
     /* IPv6 */
     if(ipsize < sizeof(const struct ndpi_ip6_hdr)) {
-      incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+      incStats(ETHERTYPE_IPV6, NDPI_PROTOCOL_UNKNOWN, rawsize,
+	       1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
       return(pass_verdict);
     }
 
@@ -498,7 +502,7 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
 
   if((l4_proto == IPPROTO_TCP) && (l4_packet_len >= 20)) {
     u_int tcp_len;
-    /* tcp */
+    /* TCP */
     tcph = (struct ndpi_tcphdr *)l4;
     src_port = tcph->source, dst_port = tcph->dest;
     tcp_flags = l4[13];
@@ -506,13 +510,13 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
     payload = &l4[tcp_len];
     payload_len = max_val(0, l4_packet_len-4*tcph->doff);
   } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
-    /* udp */
+    /* UDP */
     udph = (struct ndpi_udphdr *)l4;
     src_port = udph->source,  dst_port = udph->dest;
     payload = &l4[sizeof(struct ndpi_udphdr)];
     payload_len = max_val(0, l4_packet_len-sizeof(struct ndpi_udphdr));
   } else {
-    /* non tcp/udp protocols */
+    /* non TCP/UDP protocols */
 
     src_port = dst_port = 0;
     payload = NULL, payload_len = 0;
@@ -558,10 +562,10 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
 
     if(l4_proto == IPPROTO_TCP) {
       flow->updateTcpFlags(when, tcp_flags, src2dst_direction);
-      flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq), 
-			    tcp_flags, l4_packet_len - (4 * tcph->doff), 
+      flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq),
+			    tcp_flags, l4_packet_len - (4 * tcph->doff),
 			    src2dst_direction);
-    }    
+    }
   }
 
   if(new_flow) {
@@ -668,12 +672,13 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
     if(flow->get_detected_protocol() != NDPI_PROTOCOL_DNS)
       flow->deleteFlowMemory();
 
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(),
+	     rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
 
     pass_verdict = flow->getVerdict();
-
   } else
-    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(), rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+    incStats(iph ? ETHERTYPE_IP : ETHERTYPE_IPV6, flow->get_detected_protocol(),
+	     rawsize, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
 
   return(pass_verdict);
 }
@@ -865,7 +870,8 @@ bool NetworkInterface::packet_dissector(const struct pcap_pkthdr *h, const u_cha
       dstHost->updateActivities();
     }
 
-    incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len, 1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
+    incStats(eth_type, NDPI_PROTOCOL_UNKNOWN, h->len,
+	     1, 24 /* 8 Preamble + 4 CRC + 12 IFG */);
     break;
   }
 
@@ -1299,7 +1305,8 @@ bool NetworkInterface::getAggregatedHostInfo(lua_State* vm,
   Example if we are looking at the DNS requests, it will return all DNS
   names requested by host X (host_name)
 */
-bool NetworkInterface::getAggregationsForHost(lua_State* vm, patricia_tree_t *allowed_hosts,
+bool NetworkInterface::getAggregationsForHost(lua_State* vm,
+					      patricia_tree_t *allowed_hosts,
 					      char *host_ip) {
   struct host_find_aggregation_info info;
   IpAddress *h = new IpAddress(host_ip);
@@ -1565,7 +1572,8 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 
 /* **************************************************** */
 
-Flow* NetworkInterface::findFlowByKey(u_int32_t key, patricia_tree_t *allowed_hosts) {
+Flow* NetworkInterface::findFlowByKey(u_int32_t key,
+				      patricia_tree_t *allowed_hosts) {
   Flow *f = (Flow*)(flows_hash->findByKey(key));
 
   if(f && (!f->match(allowed_hosts))) f = NULL;
@@ -1596,7 +1604,8 @@ static bool hosts_search_walker(GenericHashEntry *h, void *user_data) {
 
 /* **************************************************** */
 
-static bool aggregations_search_walker(GenericHashEntry *h, void *user_data) {
+static bool aggregations_search_walker(GenericHashEntry *h,
+				       void *user_data) {
   StringHost *host = (StringHost*)h;
   struct search_host_info *info = (struct search_host_info*)user_data;
 
@@ -1609,7 +1618,9 @@ static bool aggregations_search_walker(GenericHashEntry *h, void *user_data) {
 
 /* **************************************************** */
 
-void NetworkInterface::findHostsByName(lua_State* vm, patricia_tree_t *allowed_hosts, char *key) {
+void NetworkInterface::findHostsByName(lua_State* vm,
+				       patricia_tree_t *allowed_hosts,
+				       char *key) {
   struct search_host_info info;
 
   info.vm = vm, info.host_name_or_ip = key, info.num_matches = 0, info.allowed_hosts = allowed_hosts;
@@ -1625,9 +1636,9 @@ void NetworkInterface::findHostsByName(lua_State* vm, patricia_tree_t *allowed_h
 
 bool NetworkInterface::validInterface(char *name) {
   if(name &&
-     (strstr(name, "PPP")         /* Avoid to use the PPP interface              */
-      || strstr(name, "dialup")   /* Avoid to use the dialup interface           */
-      || strstr(name, "ICSHARE")  /* Avoid to use the internet sharing interface */
+     (strstr(name, "PPP")            /* Avoid to use the PPP interface              */
+      || strstr(name, "dialup")      /* Avoid to use the dialup interface           */
+      || strstr(name, "ICSHARE")     /* Avoid to use the internet sharing interface */
       || strstr(name, "NdisWan"))) { /* Avoid to use the internet sharing interface */
     return(false);
   }
@@ -1637,7 +1648,8 @@ bool NetworkInterface::validInterface(char *name) {
 
 /* **************************************************** */
 
-u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *ifname, u_int ifname_len) {
+u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx,
+						 char *ifname, u_int ifname_len) {
   char ebuf[256];
   int numInterfaces = 0;
   pcap_if_t *devpointer;
@@ -1654,7 +1666,8 @@ u_int NetworkInterface::printAvailableInterfaces(bool printHelp, int idx, char *
       if(printHelp)
 	printf("Available interfaces (-i <interface index>):\n");
       else if(!help_printed)
-	ntop->getTrace()->traceEvent(TRACE_NORMAL, "Available interfaces (-i <interface index>):");
+	ntop->getTrace()->traceEvent(TRACE_NORMAL,
+				     "Available interfaces (-i <interface index>):");
     }
 
     for(int i = 0; devpointer != NULL; i++) {
@@ -1771,7 +1784,7 @@ static bool similarity_walker(GenericHashEntry *node, void *user_data) {
      && (h != info->h)) {
     char buf[32], name[64];
 
-    if (h->get_vlan_id() == 0) {
+    if(h->get_vlan_id() == 0) {
       sprintf(name, "%s",h->get_ip()->print(buf, sizeof(buf)));
     } else {
       sprintf(name, "%s@%d",h->get_ip()->print(buf, sizeof(buf)),h->get_vlan_id());
@@ -1976,7 +1989,8 @@ void NetworkInterface::addAllAvailableInterfaces() {
     for(int i = 0; devpointer != 0; i++) {
       if(validInterface(devpointer->description)
 	 && isInterfaceUp(devpointer->name)) {
-	ntop->getPrefs()->add_network_interface(devpointer->name, devpointer->description);
+	ntop->getPrefs()->add_network_interface(devpointer->name,
+						devpointer->description);
       }
 
       devpointer = devpointer->next;
