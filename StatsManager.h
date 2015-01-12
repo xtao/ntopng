@@ -38,6 +38,8 @@ public:
 			            char ***vals, int *num_vals);
     int retrieveHourStatsInterval(time_t epoch_start, time_t epoch_end,
 			          char ***vals, int *num_vals);
+    int retrieveDayStatsInterval(time_t epoch_start, time_t epoch_end,
+			         char ***vals, int *num_vals);
     int deleteMinuteStatsOlderThan(unsigned num_days);
 private:
     static const int MAX_QUERY = 10000;

@@ -332,6 +332,29 @@ int StatsManager::retrieveHourStatsInterval(time_t epoch_start,
   return retrieveStatsInterval(vals, num_vals, HOUR_CACHE_NAME, epoch_start, epoch_end);
 }
 
+/**
+ * @brief Retrieve an interval of samplings from the day stats cache
+ * @details This function implements the database-specific code
+ *          to retrieve an interval of samplings masking out cache-specific
+ *          details concerning the day stats cache.
+ *
+ * @param epoch_start Left boundary of the interval.
+ * @param epoch_end Right boundary of the interval.
+ * @param vals Pointer to a string array that will keep the result.
+ * @param num_vals Pointer to an integer that will keep the number
+ *        of retrieved sampling points.
+ *
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::retrieveDayStatsInterval(time_t epoch_start,
+					   time_t epoch_end,
+					   char ***vals,
+                                           int *num_vals) {
+  if (!vals || !num_vals)
+    return -1;
+
+  return retrieveStatsInterval(vals, num_vals, DAY_CACHE_NAME, epoch_start, epoch_end);
+}
 
 /**
  * @brief Database interface to add a new stats sampling

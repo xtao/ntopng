@@ -2565,6 +2565,60 @@ static int ntop_stats_get_samplings_of_hours_from_epoch(lua_State *vm) {
   return(CONST_LUA_OK);
 }
 
+/**
+ * @brief Given an epoch, get hour stats for the latest n days
+ * @details Given a certain sampling point, get statistics for that point and
+ *          for all timepoints spanning an interval of a given number of
+ *          days.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_get_samplings_of_days_from_epoch(lua_State *vm) {
+  time_t epoch_start, epoch_end;
+  int num_days;
+  char **vals;
+  int ifid, num_vals = 0;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  epoch_end = lua_tointeger(vm, 2);
+  epoch_end -= (epoch_end % 60);
+  if (epoch_end < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num_days = lua_tointeger(vm, 3);
+  if (num_days < 0)
+    return(CONST_LUA_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  epoch_start = epoch_end - (num_days * 24 * 60 * 60);
+
+  if(sm->retrieveDayStatsInterval(epoch_start, epoch_end, &vals, &num_vals))
+    return(CONST_LUA_ERROR);
+
+  lua_newtable(vm);
+
+  for(int i = 0; i < num_vals; i++) {
+    lua_push_str_table_entry(vm, vals[i], (char*)"");
+    free(vals[i]);
+  }
+  if (num_vals > 0) free(vals);
+
+  return(CONST_LUA_OK);
+}
 
 /* ****************************************** */
 
@@ -3225,6 +3279,7 @@ static const luaL_Reg ntop_reg[] = {
   { "deleteMinuteStatsOlderThan",  ntop_stats_delete_minute_older_than },
   { "getMinuteSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
   { "getHourSamplingsFromEpoch",   ntop_stats_get_samplings_of_hours_from_epoch },
+  { "getDaySamplingsFromEpoch",   ntop_stats_get_samplings_of_days_from_epoch },
   { "getMinuteSamplingsInterval",  ntop_stats_get_minute_samplings_interval },
 
   /* Time */
