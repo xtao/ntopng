@@ -92,7 +92,7 @@ end
 
 -- #####################################################
 
-function getActualTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode)
+function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode)
    max_num_entries = 10
    rsp = ""
 
@@ -200,8 +200,8 @@ function groupStatsByColumn(ifid, ifname, col)
   return _group, total
 end
 
-function getActualTopGroups(ifid, ifname, max_num_entries, use_threshold,
-                            use_delta, filter_col, filter_val, col, concat)
+function getCurrentTopGroups(ifid, ifname, max_num_entries, use_threshold,
+                             use_delta, filter_col, filter_val, col, concat)
    rsp = ""
 
    --if(ifname == nil) then ifname = "any" end

@@ -20,15 +20,15 @@ if (ntop.isPro()) then
 end
 
 local function getTopTalkers(ifid, ifname)
-  return getActualTopTalkers(ifid, ifname, nil, nil, true)
+  return getCurrentTopTalkers(ifid, ifname, nil, nil, true)
 end
 
 local function getTopTalkersBy(ifid, ifname, filter_col, filter_val)
-  return getActualTopTalkers(ifid, ifname, filter_col, filter_val, true)
+  return getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, true)
 end
 
 local function getTopTalkersClean(ifid, ifname, param)
-  top = getActualTopTalkers(ifid, ifname, nil, nil, false, param)
+  top = getCurrentTopTalkers(ifid, ifname, nil, nil, false, param)
   section_beginning = string.find(top, '%[')
   if (section_beginning == nil) then
     return("[ ]\n")

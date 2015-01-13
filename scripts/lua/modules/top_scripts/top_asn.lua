@@ -20,18 +20,18 @@ if (ntop.isPro()) then
 end
 
 local function getTopAS(ifid, ifname)
-  return getActualTopGroups(ifid, ifname, 10, true, false,
-                            nil, nil, top_asn_intf.key, true)
+  return getCurrentTopGroups(ifid, ifname, 10, true, false,
+                             nil, nil, top_asn_intf.key, true)
 end
 
 local function getTopASBy(ifid, ifname, filter_col, filter_val)
-  return getActualTopGroups(ifid, ifname, 10, true, false,
-                            filter_col, filter_val, top_asn_intf.key, true)
+  return getCurrentTopGroups(ifid, ifname, 10, true, false,
+                             filter_col, filter_val, top_asn_intf.key, true)
 end
 
 local function getTopASClean(ifid, ifname, param)
-  top = getActualTopGroups(ifid, ifname, 10, true, false,
-                           nil, nil, top_asn_intf.key, false)
+  top = getCurrentTopGroups(ifid, ifname, 10, true, false,
+                            nil, nil, top_asn_intf.key, false)
   section_beginning = string.find(top, '%[')
   if (section_beginning == nil) then
     return("[ ]\n")
