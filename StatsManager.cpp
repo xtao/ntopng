@@ -204,6 +204,42 @@ int StatsManager::deleteMinuteStatsOlderThan(unsigned num_days) {
   return deleteStatsOlderThan(MINUTE_CACHE_NAME, rawtime);
 }
 
+/**
+ * @brief Hour stats interface to database purging.
+ * @details This function hides cache-specific details (e.g. building the key
+ *          for the hour stats cache.
+ *
+ * @param num_days Number of days to use to purge statistics.
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::deleteHourStatsOlderThan(unsigned num_days) {
+  time_t rawtime;
+
+  time(&rawtime);
+  rawtime -= rawtime % 60;
+  rawtime -= num_days * 24 * 60 * 60;
+
+  return deleteStatsOlderThan(HOUR_CACHE_NAME, rawtime);
+}
+
+/**
+ * @brief Day stats interface to database purging.
+ * @details This function hides cache-specific details (e.g. building the key
+ *          for the day stats cache.
+ *
+ * @param num_days Number of days to use to purge statistics.
+ * @return Zero in case of success, nonzero in case of error.
+ */
+int StatsManager::deleteDayStatsOlderThan(unsigned num_days) {
+  time_t rawtime;
+
+  time(&rawtime);
+  rawtime -= rawtime % 60;
+  rawtime -= num_days * 24 * 60 * 60;
+
+  return deleteStatsOlderThan(DAY_CACHE_NAME, rawtime);
+}
+
 struct statsManagerRetrieval {
   vector<string> rows;
   int num_vals;

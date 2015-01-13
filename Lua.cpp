@@ -2404,6 +2404,84 @@ static int ntop_stats_delete_minute_older_than(lua_State *vm) {
 }
 
 /**
+ * @brief Delete hour stats older than a certain number of days.
+ * @details Given a number of days, delete stats for the current interface that
+ *          are older than a certain number of days.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_delete_hour_older_than(lua_State *vm) {
+  int num_days;
+  string sampling;
+  int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num_days = lua_tointeger(vm, 2);
+  if(num_days < 0)
+    return(CONST_LUA_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  if(sm->deleteHourStatsOlderThan(num_days))
+    return(CONST_LUA_ERROR);
+
+  return(CONST_LUA_OK);
+}
+
+/**
+ * @brief Delete day stats older than a certain number of days.
+ * @details Given a number of days, delete stats for the current interface that
+ *          are older than a certain number of days.
+ *
+ * @param vm The lua state.
+ * @return @ref CONST_LUA_PARAM_ERROR in case of wrong parameter,
+ *              CONST_LUA_ERROR in case of generic error, CONST_LUA_OK otherwise.
+ */
+static int ntop_stats_delete_day_older_than(lua_State *vm) {
+  int num_days;
+  string sampling;
+  int ifid;
+  NetworkInterface* iface;
+  StatsManager *sm;
+
+  ntop->getTrace()->traceEvent(TRACE_INFO, "%s() called", __FUNCTION__);
+
+  if(!Utils::isUserAdministrator(vm)) return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  ifid = lua_tointeger(vm, 1);
+  if(ifid < 0)
+    return(CONST_LUA_ERROR);
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  num_days = lua_tointeger(vm, 2);
+  if(num_days < 0)
+    return(CONST_LUA_ERROR);
+
+  if(!(iface = ntop->getInterfaceById(ifid)) ||
+     !(sm = iface->getStatsManager()))
+    return (CONST_LUA_ERROR);
+
+  if(sm->deleteDayStatsOlderThan(num_days))
+    return(CONST_LUA_ERROR);
+
+  return(CONST_LUA_OK);
+}
+
+/**
  * @brief Get an interval of minute stats samplings from the historical database
  * @details Given a certain interval of sampling points, get statistics for said
  *          sampling points.
@@ -3277,9 +3355,11 @@ static const luaL_Reg ntop_reg[] = {
   { "insertDaySampling",           ntop_stats_insert_day_sampling },
   { "getMinuteSampling",           ntop_stats_get_minute_sampling },
   { "deleteMinuteStatsOlderThan",  ntop_stats_delete_minute_older_than },
+  { "deleteHourStatsOlderThan",    ntop_stats_delete_hour_older_than },
+  { "deleteDayStatsOlderThan",     ntop_stats_delete_day_older_than },
   { "getMinuteSamplingsFromEpoch", ntop_stats_get_samplings_of_minutes_from_epoch },
   { "getHourSamplingsFromEpoch",   ntop_stats_get_samplings_of_hours_from_epoch },
-  { "getDaySamplingsFromEpoch",   ntop_stats_get_samplings_of_days_from_epoch },
+  { "getDaySamplingsFromEpoch",    ntop_stats_get_samplings_of_days_from_epoch },
   { "getMinuteSamplingsInterval",  ntop_stats_get_minute_samplings_interval },
 
   /* Time */

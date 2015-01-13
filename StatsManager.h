@@ -41,6 +41,8 @@ public:
     int retrieveDayStatsInterval(time_t epoch_start, time_t epoch_end,
 			         char ***vals, int *num_vals);
     int deleteMinuteStatsOlderThan(unsigned num_days);
+    int deleteHourStatsOlderThan(unsigned num_days);
+    int deleteDayStatsOlderThan(unsigned num_days);
 private:
     static const int MAX_QUERY = 10000;
     static const int MAX_KEY = 20;
