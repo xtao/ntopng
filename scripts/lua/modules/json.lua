@@ -81,7 +81,8 @@ local function parseObject(content, pos)
   while (lstart <= clen) do
     local key, nstart = parseString(content, lstart)
     lstart = skipWhitespaces(content, nstart)
-    if (content:sub(lstart, lstart) ~= ':') then
+    if (content == nil or lstart == nil or
+        content:sub(lstart, lstart) ~= ':') then
       return {}, lstart
     end
     lstart = skipWhitespaces(content, lstart+1)
@@ -89,6 +90,9 @@ local function parseObject(content, pos)
     val[key] = nval
     -- We have key and value, must have a } or a ,
     lstart = skipWhitespaces(content, nstart)
+    if (content == nil or lstart == nil) then
+      return {}, clen
+    end
     if (content:sub(lstart, lstart) == '}') then
       return val, lstart+1
     end
@@ -121,6 +125,9 @@ local function parseArray(content, pos)
     idx = idx + 1
     lstart = skipWhitespaces(content, nstart)
     -- Need a ] or a , now
+    if (content == nil or lstart == nil) then
+      return {}, clen
+    end
     if (content:sub(lstart, lstart) == ']') then
       return val, lstart+1
     end
