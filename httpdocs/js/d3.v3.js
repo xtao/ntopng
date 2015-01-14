@@ -5001,7 +5001,9 @@
       iHalfEdge = 0; 
       // console.log(halfEdges+","+nHalfEdges);
       while (iHalfEdge < nHalfEdges) {
-        end = halfEdges[iHalfEdge].end(), x3 = end.x, y3 = end.y;
+        end = halfEdges[iHalfEdge].end();
+        if (end == null) break;
+        x3 = end.x, y3 = end.y;
         start = halfEdges[++iHalfEdge % nHalfEdges].start(), x2 = start.x, y2 = start.y;
         if (abs(x3 - x2) > ε || abs(y3 - y2) > ε) {
           halfEdges.splice(iHalfEdge, 0, new d3_geom_voronoiHalfEdge(d3_geom_voronoiCreateBorderEdge(cell.site, end, abs(x3 - x0) < ε && y1 - y3 > ε ? {
@@ -5190,9 +5192,11 @@
   }
   function d3_geom_voronoiHalfEdge(edge, lSite, rSite) {
     var va = edge.a, vb = edge.b;
+    if (vb === null) { bx = 0; by = 0; } else { bx = vb.x; by = vb.y; }
+    if (va === null) { ax = 0; ay = 0; } else { ax = va.x; ay = va.y; }
     this.edge = edge;
     this.site = lSite;
-    this.angle = rSite ? Math.atan2(rSite.y - lSite.y, rSite.x - lSite.x) : edge.l === lSite ? Math.atan2(vb.x - va.x, va.y - vb.y) : Math.atan2(va.x - vb.x, vb.y - va.y);
+    this.angle = rSite ? Math.atan2(rSite.y - lSite.y, rSite.x - lSite.x) : edge.l === lSite ? Math.atan2(bx - ax, ay - by) : Math.atan2(ax - bx, by - ay);
   }
   d3_geom_voronoiHalfEdge.prototype = {
     start: function() {
