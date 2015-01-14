@@ -95,7 +95,12 @@ start_ntopng() {
 	[ ${DISTRO} == "centos" ] && echo -n "Starting ntopng: "
 
 	check_ntopng start
-	$NTOPNG_BINARY /etc/ntopng/ntopng.conf > /dev/null &
+	if [ ! -d /var/log/ntopng/ ]; then
+	   mkdir -p /var/log/ntopng/
+	   touch  /var/log/ntopng/ntopng.log
+	   chmod 777  /var/log/ntopng/ntopng.log
+	fi
+	$NTOPNG_BINARY /etc/ntopng/ntopng.conf >> /var/log/ntopng/ntopng.log &
     else
         MSG="Missing /etc/ntopng/ntopng.start. Exiting"
         ERROR=1
