@@ -594,8 +594,11 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
     // ntop->getTrace()->traceEvent(TRACE_WARNING, "IP fragments are not handled yet!");
   }
 
-  if(flow->isDetectionCompleted()) {
+  if(flow->isDetectionCompleted()
+     && flow->get_cli_host() 
+     && flow->get_srv_host()) {
     /* Handle aggregations here */
+
     switch(flow->get_detected_protocol()) {
     case NDPI_PROTOCOL_HTTP:
       if(payload_len > 0)
