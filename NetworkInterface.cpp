@@ -500,21 +500,34 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
     ip = (u_int8_t*)ip6;
   }
 
-  if((l4_proto == IPPROTO_TCP) && (l4_packet_len >= 20)) {
-    u_int tcp_len;
-    /* TCP */
-    tcph = (struct ndpi_tcphdr *)l4;
-    src_port = tcph->source, dst_port = tcph->dest;
-    tcp_flags = l4[13];
-    tcp_len = min_val(4*tcph->doff, l4_packet_len);
-    payload = &l4[tcp_len];
-    payload_len = max_val(0, l4_packet_len-4*tcph->doff);
-  } else if((l4_proto == IPPROTO_UDP) && (l4_packet_len >= 8)) {
-    /* UDP */
-    udph = (struct ndpi_udphdr *)l4;
-    src_port = udph->source,  dst_port = udph->dest;
-    payload = &l4[sizeof(struct ndpi_udphdr)];
-    payload_len = max_val(0, l4_packet_len-sizeof(struct ndpi_udphdr));
+  if(l4_proto == IPPROTO_TCP) {
+    if(l4_packet_len >= sizeof(struct ndpi_tcphdr)) {
+      u_int tcp_len;
+      
+      /* TCP */
+      tcph = (struct ndpi_tcphdr *)l4;
+      src_port = tcph->source, dst_port = tcph->dest;
+      tcp_flags = l4[13];
+      tcp_len = min_val(4*tcph->doff, l4_packet_len);
+      payload = &l4[tcp_len];
+      payload_len = max_val(0, l4_packet_len-4*tcph->doff);
+    } else {
+      /* Packet too short: this is a faked packet */
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Invalid TCP packet received [%u bytes long]", l4_packet_len);
+      return(pass_verdict);
+    }
+  } else if(l4_proto == IPPROTO_UDP) {
+    if(l4_packet_len >= sizeof(struct ndpi_udphdr)) {
+      /* UDP */
+      udph = (struct ndpi_udphdr *)l4;
+      src_port = udph->source,  dst_port = udph->dest;
+      payload = &l4[sizeof(struct ndpi_udphdr)];
+      payload_len = max_val(0, l4_packet_len-sizeof(struct ndpi_udphdr));
+    } else {
+      /* Packet too short: this is a faked packet */
+      ntop->getTrace()->traceEvent(TRACE_INFO, "Invalid UDP packet received [%u bytes long]", l4_packet_len);
+      return(pass_verdict);
+    }
   } else {
     /* non TCP/UDP protocols */
 
@@ -562,9 +575,9 @@ bool NetworkInterface::packet_processing(const struct timeval *when,
 
     if(l4_proto == IPPROTO_TCP) {
       flow->updateTcpFlags(when, tcp_flags, src2dst_direction);
-      flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq),
-			    tcp_flags, l4_packet_len - (4 * tcph->doff),
-			    src2dst_direction);
+	flow->updateTcpSeqNum(when, ntohl(tcph->seq), ntohl(tcph->ack_seq),
+			      tcp_flags, l4_packet_len - (4 * tcph->doff),
+			      src2dst_direction);
     }
   }
 

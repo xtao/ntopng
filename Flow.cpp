@@ -58,14 +58,18 @@ Flow::Flow(NetworkInterface *_iface,
   memset(&clientNwLatency, 0, sizeof(clientNwLatency)), memset(&serverNwLatency, 0, sizeof(serverNwLatency)), 
   aggregationInfo.name = NULL;
 
-  /*
-    NOTE
+  switch(protocol) {
+  case IPPROTO_TCP:
+  case IPPROTO_UDP:
+    if(iface->is_ndpi_enabled())
+      allocFlowMemory();
+    break;
 
-    We enable nDPI even if this is a flow collector interface
-    where DPI cannot be used. This is because we will use nDPI
-    to guess protocols based on ports and IPs
-  */
-  /* if(iface->is_ndpi_enabled()) */ allocFlowMemory();
+  default:
+    ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), 
+							    protocol, 0, 0, 0, 0);						    
+    break;
+  }
 
   if(!iface->is_packet_interface())
     last_update_time.tv_sec = (long)first_seen;
@@ -295,11 +299,6 @@ void Flow::processDetectedProtocol() {
     }
     break;
 
-  case NDPI_PROTOCOL_SSL:
-    if(ndpi_flow->host_server_name[0] == '\0')
-      ndpi_detected_protocol = NDPI_PROTOCOL_SSL_NO_CERT;
-    break;
-
     /* No break here !*/
   case NDPI_PROTOCOL_HTTP:
   case NDPI_PROTOCOL_HTTP_PROXY:
@@ -402,18 +401,22 @@ void Flow::makeVerdict() {
 void Flow::guessProtocol() {
   detection_completed = true; /* We give up */
 
-  /* We can guess the protocol */
-  ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							  ntohl(cli_host->get_ip()->get_ipv4()), 
-							  ntohs(cli_port),
-							  ntohl(srv_host->get_ip()->get_ipv4()),
-							  ntohs(srv_port));
+  if((protocol == IPPROTO_TCP)
+     || (protocol == IPPROTO_UDP)) {
+    /* We can guess the protocol */
+    ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
+							    ntohl(cli_host->get_ip()->get_ipv4()), 
+							    ntohs(cli_port),
+							    ntohl(srv_host->get_ip()->get_ipv4()),
+							    ntohs(srv_port));
+  }
 }
 
 /* *************************************** */
 
 void Flow::setDetectedProtocol(u_int16_t proto_id) {
-  if((ndpi_flow != NULL) || (!iface->is_ndpi_enabled())) {
+  if((ndpi_flow != NULL) 
+     || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
       ndpi_detected_protocol = proto_id;
       processDetectedProtocol();
