@@ -605,7 +605,13 @@ for n,v in pairs(topArray) do
 				var info = jQuery.parseJSON(content);
 				infoHTML += "<ul>";
 				$.each(info, function(i, n) {
-				  infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Avg Traffic/sec]<ol>";
+                                  var nonempty = 0;
+                                  $.each(n, function(j, m) {
+                                    nonempty++;
+                                    return false;
+                                  });
+                                  if (nonempty != 0)
+				    infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Avg Traffic/sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
 				    if(items < 3)
