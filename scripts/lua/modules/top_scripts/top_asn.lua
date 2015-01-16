@@ -92,7 +92,10 @@ local function getTopASFromJSON(content, add_vlan)
   if(content == nil) then return("[ ]\n") end
   local table = parseJSON(content)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
+
+  local records = 0
   local elements = "[\n"
+
   -- For each VLAN, get ASN and concatenate them
   for i,vlan in pairs(table["vlan"]) do
       local vlanname = vlan["name"]
@@ -115,9 +118,12 @@ local function getTopASFromJSON(content, add_vlan)
         end
         elements = string.sub(elements, 1, -3)
         elements = elements.." },\n"
+        records = records + 1
       end
   end
-  elements = string.sub(elements, 1, -3) -- remove comma
+  if (records > 0) then
+    elements = string.sub(elements, 1, -3) -- remove comma
+  end
   elements = elements.."\n]"
   return elements
 end
