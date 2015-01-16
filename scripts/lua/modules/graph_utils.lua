@@ -583,6 +583,24 @@ var Hover = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 		var infoHTML = "";
 ]]
 
+print[[
+
+var seconds;
+
+$.ajax ({
+  type: 'GET',
+  url: ']]
+  print(ntop.getHttpPrefix().."/lua/modules/get_real_epochs.lua?epoch='+point.value.x,")
+print[[
+  data: { epoch: point.value.x },
+  async: false,
+  success: function(content) {
+    var res = content.split(" ");
+    seconds = parseInt(res[0]) - parseInt(res[1]);
+  }
+  });
+]]
+
 if(topArray ~= nil) then
 for n,v in pairs(topArray) do
   modulename = n
@@ -617,7 +635,7 @@ for n,v in pairs(topArray) do
 				    if(items < 3) {
 				      infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
-    print[["+m.label+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/60)+")</li>";
+    print[["+m.label+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/seconds)+")</li>";
 				      items++;
                                     }
 				  });
@@ -648,7 +666,7 @@ for n,v in pairs(topArray) do
     else
       print[[infoHTML +=]]
     end
-    print[[" ("+fbits((n.value*8)/60)+")</li>";
+    print[[" ("+fbits((n.value*8)/seconds)+")</li>";
 				   items++;
 				});
                                 if(items > 0)
