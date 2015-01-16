@@ -596,7 +596,7 @@ for n,v in pairs(topArray) do
 		$.ajax({
 			type: 'GET',
 			url: ']]
-  print(ntop.getHttpPrefix().."/lua/top_generic.lua?m="..modulename.."&epoch="..selected_epoch_sanitized.."&addvlan=true")
+  print(ntop.getHttpPrefix().."/lua/top_generic.lua?m="..modulename.."&epoch='+point.value.x+'&addvlan=true")
   if (levels == 2) then
     print [[',
 			data: { epoch: point.value.x },
