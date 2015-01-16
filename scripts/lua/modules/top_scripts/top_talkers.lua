@@ -147,12 +147,18 @@ local function printTopTalkersFromTable(table, add_vlan)
 
   local elements = "{\n"
   elements = elements..'"senders": [\n'
-  elements = elements..getTopTalkersFromJSONDirection(table, "senders", add_vlan)
-  elements = string.sub(elements, 1, -3) --remove comma
+  local result = getTopTalkersFromJSONDirection(table, "senders", add_vlan)
+  if (result ~= "") then
+    result = string.sub(result, 1, -3) --remove comma
+  end
+  elements = elements..result
   elements = elements.."],\n"
   elements = elements..'"receivers": [\n'
-  elements = elements..getTopTalkersFromJSONDirection(table, "receivers", add_vlan)
-  elements = string.sub(elements, 1, -3) --remove comma
+  result = getTopTalkersFromJSONDirection(table, "receivers", add_vlan)
+  if (result ~= "") then
+    result = string.sub(result, 1, -3) --remove comma
+  end
+  elements = elements..result
   elements = elements.."]\n"
   elements = elements.."}\n"
 
