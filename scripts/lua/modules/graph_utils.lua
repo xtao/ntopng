@@ -614,11 +614,12 @@ for n,v in pairs(topArray) do
 				    infoHTML += "<li>"+capitaliseFirstLetter(i)+" [Avg Traffic/sec]<ol>";
 				  var items = 0;
 				  $.each(n, function(j, m) {
-				    if(items < 3)
+				    if(items < 3) {
 				      infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
     print[["+m.label+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/60)+")</li>";
-				    items++;
+				      items++;
+                                    }
 				  });
 				  infoHTML += "</ol></li>";
 				});
