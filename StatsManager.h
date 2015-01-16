@@ -60,7 +60,7 @@ private:
                    int (*callback)(void *, int, char **, char **),
                    void *payload);
     int insertSampling(char *sampling, const char *cache_name, const int key);
-    int getSampling(string *sampling, const char *cache_name, const int key);
+    int getSampling(string *sampling, const char *cache_name, const int key_low, const int key_high);
     int deleteStatsOlderThan(const char *cache_name, const int key);
     int retrieveStatsInterval(char ***vals, int *num_vals, const char *cache_name,
                               const int key_start, const int key_end);

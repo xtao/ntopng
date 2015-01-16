@@ -2242,7 +2242,6 @@ static int ntop_stats_insert_minute_sampling(lua_State *vm) {
     return (CONST_LUA_ERROR);
 
   time(&rawtime);
-  rawtime -= (rawtime % 60);
 
   if (sm->insertMinuteSampling(rawtime, sampling))
     return(CONST_LUA_ERROR);
@@ -2350,7 +2349,6 @@ static int ntop_stats_get_minute_sampling(lua_State *vm) {
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   epoch = (time_t)lua_tointeger(vm, 2);
-  epoch -= (epoch % 60);
 
   if(!(iface = ntop->getInterfaceById(ifid)) ||
      !(sm = iface->getStatsManager()))
@@ -2506,12 +2504,10 @@ static int ntop_stats_get_minute_samplings_interval(lua_State *vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   epoch_start = lua_tointeger(vm, 2);
-  epoch_start -= (epoch_start % 60);
   if (epoch_start < 0)
     return(CONST_LUA_ERROR);
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TNUMBER)) return(CONST_LUA_ERROR);
   epoch_end = lua_tointeger(vm, 3);
-  epoch_end -= (epoch_end % 60);
   if (epoch_end < 0)
     return(CONST_LUA_ERROR);
 

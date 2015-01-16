@@ -528,12 +528,13 @@ static int get_sampling_db_callback(void *data, int argc,
  *
  * @param sampling Pointer to a string to be filled with retrieved data.
  * @param cache_name Name of the cache to retrieve stats from.
- * @param key Key used to retrieve the sampling.
+ * @param key_low Base key used to retrieve the sampling.
+ * @param key_high End key used to retrieve the sampling.
  *
  * @return Zero in case of success, nonzero in case of error.
  */
 int StatsManager::getSampling(string *sampling, const char *cache_name,
-                              const int key) {
+                              const int key_low, const int key_high) {
 
   char query[MAX_QUERY];
   int rc;
@@ -546,8 +547,10 @@ int StatsManager::getSampling(string *sampling, const char *cache_name,
   if (openCache(cache_name))
     return -1;
 
-  snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE TSTAMP = %d",
-           cache_name, key);
+  snprintf(query, sizeof(query), "SELECT STATS FROM %s WHERE "
+                                 "CAST(TSTAMP AS INTEGER) <= %d AND "
+                                 "CAST(TSTAMP AS INTEGER) >= %d",
+           cache_name, key_high, key_low);
 
   m.lock(__FILE__, __LINE__);
 
@@ -573,5 +576,8 @@ int StatsManager::getMinuteSampling(time_t epoch, string *sampling) {
   if (!sampling)
     return -1;
 
-  return getSampling(sampling, MINUTE_CACHE_NAME, epoch);
+  int epoch_start = epoch - (epoch % 60);
+  int epoch_end = epoch_start + 59;
+
+  return getSampling(sampling, MINUTE_CACHE_NAME, epoch_start, epoch_end);
 }
