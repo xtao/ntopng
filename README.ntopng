@@ -22,6 +22,9 @@ On Fedora
 - yum groupinstall "Development tools"
 - yum install subversion autoconf automake autogen libpcap-devel GeoIP-devel hiredis-devel redis glib2-devel libxml2-devel sqlite-devel gcc-c++ libtool wget libcurl-devel
 
+On MacOSX (using http://brew.sh)
+brew install redis hiredis autoconf automake libtool rrdtool wget pkg-config
+
 On FreeBSD
 - pkg install autoconf automake libtool wget pkgconf rrdtool gmake redis
 
