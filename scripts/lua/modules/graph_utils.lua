@@ -429,20 +429,12 @@ print [[
 
 <br />
 <p>
-<div style="margin-left: 10px">
-<div id="chart_container">
-<p><font color=lightgray><small>NOTE: Click on the graph to zoom.</small></font>
-   <div id="y_axis"></div>
-   <div id="chart" style="margin-right: 10px"></div>
-   <br>
+<div style="margin-left: 10px; display: table">
+<div id="chart_container" style="display: table-row">
 
    <table style="border: 0">
-   <tr><td><div id="legend"></div></td><td><div id="chart_legend"></div></td></tr>
-   <tr><td colspan=2>
-
-   <table class="table table-bordered table-striped">
+   <table class="table table-bordered table-striped" style="border: 0; margin-right: 10px; display: table-cell">
    ]]
-
 
 print('   <tr><th>&nbsp;</th><th>Time</th><th>Value</th></tr>\n')
 
@@ -466,9 +458,17 @@ print('   <tr><th>Minute<br>Top Talkers</th><td colspan=2><div id=talkers></div>
 
 
 print [[
+
    </table>
    </td></tr>
+   <tr><td><div id="legend"></div></td><td><div id="chart_legend"></div></td></tr>
+   <tr><td colspan=2>
    </table>
+
+   <p><font color=lightgray><small>NOTE: Click on the graph to zoom.</small></font>
+   <div id="y_axis"></div>
+
+   <div id="chart" style="margin-right: 50px; margin-left: 10px; display: table-cell"></div>
 </div>
 
 </div>
