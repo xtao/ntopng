@@ -30,8 +30,7 @@ local function getTopASBy(ifid, ifname, filter_col, filter_val)
 end
 
 local function getTopASClean(ifid, ifname, param)
-  top = getCurrentTopGroupsSeparated(ifid, ifname, 10, true, false,
-                                     nil, nil, top_asn_intf.key, false)
+  top = getCurrentTopTalkers(ifid, ifname, nil, nil, false, param)
   section_beginning = string.find(top, '%[')
   if (section_beginning == nil) then
     return("[ ]\n")
@@ -111,11 +110,11 @@ local function getTopASFromJSONDirection(table, wantedDir, add_vlan)
   for i,vlan in pairs(table["vlan"]) do
       local vlanid = vlan["label"]
       local vlanname = vlan["name"]
-      -- XXX asn is an array of (senders, receivers) pairs?
+      -- XXX asn is an array of (talkers, listeners) pairs?
       for i2,asnpair in pairs(vlan[top_asn_intf.JSONkey]) do
-        -- asnpair is { "senders": [...], "receivers": [...] }
+        -- asnpair is { "talkers": [...], "listeners": [...] }
         for k2,direction in pairs(asnpair) do
-          -- direction is "senders": [...] or "receivers": [...]
+          -- direction is "talkers": [...] or "listeners": [...]
           if (k2 ~= wantedDir) then goto continue end
           -- scan ASs
           for i2,asn in pairs(direction) do
@@ -149,15 +148,15 @@ local function printTopASFromTable(table, add_vlan)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
 
   local elements = "{\n"
-  elements = elements..'"senders": [\n'
-  local result = getTopASFromJSONDirection(table, "senders", add_vlan)
+  elements = elements..'"talkers": [\n'
+  local result = getTopASFromJSONDirection(table, "listeners", add_vlan)
   if (result ~= "") then
     result = string.sub(result, 1, -3) --remove comma
   end
   elements = elements..result
   elements = elements.."],\n"
-  elements = elements..'"receivers": [\n'
-  result = getTopASFromJSONDirection(table, "receivers", add_vlan)
+  elements = elements..'"talkers": [\n'
+  result = getTopASFromJSONDirection(table, "listeners", add_vlan)
   if (result ~= "") then
     result = string.sub(result, 1, -3) --remove comma
   end

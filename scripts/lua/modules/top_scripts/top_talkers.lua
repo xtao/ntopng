@@ -108,11 +108,11 @@ local function getTopTalkersFromJSONDirection(table, wantedDir, add_vlan)
   for i,vlan in pairs(table["vlan"]) do
       local vlanid = vlan["label"]
       local vlanname = vlan["name"]
-      -- XXX hosts is an array of (senders, receivers) pairs?
+      -- XXX hosts is an array of (talkers, listeners) pairs?
       for i2,hostpair in pairs(vlan[top_talkers_intf.JSONkey]) do
-        -- hostpair is { "senders": [...], "receivers": [...] }
+        -- hostpair is { "talkers": [...], "listeners": [...] }
         for k2,direction in pairs(hostpair) do
-          -- direction is "senders": [...] or "receivers": [...]
+          -- direction is "talkers": [...] or "listeners": [...]
           if (k2 ~= wantedDir) then goto continue end
           -- scan hosts
           for i2,host in pairs(direction) do
@@ -146,15 +146,15 @@ local function printTopTalkersFromTable(table, add_vlan)
   if (table == nil or table["vlan"] == nil) then return "[ ]\n" end
 
   local elements = "{\n"
-  elements = elements..'"senders": [\n'
-  local result = getTopTalkersFromJSONDirection(table, "senders", add_vlan)
+  elements = elements..'"talkers": [\n'
+  local result = getTopTalkersFromJSONDirection(table, "talkers", add_vlan)
   if (result ~= "") then
     result = string.sub(result, 1, -3) --remove comma
   end
   elements = elements..result
   elements = elements.."],\n"
-  elements = elements..'"receivers": [\n'
-  result = getTopTalkersFromJSONDirection(table, "receivers", add_vlan)
+  elements = elements..'"listeners": [\n'
+  result = getTopTalkersFromJSONDirection(table, "listeners", add_vlan)
   if (result ~= "") then
     result = string.sub(result, 1, -3) --remove comma
   end

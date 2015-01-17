@@ -112,14 +112,14 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
 
    if(mode == nil) then
       rsp = rsp .. "{\n"
-      rsp = rsp .. '\t"senders": ['
+      rsp = rsp .. '\t"talkers": ['
    end
 
    --print("Hello\n")
-   if((mode == nil) or (mode == "senders")) then
-      top_senders = getTop(hosts_stats, "bytes.sent", max_num_entries, talkers_dir)
+   if((mode == nil) or (mode == "talkers")) then
+      top_talkers = getTop(hosts_stats, "bytes.sent", max_num_entries, talkers_dir)
       num = 0
-      for value,id in pairsByKeys(top_senders, rev) do
+      for value,id in pairsByKeys(top_talkers, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "address": "'..id.. '", "label": "'
                ..hosts_stats[id]["name"]..'", "url": "'
@@ -132,13 +132,13 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
    if(mode == nil) then
       if(num > 0) then rsp = rsp .. " }" end
       rsp = rsp .. "\n\t],\n"
-      rsp = rsp .. '\t"receivers": ['
+      rsp = rsp .. '\t"listeners": ['
    end
 
-   if((mode == nil) or (mode == "receivers")) then
-      top_receivers = getTop(hosts_stats, "bytes.rcvd", max_num_entries, talkers_dir)
+   if((mode == nil) or (mode == "listeners")) then
+      top_listeners = getTop(hosts_stats, "bytes.rcvd", max_num_entries, talkers_dir)
       num = 0
-      for value,id in pairsByKeys(top_receivers, rev) do
+      for value,id in pairsByKeys(top_listeners, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "address": "'..id.. '", "label": "'
                ..hosts_stats[id]["name"]..'", "url": "'
@@ -234,13 +234,13 @@ function getCurrentTopGroupsSeparated(ifid, ifname, max_num_entries, use_thresho
 
    if(mode == nil) then
       rsp = rsp .. "{\n"
-      rsp = rsp .. '\t"senders": ['
+      rsp = rsp .. '\t"talkers": ['
    end
 
-   if((mode == nil) or (mode == "senders")) then
-      top_senders = getTop(_group, col.."_bytes.sent", max_num_entries, talkers_dir)
+   if((mode == nil) or (mode == "talkers")) then
+      top_talkers = getTop(_group, col.."_bytes.sent", max_num_entries, talkers_dir)
       num = 0
-      for value,id in pairsByKeys(top_senders, rev) do
+      for value,id in pairsByKeys(top_talkers, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "label": "'.._group[id]["name"].. '", "url": "'
                ..ntop.getHttpPrefix()..
@@ -253,13 +253,13 @@ function getCurrentTopGroupsSeparated(ifid, ifname, max_num_entries, use_thresho
    if(mode == nil) then
       if(num > 0) then rsp = rsp .. " }" end
       rsp = rsp .. "\n\t],\n"
-      rsp = rsp .. '\t"receivers": ['
+      rsp = rsp .. '\t"listeners": ['
    end
 
-   if((mode == nil) or (mode == "receivers")) then
-      top_receivers = getTop(_group, col.."_bytes.rcvd", max_num_entries, talkers_dir)
+   if((mode == nil) or (mode == "listeners")) then
+      top_listeners = getTop(_group, col.."_bytes.rcvd", max_num_entries, talkers_dir)
       num = 0
-      for value,id in pairsByKeys(top_receivers, rev) do
+      for value,id in pairsByKeys(top_listeners, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
 	 rsp = rsp .. '\n\t\t { "label": "'.._group[id]["name"].. '", "url": "'
                ..ntop.getHttpPrefix()..
