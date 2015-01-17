@@ -121,7 +121,8 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
       num = 0
       for value,id in pairsByKeys(top_senders, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..id.. '", "url": "'
+	 rsp = rsp .. '\n\t\t { "ip": "'..id.. '", "label": "'
+               ..hosts_stats[id]["name"]..'", "url": "'
                ..ntop.getHttpPrefix()..
                '/lua/host_details.lua?host='..id..'", "value": '..value
 	 num = num + 1
@@ -139,7 +140,8 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
       num = 0
       for value,id in pairsByKeys(top_receivers, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "label": "'..id.. '", "url": "'
+	 rsp = rsp .. '\n\t\t { "ip": "'..id.. '", "label": "'
+               ..hosts_stats[id]["name"]..'", "url": "'
                ..ntop.getHttpPrefix()..
                '/lua/host_details.lua?host='..id..'", "value": '..value
 	 num = num + 1

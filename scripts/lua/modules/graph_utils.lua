@@ -635,7 +635,7 @@ for n,v in pairs(topArray) do
 				    if(items < 3) {
 				      infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
-    print[["+m.label+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/seconds)+")</li>";
+    print[["+m.ip+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/seconds)+")</li>";
 				      items++;
                                     }
 				  });
