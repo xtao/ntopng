@@ -84,7 +84,7 @@ local function topTalkersSectionInTableOP(tblarray, arithOp)
           local found = false
           if (ret[outer_cnt][key] == nil) then ret[outer_cnt][key] = {} end
           for _,el in pairs(ret[outer_cnt][key]) do
-            if (found == false and el["label"] == record["label"]) then
+            if (found == false and el["address"] == record["address"]) then
               el["value"] = arithOp(el["value"], record["value"])
               found = true
             end

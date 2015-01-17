@@ -601,6 +601,10 @@ print[[
   });
 ]]
 
+print[[
+infoHTML += "<ul>";
+]]
+
 if(topArray ~= nil) then
 for n,v in pairs(topArray) do
   modulename = n
@@ -620,8 +624,17 @@ for n,v in pairs(topArray) do
 			data: { epoch: point.value.x },
 			async: false,
 			success: function(content) {
-				var info = jQuery.parseJSON(content);
-				infoHTML += "<ul>";
+				var info = jQuery.parseJSON(content);]]
+                                print [[
+                                var elements = 0;
+                                $.each(info, function(i, n) {
+                                  elements++;
+                                  return false;
+                                });
+                                if (elements > 0)
+                                  infoHTML += "<li>]]print(sectionname)print[[";]]
+                     print[[
+                                infoHTML += "<ul>";
 				$.each(info, function(i, n) {
                                   var nonempty = 0;
                                   $.each(n, function(j, m) {
@@ -635,7 +648,7 @@ for n,v in pairs(topArray) do
 				    if(items < 3) {
 				      infoHTML += "<li><a href=']]
     print(scriptname.."?"..key.."=")
-    print[["+m.ip+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/seconds)+")</li>";
+    print[["+m.address+"'>"+m.label+"</a>"; if (m.vlan != "0") infoHTML += " ("+m.vlanm+")"; infoHTML += " ("+fbits((m.value*8)/seconds)+")</li>";
 				      items++;
                                     }
 				  });
@@ -645,6 +658,7 @@ for n,v in pairs(topArray) do
 			}
 		});
     ]]
+    print[[infoHTML += "</li>";]]
     elseif (levels == 1) then
     print [[',
 			data: { epoch: point.value.x },
@@ -677,6 +691,7 @@ for n,v in pairs(topArray) do
     end
     ::continue::
 end
+    print[[infoHTML += "</ul>";]]
 print [[
 		this.element.innerHTML = '';
 		this.element.style.left = graph.x(point.value.x) + 'px';

@@ -121,7 +121,7 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
       num = 0
       for value,id in pairsByKeys(top_senders, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "ip": "'..id.. '", "label": "'
+	 rsp = rsp .. '\n\t\t { "address": "'..id.. '", "label": "'
                ..hosts_stats[id]["name"]..'", "url": "'
                ..ntop.getHttpPrefix()..
                '/lua/host_details.lua?host='..id..'", "value": '..value
@@ -140,7 +140,7 @@ function getCurrentTopTalkers(ifid, ifname, filter_col, filter_val, concat, mode
       num = 0
       for value,id in pairsByKeys(top_receivers, rev) do
 	 if(num > 0) then rsp = rsp .. " }," end
-	 rsp = rsp .. '\n\t\t { "ip": "'..id.. '", "label": "'
+	 rsp = rsp .. '\n\t\t { "address": "'..id.. '", "label": "'
                ..hosts_stats[id]["name"]..'", "url": "'
                ..ntop.getHttpPrefix()..
                '/lua/host_details.lua?host='..id..'", "value": '..value
@@ -178,6 +178,8 @@ function groupStatsByColumn(ifid, ifname, col)
          _group[key] = {}
          old = 0
       else
+         assert(_group[key][col.."_bytes.sent"] ~= nil)
+         assert(_group[key][col.."_bytes.rcvd"] ~= nil)
          assert(_group[key][col.."_bytes"] ~= nil)
          old = _group[key][col.."_bytes"]
       end
@@ -198,8 +200,90 @@ function groupStatsByColumn(ifid, ifname, col)
       val = hosts_stats[_key]["bytes.sent"] + hosts_stats[_key]["bytes.rcvd"]
       total = total + val
       _group[key][col.."_bytes"] = old + val
+      _group[key][col.."_bytes"] = old + val
+      _group[key][col.."_bytes.sent"] = ternary(_group[key][col.."_bytes.sent"] ~= nil,
+                                                _group[key][col.."_bytes.sent"], 0)
+                                        + hosts_stats[_key]["bytes.sent"]
+      _group[key][col.."_bytes.rcvd"] = ternary(_group[key][col.."_bytes.rcvd"] ~= nil,
+                                                _group[key][col.."_bytes.rcvd"], 0)
+                                        + hosts_stats[_key]["bytes.rcvd"]
    end
   return _group, total
+end
+
+function getCurrentTopGroupsSeparated(ifid, ifname, max_num_entries, use_threshold,
+                                      use_delta, filter_col, filter_val, col, concat, mode)
+   max_num_entries = 10
+   rsp = ""
+
+   interface.find(ifname)
+   hosts_stats = interface.getHostsInfo()
+   hosts_stats = filterBy(hosts_stats, filter_col, filter_val)
+
+   talkers_dir = fixPath(dirs.workingdir .. "/" .. ifid .. "/top_talkers")
+   if(not(ntop.exists(talkers_dir))) then
+      ntop.mkdir(talkers_dir)
+   end
+
+   _group, total = groupStatsByColumn(ifid, ifname, col)
+
+   if(concat == false and mode == nil) then
+      rsp = rsp.."{\n"
+   end
+   rsp = rsp..'\t"'..col..'": [\n'
+
+   if(mode == nil) then
+      rsp = rsp .. "{\n"
+      rsp = rsp .. '\t"senders": ['
+   end
+
+   if((mode == nil) or (mode == "senders")) then
+      top_senders = getTop(_group, col.."_bytes.sent", max_num_entries, talkers_dir)
+      num = 0
+      for value,id in pairsByKeys(top_senders, rev) do
+	 if(num > 0) then rsp = rsp .. " }," end
+	 rsp = rsp .. '\n\t\t { "label": "'.._group[id]["name"].. '", "url": "'
+               ..ntop.getHttpPrefix()..
+               '/lua/hosts_stats.lua?'..col..'='..id..'", "address": "'
+               ..id..'", "value": '..value
+	 num = num + 1
+      end
+   end
+
+   if(mode == nil) then
+      if(num > 0) then rsp = rsp .. " }" end
+      rsp = rsp .. "\n\t],\n"
+      rsp = rsp .. '\t"receivers": ['
+   end
+
+   if((mode == nil) or (mode == "receivers")) then
+      top_receivers = getTop(_group, col.."_bytes.rcvd", max_num_entries, talkers_dir)
+      num = 0
+      for value,id in pairsByKeys(top_receivers, rev) do
+	 if(num > 0) then rsp = rsp .. " }," end
+	 rsp = rsp .. '\n\t\t { "label": "'.._group[id]["name"].. '", "url": "'
+               ..ntop.getHttpPrefix()..
+               '/lua/hosts_stats.lua?'..col..'='..id..'", "address": "'
+               ..id..'", "value": '..value
+	 num = num + 1
+      end
+   end
+
+   if(mode == nil) then
+      if(num > 0) then rsp = rsp .. " }" end
+      rsp = rsp .. "\n\t]\n"
+      rsp = rsp .. "\n}\n"
+   else
+      if(num > 0) then rsp = rsp .. " }\n" end
+   end
+
+   rsp = rsp.."]"
+   if(concat == false and mode == nil) then
+      rsp = rsp.."\n}"
+   end
+
+   --print(rsp.."\n")
+   return(rsp)
 end
 
 function getCurrentTopGroups(ifid, ifname, max_num_entries, use_threshold,
