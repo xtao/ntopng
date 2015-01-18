@@ -179,7 +179,7 @@ function print_single_group(value)
    print('", ')
 
    if (throughput_type == "pps") then
-      print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_bps"]).. " ")
+      print ("\"column_thpt\" : \"" .. pktsToSize(value["throughput_pps"]).. " ")
    else
       print ("\"column_thpt\" : \"" .. bitsToSize(8*value["throughput_bps"]).. " ")
    end
