@@ -50,7 +50,6 @@ class Host : public GenericHost {
     u_int32_t pktRetr, pktOOO, pktLost;
   } tcpPacketStats; /* Sent packets */
 
-  void updateLocal();
   void initialize(u_int8_t mac[6], u_int16_t _vlan_id, bool init_all);
   void refreshHTTPBL();
   void refreshCategory();
@@ -66,6 +65,7 @@ class Host : public GenericHost {
   Host(NetworkInterface *_iface, u_int8_t mac[6], u_int16_t _vlanId, IpAddress *_ip);
   ~Host();
 
+  void updateLocal();
   inline void incRetransmittedPkts(u_int32_t num)   { tcpPacketStats.pktRetr += num; };
   inline void incOOOPkts(u_int32_t num)             { tcpPacketStats.pktOOO += num;  };
   inline void incLostPkts(u_int32_t num)            { tcpPacketStats.pktLost += num; };

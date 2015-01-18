@@ -241,7 +241,8 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
 /* *************************************** */
 
 void Host::updateLocal() {
-  localHost = ip->isLocalHost(&local_network_id);
+  if (ip)
+    localHost = ip->isLocalHost(&local_network_id);
 
   if(0) {
     char buf[64];

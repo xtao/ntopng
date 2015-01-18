@@ -1581,7 +1581,8 @@ Host* NetworkInterface::findHostByMac(u_int8_t mac[6], u_int16_t vlanId,
 
       return(NULL);
     }
-  }
+  } else
+    ret->updateLocal();
 
   return(ret);
 }
