@@ -267,7 +267,8 @@ void Ntop::loadLocalInterfaceAddress() {
 #ifndef WIN32
   struct ifaddrs *local_addresses, *ifa;
   /* buf must be big enough for an IPv6 address(e.g. 3ffe:2fa0:1010:ca22:020a:95ff:fe8a:1cf8) */
-  char buf[128], buf2[128], buf_orig[128];
+  const int bufsize = 128;
+  char buf[bufsize], buf2[bufsize], buf_orig[bufsize];
   int sock = socket(AF_INET, SOCK_STREAM, 0);
 
   if(getifaddrs(&local_addresses) != 0) {
@@ -303,10 +304,10 @@ void Ntop::loadLocalInterfaceAddress() {
 	  netmask >>= 1;
 	}
 
-	strncpy(buf_orig, buf, sizeof(buf));
+	strncpy(buf_orig, buf, bufsize);
 	snprintf(&buf[l], sizeof(buf)-l, "/%u", cidr);
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s/%u as IPv4 interface address", buf, cidr);
-	strcpy(buf2, buf);
+	strncpy(buf2, buf, bufsize);
 	ptree_add_rule(local_interface_addresses, buf_orig);
 
 	/* Add the net unless a larger one already exists */
@@ -334,10 +335,10 @@ void Ntop::loadLocalInterfaceAddress() {
 	  netmask >>= 1;
 	}
 
-	strncpy(buf_orig, buf, sizeof(buf));
+	strncpy(buf_orig, buf, bufsize);
 	snprintf(&buf[l], sizeof(buf)-l, "/%u", cidr);
 	ntop->getTrace()->traceEvent(TRACE_INFO, "Adding %s/%u as IPv6 interface address", buf, cidr);
-	strcpy(buf2, buf);
+	strncpy(buf2, buf, bufsize);
 	ptree_add_rule(local_interface_addresses, buf_orig);
 
 	/* Add the net unless a larger one already exists */
