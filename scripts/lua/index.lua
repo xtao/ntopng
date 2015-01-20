@@ -203,16 +203,14 @@ print [[/lua/if_stats.lua?if_name=Historical&page=config_historical">configurati
   end
 end
 
-info = ntop.getInfo()
-
 if(page == "TopFlowTalkers") then
-   rsp = ntop.httpGet("http://www.ntop.org/ntopng.version")
+   -- TODO: one day this should be asynchronous
+   rsp = ntop.httpGet("http://www.ntop.org/ntopng.version", "", "", 1)
 
-   if(rsp ~= nil) then
+   if((rsp ~= nil) and (rsp["CONTENT"] ~= nil)) then
+      info = ntop.getInfo()
       stable_version = version2int(rsp["CONTENT"])
-      
-      version_elems = split(info["version"], " ");
-
+      version_elems  = split(info["version"], " ");
       this_version   = version2int(version_elems[1])
 
       if(stable_version > this_version) then

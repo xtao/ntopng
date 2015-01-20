@@ -1601,7 +1601,7 @@ static int ntop_http_get(lua_State* vm) {
 
       if(lua_type(vm, 4) == LUA_TNUMBER) {
 	timeout = lua_tointeger(vm, 4);
-	if(timeout < 5) timeout= 5;
+	if(timeout < 1) timeout = 1;
 	
 	/*
 	  This optional parameter specifies if the result of HTTP GET has to be returned

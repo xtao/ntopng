@@ -766,7 +766,10 @@ bool Utils::httpGet(lua_State* vm, char *url, char *username,
       }
       curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
       curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5);
+      curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+      curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, timeout);
+      curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, timeout*1000);
 
       v = curl_version_info(CURLVERSION_NOW);
       snprintf(ua, sizeof(ua), "ntopng v.%s (curl %s)", PACKAGE_VERSION, v->version);
