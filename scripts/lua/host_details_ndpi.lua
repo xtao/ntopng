@@ -17,6 +17,11 @@ host_info = hostkey2hostinfo(host_ip)
 host_vlan = host_info["vlan"]
 host = interface.getHostInfo(host_info["host"], host_vlan)
 
+if(host == nil) then
+   print("<div class=\"alert alert-danger\"><img src=/img/warning.png> Unable to find "..host_ip.." (data expired ?)</div>")
+   return
+end
+
 total = host["bytes.sent"]+host["bytes.rcvd"]
 
 vals = {}
