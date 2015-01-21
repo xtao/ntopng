@@ -16,7 +16,8 @@ function navigatedir(url, label, base, path, go_deep, print_html)
    local ret = { } 
 
    rrds = ntop.readdir(path)   
-   for k,v in pairs(rrds) do
+   table.sort(rrds)
+   for k,v in pairsByKeys(rrds, asc) do
       if(v ~= nil) then
 	 p = fixPath(path .. "/" .. v)
 	 
