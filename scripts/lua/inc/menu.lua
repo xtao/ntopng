@@ -49,7 +49,13 @@ else
 end
 
 print [["><i class="fa fa-dashboard"></i> Dashboard</a></li>
-    </ul>
+      ]]
+
+if(ntop.isPro()) then
+	print('<li><a href="'..ntop.getHttpPrefix()..'/lua/pro/report.lua"><i class="fa fa-area-chart"></i> Report</a></li>')
+end
+
+print [[    </ul>
   </li>
 
    ]]
