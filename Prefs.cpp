@@ -28,6 +28,7 @@ Prefs::Prefs(Ntop *_ntop) {
   memset(deferred_interfaces_to_register, 0, sizeof(deferred_interfaces_to_register));
   ntop = _ntop, dump_timeline = false, sticky_hosts = location_none;
   local_networks = strdup(CONST_DEFAULT_HOME_NET","CONST_DEFAULT_LOCAL_NETS);
+  local_networks_set = false;
   enable_dns_resolution = sniff_dns_responses = true;
   categorization_enabled = false, httpbl_enabled = false, resolve_all_host_ip = false;
   max_num_hosts = MAX_NUM_INTERFACE_HOSTS, max_num_flows = MAX_NUM_INTERFACE_HOSTS;
@@ -401,6 +402,7 @@ int Prefs::setOption(int optkey, char *optarg) {
   case 'm':
     free(local_networks);
     local_networks = strdup(optarg);
+    local_networks_set = true;
     break;
 
   case 'n':

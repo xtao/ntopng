@@ -52,6 +52,7 @@ class Prefs {
   AggregationMode enable_aggregations;
   InterfaceInfo ifNames[MAX_NUM_INTERFACES];
   char *local_networks;
+  bool local_networks_set;
   char *data_dir, *docs_dir, *scripts_dir, *callbacks_dir, *export_endpoint;
   char *categorization_key;
   char *httpbl_key;
@@ -81,7 +82,7 @@ class Prefs {
   ~Prefs();
 
   inline bool  is_pro_edition()                         { return(pro_edition);            };
-  inline char* get_local_networks()                     { return(local_networks);         };
+  inline char* get_local_networks()                     { if (!local_networks_set) return NULL; return(local_networks); };
   inline FILE* get_log_fd()                             { return(logFd);                  };
   inline LocationPolicy get_host_stickness()            { return(sticky_hosts);           };
   inline bool do_dump_timeline()                        { return(dump_timeline);          };

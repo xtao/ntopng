@@ -312,7 +312,7 @@ void Ntop::loadLocalInterfaceAddress() {
 
 	/* Add the net unless a larger one already exists */
 	if((prefs->get_local_networks() == NULL)
-	   || (!isLocalAddress(AF_INET, (void *)&(s4->sin_addr), &network_id))) {
+	   && (!isLocalAddress(AF_INET, (void *)&(s4->sin_addr), &network_id))) {
 	  address->addLocalNetwork(buf2);
 	}
       }
@@ -343,7 +343,7 @@ void Ntop::loadLocalInterfaceAddress() {
 
 	/* Add the net unless a larger one already exists */
 	if((prefs->get_local_networks() == NULL)
-	   || (!isLocalAddress(AF_INET6, (void *)&(s6->sin6_addr), &network_id))) {
+	   && (!isLocalAddress(AF_INET6, (void *)&(s6->sin6_addr), &network_id))) {
 	  address->addLocalNetwork(buf2);
 	}
       }
