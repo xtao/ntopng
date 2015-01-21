@@ -58,6 +58,7 @@ class Ntop {
   int8_t historical_interface_id;
   long time_offset;
   time_t start_time; /**< Time when start() was called */
+  int udp_socket;
 
   void loadLocalInterfaceAddress();
 
@@ -322,6 +323,7 @@ class Ntop {
   void createHistoricalInterface();
 
   inline u_int32_t getUptime() { return((u_int32_t)((start_time > 0) ? (time(NULL)-start_time) : 0)); }
+  inline int getUdpSock()      { return(udp_socket); }
 };
 
 extern Ntop *ntop;

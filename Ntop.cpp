@@ -107,6 +107,8 @@ Ntop::Ntop(char *appName) {
   // printf("--> %s [%s]\n", startup_dir, appName);
 
   initTimezone();
+
+  udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
 }
 
 /* ******************************************* */
@@ -130,6 +132,8 @@ Ntop::~Ntop() {
     iface[i]->shutdown();
     delete(iface[i]);
   }
+
+  if(udp_socket != -1) close(udp_socket);
 
   if(httpbl) delete httpbl;
   if(httpd)  delete httpd;

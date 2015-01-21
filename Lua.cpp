@@ -890,6 +890,54 @@ static int ntop_verbose_trace(lua_State* vm) {
 
 /* ****************************************** */
 
+static int ntop_send_udp_data(lua_State* vm) {
+  int rc, port, sockfd = ntop->getUdpSock();
+  char *host, *data;
+
+  if(sockfd == -1)
+    return(CONST_LUA_ERROR);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  host = (char*)lua_tostring(vm, 1);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TNUMBER)) return(CONST_LUA_ERROR);
+  port = (u_int16_t)lua_tonumber(vm, 2);
+
+  if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_ERROR);
+  data = (char*)lua_tostring(vm, 3);
+
+  if(strchr(host, ':') != NULL) {
+    struct sockaddr_in6 server_addr;
+
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin6_family = AF_INET6;
+    inet_pton(AF_INET6, host, &server_addr.sin6_addr);
+    server_addr.sin6_port = htons(port);
+
+    rc = sendto(sockfd, data, strlen(data),0,
+		(struct sockaddr *)&server_addr,
+		sizeof(server_addr));
+  } else {
+    struct sockaddr_in server_addr;
+
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(host); /* FIX: add IPv6 support */
+    server_addr.sin_port = htons(port);
+
+    rc = sendto(sockfd, data, strlen(data),0,
+		(struct sockaddr *)&server_addr,
+		sizeof(server_addr));
+  }
+
+  if(rc == -1)
+    return(CONST_LUA_ERROR);
+  else
+    return(CONST_LUA_OK);
+}
+
+/* ****************************************** */
+
 static void get_host_vlan_info(char* lua_ip, char** host_ip,
 			       u_int16_t* vlan_id,
 			       char *buf, u_int buf_len) {
@@ -1602,7 +1650,7 @@ static int ntop_http_get(lua_State* vm) {
       if(lua_type(vm, 4) == LUA_TNUMBER) {
 	timeout = lua_tointeger(vm, 4);
 	if(timeout < 1) timeout = 1;
-	
+
 	/*
 	  This optional parameter specifies if the result of HTTP GET has to be returned
 	  to LUA or not. Usually the content has to be returned, but in some causes
@@ -1763,13 +1811,13 @@ static int ntop_post_http_json_data(lua_State* vm) {
 
   if(ntop_lua_check(vm, __FUNCTION__, 1, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((username = (char*)lua_tostring(vm, 1)) == NULL) return(CONST_LUA_PARAM_ERROR);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 2, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((password = (char*)lua_tostring(vm, 2)) == NULL) return(CONST_LUA_PARAM_ERROR);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 3, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((url = (char*)lua_tostring(vm, 3)) == NULL) return(CONST_LUA_PARAM_ERROR);
-  
+
   if(ntop_lua_check(vm, __FUNCTION__, 4, LUA_TSTRING)) return(CONST_LUA_PARAM_ERROR);
   if((json = (char*)lua_tostring(vm, 4)) == NULL) return(CONST_LUA_PARAM_ERROR);
 
@@ -2041,7 +2089,7 @@ static int ntop_snmp_get_fctn(lua_State* vm, int operation) {
   snmp_add_varbind_null(message, oid);
 
   /* Add additional OIDs */
-  i = 4; 
+  i = 4;
   while(lua_type(vm, i) == LUA_TSTRING) {
     snmp_add_varbind_null(message, (char*)lua_tostring(vm, i));
     i++;
@@ -2078,7 +2126,7 @@ static int ntop_snmp_get_fctn(lua_State* vm, int operation) {
 
     snmp_destroy_message(message);
 
-    if(!added) 
+    if(!added)
       lua_pushnil(vm), rc = CONST_LUA_ERROR;
   }
   close(sock);
@@ -3401,6 +3449,9 @@ static const luaL_Reg ntop_reg[] = {
 
   /* Trace */
   { "verboseTrace",   ntop_verbose_trace },
+
+  /* UDP */
+  { "send_udp_data",  ntop_send_udp_data },
 
   /* IP */
   { "inet_ntoa",      ntop_inet_ntoa },
