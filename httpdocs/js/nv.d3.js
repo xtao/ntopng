@@ -1,3 +1,35 @@
+function bind(fun, t) {
+ if (fun.bind) {
+   fun.bind(t);
+   return fun;
+ } else {
+    fun.bind = function(oThis) {
+      if (typeof this !== 'function') {
+        // closest thing possible to the ECMAScript 5
+        // internal IsCallable function
+        throw new TypeError('nv.utils.optionsFunc.bind - what is trying to be bound is not callable');
+      }
+
+      var aArgs   = Array.prototype.slice.call(arguments, 1),
+          fToBind = this,
+          fNOP    = function() {},
+          fBound  = function() {
+            return fToBind.apply(this instanceof fNOP && oThis
+                   ? this
+                   : oThis,
+                   aArgs.concat(Array.prototype.slice.call(arguments)));
+          };
+
+      fNOP.prototype = this.prototype;
+      fBound.prototype = new fNOP();
+
+      return fBound;
+    };
+    fun.bind(t);
+    return fun;
+  }
+}
+
 (function(){
 
 var nv = window.nv || {};
@@ -1009,11 +1041,11 @@ chart.options = nv.utils.optionsFunc.bind(chart);
 */
 nv.utils.optionsFunc = function(args) {
     if (args) {
-      d3.map(args).forEach((function(key,value) {
+      d3.map(args).forEach(bind((function(key,value) {
         if (typeof this[key] === "function") {
            this[key](value);
         }
-      }).bind(this));
+      }), this));
     }
     return this;
 };nv.models.axis = function() {
@@ -11423,7 +11455,7 @@ nv.models.scatter = function() {
   //------------------------------------------------------------
 
   chart.dispatch = dispatch;
-  chart.options = nv.utils.optionsFunc.bind(chart);
+  chart.options = nv.utils.optionsFunc = bind(nv.utils.optionsFunc, chart);
 
   chart.x = function(_) {
     if (!arguments.length) return getX;
