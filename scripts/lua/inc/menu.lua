@@ -97,6 +97,7 @@ print [[/lua/hosts_stats.lua">Hosts List</a></li>
 
   if(ntop.hasGeoIP()) then
      print('<li><a href="'..ntop.getHttpPrefix()..'/lua/as_stats.lua">AS List</a></li>')
+     print('<li><a href="'..ntop.getHttpPrefix()..'/lua/country_stats.lua">Country List</a></li>')
   end
 
   if(ntop.hasVLANs()) then

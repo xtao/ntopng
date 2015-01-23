@@ -30,6 +30,7 @@ client      = _GET["client"]
 asn         = _GET["asn"]
 vlan        = _GET["vlan"]
 network     = _GET["network"]
+country     = _GET["country"]
 
 -- table_id = _GET["table"]
 
@@ -236,6 +237,8 @@ for key, value in pairs(hosts_stats) do
 	 vals[hosts_stats[key]["httpbl"]..postfix] = key
 	 elseif(sortColumn == "column_asn") then
 	 vals[hosts_stats[key]["asn"]..postfix] = key
+	 elseif(sortColumn == "column_country") then
+	 vals[hosts_stats[key]["country"]..postfix] = key
 	 elseif(sortColumn == "column_aggregation") then
 	 vals[hosts_stats[key]["aggregation"]..postfix] = key
 	 elseif(sortColumn == "column_vlan") then
@@ -268,6 +271,7 @@ for _key, _value in pairsByKeys(vals, funct) do
 
    if((key ~= nil) and (not(key == "")) and
       ((asn == nil) or (asn == tostring(hosts_stats[key]["asn"]))) and
+      ((country == nil) or (country == tostring(hosts_stats[key]["country"]))) and
       ((vlan == nil) or (vlan == tostring(hosts_stats[key]["vlan"]))) and
       ((network == nil) or (network == tostring(hosts_stats[key]["local_network_id"])))) then
       value = hosts_stats[key]
@@ -365,7 +369,8 @@ for _key, _value in pairsByKeys(vals, funct) do
 	       end
 	    end
 
-	    if((aggregation ~= nil) or (aggregated ~= nil)) then
+	  
+      if((aggregation ~= nil) or (aggregated ~= nil)) then
 	       print(", \"column_family\" : \"" .. interface.getNdpiProtoName(value["family"]) .. "\"")
 	       print(", \"column_aggregation\" : \"" .. aggregation2String(value["aggregation"]) .. "\"")
          throughput_type = "bps"

@@ -16,6 +16,7 @@ net      = _GET["net"]
 asn      = _GET["asn"]
 vlan     = _GET["vlan"]
 network  = _GET["network"]
+country  = _GET["country"]
 
 mode = _GET["mode"]
 if(mode == nil) then mode = "all" end
@@ -53,6 +54,11 @@ if(vlan ~= nil) then
    print('&vlan='..vlan)
 end
 
+if(country ~= nil) then
+   print('&country='..country)
+end
+
+
 if(network ~= nil) then
    print('&network='..network)
 end
@@ -79,15 +85,16 @@ print [[
 if(protocol == nil) then protocol = "" end
 
 if(_GET["asn"] ~= nil) then asn = " for AS ".._GET["asn"] else asn = "" end
+if(_GET["country"] ~= nil) then country = " for Country ".._GET["country"] else country = "" end
 
 if(mode == "all") then
-   print('title: "All '..protocol..' Hosts'..asn..'",\n')
+   print('title: "All '..protocol..' Hosts'..country..'",\n')
 elseif(mode == "local") then
-   print('title: "Local '..protocol..' Hosts'..asn..'",\n')
+   print('title: "Local '..protocol..' Hosts'..country..'",\n')
 elseif(mode == "remote") then
-   print('title: "Remote '..protocol..' Hosts'..asn..'",\n')
+   print('title: "Remote '..protocol..' Hosts'..country..'",\n')
 else
-   print('title: "Local Networks'..asn..'",\n')
+   print('title: "Local Networks'..country..'",\n')
 end
 print ('rowCallback: function ( row ) { return host_table_setID(row); },')
 

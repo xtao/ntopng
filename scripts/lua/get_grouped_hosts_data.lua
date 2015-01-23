@@ -19,6 +19,7 @@ group_col   = _GET["grouped_by"]
 as_n        = _GET["as"]
 vlan_n      = _GET["vlan"]
 network_n   = _GET["network"]
+country_n   = _GET["country"]
 
 if (group_col == nil) then
    group_col = "asn"
@@ -68,7 +69,7 @@ if (all ~= nil) then
   currentPage = 0
 end
 
-if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil and country_n == nil) then -- single group info requested
    print ("{ \"currentPage\" : " .. currentPage .. ",\n \"data\" : [\n")
 end
 num = 0
@@ -99,6 +100,12 @@ for key,value in pairs(hosts_stats) do
          if (stats_by_group_col[id]["name"] == nil) then
             stats_by_group_col[id]["name"] = "Unknown network"
          end
+      elseif (group_col == "country") then
+         stats_by_group_col[id]["name"] = value["country"]
+         if (stats_by_group_col[id]["name"] == nil) then
+            stats_by_group_col[id]["name"] = "Unknown country"
+         end
+
       else
          stats_by_group_col[id]["name"] = "VLAN"
       end
@@ -138,6 +145,9 @@ function print_single_group(value)
       print("hosts_stats.lua?asn=" ..value["id"] .. "'>")
    elseif (group_col == "vlan" or vlan_n ~= nil) then
       print("hosts_stats.lua?vlan="..value["id"].."'>")
+   elseif (group_col == "country" or country_n ~= nil) then
+      print("hosts_stats.lua?country="..value["id"].."'>")
+      print("&nbsp&nbsp&nbsp <img src='/img/blank.gif' class='flag flag-".. string.lower(value["country"]) .."'>&nbsp&nbsp")
    elseif (group_col == "local_network_id" or network_n ~= nil) then
       print("hosts_stats.lua?network="..value["id"].."'>")
    else
@@ -162,6 +172,8 @@ function print_single_group(value)
    --- TODO: name for VLANs?
    if (group_col == "asn" or as_n ~= nil) then
       print("\"column_name\" : \""..printASN(tonumber(value["id"]), value["name"]))
+   elseif ( group_col == "country" or country_n ~= nil) then
+      print("\"column_name\" : \""..value["id"])
    else
       print("\"column_name\" : \""..value["name"])
    end
@@ -205,6 +217,14 @@ if (as_n ~= nil) then
       print_single_group(as_val)
    end
    stats_by_group_col = {}
+elseif (country_n ~= nil) then
+   country_val = stats_by_group_col[country_n]
+   if (country_val == nil) then
+      print('{}')
+   else
+      print_single_group(country_val)
+   end
+   stats_by_group_col = {}
 elseif (vlan_n ~= nil) then
    vlan_val = stats_by_group_col[vlan_n]
    if (vlan_val == nil) then
@@ -233,7 +253,7 @@ for key,value in pairs(stats_by_group_col) do
    elseif(sortColumn == "column_alerts") then
       vals[(now-stats_by_group_col[key]["num_alerts"])] = key
    elseif(sortColumn == "column_last") then
-      vals[(now-stats_by_group_col[key]["seen.last"]+1)] = key
+      vals[(now-stats_by_group_key[col]["seen.last"]+1)] = key
    elseif(sortColumn == "column_thpt") then
       vals[stats_by_group_col[key]["throughput_"..throughput_type]] = key
    elseif(sortColumn == "column_queries") then
@@ -274,7 +294,7 @@ for _key, _value in pairsByKeys(vals, funct) do
    end
 end -- for
 
-if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil and country_n == nil) then -- single group info requested
    print ("\n], \"perPage\" : " .. perPage .. ",\n")
 end
 
@@ -286,7 +306,7 @@ if(sortOrder == nil) then
    sortOrder = ""
 end
 
-if (as_n == nil and vlan_n == nil and network_n == nil) then -- single group info requested
+if (as_n == nil and vlan_n == nil and network_n == nil and country_n == nil) then -- single group info requested
    print ("\"sort\" : [ [ \"" .. sortColumn .. "\", \"" .. sortOrder .."\" ] ],\n")
    print ("\"totalRows\" : " .. total .. " \n}")
 end
