@@ -39,7 +39,7 @@ preference = tablePreferences("rows_number",_GET["perPage"])
 if (preference ~= "") then print ('perPage: '..preference.. ",\n") end
 
 -- Automatic default sorted. NB: the column must exist.
-print ('sort: [ ["' .. getDefaultTableSort("asn") ..'","' .. getDefaultTableSortOrder("asn").. '"] ],')
+print ('sort: [ ["' .. getDefaultTableSort("country") ..'","' .. getDefaultTableSortOrder("country").. '"] ],')
 
 
 print [[
