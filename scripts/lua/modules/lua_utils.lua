@@ -1294,6 +1294,8 @@ end
 
 -- version is major.minor.veryminor
 function version2int(v)
+   if(v == nil) then return(0) end
+
   e = string.split(v, "%.");
   if(e ~= nil) then
     major = e[1]
