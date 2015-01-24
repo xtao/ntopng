@@ -1343,6 +1343,17 @@ function table.empty(table)
   return false
 end
 
+function table.len(table)
+ local count = 0
+
+  if(table == nil) then return(0) end
+  for k,v in pairs(table) do 
+    count = count + 1
+  end
+
+  return count
+end
+
 -- ############################################
 -- Redis Utils
 -- ############################################

@@ -144,7 +144,7 @@ else
       print("<tr><th width=30%>Category</th><td colspan=2>" .. getCategory(flow["category"]) .. "</td></tr>\n")
    end
 
-   print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/"..ntop.getHttpPrefix().."lua/")
+   print("<tr><th width=30%>Protocol</th><td colspan=2>"..flow["proto.l4"].." / <A HREF=\"/"..ntop.getHttpPrefix().."lua/") 
    if((flow.client_process ~= nil) or (flow.server_process ~= nil))then	print("s") end
    print("flows_stats.lua?application=" .. flow["proto.ndpi"] .. "\">" .. getApplicationLabel(flow["proto.ndpi"]) .. "</A> ".. formatBreed(flow["proto.ndpi_breed"]).."</td></tr>\n")
    print("<tr><th width=30%>First / Last Seen</th><td nowrap><div id=first_seen>" .. formatEpoch(flow["seen.first"]) ..  " [" .. secondsToTime(os.time()-flow["seen.first"]) .. " ago]" .. "</div></td>\n")
@@ -259,11 +259,17 @@ else
    end
 
    if(flow["http.last_url"] ~= nil) then
-      print("<tr><th width=30% rowspan=3>HTTP</th><th>HTTP Method</th><td>"..flow["http.last_method"].."</td></tr>\n")
+      print("<tr><th width=30% rowspan=4>HTTP</th><th>HTTP Method</th><td>"..flow["http.last_method"].."</td></tr>\n")
+      print("<tr><th>Server Name</th><td>")
+      if(flow["host_server_name"] ~= nil) then print(flow["host_server_name"]) else print("&nbsp;") end 
+      print("</td></tr>\n")
       print("<tr><th>URL</th><td>"..flow["http.last_url"].."</td></tr>\n")
       print("<tr><th>Response Code</th><td>"..flow["http.last_return_code"].."</td></tr>\n")
+   else		      
+     if(flow["host_server_name"] ~= nil) then
+      print("<tr><th width=30%>Server Name</th><td colspan=2>"..flow["host_server_name"].."</td></tr>\n")
+     end
    end
-
 
    if (flow["moreinfo.json"] ~= nil) then
       local info, pos, err = json.decode(flow["moreinfo.json"], 1, nil)

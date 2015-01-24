@@ -74,8 +74,8 @@ else
    sendHTTPHeader('text/html; charset=iso-8859-1')
    ntop.dumpFile(dirs.installdir .. "/httpdocs/inc/header.inc")
    dofile(dirs.installdir .. "/scripts/lua/inc/menu.lua")
-   
---   Added global javascript variable, in order to disable the refresh of pie chart in case 
+
+--   Added global javascript variable, in order to disable the refresh of pie chart in case
 --  of historical interface
    if not is_historical then
     print('\n<script>var refresh = 3000 /* ms */;</script>\n')
@@ -375,13 +375,13 @@ print [[
       print("</th><td colspan=2>"..host["vlan"].."</td></tr>\n")
    end
    if(host["os"] ~= "") then print("<tr><th>OS</th><td colspan=2>" .. mapOS2Icon(host["os"]) .. " </td></tr>\n") end
-   if((host["asn"] ~= nil) and (host["asn"] > 0)) then 
+   if((host["asn"] ~= nil) and (host["asn"] > 0)) then
       print("<tr><th>ASN</th><td>")
 
 
       print("<A HREF=" .. ntop.getHttpPrefix() .. "/lua/hosts_stats.lua?asn=".. host.asn ..">"..host.asname.."</A> (ASN ".. host.asn..")</td>")
       print('<td><A HREF="http://itools.com/tool/arin-whois-domain-search?q='.. host["ip"] ..'&submit=Look+up">Whois Lookup</A> <i class="fa fa-external-link fa-lg"></i></td>')
-      print("</td></tr>\n") 
+      print("</td></tr>\n")
    end
 
    if((host["category"] ~= nil) and (host["category"] ~= "")) then
@@ -434,7 +434,7 @@ print [[</form>
    ]]
 end
     else
---       print("<td colspan=2>"..host_info["host"].."</td></tr>")	  
+--       print("<td colspan=2>"..host_info["host"].."</td></tr>")
     end
 
 
@@ -540,7 +540,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-		   
+
 		   do_pie("#sizeSentDistro", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_pkt_distro.lua', { type: "size", mode: "sent", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
@@ -573,7 +573,7 @@ print [[/lua/host_pkt_distro.lua', { type: "size", mode: "recv", ifname: "]] pri
 
         <script type='text/javascript'>
 	       window.onload=function() {
-		   
+
 		   do_pie("#clientPortsDistro", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/iface_ports_list.lua', { mode: "client", ifname: "]] print(ifId.."") print ('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
@@ -748,7 +748,7 @@ end
 
         <script type='text/javascript'>
 	       window.onload=function() {
-				   
+
 				   do_pie("#topApplicationProtocols", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..hostinfo2json(host_info) .."}, \"\", refresh); \n")
@@ -804,7 +804,7 @@ print [[/lua/host_l4_stats.lua', { ifname: "]] print(ifId.."") print('", '..host
 
         <script type='text/javascript'>
 	       window.onload=function() {
-				   
+
 				   do_pie("#topApplicationProtocols", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/iface_ndpi_stats.lua', { ifname: "]] print(ifId.."") print ("\" , ") print(hostinfo2json(host_info)) print [[ }, "", refresh);
@@ -880,7 +880,7 @@ print [[
 		     <tr><th>DNS Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="dnsSent"></div>
 		     <script type='text/javascript'>
-					 
+
 					 do_pie("#dnsSent", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "sent" }, "", refresh);
@@ -900,7 +900,7 @@ print [[
 	 <tr><th>DNS Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="dnsRcvd"></div>
          <script type='text/javascript'>
-         
+
 	     do_pie("#dnsRcvd", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_dns_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "rcvd" }, "", refresh);
@@ -914,13 +914,14 @@ end
    elseif(page == "http") then
       if(host["http"] ~= nil) then
 	 print("<table class=\"table table-bordered table-striped\">\n")
-	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods>HTTP Queries</A></th><th width=20%>Method</th><th width=20%>Requests</th><th>Distribution</th></tr>")
-	 print("<tr><th>GET</th><td style=\"text-align: right;\"><span id=http_query_num_get>".. formatValue(host["http"]["query.num_get"]) .."</span> <span id=trend_http_query_num_get></span></td><td rowspan=5>")
+
+	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods>HTTP Queries</A></th><th width=20%>Method</th><th width=20%>Requests</th><th colspan=2>Distribution</th></tr>")
+	 print("<tr><th>GET</th><td style=\"text-align: right;\"><span id=http_query_num_get>".. formatValue(host["http"]["query.num_get"]) .."</span> <span id=trend_http_query_num_get></span></td><td colspan=2 rowspan=5>")
 
 print [[
          <div class="pie-chart" id="httpQueries"></div>
          <script type='text/javascript'>
-         
+
 	     do_pie("#httpQueries", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "queries" }, "", refresh);
@@ -933,13 +934,13 @@ print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) prin
 	 print("<tr><th>PUT</th><td style=\"text-align: right;\"><span id=http_query_num_put>".. formatValue(host["http"]["query.num_put"]) .."</span> <span id=trend_http_query_num_put></span></td></tr>")
 	 print("<tr><th>Other Method</th><td style=\"text-align: right;\"><span id=http_query_num_other>".. formatValue(host["http"]["query.num_other"]) .."</span> <span id=trend_http_query_num_other></span></td></tr>")
 	 print("<tr><th colspan=4>&nbsp;</th></tr>")
-	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/List_of_HTTP_status_codes>HTTP Responses</A></th><th width=20%>Response code</th><th width=20%>Responses</th><th>Distribution</th></tr>")
-	 print("<tr><th>1xx (Informational)</th><td style=\"text-align: right;\"><span id=http_response_num_1xx>".. formatValue(host["http"]["response.num_1xx"]) .."</span> <span id=trend_http_response_num_1xx></span></td><td rowspan=5>")
-	 
+	 print("<tr><th rowspan=6 width=20%><A HREF=http://en.wikipedia.org/wiki/List_of_HTTP_status_codes>HTTP Responses</A></th><th width=20%>Response code</th><th width=20%>Responses</th><th colspan=2>Distribution</th></tr>")
+	 print("<tr><th>1xx (Informational)</th><td style=\"text-align: right;\"><span id=http_response_num_1xx>".. formatValue(host["http"]["response.num_1xx"]) .."</span> <span id=trend_http_response_num_1xx></span></td><td colspan=2 rowspan=5>")
+
 print [[
          <div class="pie-chart" id="httpResponses"></div>
          <script type='text/javascript'>
-         
+
 	     do_pie("#httpResponses", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, mode: "responses" }, "", refresh);
@@ -950,10 +951,23 @@ print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) prin
 	 print("<tr><th>3xx (Redirection)</th><td style=\"text-align: right;\"><span id=http_response_num_3xx>".. formatValue(host["http"]["response.num_3xx"]) .."</span> <span id=trend_http_response_num_3xx></span></td></tr>")
 	 print("<tr><th>4xx (Client Error)</th><td style=\"text-align: right;\"><span id=http_response_num_4xx>".. formatValue(host["http"]["response.num_4xx"]) .."</span> <span id=trend_http_response_num_4xx></span></td></tr>")
 	 print("<tr><th>5xx (Server Error)</th><td style=\"text-align: right;\"><span id=http_response_num_5xx>".. formatValue(host["http"]["response.num_5xx"]) .."</span> <span id=trend_http_response_num_5xx></span></td></tr>")
+
+	 -- TODO: add dynamic update via ajax
+         vh = host["http"]["virtual_hosts"]
+	 if(vh ~= nil) then
+  	    num = table.len(vh)
+	    if(num > 0) then
+  	      print("<tr><th rowspan="..(num+1).." width=20%>Virtual Hosts</th><th>Name</th><th>Traffic Sent</th><th>Traffic Received</th><th>Requests Served</th></tr>\n")
+      	      for k,v in pairsByKeys(vh, asc) do
+	        print("<tr><th>"..k.."</th><td align=right>".. bytesToSize(vh[k].bytes_sent) .."</td>")
+	        print("<td align=right>".. bytesToSize(vh[k].bytes_rcvd) .."</td>")
+	        print("<td align=right>".. formatValue(vh[k].http_requests) .."</td></tr>\n")
+	      end
+	    end
+         end
+
 	 print("</table>\n")
       end
-
-
    elseif(page == "epp") then
       if(host["epp"] ~= nil) then
 	 print("<table class=\"table table-bordered table-striped\">\n")
@@ -969,7 +983,7 @@ print [[/lua/host_http_breakdown.lua', { ]] print(hostinfo2json(host_info)) prin
 		     <tr><th>EPP Query Sent Distribution</th><td colspan=5>
 		     <div class="pie-chart" id="eppSent"></div>
 		     <script type='text/javascript'>
-					 
+
 					 do_pie("#eppSent", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "sent" }, "", refresh);
@@ -990,7 +1004,7 @@ print [[
 	 <tr><th>EPP Rcvd Query Distribution</th><td colspan=5>
          <div class="pie-chart" id="eppRcvd"></div>
          <script type='text/javascript'>
-         
+
 	     do_pie("#eppRcvd", ']]
 print (ntop.getHttpPrefix())
 print [[/lua/host_epp_breakdown.lua', { ]] print(hostinfo2json(host_info)) print [[, ifname: "]] print(ifId) print [[", mode: "rcvd" }, "", refresh);
@@ -1905,7 +1919,7 @@ print [[
         var tree_type = "bytes";
         var tree_filter = "All";
 
-       
+
 ]]
 
 -- Users graph javascript
@@ -2071,9 +2085,9 @@ print [[/lua/host_stats.lua',
 			$('#pkt_retransmissions').html(formatPackets(host["tcp.packets.retransmissions"]));
 			$('#pkt_ooo').html(formatPackets(host["tcp.packets.out_of_order"]));
 			$('#pkt_lost').html(formatPackets(host["tcp.packets.lost"]));
-			if(!host["name"]) { 
-			   $('#name').html(host["ip"]); 
-			} else { 
+			if(!host["name"]) {
+			   $('#name').html(host["ip"]);
+			} else {
 			   $('#name').html(host["name"]);
 			}
 			$('#num_alerts').html(host["num_alerts"]);

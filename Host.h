@@ -127,6 +127,11 @@ class Host : public GenericHost {
   inline void incNumEPPQueriesRcvd(u_int16_t query_type) { allocEPP(); if(epp) epp->incNumEPPQueriesRcvd(query_type); };
   inline void incNumEPPResponsesSent(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesSent(ret_code); };
   inline void incNumEPPResponsesRcvd(u_int32_t ret_code) { allocEPP(); if(epp) epp->incNumEPPResponsesRcvd(ret_code); };
+
+  inline void addVirtualHTTPHostRequest(char *virtual_host_name, u_int32_t num_req, u_int32_t bytes_sent, u_int32_t bytes_rcvd) {
+    allocHTTP(); if(http) http->addVirtualHostRequest(virtual_host_name, num_req, bytes_sent, bytes_rcvd);
+  }
+
   bool   match(patricia_tree_t *ptree) { return(get_ip() ? get_ip()->match(ptree) : false); };
 };
 

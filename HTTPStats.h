@@ -37,8 +37,11 @@ class HTTPStats {
   struct http_query_stats query;
   struct http_response_stats response;
 
+  VirtualHostHash *virtualHosts;
+
  public:
   HTTPStats();
+  ~HTTPStats();
 
   void incRequest(char *method);
   void incResponse(char *return_code);
@@ -47,6 +50,11 @@ class HTTPStats {
   void deserialize(json_object *o);
   json_object* getJSONObject();
   void lua(lua_State *vm);
+
+  void addVirtualHostRequest(char *virtual_host_name,
+			     u_int32_t num_requests,
+			     u_int32_t bytes_sent,
+			     u_int32_t bytes_rcvd);
 };
 
 #endif /* _HTTP_STATS_H_ */

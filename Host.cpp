@@ -167,7 +167,7 @@ void Host::initialize(u_int8_t mac[6], u_int16_t _vlanId, bool init_all) {
   first_seen = last_seen = iface->getTimeLastPktRcvd();
   if((m = new(std::nothrow) Mutex()) == NULL)
     ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: NULL mutex. Are you running out of memory?");
-  
+
   memset(&tcpPacketStats, 0, sizeof(tcpPacketStats));
   asn = 0, asname = NULL, country = NULL, city = NULL;
   longitude = 0, latitude = 0;
@@ -304,7 +304,7 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
 
     if((symbolic_name == NULL) || (strcmp(symbolic_name, ipaddr) == 0)) {
       /* We resolve immediately the IP address by queueing on the top of address queue */
-      
+
       ntop->getRedis()->pushHostToResolve(ipaddr, false, true /* Fake to resolve it ASAP */);
     }
 
@@ -343,7 +343,7 @@ void Host::lua(lua_State* vm, patricia_tree_t *ptree,
 
       lua_push_int_table_entry(vm, "tcp.packets.sent",  tcp_sent.getNumPkts());
 
-      lua_push_bool_table_entry(vm, "tcp.packets.seq_problems", 
+      lua_push_bool_table_entry(vm, "tcp.packets.seq_problems",
 				(tcpPacketStats.pktRetr
 				 | tcpPacketStats.pktOOO
 				 | tcpPacketStats.pktLost) ? true : false);
@@ -569,7 +569,6 @@ void Host::incStats(u_int8_t l4_proto, u_int ndpi_proto,
     ((GenericHost*)this)->incStats(l4_proto, ndpi_proto, sent_packets,
 				   sent_bytes, rcvd_packets, rcvd_bytes);
 
-
     if(sent_packets == 1) sent_stats.incStats((u_int)sent_bytes);
     if(rcvd_packets == 1) recv_stats.incStats((u_int)rcvd_bytes);
 
@@ -743,14 +742,14 @@ bool Host::deserialize(char *json_str) {
     if(epp) epp->deserialize(obj);
   }
 
-  if(ndpiStats) { 
-    delete ndpiStats; 
-    ndpiStats = NULL; 
+  if(ndpiStats) {
+    delete ndpiStats;
+    ndpiStats = NULL;
   }
 
-  if(json_object_object_get_ex(o, "ndpiStats", &obj)) { 
-    ndpiStats = new NdpiStats(); 
-    ndpiStats->deserialize(iface, obj); 
+  if(json_object_object_get_ex(o, "ndpiStats", &obj)) {
+    ndpiStats = new NdpiStats();
+    ndpiStats->deserialize(iface, obj);
   }
 
   activityStats.reset();

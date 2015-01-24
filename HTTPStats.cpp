@@ -26,12 +26,51 @@
 HTTPStats::HTTPStats() {
   memset(&query, 0, sizeof(query));
   memset(&response, 0, sizeof(response));
+
+  if((virtualHosts = new VirtualHostHash(NULL, 1, 64)) == NULL) {
+    ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: are you running out of memory?");
+  }
 }
 
 /* *************************************** */
 
+HTTPStats::~HTTPStats() {
+  if(virtualHosts) delete(virtualHosts);
+}
+
+/* *************************************** */
+
+static bool http_stats_summary(GenericHashEntry *node, void *user_data) {
+  VirtualHost *host = (VirtualHost*)node;
+  lua_State *vm = (lua_State*)user_data;
+  
+  if(host->get_name()) {
+    lua_newtable(vm);
+    
+    lua_push_int_table_entry(vm, "bytes_sent", host->get_sent_bytes());
+    lua_push_int_table_entry(vm, "bytes_rcvd", host->get_rcvd_bytes());
+    lua_push_int_table_entry(vm, "http_requests", host->get_num_requests());
+ 
+    lua_pushstring(vm, host->get_name());
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
+  }
+
+  return(false); /* false = keep on walking */
+}
+
+/* **************************************************** */
+
 void HTTPStats::lua(lua_State *vm) {
   lua_newtable(vm);
+
+  if(virtualHosts) {
+    lua_newtable(vm);
+    virtualHosts->walk(http_stats_summary, vm);  
+    lua_pushstring(vm, "virtual_hosts");
+    lua_insert(vm, -2);
+    lua_settable(vm, -3);
+  }
 
   lua_push_int_table_entry(vm, "query.total", query.num_get+query.num_get+query.num_post+query.num_head+query.num_put);
   lua_push_int_table_entry(vm, "query.num_get", query.num_get);
@@ -47,6 +86,7 @@ void HTTPStats::lua(lua_State *vm) {
   lua_push_int_table_entry(vm, "response.num_4xx", response.num_4xx);
   lua_push_int_table_entry(vm, "response.num_5xx", response.num_5xx);
 
+  
   lua_pushstring(vm, "http");
   lua_insert(vm, -2);
   lua_settable(vm, -3);
@@ -131,4 +171,25 @@ void HTTPStats::incResponse(char *return_code) {
   case '4': response.num_4xx++; break;
   case '5': response.num_5xx++; break;
   }
+}
+
+/* ******************************************* */
+
+void HTTPStats::addVirtualHostRequest(char *virtual_host_name,
+				      u_int32_t num_requests,
+				      u_int32_t bytes_sent,
+				      u_int32_t bytes_rcvd) {
+  VirtualHost *h;
+
+  if(!virtualHosts) return; /* Looks like we're running out of memory */
+  if((h = virtualHosts->get(virtual_host_name)) == NULL) {
+    if((h = new VirtualHost(virtual_host_name)) == NULL) {
+      ntop->getTrace()->traceEvent(TRACE_WARNING, "Internal error: are you running out of memory?");
+      return;
+    } else
+      virtualHosts->add(h);
+  }
+
+  if(h)
+    h->incStats(num_requests, bytes_sent, bytes_rcvd);
 }

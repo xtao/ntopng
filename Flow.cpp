@@ -35,7 +35,8 @@ Flow::Flow(NetworkInterface *_iface,
   detection_completed = false, ndpi_detected_protocol = NDPI_PROTOCOL_UNKNOWN;
   ndpi_flow = NULL, cli_id = srv_id = NULL, client_proc = server_proc = NULL;
   json_info = strdup("{}"), cli2srv_direction = true, twh_over = false,
-    dissect_next_http_packet = false, pass_verdict = true;
+    dissect_next_http_packet = false, pass_verdict = true,
+    host_server_name = NULL;
   src2dst_tcp_flags = dst2src_tcp_flags = 0, last_update_time.tv_sec = 0,
     bytes_thpt = top_bytes_thpt = pkts_thpt = top_pkts_thpt = 0;
   cli2srv_last_bytes = prev_cli2srv_last_bytes = 0, srv2cli_last_bytes = prev_srv2cli_last_bytes = 0;
@@ -55,7 +56,7 @@ Flow::Flow(NetworkInterface *_iface,
 
   memset(&http, 0, sizeof(http)), memset(&dns, 0, sizeof(dns));
   memset(&tcp_stats_s2d, 0, sizeof(tcp_stats_s2d)), memset(&tcp_stats_d2s, 0, sizeof(tcp_stats_d2s));
-  memset(&clientNwLatency, 0, sizeof(clientNwLatency)), memset(&serverNwLatency, 0, sizeof(serverNwLatency)), 
+  memset(&clientNwLatency, 0, sizeof(clientNwLatency)), memset(&serverNwLatency, 0, sizeof(serverNwLatency)),
   aggregationInfo.name = NULL;
 
   switch(protocol) {
@@ -66,8 +67,8 @@ Flow::Flow(NetworkInterface *_iface,
     break;
 
   default:
-    ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), 
-							    protocol, 0, 0, 0, 0);						    
+    ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(),
+							    protocol, 0, 0, 0, 0);
     break;
   }
 
@@ -113,8 +114,10 @@ void Flow::deleteFlowMemory() {
 /* *************************************** */
 
 Flow::~Flow() {
-  checkBlacklistedFlow();
+  struct timeval tv = { 0, 0};
 
+  checkBlacklistedFlow();
+  update_hosts_stats(&tv);
   dumpFlow(true /* Dump only the last part of the flow */);
   if(cli_host) cli_host->decUses();
   if(srv_host) srv_host->decUses();
@@ -129,6 +132,7 @@ Flow::~Flow() {
 
   if(aggregationInfo.name) free(aggregationInfo.name);
   deleteFlowMemory();
+  if(host_server_name) free(host_server_name);
 }
 
 /* *************************************** */
@@ -240,8 +244,11 @@ void Flow::aggregateInfo(char *_name, u_int16_t ndpi_proto_id,
 void Flow::processDetectedProtocol() {
   if(protocol_processed || (ndpi_flow == NULL)) return;
 
-  if(ndpi_flow->host_server_name[0] != '\0')
+  if(ndpi_flow->host_server_name[0] != '\0') {
     Utils::sanitizeHostName((char*)ndpi_flow->host_server_name);
+
+    host_server_name = strdup((char*)ndpi_flow->host_server_name);
+  }
 
   switch(ndpi_detected_protocol) {
   case NDPI_PROTOCOL_DNS:
@@ -294,7 +301,7 @@ void Flow::processDetectedProtocol() {
   case NDPI_PROTOCOL_WHOIS_DAS:
     if(ndpi_flow->host_server_name[0] != '\0') {
       protocol_processed = true;
-      aggregateInfo((char*)ndpi_flow->host_server_name, 
+      aggregateInfo((char*)ndpi_flow->host_server_name,
 		    ndpi_detected_protocol, aggregation_domain_name, true);
     }
     break;
@@ -325,7 +332,8 @@ void Flow::processDetectedProtocol() {
 	/* Check if the name isn't numeric */
 	if(strcmp((const char*)ndpi_flow->host_server_name,
 		  srv->get_ip()->print(buf, sizeof(buf)))) {
-	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol, aggregation_domain_name, true);
+	  aggregateInfo((char*)ndpi_flow->host_server_name, ndpi_detected_protocol,
+			aggregation_domain_name, true);
 
 	  if(ntop->getRedis()->getFlowCategory((char*)ndpi_flow->host_server_name,
 					       buf, sizeof(buf), true) != NULL) {
@@ -333,11 +341,13 @@ void Flow::processDetectedProtocol() {
 	    categorization.category = strdup(buf);
 	  }
 
+#if 0
 	  if(ndpi_detected_protocol != NDPI_PROTOCOL_HTTP_PROXY) {
 	    srv->setName((char*)ndpi_flow->host_server_name, true);
 	    ntop->getRedis()->setResolvedAddress(srv->get_ip()->print(buf, sizeof(buf)),
 						 (char*)ndpi_flow->host_server_name);
 	  }
+#endif
 	}
 
 	if(ndpi_flow->detected_os[0] != '\0') {
@@ -405,7 +415,7 @@ void Flow::guessProtocol() {
      || (protocol == IPPROTO_UDP)) {
     /* We can guess the protocol */
     ndpi_detected_protocol = ndpi_guess_undetected_protocol(iface->get_ndpi_struct(), protocol,
-							    ntohl(cli_host->get_ip()->get_ipv4()), 
+							    ntohl(cli_host->get_ip()->get_ipv4()),
 							    ntohs(cli_port),
 							    ntohl(srv_host->get_ip()->get_ipv4()),
 							    ntohs(srv_port));
@@ -415,7 +425,7 @@ void Flow::guessProtocol() {
 /* *************************************** */
 
 void Flow::setDetectedProtocol(u_int16_t proto_id) {
-  if((ndpi_flow != NULL) 
+  if((ndpi_flow != NULL)
      || (!iface->is_ndpi_enabled())) {
     if(proto_id != NDPI_PROTOCOL_UNKNOWN) {
       ndpi_detected_protocol = proto_id;
@@ -685,12 +695,20 @@ void Flow::update_hosts_stats(struct timeval *tv) {
   prev_srv2cli_last_bytes = srv2cli_last_bytes, prev_srv2cli_last_packets = srv2cli_last_packets;
   srv2cli_last_packets = rcvd_packets, srv2cli_last_bytes = rcvd_bytes;
 
-  if(cli_host)
-    cli_host->incStats(protocol, ndpi_detected_protocol, diff_sent_packets, diff_sent_bytes,
-		       diff_rcvd_packets, diff_rcvd_bytes);
-  if(srv_host)
-    srv_host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
-		       diff_sent_packets, diff_sent_bytes);
+  if(diff_sent_packets || diff_rcvd_packets) {
+    if(cli_host)
+      cli_host->incStats(protocol, ndpi_detected_protocol, diff_sent_packets, diff_sent_bytes,
+			 diff_rcvd_packets, diff_rcvd_bytes);
+    if(srv_host) {
+      srv_host->incStats(protocol, ndpi_detected_protocol, diff_rcvd_packets, diff_rcvd_bytes,
+			 diff_sent_packets, diff_sent_bytes);
+
+      if(host_server_name)
+	srv_host->addVirtualHTTPHostRequest(host_server_name, 
+					    (sent_bytes == diff_sent_bytes) ? 1 : 0,
+					    diff_sent_bytes, diff_rcvd_bytes);
+    }
+  }
 
   if(aggregationInfo.name) {
     StringHost *host = iface->findHostByString(NULL /* all hosts */, aggregationInfo.name, ndpi_detected_protocol, true);
@@ -924,19 +942,20 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
   lua_push_bool_table_entry(vm, "verdict.pass", pass_verdict);
 
   if(protocol == IPPROTO_TCP) {
-    lua_push_bool_table_entry(vm, "tcp.seq_problems", 
-			      (tcp_stats_s2d.pktRetr 
-			       | tcp_stats_s2d.pktOOO 
+    lua_push_bool_table_entry(vm, "tcp.seq_problems",
+			      (tcp_stats_s2d.pktRetr
+			       | tcp_stats_s2d.pktOOO
 			       | tcp_stats_s2d.pktLost
-			       | tcp_stats_d2s.pktRetr 
-			       | tcp_stats_d2s.pktOOO 
+			       | tcp_stats_d2s.pktRetr
+			       | tcp_stats_d2s.pktOOO
 			       | tcp_stats_d2s.pktLost) ? true : false);
 
     lua_push_float_table_entry(vm, "tcp.nw_latency.client", toMs(&clientNwLatency));
-    lua_push_float_table_entry(vm, "tcp.nw_latency.server", toMs(&serverNwLatency));      
+    lua_push_float_table_entry(vm, "tcp.nw_latency.server", toMs(&serverNwLatency));
   }
 
   if(detailed_dump) {
+    if(host_server_name) lua_push_str_table_entry(vm, "host_server_name", host_server_name);
     lua_push_int_table_entry(vm, "tcp_flags", getTcpFlags());
     lua_push_str_table_entry(vm, "category", categorization.category ? categorization.category : (char*)"");
 
@@ -960,7 +979,7 @@ void Flow::lua(lua_State* vm, patricia_tree_t * ptree, bool detailed_dump) {
   } else {
     if(dns.last_query)
       lua_push_str_table_entry(vm, "dns.last_query", dns.last_query);
-    
+
     if(http.last_method && http.last_url)
       lua_push_str_table_entry(vm, "http.last_url", http.last_url);
   }
@@ -1293,7 +1312,7 @@ void Flow::updateTcpFlags(const struct timeval *when, u_int8_t flags, bool src2d
 	memcpy(&ackTime, when, sizeof(struct timeval));
 	if(synAckTime.tv_sec > 0) {
 	  timeval_diff(&synAckTime, (struct timeval*)when, &clientNwLatency, 1);
-	  
+
 	  /* Sanity check */
 	  if(clientNwLatency.tv_sec > 5) memset(&clientNwLatency, 0, sizeof(clientNwLatency));
 	}
@@ -1354,7 +1373,7 @@ void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num,
     if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_s2d.last, tcp_stats_s2d.next);
 
     if(tcp_stats_s2d.next > 0) {
-      if((tcp_stats_s2d.next != seq_num) 
+      if((tcp_stats_s2d.next != seq_num)
 	 && (tcp_stats_s2d.next != (seq_num-1))) {
 	if(tcp_stats_s2d.last == seq_num) {
 	  tcp_stats_s2d.pktRetr++, cli_host->incRetransmittedPkts(1);
@@ -1378,7 +1397,7 @@ void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num,
     if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_d2s.last, tcp_stats_d2s.next);
 
     if(tcp_stats_d2s.next > 0) {
-      if((tcp_stats_d2s.next != seq_num) 
+      if((tcp_stats_d2s.next != seq_num)
 	 && (tcp_stats_d2s.next != (seq_num-1))) {
 	if(tcp_stats_d2s.last == seq_num) {
 	  tcp_stats_d2s.pktRetr++, srv_host->incRetransmittedPkts(1);
@@ -1391,7 +1410,7 @@ void Flow::updateTcpSeqNum(const struct timeval *when, u_int32_t seq_num,
 	} else {
 	  tcp_stats_d2s.pktOOO++, srv_host->incOOOPkts(1);
 	  update_last_seqnum = ((seq_num - 1) > tcp_stats_d2s.last) ? true : false;
-	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_d2s.last, tcp_stats_d2s.next);	  
+	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "[last: %u][next: %u]", tcp_stats_d2s.last, tcp_stats_d2s.next);
 	  if(debug) ntop->getTrace()->traceEvent(TRACE_WARNING, "Packet OOO [last: %u][act: %u]", tcp_stats_d2s.last, seq_num);
 	}
       }
@@ -1493,11 +1512,11 @@ void Flow::dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len)
 	  strncpy(http.last_method, payload, l);
 	  http.last_method[l] = '\0';
 	}
-	
+
 	payload = &space[1];
 	if((space = strchr(payload, ' ')) != NULL) {
 	  u_int l = space-payload;
-	  
+
 	  if(http.last_url) free(http.last_url);
 	  if((http.last_url = (char*)malloc(l+1)) != NULL) {
 	    strncpy(http.last_url, payload, l);
@@ -1519,7 +1538,7 @@ void Flow::dissectHTTP(bool src2dst_direction, char *payload, u_int payload_len)
 	payload = &space[1];
 	if((space = strchr(payload, ' ')) != NULL) {
 	  int l = min_val((int)(space-payload), (int)(sizeof(tmp)-1));
-	  
+
 	  strncpy(tmp, payload, l);
 	  tmp[l] = 0;
 	  http.last_return_code = atoi(tmp);

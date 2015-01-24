@@ -41,7 +41,7 @@ class Flow : public GenericHashEntry {
     ssl_flow_without_certificate_name;
   u_int16_t ndpi_detected_protocol;
   void *cli_id, *srv_id;
-  char *json_info;
+  char *json_info, *host_server_name;
 
   struct {
     char *last_url, *last_method;
