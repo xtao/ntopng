@@ -16,7 +16,7 @@ Prerequisites
 
 On Ubuntu
 - apt-get install build-essential 
-- apt-get install subversion libglib2.0 libxml2-dev libpcap-dev libtool rrdtool librrd-dev autoconf automake autogen redis-server wget libsqlite3-dev libhiredis-dev libgeoip-dev libcurl4-openssl-dev
+- apt-get install subversion libglib2.0 libxml2-dev libpcap-dev libtool rrdtool librrd-dev autoconf automake autogen redis-server wget libsqlite3-dev libhiredis-dev libgeoip-dev libcurl4-openssl-dev libreadline-dev libmysqlclient-dev
 
 On Fedora
 - yum groupinstall "Development tools"
